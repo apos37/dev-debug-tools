@@ -308,13 +308,6 @@ $globals = [
         'desc'    => '',
         'avail'   => true
     ],
-    // [ 
-    //     'section' => '', 
-    //     'var'     => '', 
-    //     'returns' => 'string',
-    //     'desc'    => '',
-    //     'avail'   => true
-    // ],
     [ 
         'section' => 'admin', 
         'var'     => 'pagenow', 
@@ -370,17 +363,14 @@ $sections = [
 ];
 
 // Check if we are viewing one
-if ( ddtt_get( 'gv' ) ) {
-
-    // Sanitize
-    $gv = esc_attr( ddtt_get( 'gv' ) );
+if ( $gv = ddtt_get( 'gv' ) ) {
 
     // Attempt to get it
     global ${$gv};
 
     // Attempt to print it
     if ( ${ddtt_get( 'gv' )} ) {
-        echo '<br><h3>$'.$gv.' returns:</h3><br>';
+        echo '<br><h3>$'.esc_attr( $gv ).' returns:</h3><br>';
         ddtt_print_r( ${$gv} );
 
     } else {
