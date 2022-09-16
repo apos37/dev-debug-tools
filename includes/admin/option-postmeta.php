@@ -77,7 +77,7 @@ if ( $searched && ( !$post_id || $post_id == 0 || !get_post_status( $post_id ) )
 
         // Verify and sanitize
         $upd = sanitize_text_field( $_POST[ 'update' ] );
-        $mk = sanitize_key( $_POST[ 'mk' ] );
+        $mk = sanitize_text_field( $_POST[ 'mk' ] );
 
         if ( isset( $_POST[ 'val' ] ) ) {
             $val = sanitize_text_field( $_POST[ 'val' ] );

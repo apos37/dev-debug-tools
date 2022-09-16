@@ -1196,6 +1196,42 @@ function ddtt_get_form_ids_on_page( $post_id = null ) {
         }
     }
 
+    // Method 2
+    if ( empty( $findings ) ) {
+
+        // Try to get the content another way
+        $content = apply_filters( 'the_content', $content );
+        $content = htmlspecialchars( $content );
+
+        // Regex for the html
+        $regex = '/id=("|\'|"([^"]*)\s)gform_wrapper_[0-9]*("|\'|\s([^"]*)"|\')/';
+        if ( preg_match_all( $regex, $content, $matches ) ) {
+
+            // Cycle through the shortcodes and find the id
+            foreach ( $matches[0] as $match ) {
+
+                // Check if the id attribute exists
+                if ( strpos( $match, 'id=' ) !== false ) {
+
+                    // Return id="#" in an array
+                    if ( preg_match('/".*?"|\'.*?\'/', $match, $attr ) ) {
+
+                        // Rename the var
+                        $attribute = trim( $attr[0], '\'"');
+
+                        // If so, let's get the value
+                        if ( preg_match( '/\d{1,}+/', $attribute, $form_id_array ) ){
+                            $form_id = $form_id_array[0];
+
+                            // Add to array
+                            $findings[] = $form_id;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // Return the array
     return $findings;
 } // End ddtt_get_form_ids_on_page()

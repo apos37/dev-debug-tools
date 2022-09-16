@@ -34,6 +34,7 @@ A simple plugin that gives developers the tools they need to debug and test thin
 * Toggle WP heartbeat.
 * Extend cURL timeout errors.
 * All this in dark mode, with the ability to change syntax colors.
+* Adds user and post info to admin bar.
 
 == Installation ==
 1. Install the plugin from your website's plugin directory, or upload the plugin to your plugins folder. 

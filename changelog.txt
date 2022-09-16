@@ -1,4 +1,8 @@
 == changelog.txt ==
+= 1.2.1 =
+* Fix bug not finding Gravity Form forms on admin bar if added via Cornerstone element
+* Fix bug not allowing updating user or post meta keys that are not all lowercase
+
 = 1.2.0 =
 * Prepare for release to WP.org repository
 
