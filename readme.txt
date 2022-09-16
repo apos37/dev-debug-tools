@@ -1,6 +1,7 @@
 === Developer Debug Tools ===
 Contributors: apos37
-Tags: debug, debugger, debugging, developer, development, testing, tools, admin, wp-config, htaccess, user meta, post meta
+Donate link: https://paypal.me/apos37
+Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.0.2
 Requires PHP: 7.4
@@ -35,15 +36,12 @@ A simple plugin that gives developers the tools they need to debug and test thin
 * All this in dark mode, with the ability to change syntax colors.
 
 == Installation ==
-1. Install the plugin from your website\'s plugin directory, or upload the plugin to your plugins folder. 
+1. Install the plugin from your website's plugin directory, or upload the plugin to your plugins folder. 
 2. Activate it.
-3. Go to WP Debug Tools in your admin menu.
-4. Enter your account email address as a \"Developer Email Address\" to view the rest of the tools.
+3. Go to Developer Debug Tools in your admin menu.
+4. Enter your account email address as a "Developer Email Address" to view the rest of the tools.
 
 == Frequently Asked Questions ==
-= Where do I find the tools? =
-Go to Dev Debug Tools from your admin menu, and enter your account email address as a \"Developer Email Address.\"
-
 = Should I backup my wp-config.php and .htaccess files before using the tools to add/remove snippets?
 Yes! It is always best to back these files up when making updates to them.
 
@@ -54,7 +52,7 @@ Yes, but you should always make a backup of your site before using functionality
 The originals are stored in your root folder and renamed with the date and time from which they were replaced. For example, the wp-config.php file will have been renamed to wp-config-2022-08-22-15-25-46.php and replaced with a new file. Simply log into your FTP or File Manager (from your host), rename the current file to something else such as wp-config-BROKEN.php (just in case you need it), and then rename the version you want to revert back to as wp-config.php. If everything looks good, then you can either delete this file or send a copy of it to me so I can figure out what went wrong. You can do so in the Discord server mentioned below.
 
 = Where can I get further support? =
-Join the WordPress Support Discord server: https://discord.gg/VeMTXRVkm5
+Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 
 == Screenshots ==
 1. Settings page
@@ -64,7 +62,7 @@ Join the WordPress Support Discord server: https://discord.gg/VeMTXRVkm5
 5. Some of the snippets you can add/remove from your wp-config.php file
 6. View .htaccess file
 7. List of all php.ini values
-8. View and update a user\'s meta
+8. View and update a user's meta
 9. Available functions to use for debugging and testing
 10. Regex playground
 

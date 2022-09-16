@@ -108,7 +108,7 @@ if ( $notice ) {
 
         // Verify and sanitize
         $upd = sanitize_text_field( $_POST[ 'update' ] );
-        $mk = sanitize_key( $_POST[ 'mk' ] );
+        $mk = sanitize_text_field( $_POST[ 'mk' ] );
 
         if ( isset( $_POST[ 'val' ] ) ) {
             $val = sanitize_text_field( $_POST[ 'val' ] );
@@ -254,7 +254,7 @@ if ( $notice ) {
 
             // Make sure the key exists as custom meta only
             if ( !key_exists( $mk, $user_meta ) ) {
-                return 'The custom meta key "'.$mk.'" does not exist.';
+                echo 'The custom meta key "'.esc_attr( $mk ).'" does not exist.';
             }
 
             // Delete it
