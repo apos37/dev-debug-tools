@@ -25,12 +25,12 @@ if ( is_readable( ABSPATH . $filename ) ) {
 if ( ddtt_get( $pf.'updated', '==', 'true' ) ) {
     if ( ddtt_get( 'l' ) ) {
         $enabled = ddtt_get( 'l' );
-        // ddtt_remove_qs_without_refresh( [ $pf.'updated', 'l' ] );
+        ddtt_remove_qs_without_refresh( [ $pf.'updated', 'l' ] );
     } else {
         $enabled = [];
-        // ddtt_remove_qs_without_refresh( [ $pf.'updated' ] );
+        ddtt_remove_qs_without_refresh( [ $pf.'updated' ] );
     }
-    $testing = true;
+    $testing = false;
     $DDTT_HTACCESS->rewrite( $filename, $snippets, $enabled, $testing );
     // ddtt_print_r( $enabled );
 }

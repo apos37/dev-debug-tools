@@ -63,6 +63,25 @@
                 // echo wp_kses( ddtt_options_tr( 'ql_gravity_forms', 'Add Quick Debug Links to Gravity Forms forms and entries', 'checkbox', '// Adds a link to debug the form or entry\'s meta.' ), $allowed_html ); 
             // } 
             ?>
+
+        </table>
+
+        <br><hr><br></br>
+        <h2>Admin Bar Options</h2>
+        <table class="form-table">
+
+            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_resources', 'Remove Resources from Admin Bar', 'checkbox' ), $allowed_html ); ?>
+
+            <?php if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
+                echo wp_kses( ddtt_options_tr( 'admin_bar_gf', 'Remove Gravity Form Finder from Admin Bar', 'checkbox' ), $allowed_html );
+            } ?>
+
+            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_shortcodes', 'Remove Shortcodes from Admin Bar', 'checkbox' ), $allowed_html ); ?>
+
+            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_centering_tool', 'Remove Centering Tool from Admin Bar', 'checkbox' ), $allowed_html ); ?>
+
+            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_post_info', 'Remove Post Information from Admin Bar', 'checkbox' ), $allowed_html ); ?>
+            
         </table>
     <?php } ?>
        

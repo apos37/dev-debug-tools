@@ -43,6 +43,11 @@ $hooks = [
         'hook' => 'ddtt_admin_bar_dropdown_links',
         'desc' => 'Add a link to the admin bar site name dropdown on the front-end.'
     ],
+    [
+        'type' => 'Filter',
+        'hook' => 'ddtt_omit_shortcodes',
+        'desc' => 'Omit shortcodes from the admin bar shortcode finder.'
+    ],
     [ 
         'type' => 'Action',
         'hook' => 'ddtt_admin_list_update_each_user', 

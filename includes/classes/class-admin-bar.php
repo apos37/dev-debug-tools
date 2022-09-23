@@ -60,14 +60,14 @@ class DDTT_ADMIN_BAR {
         // Add the user info
         if ( 0 != $user_id ) {
             $account_text = sprintf( __( '<span class="full-width-only">Logged in as: </span>%1$s (<span class="full-width-only">User </span>ID %2$s)', 'dev-debug-tools' ), $current_user->display_name, $user_id );       
-            $wp_admin_bar->add_node( array(
+            $wp_admin_bar->add_node( [
                 'id' => DDTT_GO_PF.'my-account',
                 'title' => $account_text,
                 'href' => $profile_url,
-                'meta' => array(
+                'meta' => [
                     'class' => DDTT_GO_PF.'my-account-name',
-                ),
-            ));
+                ],
+            ] );
 
             // Dev only
             if ( ddtt_is_dev() ) {
@@ -110,56 +110,93 @@ class DDTT_ADMIN_BAR {
         /**
          * Add the post ID and status
          */
-        if ( get_the_ID() ) {
-            $post_id = get_the_ID();
-            
-        } else {
-
-            // Cornerstone content editor
-            $theme = wp_get_theme(); // gets the current theme
-            if ( 'X – Child Theme' == $theme->name || 'X' == $theme->parent_theme ) {
-                $cornerstone = get_site_url().'/cornerstone/content/';
-                if ( strpos( $current_url, $cornerstone ) !== false ) {
-                    $parsed_url = parse_url( $current_url );
-                    $path = $parsed_url[ 'path' ];
-                    $explode = explode( '/', $path );
-                    $post_id = $explode[3];
-                } else {
-                    $post_id = false;
+        if ( !get_option( DDTT_GO_PF.'admin_bar_post_info' ) || get_option( DDTT_GO_PF.'admin_bar_post_info' ) == 0 ) {
+            if ( get_the_ID() ) {
+                $post_id = get_the_ID();
+                
+            } else {
+    
+                // Cornerstone content editor
+                $theme = wp_get_theme(); // gets the current theme
+                if ( 'X – Child Theme' == $theme->name || 'X' == $theme->parent_theme ) {
+                    $cornerstone = get_site_url().'/cornerstone/content/';
+                    if ( strpos( $current_url, $cornerstone ) !== false ) {
+                        $parsed_url = parse_url( $current_url );
+                        $path = $parsed_url[ 'path' ];
+                        $explode = explode( '/', $path );
+                        $post_id = $explode[3];
+                    } else {
+                        $post_id = false;
+                    }
                 }
+            }
+    
+            // If post id exists, continue
+            if ( $post_id ){
+                
+                // Add Page/Post ID
+                $post_type = get_post_type( $post_id );
+                $post_type_obj = get_post_type_object( $post_type );
+                if ($post_type_obj) {
+                    $pt_name = esc_html( $post_type_obj->labels->singular_name ).' ID';
+                } else {
+                    $pt_name = '';
+                }
+    
+                // Add Page/Post Status 
+                if ( get_post_status( $post_id ) == 'publish' ) {
+                    $post_status = 'Published';
+                } elseif ( get_post_status( $post_id ) == 'draft' ) {
+                    $post_status = 'Draft';
+                } elseif ( get_post_status( $post_id ) == 'private' ) {
+                    $post_status = 'Private';
+                } elseif ( get_post_status( $post_id ) == 'archive' ) {
+                    $post_status = 'Archived';
+                } else {
+                    $post_status = 'Unknown';
+                }
+                
+                // Add to bar
+                $wp_admin_bar->add_node( [
+                    'id' => DDTT_GO_PF.'admin-post-id',
+                    'title' => sprintf( __( '%1$s %2$s (%3$s)', 'dev-debug-tools' ), $pt_name, $post_id, $post_status ),
+                ] );
             }
         }
 
-        // If post id exists, continue
-        if ( $post_id ){
-            
-            // Add Page/Post ID
-            $post_type = get_post_type( $post_id );
-            $post_type_obj = get_post_type_object( $post_type );
-            if ($post_type_obj) {
-                $pt_name = esc_html( $post_type_obj->labels->singular_name ).' ID';
-            } else {
-                $pt_name = '';
-            }
+        
+        /**
+         * Add resource links
+         */
+        if ( !get_option( DDTT_GO_PF.'admin_bar_resources' ) || get_option( DDTT_GO_PF.'admin_bar_resources' ) == 0 ) {
+            if ( ddtt_is_dev() ) {
+                $DDTT_RESOURCES = new DDTT_RESOURCES();
+                $links = $DDTT_RESOURCES->get_resources();
+                if ( !empty( $links ) ) {
+                    $resources_icon = '&#128214;';       
+                    $wp_admin_bar->add_node( [
+                        'id' => DDTT_GO_PF.'resources',
+                        'title' => $resources_icon,
+                        'meta' => [
+                            'class' => DDTT_GO_PF.'resources',
+                        ],
+                    ] );
 
-            // Add Page/Post Status 
-            if ( get_post_status( $post_id ) == 'publish' ) {
-                $post_status = 'Published';
-            } elseif ( get_post_status( $post_id ) == 'draft' ) {
-                $post_status = 'Draft';
-            } elseif ( get_post_status( $post_id ) == 'private' ) {
-                $post_status = 'Private';
-            } elseif ( get_post_status( $post_id ) == 'archive' ) {
-                $post_status = 'Archived';
-            } else {
-                $post_status = 'Unknown';
+                    // Add each link
+                    foreach ( $links as $key => $link ) {
+                        $wp_admin_bar->add_node( [
+                            'id' => DDTT_GO_PF.'resource-'.$key,
+                            'parent' => DDTT_GO_PF.'resources',
+                            'title' => $link[ 'title' ],
+                            'href' => $link[ 'url' ],
+                            'meta' => [
+                                'class' => DDTT_GO_PF.'resource',
+                                'target' => '_blank'
+                            ],
+                        ] );
+                    }
+                }
             }
-            
-            // Add to bar
-            $wp_admin_bar->add_node( [
-                'id' => DDTT_GO_PF.'admin-post-id',
-                'title' => sprintf( __( '%1$s %2$s (%3$s)', 'dev-debug-tools' ), $pt_name, $post_id, $post_status ),
-            ] );
         }
         
 
@@ -217,66 +254,68 @@ class DDTT_ADMIN_BAR {
          * Add centering tool
          */
         $ct_is_enabled = false;
-        if ( !is_admin() ) {
+        if ( !get_option( DDTT_GO_PF.'admin_bar_centering_tool' ) || get_option( DDTT_GO_PF.'admin_bar_centering_tool' ) == 0 ) {
+            if ( !is_admin() ) {
 
-            // Get column count
-            if ( get_option( DDTT_GO_PF.'centering_tool') && get_option( DDTT_GO_PF.'centering_tool') != '' ) {
-                $ct_count = get_option( DDTT_GO_PF.'centering_tool');
-            } else {
-                $ct_count = 16;
-            }
-
-            // Update
-            if ( ddtt_get( 'ct' ) && ddtt_get( 'ct' ) == 'true' ) {
-                update_user_meta( $user_id, DDTT_GO_PF.'centering_tool', $ct_count );
-                ddtt_remove_qs_without_refresh( 'ct', false );
-                
-            } elseif ( ddtt_get( 'ct' ) && ddtt_get( 'ct' ) == 'false' ) {
-                update_user_meta( $user_id, DDTT_GO_PF.'centering_tool', false );
-                ddtt_remove_qs_without_refresh( 'ct', false );
-            }
-
-            // Display
-            $url_to_parse = parse_url( $_SERVER['REQUEST_URI'] );
-            $qsi = isset( $url_to_parse['query'] ) ? '&' : '?';
-            if ( get_user_meta( $user_id, DDTT_GO_PF.'centering_tool', true ) && get_user_meta( $user_id, DDTT_GO_PF.'centering_tool', true ) != '' ) {
-                $ct_is_enabled = true;
-
-                // Container
-                $centering_tool = '<div id="ct-top" class="centering-tool" expanded="false">';
-                for ( $i = 0; $i < $ct_count; $i++ ) {
-                    if ( $ct_count % 2 == 0 && $i == round( ( $ct_count / 2 ) - 1, 0 ) || 
-                        $ct_count % 2 == 1 && $i == round( ( $ct_count / 2 ) - 1, 0 ) || 
-                        $ct_count % 2 == 1 && $i == round( ( $ct_count / 2 ) - 2, 0 ) ) {
-
-                        $center = ' center';
-                    } else {
-                        $center = '';
-                    }
-                    $centering_tool .= '<div class="ct-q'.$center.'"></div>';
+                // Get column count
+                if ( get_option( DDTT_GO_PF.'centering_tool') && get_option( DDTT_GO_PF.'centering_tool') != '' ) {
+                    $ct_count = get_option( DDTT_GO_PF.'centering_tool');
+                } else {
+                    $ct_count = 16;
                 }
-                $centering_tool .= '</div>';
 
-                // Add to page 
-                echo wp_kses_post( $centering_tool );
+                // Update
+                if ( ddtt_get( 'ct' ) && ddtt_get( 'ct' ) == 'true' ) {
+                    update_user_meta( $user_id, DDTT_GO_PF.'centering_tool', $ct_count );
+                    ddtt_remove_qs_without_refresh( 'ct', false );
+                    
+                } elseif ( ddtt_get( 'ct' ) && ddtt_get( 'ct' ) == 'false' ) {
+                    update_user_meta( $user_id, DDTT_GO_PF.'centering_tool', false );
+                    ddtt_remove_qs_without_refresh( 'ct', false );
+                }
 
-                // Text and link
-                $ct_text = 'On';
-                $ct_link = $current_url.$qsi.'ct=false';
-                
-            } else {
-                $ct_is_enabled = false;
-                $ct_text = 'Off';
-                $ct_link = $current_url.$qsi.'ct=true';
+                // Display
+                $url_to_parse = parse_url( $_SERVER['REQUEST_URI'] );
+                $qsi = isset( $url_to_parse['query'] ) ? '&' : '?';
+                if ( get_user_meta( $user_id, DDTT_GO_PF.'centering_tool', true ) && get_user_meta( $user_id, DDTT_GO_PF.'centering_tool', true ) != '' ) {
+                    $ct_is_enabled = true;
+
+                    // Container
+                    $centering_tool = '<div id="ct-top" class="centering-tool" expanded="false">';
+                    for ( $i = 0; $i < $ct_count; $i++ ) {
+                        if ( $ct_count % 2 == 0 && $i == round( ( $ct_count / 2 ) - 1, 0 ) || 
+                            $ct_count % 2 == 1 && $i == round( ( $ct_count / 2 ) - 1, 0 ) || 
+                            $ct_count % 2 == 1 && $i == round( ( $ct_count / 2 ) - 2, 0 ) ) {
+
+                            $center = ' center';
+                        } else {
+                            $center = '';
+                        }
+                        $centering_tool .= '<div class="ct-q'.$center.'"></div>';
+                    }
+                    $centering_tool .= '</div>';
+
+                    // Add to page 
+                    echo wp_kses_post( $centering_tool );
+
+                    // Text and link
+                    $ct_text = 'On';
+                    $ct_link = $current_url.$qsi.'ct=false';
+                    
+                } else {
+                    $ct_is_enabled = false;
+                    $ct_text = 'Off';
+                    $ct_link = $current_url.$qsi.'ct=true';
+                }
+                $wp_admin_bar->add_node( [
+                    'id' => DDTT_GO_PF.'ct-admin-bar',
+                    'title' => '&#x271B; '.$ct_text,
+                    'href' => $ct_link,
+                    'meta' => [
+                        'class' => DDTT_GO_PF.'ct-admin-bar-link',
+                    ],
+                ] );
             }
-            $wp_admin_bar->add_node( [
-                'id' => DDTT_GO_PF.'ct-admin-bar',
-                'title' => '&#x271B; '.$ct_text,
-                'href' => $ct_link,
-                'meta' => [
-                    'class' => DDTT_GO_PF.'ct-admin-bar-link',
-                ],
-            ] );
         }
 
         
@@ -288,30 +327,42 @@ class DDTT_ADMIN_BAR {
             /**
              * Add shortcodes count
              */
-            $shortcodes = ddtt_get_shortcodes_on_page();
-            $sc_bar = sprintf( __( '<span class="full-width-only">[%1$s]</span>', 'dev-debug-tools' ), count( $shortcodes ) ); 
-            $wp_admin_bar->add_node( [
-                'id' => 'shortcodes-found',
-                'title' => $sc_bar,
-                'meta' => [
-                    'class' => DDTT_GO_PF.'shortcodes-found',
-                ],
-            ] );
+            if ( !get_option( DDTT_GO_PF.'admin_bar_shortcodes' ) || get_option( DDTT_GO_PF.'admin_bar_shortcodes' ) == 0 ) {
+                $shortcodes = ddtt_get_shortcodes_on_page();
+                $sc_bar = sprintf( __( '<span class="full-width-only">[%1$s]</span>', 'dev-debug-tools' ), count( $shortcodes ) ); 
+                $wp_admin_bar->add_node( [
+                    'id' => 'shortcodes-found',
+                    'title' => $sc_bar,
+                    'meta' => [
+                        'class' => DDTT_GO_PF.'shortcodes-found',
+                    ],
+                ] );
 
-            // Add the list of shortcodes
-            if ( !empty( $shortcodes ) ) {
-                $sc_num = 0;
-                foreach ( $shortcodes as $shortcode ) {
-                    $loaded_text = sprintf( __('[%1$s]'), $shortcode );       
+                // Add the list of shortcodes
+                if ( !empty( $shortcodes ) ) {
+                    $sc_desc_text = __( 'Shortcodes Found:', 'dev-debug-tools' );   
                     $wp_admin_bar->add_node( [
-                        'id' => DDTT_GO_PF.'shortcode-'.$sc_num,
+                        'id' => DDTT_GO_PF.'shortcode-desc',
                         'parent' => 'shortcodes-found',
-                        'title' => $loaded_text,
+                        'title' => $sc_desc_text,
                         'meta' => [
                             'class' => DDTT_GO_PF.'shortcode-found',
                         ],
                     ] );
-                    $sc_num++;
+
+                    $sc_num = 0;
+                    foreach ( $shortcodes as $shortcode ) {
+                        $loaded_text = sprintf( __( '[%1$s]', 'dev-debug-tools' ), $shortcode );       
+                        $wp_admin_bar->add_node( [
+                            'id' => DDTT_GO_PF.'shortcode-'.$sc_num,
+                            'parent' => 'shortcodes-found',
+                            'title' => $loaded_text,
+                            'meta' => [
+                                'class' => DDTT_GO_PF.'shortcode-found',
+                            ],
+                        ] );
+                        $sc_num++;
+                    }
                 }
             }
 
@@ -319,34 +370,36 @@ class DDTT_ADMIN_BAR {
             /**
              * Get the Gravity Forms IDs from the page
              */
-            if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
-                $form_ids = ddtt_get_form_ids_on_page();
-                $gf_icon = '<div class="wp-menu-image svg" style="width: 19px; height: 23px; display: inline-block; margin: 0 2px 0 -6px; vertical-align: middle; background-image: url(&quot;data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48c3ZnIHdpZHRoPSIyMSIgaGVpZ2h0PSIyMSIgdmlld0JveD0iMCAwIDIxIDIxIiBmaWxsPSIjYTdhYWFkIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxtYXNrIGlkPSJtYXNrMCIgbWFzay10eXBlPSJhbHBoYSIgbWFza1VuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeD0iMiIgeT0iMSIgd2lkdGg9IjE3IiBoZWlnaHQ9IjIwIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTExLjU5MDYgMi4wMzcwM0wxNy4xNzkzIDUuNDQ4MjRDMTcuODk0IDUuODg0IDE4LjQ3NjcgNi45NTI5OCAxOC40NzY3IDcuODI0NTFWMTQuNjUwM0MxOC40NzY3IDE1LjUxODUgMTcuODk0IDE2LjU4NzQgMTcuMTc5MyAxNy4wMjMyTDExLjU5MDYgMjAuNDMxQzEwLjg3OTIgMjAuODY2OCA5LjcxMDU1IDIwLjg2NjggOC45OTkwOSAyMC40MzFMMy40MTA0MSAxNy4wMTk4QzIuNjk1NzMgMTYuNTg0IDIuMTEzMDQgMTUuNTE4NSAyLjExMzA0IDE0LjY0NjlWNy44MjExQzIuMTEzMDQgNi45NTI5OCAyLjY5ODk1IDUuODg0IDMuNDEwNDEgNS40NDgyNEw4Ljk5OTA5IDIuMDM3MDNDOS43MTA1NSAxLjYwMTI2IDEwLjg3OTIgMS42MDEyNiAxMS41OTA2IDIuMDM3MDNaTTE1Ljc0OTQgOS4zNzUwM0g4LjgxMDQ5QzguMzgyOTkgOS4zNzUwMyA4LjA2MjM3IDkuNTAxNjQgNy44MDkwNCA5Ljc3MDY4QzcuMjU0ODggMTAuMzYwMiA2Ljk2MTk2IDExLjUwMzYgNi45MTg0MiAxMi4xNDA2SDEzLjc1MDVWMTAuNDI3NUgxNS43MDE5VjE0LjA5MTJINC44NDAzMUM0Ljg0MDMxIDE0LjA5MTIgNC44Nzk4OSAxMC4wMzk3IDYuMzkxOTcgOC40MzMzOUM3LjAxNzM4IDcuNzY0NzUgNy44NDA3IDcuNDI0NDkgOC44MzAyOCA3LjQyNDQ5SDE1Ljc0OTRWOS4zNzUwM1oiIGZpbGw9IiNhN2FhYWQiLz48L21hc2s+PGcgbWFzaz0idXJsKCNtYXNrMCkiPjxyZWN0IHg9IjAuMjk0OTIyIiB5PSIwLjc1NzgxMiIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjYTdhYWFkIi8+PC9nPjwvc3ZnPg==&quot;) !important;" aria-hidden="true"><br></div>';
-                if ( empty( $form_ids ) ) {
-                    $gf_var = $gf_icon.' No Forms';
+            if ( !get_option( DDTT_GO_PF.'admin_bar_gf' ) || get_option( DDTT_GO_PF.'admin_bar_gf' ) == 0 ) {
+                if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
+                    $form_ids = ddtt_get_form_ids_on_page();
+                    $gf_icon = '<div class="wp-menu-image svg" style="width: 19px; height: 23px; display: inline-block; margin: 0 2px 0 -6px; vertical-align: middle; background-image: url(&quot;data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48c3ZnIHdpZHRoPSIyMSIgaGVpZ2h0PSIyMSIgdmlld0JveD0iMCAwIDIxIDIxIiBmaWxsPSIjYTdhYWFkIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxtYXNrIGlkPSJtYXNrMCIgbWFzay10eXBlPSJhbHBoYSIgbWFza1VuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeD0iMiIgeT0iMSIgd2lkdGg9IjE3IiBoZWlnaHQ9IjIwIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTExLjU5MDYgMi4wMzcwM0wxNy4xNzkzIDUuNDQ4MjRDMTcuODk0IDUuODg0IDE4LjQ3NjcgNi45NTI5OCAxOC40NzY3IDcuODI0NTFWMTQuNjUwM0MxOC40NzY3IDE1LjUxODUgMTcuODk0IDE2LjU4NzQgMTcuMTc5MyAxNy4wMjMyTDExLjU5MDYgMjAuNDMxQzEwLjg3OTIgMjAuODY2OCA5LjcxMDU1IDIwLjg2NjggOC45OTkwOSAyMC40MzFMMy40MTA0MSAxNy4wMTk4QzIuNjk1NzMgMTYuNTg0IDIuMTEzMDQgMTUuNTE4NSAyLjExMzA0IDE0LjY0NjlWNy44MjExQzIuMTEzMDQgNi45NTI5OCAyLjY5ODk1IDUuODg0IDMuNDEwNDEgNS40NDgyNEw4Ljk5OTA5IDIuMDM3MDNDOS43MTA1NSAxLjYwMTI2IDEwLjg3OTIgMS42MDEyNiAxMS41OTA2IDIuMDM3MDNaTTE1Ljc0OTQgOS4zNzUwM0g4LjgxMDQ5QzguMzgyOTkgOS4zNzUwMyA4LjA2MjM3IDkuNTAxNjQgNy44MDkwNCA5Ljc3MDY4QzcuMjU0ODggMTAuMzYwMiA2Ljk2MTk2IDExLjUwMzYgNi45MTg0MiAxMi4xNDA2SDEzLjc1MDVWMTAuNDI3NUgxNS43MDE5VjE0LjA5MTJINC44NDAzMUM0Ljg0MDMxIDE0LjA5MTIgNC44Nzk4OSAxMC4wMzk3IDYuMzkxOTcgOC40MzMzOUM3LjAxNzM4IDcuNzY0NzUgNy44NDA3IDcuNDI0NDkgOC44MzAyOCA3LjQyNDQ5SDE1Ljc0OTRWOS4zNzUwM1oiIGZpbGw9IiNhN2FhYWQiLz48L21hc2s+PGcgbWFzaz0idXJsKCNtYXNrMCkiPjxyZWN0IHg9IjAuMjk0OTIyIiB5PSIwLjc1NzgxMiIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjYTdhYWFkIi8+PC9nPjwvc3ZnPg==&quot;) !important;" aria-hidden="true"><br></div>';
+                    if ( empty( $form_ids ) ) {
+                        $gf_var = $gf_icon.' No Forms';
 
-                } elseif ( count( $form_ids ) > 1 ) {
-                    $form_links = [];
-                    foreach( $form_ids as $form_id ) {
-                        $form_links[] = '<a href="/'.DDTT_ADMIN_URL.'/admin.php?page=gf_edit_forms&view=settings&subview=settings&id='.$form_id.'" target="_blank" style="display: inline-block; color: white;">'.$form_id.'</a>';
+                    } elseif ( count( $form_ids ) > 1 ) {
+                        $form_links = [];
+                        foreach( $form_ids as $form_id ) {
+                            $form_links[] = '<a href="/'.DDTT_ADMIN_URL.'/admin.php?page=gf_edit_forms&view=settings&subview=settings&id='.$form_id.'" target="_blank" style="display: inline-block; color: white;">'.$form_id.'</a>';
+                        }
+                        $form_id_display = '['.implode(',',$form_links).']';
+                        $gf_var = $gf_icon.' Form IDs: '.$form_id_display;
+                        
+                    } else {
+                        $form_id_display = '<a href="/'.DDTT_ADMIN_URL.'/admin.php?page=gf_edit_forms&view=settings&subview=settings&id='.$form_ids[0].'" target="_blank" style="display: inline-block; color: white;">'.$form_ids[0].'</a>';
+                        $gf_var = $gf_icon.' Form ID: '.$form_id_display;
                     }
-                    $form_id_display = '['.implode(',',$form_links).']';
-                    $gf_var = $gf_icon.' Form IDs: '.$form_id_display;
-                    
-                } else {
-                    $form_id_display = '<a href="/'.DDTT_ADMIN_URL.'/admin.php?page=gf_edit_forms&view=settings&subview=settings&id='.$form_ids[0].'" target="_blank" style="display: inline-block; color: white;">'.$form_ids[0].'</a>';
-                    $gf_var = $gf_icon.' Form ID: '.$form_id_display;
-                }
 
-                $gf_bar = '<span class="full-width-only">'.$gf_var.'</span>';
-                $wp_admin_bar->add_node( [
-                    'id' => 'gf-found',
-                    // 'parent' => 'top-secondary',
-                    'title' => $gf_bar,
-                    'meta' => [
-                        'class' => DDTT_GO_PF.'gf-found',
-                    ],
-                ] );
+                    $gf_bar = '<span class="full-width-only">'.$gf_var.'</span>';
+                    $wp_admin_bar->add_node( [
+                        'id' => 'gf-found',
+                        // 'parent' => 'top-secondary',
+                        'title' => $gf_bar,
+                        'meta' => [
+                            'class' => DDTT_GO_PF.'gf-found',
+                        ],
+                    ] );
+                }
             }
         }
 
@@ -361,7 +414,8 @@ class DDTT_ADMIN_BAR {
         li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'ct-admin-bar,
         li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'admin-post-id,
         li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'admin-post-status,
-        li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'my-account {
+        li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'my-account,
+        li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'resources {
             float: right !important;
         }
         @media (max-width: 1200px) { 

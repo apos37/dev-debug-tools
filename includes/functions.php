@@ -1135,8 +1135,22 @@ function ddtt_get_shortcodes_on_page( $post_id = null ) {
         // Cycle through them and filter out Cornerstone
         foreach ( $matches[1] as $match ) {
 
+            // Omit these
+            $omits = apply_filters( 'ddtt_omit_shortcodes', [
+                'cs_content',
+                'cs_element'
+            ] );
+
+            // Iter omits
+            $omit_this = false;
+            foreach ( $omits as $omit ) {
+                if ( str_starts_with( $match, $omit ) ) {
+                    $omit_this = true;
+                }
+            }
+
             // Omit shortcodes starting with cs_content or cs_element
-            if ( !str_starts_with( $match, 'cs_content' ) && !str_starts_with( $match, 'cs_element' ) ) {
+            if ( !$omit_this ) {
 
                 // Add to array
                 $shortcodes[] = $match;
@@ -1185,7 +1199,7 @@ function ddtt_get_form_ids_on_page( $post_id = null ) {
                     $attribute = $attr[0];
 
                     // If so, let's get the value
-                    if ( preg_match( '/\d{1,}+/', $attribute, $form_id_array ) ){
+                    if ( preg_match( '/\d{1,}+/', $attribute, $form_id_array ) ) {
                         $form_id = $form_id_array[0];
 
                         // Add to array
@@ -1220,7 +1234,7 @@ function ddtt_get_form_ids_on_page( $post_id = null ) {
                         $attribute = trim( $attr[0], '\'"');
 
                         // If so, let's get the value
-                        if ( preg_match( '/\d{1,}+/', $attribute, $form_id_array ) ){
+                        if ( preg_match( '/\d{1,}+/', $attribute, $form_id_array ) ) {
                             $form_id = $form_id_array[0];
 
                             // Add to array
@@ -1293,6 +1307,61 @@ function ddtt_stop_timer( $start, $timeout = true, $milliseconds = false ) {
     // Return the total time in seconds
     return $total_time;
 } // End ddtt_stop_timer()
+
+
+/**
+ * Convert timestamp to relevant string
+ *
+ * @param int $ts
+ * @return string
+ */
+function ddtt_convert_timestamp_to_string( $ts ) {
+    // Make sure the format is correct
+    if( !ctype_digit( $ts ) ) {
+        $ts = strtotime( $ts );
+    }
+    
+    // Get the difference in time
+    $diff = time() - $ts;
+
+    // If no difference, return now
+    if ( $diff == 0 ) {
+        return 'Now';
+
+    // Or if it's in the past
+    } elseif( $diff > 0 ) {
+        $day_diff = floor( $diff / 86400 );
+        if ( $day_diff == 0 ) {
+            if ( $diff < 60 ) return 'Just now';
+            if ( $diff < 120 ) return '1 minute ago';
+            if ( $diff < 3600 ) return floor( $diff / 60 ) . ' minutes ago';
+            if ( $diff < 7200 ) return '1 hour ago';
+            if ( $diff < 86400 ) return floor( $diff / 3600 ) . ' hours ago';
+        }
+        if ( $day_diff == 1 ) return 'Yesterday';
+        if ( $day_diff < 7 ) return $day_diff . ' days ago';
+        if ( $day_diff < 31 ) return ceil( $day_diff / 7 ) . ' weeks ago';
+        if ( $day_diff < 60 ) return 'Last month';
+        return date( 'F Y', $ts );
+
+    // Or if it's the future
+    } else {
+        $diff = abs( $diff );
+        $day_diff = floor( $diff / 86400 );
+        if ( $day_diff == 0 ) {
+            if ( $diff < 120 ) return 'In a minute';
+            if ( $diff < 3600 ) return 'In ' . floor( $diff / 60 ) . ' minutes';
+            if ( $diff < 7200 ) return 'In an hour';
+            if ( $diff < 86400 ) return 'In ' . floor( $diff / 3600 ) . ' hours';
+        }
+        if ( $day_diff == 1 ) return 'Tomorrow';
+        if ( $day_diff < 4 ) return date( 'l', $ts );
+        if ( $day_diff < 7 + ( 7 - date( 'w' ) ) ) return 'Next week';
+        if ( ceil( $day_diff / 7 ) < 4 ) return 'In ' . ceil( $day_diff / 7 ) . ' weeks';
+        if ( date( 'n', $ts ) == date( 'n' ) + 1 ) return 'Next month';
+        return date( 'F Y', $ts );
+    }
+} // End ddtt_convert_timestamp_to_string()
 
 
 /**

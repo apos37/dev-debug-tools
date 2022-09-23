@@ -32,6 +32,10 @@ class DDTT_DEBUG_TOOLS {
         if ( get_option( DDTT_GO_PF.'wp_mail_failure' ) && get_option( DDTT_GO_PF.'wp_mail_failure' ) == 1 ) {
             add_action( 'wp_mail_failed', [ $this, 'mail_failure' ], 10, 1 );
         }
+
+        // Add data to image src
+        add_filter( 'kses_allowed_protocols', [ $this, 'kses_allowed_protocols' ] );
+        
 	} // End __construct()
 
 
@@ -59,6 +63,9 @@ class DDTT_DEBUG_TOOLS {
 
         // Admin bar
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-admin-bar.php';
+
+        // Resources
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-resources.php';
 
         // Miscellaneous functions
         require_once DDTT_PLUGIN_INCLUDES_PATH . 'functions.php';
@@ -123,4 +130,16 @@ class DDTT_DEBUG_TOOLS {
         error_log( 'Mailing Error Found: ');
         error_log( print_r( $wp_error, true) );
     } // End mail_failure()
+
+
+    /**
+     * Add data to image src
+     *
+     * @param array $protocols
+     * @return array
+     */
+    public function kses_allowed_protocols( $protocols ) {
+        $protocols[] = 'data';
+        return $protocols;
+    } // End kses_allowed_protocols()
 }

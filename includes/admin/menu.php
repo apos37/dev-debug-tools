@@ -129,6 +129,13 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         }
     }
 
+    // Testing #
+    if ( get_option( DDTT_GO_PF.'test_number' ) && get_option( DDTT_GO_PF.'test_number' ) > 0 ) {
+        $test_num = ' #'.get_option( DDTT_GO_PF.'test_number' );
+    } else {
+        $test_num = '';
+    }
+
     // The menu items
     // Set 3rd param to true if the item should only be visible to devs
     // Set 4th param to true if the item should not be added to the menu or tabs, but is a hidden subpage
@@ -139,15 +146,18 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'wpcnfg'        => [ 'WP-CONFIG', 'View and update your wp-config.php. Please backup the original before updating.', true ],
         'htaccess'      => [ 'HTACCESS', 'View and update your .htaccess from here. Please backup the original before updating.', true ],
         'phpini'        => [ 'PHP.INI', 'All registered configuration options from your php.ini', true ],
-        'usermeta'      => [ __( 'User Meta', 'dev-debug-tools' ), 'A quick view of all the user meta so you don\'t have to log into phpMyAdmin.', true ],
-        'postmeta'      => [ __( 'Post Meta', 'dev-debug-tools' ), 'A quick view of all the post meta so you don\'t have to log into phpMyAdmin.', true ],
+        'phpinfo'       => [ 'PHP Info', ' Information about your PHP\'s configuration', true ],
+        'cookies'       => [ __( 'Cookies', 'dev-debug-tools' ), 'Cookies currently on your site.', true ],
+        'crons'         => [ __( 'Cron Jobs', 'dev-debug-tools' ), 'A list of all scheduled cron jobs.', true ],
         'siteoptions'   => [ __( 'Site Options', 'dev-debug-tools' ), 'A quick view of all the site\'s options for reference.', true ],
         'globalvars'    => [ __( 'Globals', 'dev-debug-tools' ), 'A list of available global variables.', true ],
+        'usermeta'      => [ __( 'User Meta', 'dev-debug-tools' ), 'A quick view of all the user meta so you don\'t have to log into phpMyAdmin.', true ],
+        'postmeta'      => [ __( 'Post Meta', 'dev-debug-tools' ), 'A quick view of all the post meta so you don\'t have to log into phpMyAdmin.', true ],
         'functions'     => [ __( 'Functions', 'dev-debug-tools' ), 'The following functions are available to use for making debugging easier. Note that if you continue to use these functions after deactivating or uninstalling this plugin, it will result in a fatal error.', true ],
         'hooks'         => [ __( 'Hooks', 'dev-debug-tools' ), 'Action and filters available to modify this plugin.', true ],
         'resources'     => [ __( 'Resources', 'dev-debug-tools' ), 'Helpful resources for WP developers.', true ],
         'regex'         => [ 'Regex', 'Learn and test regex patterns.', true ],
-        'testing'       => [ __( 'Testing', 'dev-debug-tools' ).' #'.get_option( DDTT_GO_PF.'test_number' ), 'Use this page as a testing ground for PHP - Only developer accounts can see this.', true ],
+        'testing'       => [ __( 'Testing', 'dev-debug-tools' ).$test_num, 'Use this page as a testing ground for PHP - Only developer accounts can see this.', true ],
         'about'         => [ __( 'About', 'dev-debug-tools' ), '<a href="'.ddtt_plugin_options_path( 'changelog' ).'">View the Changelog</a>', false ],
         'changelog'     => [ __( 'Changelog', 'dev-debug-tools' ), 'Updates to this plugin.', false, true ],
     ];

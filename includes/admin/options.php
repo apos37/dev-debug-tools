@@ -20,8 +20,9 @@ $menu_items = ddtt_plugin_menu_items();
     <h1><?php echo esc_attr( DDTT_NAME ); ?></h1>
     <span style="margin-top: -10px;">PLUGIN VERSION <?php echo esc_attr( DDTT_VERSION ); ?></span><br>
     <span>WordPress Version <?php echo esc_attr( $wp_version ); ?></span><br>
-    <span>PHP Version <?php echo esc_attr( phpversion() ); ?></span>
-
+    <span>PHP Version <?php echo esc_attr( phpversion() ); ?></span><br>
+    <span id="jquery_ver">jQuery Version </span><br>
+    <span id="jquery_mver">jQUery Migrate Version </span>
 
     <?php if ( ddtt_get( 'settings-updated' ) ) { ?>
         <div id="message" class="updated">
@@ -75,3 +76,11 @@ $menu_items = ddtt_plugin_menu_items();
         ?>
     </div>
 </div>
+
+<!-- Get the jQuery versions -->
+<script>
+var jqversion = jQuery.fn.jquery
+var jqmversion = jQuery.migrateVersion;
+document.getElementById( "jquery_ver" ).innerHTML += jqversion;
+document.getElementById( "jquery_mver" ).innerHTML += jqmversion;
+</script>

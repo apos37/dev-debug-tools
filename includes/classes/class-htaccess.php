@@ -224,7 +224,7 @@ class DDTT_HTACCESS {
         $row = '<tr valign="top">
             <th scope="row">'.$snippet[ 'label' ].'</th>
             <td class="checkbox-cell">'.$input.'</td>
-            <td><div class="snippet_container '.$snippet[ 'name' ].'"> <span class="snippet-exists '.$class.'">'.$lines.'</div></td>
+            <td><div class="snippet_container '.$name.'"> <span class="snippet-exists '.$class.'">'.$lines.'</div></td>
         </tr>';
         
         // Return the row
