@@ -67,6 +67,11 @@ class DDTT_DEBUG_TOOLS {
         // Resources
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-resources.php';
 
+        // Online Users
+        if ( get_option( DDTT_GO_PF.'online_users' ) && get_option( DDTT_GO_PF.'online_users' ) == 1 ) {
+            require_once DDTT_PLUGIN_CLASSES_PATH . 'class-online-users.php';
+        }
+
         // Miscellaneous functions
         require_once DDTT_PLUGIN_INCLUDES_PATH . 'functions.php';
 

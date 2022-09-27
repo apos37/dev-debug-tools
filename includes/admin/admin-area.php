@@ -42,6 +42,9 @@ class DDTT_ADMIN_AREA {
 
         // Plugins page column content
         add_action( 'manage_plugins_custom_column', [ $this, 'plugins_column_content' ], 10, 2 );
+
+        // Allow searching posts/pages by id in admin area
+        add_action( 'pre_get_posts', [ $this, 'admin_search_include_ids' ] );
         
 	} // End __construct()
 
@@ -88,7 +91,11 @@ class DDTT_ADMIN_AREA {
 
         // WP.org plugins
         $wp_plugins = apply_filters( 'ddtt_recommended_plugins', [
+            'aryo-activity-log',
             'asgaros-forum',
+            'debug-bar',
+            'debug-this',
+            'debugpress',
             'go-live-update-urls',
             'heartbeat-control', // WP Dashboard: 60, Frontend: Disable, Post Editor: 30
             'import-users-from-csv-with-meta',
@@ -189,7 +196,7 @@ class DDTT_ADMIN_AREA {
      * @param array $columns
      * @return array
      */
-    function plugins_column( $columns ) {
+    public function plugins_column( $columns ) {
         $columns['main_file'] = 'Main File';
         $columns['file_size'] = 'File Size';
         $columns['modified'] = 'Last Modified';
@@ -204,7 +211,7 @@ class DDTT_ADMIN_AREA {
      * @param [type] $plugin_file
      * @return void
      */
-    function plugins_column_content( $column_name, $plugin_file ) {
+    public function plugins_column_content( $column_name, $plugin_file ) {
         // Main File Path
         if ( 'main_file' === $column_name ) {
             echo esc_html( $plugin_file );
@@ -243,4 +250,37 @@ class DDTT_ADMIN_AREA {
             echo esc_html( $last_modified );
         }
     } // End plugins_column_content()
+
+
+    /**
+     * Allows posts to be searched by ID in the admin area.
+     * 
+     * @param WP_Query
+     * @return void
+     */
+    public function admin_search_include_ids( $query ) {
+        // Bail if we are not in the admin area
+        if ( ! is_admin() ) {
+            return;
+        }
+
+        // Bail if this is not the search query.
+        if ( ! $query->is_main_query() && ! $query->is_search() ) {
+            return;
+        }   
+
+        // Get the value that is being searched.
+        $search_string = get_query_var( 's' );
+
+        // Bail if the search string is not an integer.
+        if ( !filter_var( $search_string, FILTER_VALIDATE_INT ) ) {
+            return;
+        }
+
+        // Set WP Query's p value to the searched post ID.
+        $query->set( 'p', intval( $search_string ) );
+
+        // Reset the search value to prevent standard search from being used.
+        $query->set( 's', '' );
+    } // End admin_search_include_ids()
 }

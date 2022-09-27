@@ -64,8 +64,11 @@ class DDTT_QUICK_LINKS {
             add_action( 'admin_head-edit.php',  [ $this, 'post_column_style' ] );
         }
 
-        ///TODO: Add a link to debug the form or entry's meta
-        // if ( get_option( DDTT_GO_PF.'ql_gravity_forms') == '1' && is_plugin_active( 'gravityforms/gravityforms.php' ) ) {}
+        // Add a link to debug the form or entry's meta
+        if ( get_option( DDTT_GO_PF.'ql_gravity_forms') == '1' && is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
+            add_action( 'gform_form_actions', [ $this, 'gf_form_quick_link' ], 10, 4 );
+            add_action( 'gform_entries_first_column_actions', [ $this, 'gf_entry_quick_link' ], 10, 4 );
+        }
 	} // End __construct()
 
 
@@ -168,4 +171,59 @@ class DDTT_QUICK_LINKS {
             }
         }
     } // End post_column_content()
+
+
+    /**
+     * Add quick links to Gravity Forms form list
+     *
+     * @param array $actions
+     * @param int $form_id
+     * @return array
+     */
+    public function gf_form_quick_link( $actions, $form_id ) {
+        // Only allow devs
+        if ( !ddtt_is_dev() ) {
+            return $actions;
+        }
+
+        // The quick link icon
+        $quick_link_icon = apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon );
+
+        // Add action
+        $link = ddtt_plugin_options_path( 'testing' ).'&debug_form='.$form_id;
+        $actions = array_merge( $actions, [
+            'edit_post_cs' => sprintf( '<a href="%1$s" target="_blank">%2$s</a>',
+                esc_url( $link ), 
+                'Debug Form '.$quick_link_icon
+            ) 
+        ] );
+        return $actions;
+    } // End gf_form_quick_link()
+
+
+    /**
+     * Add quick links to Gravity Forms entry list
+     *
+     * @param int $form_id
+     * @param int $field_id
+     * @param [type] $value
+     * @param array $entry
+     * @return void
+     */
+    public function gf_entry_quick_link( $form_id, $field_id, $value, $entry ) {
+        // Only allow devs
+        if ( !ddtt_is_dev() ) {
+            return false;
+        }
+
+        // The quick link icon
+        $quick_link_icon = apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon );
+
+        // Add the link
+        $link = ddtt_plugin_options_path( 'testing' ).'&debug_entry='.$entry[ 'id' ];
+        echo '| <span>'.sprintf( '<a href="%1$s" target="_blank">%2$s</a>',
+            esc_url( $link ), 
+            'Debug Entry '.$quick_link_icon
+        ).'</span>';
+    } // End gf_entry_quick_link()
 }

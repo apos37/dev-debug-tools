@@ -77,7 +77,7 @@
         ?>
 
     </table>
-    <?php submit_button(); ?>
+    <?php submit_button( 'Test Now' ); ?>
 </form>
 <br><br>
 

@@ -14,15 +14,32 @@ include DDTT_PLUGIN_ADMIN_PATH.'css/style.php';
 
 // Get the tabs
 $menu_items = ddtt_plugin_menu_items();
+
+// Header separator
+$sep = '|';
 ?>
+<style>
+.admin-title-cont {
+    vertical-align: middle;
+}
+.admin-title-cont img {
+    margin-right: 10px;
+}
+.admin-title-cont h1 {
+    font-size: 1.73rem; 
+    display: inline-block;
+}
+.sep {
+    color: #37373D;
+    margin: 0 5px;
+}
+</style>
 <div class="wrap" style="padding: 20px; background: #f6f9fc;">
-    <img class="admin_helpbox_title" src="<?php echo esc_url( DDTT_PLUGIN_IMG_PATH ); ?>logo.png" width="64" height="64">
-    <h1><?php echo esc_attr( DDTT_NAME ); ?></h1>
-    <span style="margin-top: -10px;">PLUGIN VERSION <?php echo esc_attr( DDTT_VERSION ); ?></span><br>
-    <span>WordPress Version <?php echo esc_attr( $wp_version ); ?></span><br>
-    <span>PHP Version <?php echo esc_attr( phpversion() ); ?></span><br>
-    <span id="jquery_ver">jQuery Version </span><br>
-    <span id="jquery_mver">jQUery Migrate Version </span>
+    <div class="admin-title-cont">
+        <img src="<?php echo esc_url( DDTT_PLUGIN_IMG_PATH ); ?>logo.png" width="32" height="32" alt="Developer Debug Tools Logo">
+        <h1><?php echo esc_attr( DDTT_NAME ); ?></h1>
+    </div>
+    <div>Plugin <?php echo esc_attr( DDTT_VERSION ); ?> <span class="sep"><?php echo esc_attr( $sep ); ?></span> WP <?php echo esc_attr( $wp_version ); ?> <span class="sep"><?php echo esc_attr( $sep ); ?></span> PHP <?php echo esc_attr( phpversion() ); ?> <span class="sep"><?php echo esc_attr( $sep ); ?></span> <span id="jquery_ver">jQuery </span> <span class="sep"><?php echo esc_attr( $sep ); ?></span> <span id="jquery_mver">jQuery Migrate </span></div>
 
     <?php if ( ddtt_get( 'settings-updated' ) ) { ?>
         <div id="message" class="updated">

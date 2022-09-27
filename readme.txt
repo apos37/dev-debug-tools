@@ -5,20 +5,20 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.0.2
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 WordPress debugging and testing tools for developers
 
 == Description ==
-A simple plugin that gives developers the tools they need to debug and test things as they develop and/or troubleshoot their WordPress site.
+A simple plugin that gives developers the tools they need to debug and test things as they develop and troubleshoot their WordPress site.
 
 * View debug.log and error logs directly from admin in your timezone, conveniently combining repeats for readability, and with quick links to search Google for suggested solutions.
-* Quickly clear your logs with a click of a button.
-* View and download wp-config.php file and .htaccess file.
-* BETA TEST: add/remove snippets on the wp-config.php file, such as enabling/disabling Debug Log without editing the file directly.
-* BETA TEST: add/remove snippets on the .htaccess file.
+* Quickly clear your debug and error logs with a click of a button.
+* View and download backups of wp-config.php file and .htaccess file from the admin area.
+* Add/remove snippets on the wp-config.php file without editing the file directly.
+* Add/remove snippets on the .htaccess file without editing the file directly.
 * Toggle wp_mail() failure logging.
 * View and edit user meta, including custom meta, for a given user directly from the admin panel.
 * Add/remove roles for a specific user.
@@ -32,15 +32,21 @@ A simple plugin that gives developers the tools they need to debug and test thin
 * Clear all or expired transients easily.
 * View available WP global variables with ease.
 * View additional details about active plugins, and see warnings about outdated plugins at a glance.
-* Access to a handful of additional functions and hooks that you can use for debugging.
 * Regex playground with cheat sheet.
-* Enable/disable WP heartbeat.
-* Extend cURL timeout errors.
-* All this in dark mode, with the ability to change syntax colors.
+* Enable/disable WP heartbeat from settings.
+* Extend cURL timeout errors easily.
+* Shortcode Finder displays all available shortcodes and lets you search posts and pages where they used.
 * Additional user and post information on admin bar.
+* View online users to avoid working on the site at the same time as other admins and users.
 * Centering tool added to the admin bar that helps you line up elements on a page.
-* See all shortcodes used on any page from the front-end.
-* Quick links for debugging users and posts.
+* See all shortcodes used on any page from the front-end in the admin bar.
+* If Gravity Forms is installed, see form ids in the admin bar.
+* Replaces "Howdy" on admin bar with your user ID.
+* Adds date/time that the page was loaded to admin bar for comparing two windows.
+* Quick links for debugging users, posts, pages, and Gravity Forms forms and entries.
+* Option to remove items from admin bar.
+* Allow posts and pages to be searched by ID in the admin area.
+* Access to a handful of additional functions and hooks that you can use for debugging.
 * A great list of links to helpful resources.
 
 == Installation ==
@@ -78,25 +84,19 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 4. View wp-config.php file
 5. Some of the snippets you can add/remove from your wp-config.php file
 6. View .htaccess file
-7. List of all php.ini values
+7. Cron jobs
 8. View and update a user's meta
 9. Available functions to use for debugging and testing
 10. Regex playground
-11. PHP information
-12. Cron jobs
 
 == Changelog ==
-= 1.3.0 =
-* Add filter for omitting shortcodes from shortcode finder, good for minimizing page builders
-* Allow disabling of admin bar items
-* Fix beta htaccess editing, was in test mode
-* Add resource dropdown to admin bar
-* Add more resources
-* Add jQuery versions
-* Add Cron Jobs tab
-* Add Add Cookies tab
-* Add PHP Info tab
-* Add WP.org links to About tab
-* Fix test # when not used
-* Fix bug not finding Gravity Form forms on admin bar if added via Cornerstone element
-* Fix bug not allowing updating user or post meta keys that are not all lowercase
+= 1.3.1 =
+* Add shortcode finder
+* Allow posts and pages to be searched by ID in the admin area
+* Fix order of admin bar items
+* Add online users
+* Add quick debug links to Gravity Forms action links
+* Change admin bar user info to existing wp-account so Debug Bar will work
+* Minimize space at top of each page
+* Fix log path notice
+* Fix PHP warnings

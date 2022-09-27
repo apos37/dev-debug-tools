@@ -51,12 +51,15 @@ class DDTT_GLOBAL_OPTIONS {
             'change_curl_timeout',
             'ql_user_id',
             'ql_post_id',
+            'ql_gravity_forms',
             'wp_mail_failure',
+            'online_users',
+            'admin_bar_wp_logo',
             'admin_bar_resources',
             'admin_bar_gf',
             'admin_bar_shortcodes',
             'admin_bar_centering_tool',
-            'admin_bar_post_info',
+            'admin_bar_post_info'
         ) );
 
         // Log Settings

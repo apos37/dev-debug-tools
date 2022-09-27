@@ -31,7 +31,7 @@ $email = $user->user_email;
             <br>// $array: only works if $email is true, returns the emails as an array or string; default is string</td>
         </tr>
         <tr>
-            <td>Wrap <code>print_r</code> in &#60;pre&#62; tags &#60;/pre&#62;</td>
+            <td>Wrap <code>print_r</code> in &#60;pre&#62; tags &#60;/pre&#62;,<br>Displays only to devs (or specified user),<br>Display TRUE OR FALSE instead of 1 and <em>nothing</em>,<br>Easily add left margin</td>
             <td><strong><?php echo wp_kses_post( ddtt_get_function_example( "ddtt_print_r" ) ); ?><br><?php echo wp_kses_post( ddtt_get_function_example( "dpr" ) ); ?></strong></td>
             <td><strong><?php echo htmlentities( 'dpr( $array, 3 );' ); ?></strong>
             <br><br>// $user_id: display only to that user; default is developer (you)

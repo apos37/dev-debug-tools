@@ -40,33 +40,30 @@ class DDTT_ADMIN_BAR {
         // Get the current URL
         $current_url = ddtt_get_current_url();
 
+        // Get the user ID
+        $user_id = get_current_user_id();
+
 
         /**
          * Remove Items
          */
 
         // Items on both front-end and admin area
-        $wp_admin_bar->remove_node( 'wp-logo' ); // The WordPress Logo
-        $wp_admin_bar->remove_node( 'top-secondary' ); // Howdy, Display Name
+        if ( get_option( DDTT_GO_PF.'admin_bar_wp_logo' ) && get_option( DDTT_GO_PF.'admin_bar_wp_logo' ) == 1 ) {
+            $wp_admin_bar->remove_node( 'wp-logo' ); // The WordPress Logo
+        }
 
 
         /**
          * Add the user's name and ID in a better way with page loaded info
-         */
-        $user_id = get_current_user_id();
-        $current_user = wp_get_current_user();
-        $profile_url = get_edit_profile_url( $user_id );
-        
-        // Add the user info
+         */        
+        // Replace Howdy with User ID
         if ( 0 != $user_id ) {
-            $account_text = sprintf( __( '<span class="full-width-only">Logged in as: </span>%1$s (<span class="full-width-only">User </span>ID %2$s)', 'dev-debug-tools' ), $current_user->display_name, $user_id );       
+            $my_account = $wp_admin_bar->get_node( 'my-account' );
+            $greeting = str_replace( 'Howdy,', '(User ID: '.$user_id.')', $my_account->title );
             $wp_admin_bar->add_node( [
-                'id' => DDTT_GO_PF.'my-account',
-                'title' => $account_text,
-                'href' => $profile_url,
-                'meta' => [
-                    'class' => DDTT_GO_PF.'my-account-name',
-                ],
+                'id' => 'my-account',
+                'title' => $greeting,
             ] );
 
             // Dev only
@@ -85,25 +82,10 @@ class DDTT_ADMIN_BAR {
                 $loaded_text = sprintf( __( 'Page loaded at %1$s on %2$s', 'dev-debug-tools' ), $currentTime, $currentDate );       
                 $wp_admin_bar->add_node( [
                     'id' => DDTT_GO_PF.'page-loaded',
-                    'parent' => DDTT_GO_PF.'my-account',
-                    'title' => $loaded_text,
-                    'meta' => [
-                        'class' => DDTT_GO_PF.'page-loaded-time',
-                    ],
+                    'parent' => 'user-actions',
+                    'title' => $loaded_text
                 ] );
             }
-
-            // Add a logout link   
-            $logout_link = '/wp-login.php?action=logout';
-            $wp_admin_bar->add_node( [
-                'id' => DDTT_GO_PF.'admin-logout',
-                'parent' => DDTT_GO_PF.'my-account',
-                'title' => 'Log Out',
-                'href' => $logout_link,
-                'meta' => [
-                    'class' => DDTT_GO_PF.'logout-link',
-                ],
-            ] );
         }
 
 
@@ -137,7 +119,7 @@ class DDTT_ADMIN_BAR {
                 // Add Page/Post ID
                 $post_type = get_post_type( $post_id );
                 $post_type_obj = get_post_type_object( $post_type );
-                if ($post_type_obj) {
+                if ( $post_type_obj ) {
                     $pt_name = esc_html( $post_type_obj->labels->singular_name ).' ID';
                 } else {
                     $pt_name = '';
@@ -159,6 +141,7 @@ class DDTT_ADMIN_BAR {
                 // Add to bar
                 $wp_admin_bar->add_node( [
                     'id' => DDTT_GO_PF.'admin-post-id',
+                    'parent' => 'top-secondary',
                     'title' => sprintf( __( '%1$s %2$s (%3$s)', 'dev-debug-tools' ), $pt_name, $post_id, $post_status ),
                 ] );
             }
@@ -176,10 +159,7 @@ class DDTT_ADMIN_BAR {
                     $resources_icon = '&#128214;';       
                     $wp_admin_bar->add_node( [
                         'id' => DDTT_GO_PF.'resources',
-                        'title' => $resources_icon,
-                        'meta' => [
-                            'class' => DDTT_GO_PF.'resources',
-                        ],
+                        'title' => $resources_icon
                     ] );
 
                     // Add each link
@@ -241,10 +221,7 @@ class DDTT_ADMIN_BAR {
                     'id' => DDTT_GO_PF.strtolower( str_replace( ' ', '_', $snl[0] ) ),
                     'parent' => 'site-name',
                     'title' => $snl[0],
-                    'href' => $snl[1],
-                    'meta' => [
-                        'class' => DDTT_GO_PF.'site-name-links',
-                    ],
+                    'href' => $snl[1]
                 ] );
             }
         }
@@ -309,11 +286,9 @@ class DDTT_ADMIN_BAR {
                 }
                 $wp_admin_bar->add_node( [
                     'id' => DDTT_GO_PF.'ct-admin-bar',
+                    'parent' => 'top-secondary',
                     'title' => '&#x271B; '.$ct_text,
-                    'href' => $ct_link,
-                    'meta' => [
-                        'class' => DDTT_GO_PF.'ct-admin-bar-link',
-                    ],
+                    'href' => $ct_link
                 ] );
             }
         }
@@ -331,11 +306,9 @@ class DDTT_ADMIN_BAR {
                 $shortcodes = ddtt_get_shortcodes_on_page();
                 $sc_bar = sprintf( __( '<span class="full-width-only">[%1$s]</span>', 'dev-debug-tools' ), count( $shortcodes ) ); 
                 $wp_admin_bar->add_node( [
-                    'id' => 'shortcodes-found',
-                    'title' => $sc_bar,
-                    'meta' => [
-                        'class' => DDTT_GO_PF.'shortcodes-found',
-                    ],
+                    'id' => DDTT_GO_PF.'shortcodes-found',
+                    'parent' => 'top-secondary',
+                    'title' => $sc_bar
                 ] );
 
                 // Add the list of shortcodes
@@ -343,11 +316,8 @@ class DDTT_ADMIN_BAR {
                     $sc_desc_text = __( 'Shortcodes Found:', 'dev-debug-tools' );   
                     $wp_admin_bar->add_node( [
                         'id' => DDTT_GO_PF.'shortcode-desc',
-                        'parent' => 'shortcodes-found',
-                        'title' => $sc_desc_text,
-                        'meta' => [
-                            'class' => DDTT_GO_PF.'shortcode-found',
-                        ],
+                        'parent' => DDTT_GO_PF.'shortcodes-found',
+                        'title' => $sc_desc_text
                     ] );
 
                     $sc_num = 0;
@@ -355,11 +325,8 @@ class DDTT_ADMIN_BAR {
                         $loaded_text = sprintf( __( '[%1$s]', 'dev-debug-tools' ), $shortcode );       
                         $wp_admin_bar->add_node( [
                             'id' => DDTT_GO_PF.'shortcode-'.$sc_num,
-                            'parent' => 'shortcodes-found',
-                            'title' => $loaded_text,
-                            'meta' => [
-                                'class' => DDTT_GO_PF.'shortcode-found',
-                            ],
+                            'parent' => DDTT_GO_PF.'shortcodes-found',
+                            'title' => $loaded_text
                         ] );
                         $sc_num++;
                     }
@@ -378,12 +345,7 @@ class DDTT_ADMIN_BAR {
                         $gf_var = $gf_icon.' No Forms';
 
                     } elseif ( count( $form_ids ) > 1 ) {
-                        $form_links = [];
-                        foreach( $form_ids as $form_id ) {
-                            $form_links[] = '<a href="/'.DDTT_ADMIN_URL.'/admin.php?page=gf_edit_forms&view=settings&subview=settings&id='.$form_id.'" target="_blank" style="display: inline-block; color: white;">'.$form_id.'</a>';
-                        }
-                        $form_id_display = '['.implode(',',$form_links).']';
-                        $gf_var = $gf_icon.' Form IDs: '.$form_id_display;
+                        $gf_var = $gf_icon.' '.count( $form_ids ).' Forms';
                         
                     } else {
                         $form_id_display = '<a href="/'.DDTT_ADMIN_URL.'/admin.php?page=gf_edit_forms&view=settings&subview=settings&id='.$form_ids[0].'" target="_blank" style="display: inline-block; color: white;">'.$form_ids[0].'</a>';
@@ -392,13 +354,23 @@ class DDTT_ADMIN_BAR {
 
                     $gf_bar = '<span class="full-width-only">'.$gf_var.'</span>';
                     $wp_admin_bar->add_node( [
-                        'id' => 'gf-found',
-                        // 'parent' => 'top-secondary',
-                        'title' => $gf_bar,
-                        'meta' => [
-                            'class' => DDTT_GO_PF.'gf-found',
-                        ],
+                        'id' => DDTT_GO_PF.'gf-found',
+                        'parent' => 'top-secondary',
+                        'title' => $gf_bar
                     ] );
+
+                    // Iter the form links
+                    foreach( $form_ids as $form_id ) {
+                        $link = '<a href="/'.DDTT_ADMIN_URL.'/admin.php?page=gf_edit_forms&view=settings&subview=settings&id='.$form_id.'" target="_blank" style="display: inline-block; color: white;">'.$form_id.'</a>';
+                        $wp_admin_bar->add_node( [
+                            'id' => DDTT_GO_PF.'gf-found-multiple'.'-'.$form_id,
+                            'parent' => DDTT_GO_PF.'gf-found',
+                            'title' => 'ID: '.$link,
+                            'meta' => [
+                                'class' => DDTT_GO_PF.'gf-found',
+                            ],
+                        ] );
+                    }
                 }
             }
         }
@@ -408,16 +380,6 @@ class DDTT_ADMIN_BAR {
          * ADD CSS
          */
         echo '<style>
-        li#wp-admin-bar-gf-found,
-        li#wp-admin-bar-shortcodes-found,
-        li#wp-admin-bar-dev-update-count,
-        li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'ct-admin-bar,
-        li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'admin-post-id,
-        li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'admin-post-status,
-        li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'my-account,
-        li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'resources {
-            float: right !important;
-        }
         @media (max-width: 1200px) { 
             li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'my-account .full-width-only {
                 display: none !important;

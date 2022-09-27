@@ -42,11 +42,7 @@ if ( $coffee_filter ) {
     <li>Add detailed descriptions of code snippets</li>
     <li>Add field to omit lines from debug.log viewer</li>
     <li>Add fields for WPCONFIG values</li>
-    <li>Add field for changing debug.log search engine</li>
-    <li>Make a human readable version of the debug.log with explanations of common errors</li>
-    <li>Add a built-in accessibility contrast checker?</li>
-    <li>Add a CSS/JS/HTML playground similar to JSFiddle?</li>
+    <li>Make a human-readable version of the debug.log with explanations of common errors</li>
     <li>Add a color converter (hex to RGB, etc.)</li>
-    <li>Add debug quick links to Gravity Forms forms and entries</li>
     <li>Add light mode (if requested)</li>
 </ul>

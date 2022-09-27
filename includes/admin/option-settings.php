@@ -20,20 +20,7 @@
     </table>
 
     <?php if ( ddtt_is_dev() ) { ?>
-        <br><hr><br></br>
-        <h2>Colors</h2>
-        <p>Accepts any CSS color code. Defaults can be reset by simply leaving the fields blank and saving.</p>
-        <table class="form-table">
-            <?php echo wp_kses( ddtt_options_tr( 'color_comments', 'Comments', 'color', null, [ 'default' => '#5E9955' ] ), $allowed_html ); ?>
-            
-            <?php echo wp_kses( ddtt_options_tr( 'color_fx_vars', 'Functions and Variables', 'color', null, [ 'default' => '#DCDCAA' ] ), $allowed_html ); ?>
-
-            <?php echo wp_kses( ddtt_options_tr( 'color_syntax', 'Syntax', 'color', null, [ 'default' => '#569CD6' ] ), $allowed_html ); ?>
-            
-            <?php echo wp_kses( ddtt_options_tr( 'color_text_quotes', 'Text with Quotes', 'color', null, [ 'default' => '#ACCCCC' ] ), $allowed_html ); ?>
-            
-        </table>
-
+        
         <br><hr><br></br>
         <h2>Testing Options</h2>
         <table class="form-table">
@@ -53,22 +40,21 @@
 
             <?php echo wp_kses( ddtt_options_tr( 'ql_post_id', 'Add Post/Page IDs with Quick Debug Links to Admin List Pages', 'checkbox', '// Adds a link to debug the post or page\'s meta.' ), $allowed_html ); ?>
 
+            <?php if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) { 
+                echo wp_kses( ddtt_options_tr( 'ql_gravity_forms', 'Add Quick Debug Links to Gravity Forms', 'checkbox', '// Adds a link to debug forms and entries.' ), $allowed_html ); 
+            } ?>
+
             <?php echo wp_kses( ddtt_options_tr( 'wp_mail_failure', 'Capture WP_Mail Failure Details in Debug.log', 'checkbox', '// Must have debug log enabled.' ), $allowed_html ); ?>
 
-            <!-- echo wp_kses( ddtt_options_tr( 'online_users', 'Enable Online Users', 'checkbox', '' ), $allowed_html ); -->
-
-            <?php 
-            ///TODO: Add quick debug links to Gravity Form forms and entries
-            // if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) { 
-                // echo wp_kses( ddtt_options_tr( 'ql_gravity_forms', 'Add Quick Debug Links to Gravity Forms forms and entries', 'checkbox', '// Adds a link to debug the form or entry\'s meta.' ), $allowed_html ); 
-            // } 
-            ?>
+            <?php echo wp_kses( ddtt_options_tr( 'online_users', 'Show Online Users', 'checkbox', '// Adds indicator to admin bar, a dashboard widget, and users admin list column' ), $allowed_html ); ?>
 
         </table>
 
         <br><hr><br></br>
         <h2>Admin Bar Options</h2>
         <table class="form-table">
+
+            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_wp_logo', 'Remove WordPress logo from Admin Bar', 'checkbox' ), $allowed_html ); ?>
 
             <?php echo wp_kses( ddtt_options_tr( 'admin_bar_resources', 'Remove Resources from Admin Bar', 'checkbox' ), $allowed_html ); ?>
 
@@ -81,6 +67,20 @@
             <?php echo wp_kses( ddtt_options_tr( 'admin_bar_centering_tool', 'Remove Centering Tool from Admin Bar', 'checkbox' ), $allowed_html ); ?>
 
             <?php echo wp_kses( ddtt_options_tr( 'admin_bar_post_info', 'Remove Post Information from Admin Bar', 'checkbox' ), $allowed_html ); ?>
+            
+        </table>
+
+        <br><hr><br></br>
+        <h2>Colors</h2>
+        <p>Accepts any CSS color code. Defaults can be reset by simply leaving the fields blank and saving.</p>
+        <table class="form-table">
+            <?php echo wp_kses( ddtt_options_tr( 'color_comments', 'Comments', 'color', null, [ 'default' => '#5E9955' ] ), $allowed_html ); ?>
+            
+            <?php echo wp_kses( ddtt_options_tr( 'color_fx_vars', 'Functions and Variables', 'color', null, [ 'default' => '#DCDCAA' ] ), $allowed_html ); ?>
+
+            <?php echo wp_kses( ddtt_options_tr( 'color_syntax', 'Syntax', 'color', null, [ 'default' => '#569CD6' ] ), $allowed_html ); ?>
+            
+            <?php echo wp_kses( ddtt_options_tr( 'color_text_quotes', 'Text with Quotes', 'color', null, [ 'default' => '#ACCCCC' ] ), $allowed_html ); ?>
             
         </table>
     <?php } ?>

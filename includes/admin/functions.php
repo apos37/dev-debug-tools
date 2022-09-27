@@ -704,7 +704,7 @@ function ddtt_replace_file( $file_to_replace, $file_to_copy, $plugin_assets = fa
 function ddtt_file_exists_with_content( $path ) {
     $file = FALSE;
     if ( is_readable( ABSPATH.'/'.$path ) ) {
-        $file = ABSPATH.'/'.$path;
+        $file = ABSPATH.''.$path;
     } elseif ( is_readable( dirname( ABSPATH ).'/'.$path ) ) {
         $file = dirname( ABSPATH ).'/'.$path;
     }
