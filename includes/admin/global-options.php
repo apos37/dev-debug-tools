@@ -37,7 +37,7 @@ class DDTT_GLOBAL_OPTIONS {
      */
     public function register_settings() {
         // General Settings
-        $this->register_group_settings( 'settings', array(
+        $this->register_group_settings( 'settings', [
             'dev_email',
             'dev_timezone',
             'color_comments',
@@ -60,18 +60,23 @@ class DDTT_GLOBAL_OPTIONS {
             'admin_bar_shortcodes',
             'admin_bar_centering_tool',
             'admin_bar_post_info'
-        ) );
+        ] );
 
         // Log Settings
-        $this->register_group_settings( 'log', array(
+        $this->register_group_settings( 'log', [
             'omit_lines'
-        ) );
+        ] );
 
         // Regex Settings
-        $this->register_group_settings( 'regex', array(
+        $this->register_group_settings( 'regex', [
             'regex_string',
             'regex_pattern'
-        ) );
+        ] );
+
+        // Resources Settings
+        $this->register_group_settings( 'resources', [
+            'switch_discord_link'
+        ] );
     } // End register_settings()
 
 

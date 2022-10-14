@@ -75,7 +75,7 @@ if ( $file ) {
             <h3>How to use this page as a PHP playground:</h3>
             <br>
             <h4>Method 1</h4>
-            <br>1. Go to the <a href="/'.esc_attr( DDTT_ADMIN_URL ).'/plugin-editor.php?file='.esc_attr( DDTT_TEXTDOMAIN ).'%2FTESTING_PLAYGROUND.php&plugin='.esc_attr( DDTT_TEXTDOMAIN ).'%2F'.esc_attr( DDTT_TEXTDOMAIN ).'.php">Plugin File Editor</a>, or use FTP to access the plugin root folder:
+            <br>1. Go to the <a href="/'.esc_attr( DDTT_ADMIN_URL ).'/plugin-editor.php?file='.esc_attr( DDTT_TEXTDOMAIN ).'%2FTESTING_PLAYGROUND.php&plugin='.esc_attr( DDTT_TEXTDOMAIN ).'%2F'.esc_attr( DDTT_TEXTDOMAIN ).'.php" target="_blank">Plugin File Editor</a>, or use FTP to access the plugin root folder:
             <br><strong><code>/'.esc_attr( DDTT_PLUGINS_URL ).'/'. esc_attr( DDTT_TEXTDOMAIN ) .'/</code></strong>
             <br><br>2. Open the <strong><code>"'.esc_attr( $filename ).'"</code></strong> file
             <br><br>3. Edit the file by adding your test code <strong>AFTER</strong> where it says:

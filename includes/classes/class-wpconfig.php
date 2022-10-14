@@ -276,6 +276,12 @@ class DDTT_WPCONFIG {
         $lines_1 = [];
         $lines_0 = [];
 
+        // Found
+        $found = [];
+
+        // Partial in-line
+        $partial = false;
+
         // Cycle each line
         foreach ( $snippet[ 'lines' ] as $key => $line ) {
             // ddtt_print_r($line);
@@ -285,6 +291,7 @@ class DDTT_WPCONFIG {
 
             // Create the regex search pattern from the line
             $regex = $this->snippet_regex( $line );
+            // ddtt_print_r($regex);
 
             // Check the file for the line
             if ( preg_match_all( $regex, $wpconfig, $matches ) ) {
@@ -301,6 +308,16 @@ class DDTT_WPCONFIG {
                 foreach ( $matches[0] as $match ) {
                     $line_strings_1[] = $match;
                     $lines_1[] = $line;
+
+                    // Add what we found in snippet form
+                    if ( $converted = $this->string_to_snippet_line( $match ) ) {
+                        $found[] = $converted;
+
+                        // Check if the converted matches the line
+                        if ( $line != $converted ) {
+                            $partial = true;
+                        }
+                    }
                 }
                 
             }else {
@@ -312,19 +329,21 @@ class DDTT_WPCONFIG {
         }
 
         // Check if all lines exist
-        if ( $count == $lines_exist ) {
-            $snippet_exists = true;
-            $partial = false;
-
-        // If no lines exist
-        } elseif ( $lines_exist == 0 ) {
-            $snippet_exists = false;
-            $partial = false;
-
-        // If only some of the lines exist
-        } else {
-            $snippet_exists = false;
-            $partial = true;
+        if ( !$partial ) {
+            if ( $count == $lines_exist ) {
+                $snippet_exists = true;
+                $partial = false;
+    
+            // If no lines exist
+            } elseif ( $lines_exist == 0 ) {
+                $snippet_exists = false;
+                $partial = false;
+    
+            // If only some of the lines exist
+            } else {
+                $snippet_exists = false;
+                $partial = true;
+            }
         }
 
         // Return the results
@@ -338,13 +357,14 @@ class DDTT_WPCONFIG {
             'strings' => [
                 'true' => $line_strings_1,
                 'false' => $line_strings_0
-            ]
+            ],
+            'found' => $found
         ];
     } // End snippet_exists()
 
 
     /**
-     * Create the regex for finding a snippet line
+     * Create the regex for finding a snippet line with ANY value
      *
      * @param array $line
      * @return string
@@ -358,15 +378,16 @@ class DDTT_WPCONFIG {
         }
         
         // Convert value
-        if ( !is_bool( $line[ 'value' ] ) && $line[ 'value' ] != '' ) {
-            $value = '.*?';
-        } elseif ( ddtt_is_enabled( $line[ 'value' ] ) ) {
-            $value = '(true|1)';
-        } elseif ( !$line[ 'value' ] ) {
-            $value = '(false|0)';
-        } else {
-            $value = $line[ 'value' ];
-        }
+        $value = '.*?';
+        // if ( !is_bool( $line[ 'value' ] ) && $line[ 'value' ] != '' ) {
+        //     $value = '.*?';
+        // } elseif ( ddtt_is_enabled( $line[ 'value' ] ) ) {
+        //     $value = '(true|1)';
+        // } elseif ( !$line[ 'value' ] ) {
+        //     $value = '(false|0)';
+        // } else {
+        //     $value = $line[ 'value' ];
+        // }
 
         // Adding quotes around value
         if ( is_numeric( $line[ 'value' ] ) || is_bool( $line[ 'value' ] ) ) {
@@ -387,7 +408,61 @@ class DDTT_WPCONFIG {
 
 
     /**
-     * Convert WPCONFIG snippet line to string
+     * Convert a snippet string to a snippet line
+     *
+     * @param string $string
+     * @return array
+     */
+    public function string_to_snippet_line( $string ) {
+        // Get the variable and value
+        if ( strstr( $string, '(', true ) && ( preg_match('/\((.*?)\)/', $string, $match ) == 1 ) ) {
+            
+            // Get the prefix
+            $prefix = strstr( $string, '(', true );
+
+            // Get the insides
+            $insides = str_replace( [ '(', ')' ], '', $match[0] );
+
+            // Split the insides
+            if ( strpos( $insides, ',' ) !== false ) {
+                $inside = explode( ',', trim( $insides ) );
+                $variable = str_replace( [ '"',"'" ], '', trim( $inside[0] ) );
+                $value = str_replace( [ '"',"'" ], '', trim( $inside[1] ) );
+            } else {
+                $variable = null;
+                $value = str_replace( [ '"',"'" ], '', trim( $insides ) );
+            }
+
+            // Convert the value
+            if ( ddtt_is_enabled( $value ) || strtolower( $value ) == 'true' ) {
+                $value = TRUE;
+            } elseif ( !$value || strtolower( $value ) == 'false' ) {
+                $value = FALSE;
+            } elseif ( is_numeric( $value ) ) {
+                $value = absint( $value );
+            } else {
+                $value = $value;
+            }
+
+            // Build the array
+            $array[ 'prefix' ] = $prefix;
+            if ( !is_null( $variable ) ) {
+                $array[ 'variable' ] = $variable;
+            }
+            $array[ 'value' ] = $value;
+
+            // Return the array
+            return $array;
+
+        // Otherwise we couldn't parse it
+        } else {
+            return false;
+        }
+    } // End string_to_snippet_line()
+
+
+    /**
+     * Convert snippet line to string
      *
      * @param array $snippet_line
      * @return string
@@ -426,7 +501,7 @@ class DDTT_WPCONFIG {
      * @param array $enabled
      * @return void
      */
-    public function rewrite( $filename, $snippets, $enabled, $testing = false ) {
+    public function rewrite( $filename, $snippets, $enabled, $testing = false, $confirm = false ) {
         // Get the file path
         if ( is_readable( ABSPATH . $filename ) ) {
             $file = ABSPATH . $filename;
@@ -459,11 +534,11 @@ class DDTT_WPCONFIG {
 
             // Are we testing?                
             if ( $testing ) {
-                dpr( '$enabled: ' );
-                dpr( $enabled );
-                dpr( '<br><br><hr><br><br>' );
-                dpr( 'BEFORE:<br>' );
-                dpr( $safe_file_lines );
+                ddtt_print_r( '$enabled: ' );
+                ddtt_print_r( $enabled );
+                ddtt_print_r( '<br><br><hr><br><br>' );
+                ddtt_print_r( 'BEFORE:<br>' );
+                ddtt_print_r( $safe_file_lines );
             }
 
             // Cycle each snippet
@@ -473,8 +548,8 @@ class DDTT_WPCONFIG {
                 $e = $this->snippet_exists( $wpconfig, $snippet );
                 $exists = $e[ 'exists' ];
                 $partial = $e[ 'partial' ];
+                // ddtt_print_r( $e );
                 $snippet_lines_1 = $e[ 'lines' ][ 'true' ];
-                // $snippet_lines_0 = $e[ 'lines' ][ 'false' ];
 
                 // Enabled
                 if ( strpos( json_encode( $enabled ), $snippet_key ) !== false ) {
@@ -483,7 +558,7 @@ class DDTT_WPCONFIG {
                     $is_enabled = false;
                 }
                 // $is_enabled = in_array( $snippet_key, $enabled, true ) ? true : false;
-                // dpr( $snippet_key.': '.$is_enabled );
+                // ddtt_print_r( $snippet_key.': '.$is_enabled );
 
                 // Does NOT exist
                 // NOT partial
@@ -530,7 +605,7 @@ class DDTT_WPCONFIG {
                         }
                     }
 
-                    // If it partially exists, then add the snippet to the add bucket 
+                    // If it at least partially exists, then add the snippet to the add bucket 
                     if ( ( $exists && $is_enabled ) || ( !$exists && $partial && $is_enabled) ) {
                         $add[] = $snippet;
                     }
@@ -552,7 +627,6 @@ class DDTT_WPCONFIG {
 
                     // Count this as an edit
                     $edits++;
-
                 }
             }
 
@@ -570,7 +644,6 @@ class DDTT_WPCONFIG {
                 // Info at top
                 $added_by = [];
                 $added_by_id = ' * Added via '.DDTT_NAME;
-                $added_by_id_old = ' * Added by Employment Resources, Inc.';
                 $added_by_lines = [
                     '<?php',
                     '/**',
@@ -589,9 +662,7 @@ class DDTT_WPCONFIG {
                 }
                 
                 // Remove the added_by comments
-                if ( ( false !== $added_by_key = array_search( $added_by_id, $safe_file_lines ) ) ||    
-                    ( false !== $added_by_key = array_search( $added_by_id_old, $safe_file_lines ) ) ) {
-                    // ddtt_print_r( $added_by_key );
+                if ( ( false !== $added_by_key = array_search( $added_by_id, $safe_file_lines ) ) ) {
 
                     // Stopped at
                     $stopped_at = 0;
@@ -691,9 +762,9 @@ class DDTT_WPCONFIG {
                 }
 
                 // Are we testing?  
-                if ( $testing ) {
-                    dpr( $add );
-                }
+                // if ( $testing ) {
+                //     ddtt_print_r( $add );
+                // }
 
                 // Add them to the safe file lines
                 if ( !empty( $add ) ) {
@@ -704,9 +775,9 @@ class DDTT_WPCONFIG {
 
                 // Are we testing?                
                 if ( $testing ) {
-                    dpr( '<br><br><hr><br><br>' );
-                    dpr( 'AFTER:<br>' );
-                    dpr( $safe_file_lines );
+                    ddtt_print_r( '<br><br><hr><br><br>' );
+                    ddtt_print_r( 'AFTER:<br>' );
+                    ddtt_print_r( $safe_file_lines );
 
                 // Otherwise continue with production
                 } else {
@@ -721,29 +792,48 @@ class DDTT_WPCONFIG {
                         }
                     }
 
-                    // Copy old file if we are making edits
-                    $old_file = str_replace( '.php', '-'.date( 'Y-m-d-H-i-s' ).'.php', $file );
-                    if ( copy( $file, $old_file ) ) {
-                        ddtt_admin_notice( 'success', 'The previous '.$filename.' file has been copied to '.$old_file );
+                    // Filenames
+                    $now = ddtt_convert_timezone( date( 'Y-m-d H:i:s' ), 'Y-m-d-H-i-s', get_option( 'ddtt_dev_timezone', wp_timezone_string() ) );
+                    $old_file = str_replace( '.php', '-'.$now.'.php', $file );
+                    $temp_file = str_replace( '.php', '-'.DDTT_GO_PF.'temp.php', $file );
+
+                    // Are we confirming?
+                    if ( $confirm ) {
+
+                        // Make human readable
+                        if ( file_put_contents( $temp_file, $separate_safe_lines ) ) {
+                            ddtt_admin_notice( 'error', '&#9888; CAUTION! You are about to replace your '.$filename.' file, which may result in your site breaking. Please confirm below that the new file looks as you expect it to. Once confirmed, a copy of your old '.$filename.' file will be copied here:<br>"'.$old_file.'"<br>Please make note of this location so you can restore it if needed. To restore this file you will need to access your file manager from your host or through FTP, then simply delete the current '.$filename.' file and rename the copied version as '.$filename.'.' );
+                        }
+
+                    // We have confirmed
                     } else {
-                        ddtt_admin_notice( 'error', 'There was a problem making a back-up of the original '.$filename.' file.' );
-                    }
 
-                    // Back up the original
-                    if ( !get_option( 'ddtt_wpconfig_og' ) ) {
-                        update_option( 'ddtt_wpconfig_og', $wpconfig );
-                        update_option( 'ddtt_wpconfig_og_replaced_date', date( 'Y-m-d-H-i-s' ) );
-                    }
+                        // Delete temp file
+                        wp_delete_file( $temp_file );
 
-                    // Back up the previous file string to site option
-                    update_option( 'ddtt_wpconfig_last', $wpconfig );
-                    update_option( 'ddtt_wpconfig_last_updated', date( 'Y-m-d-H-i-s' ) );
+                        // Copy old file if we are making edits
+                        if ( copy( $file, $old_file ) ) {
+                            ddtt_admin_notice( 'success', 'The previous '.$filename.' file has been copied to '.$old_file );
+                        } else {
+                            ddtt_admin_notice( 'error', 'There was a problem making a back-up of the original '.$filename.' file.' );
+                        }
 
-                    // Turn the new lines into a string
-                    if ( file_put_contents( $file, $separate_safe_lines ) ) {
-                        ddtt_admin_notice( 'success', 'Your '.$filename.' file has been updated successfully!' );
-                    } else {
-                        ddtt_admin_notice( 'error', 'There was a problem updating your '.$filename.' file.' );
+                        // Back up the original
+                        if ( !get_option( 'ddtt_wpconfig_og' ) ) {
+                            update_option( 'ddtt_wpconfig_og', $wpconfig );
+                            update_option( 'ddtt_wpconfig_og_replaced_date', $now );
+                        }
+
+                        // Back up the previous file string to site option
+                        update_option( 'ddtt_wpconfig_last', $wpconfig );
+                        update_option( 'ddtt_wpconfig_last_updated', $now );
+
+                        // Update the file
+                        if ( file_put_contents( $file, $separate_safe_lines ) ) {
+                            ddtt_admin_notice( 'success', 'Your '.$filename.' file has been updated successfully!' );
+                        } else {
+                            ddtt_admin_notice( 'error', 'There was a problem updating your '.$filename.' file.' );
+                        }
                     }
                 }
             }

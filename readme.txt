@@ -5,7 +5,7 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.0.2
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -90,13 +90,9 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 10. Regex playground
 
 == Changelog ==
-= 1.3.1 =
-* Add shortcode finder
-* Allow posts and pages to be searched by ID in the admin area
-* Fix order of admin bar items
-* Add online users
-* Add quick debug links to Gravity Forms action links
-* Change admin bar user info to existing wp-account so Debug Bar will work
-* Minimize space at top of each page
-* Fix log path notice
-* Fix PHP warnings
+= 1.3.2 =
+* Add setting for swapping out discord link if already a member
+* Add confirmation for updating wp-config.php and .htaccess files
+* Combine repeated shortcodes found on admin bar, replace with count
+* Add sources to available shortcodes on shortcode finder
+* Change shortcode finder input field to select field

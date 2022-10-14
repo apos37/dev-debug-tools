@@ -307,7 +307,7 @@ class DDTT_HTACCESS {
      * @param array $enabled
      * @return void
      */
-    public function rewrite( $filename, $snippets, $enabled, $testing = false ) {
+    public function rewrite( $filename, $snippets, $enabled, $testing = false, $confirm = false ) {
         // Get the file path
         if ( is_readable( ABSPATH . $filename ) ) {
             $file = ABSPATH . $filename;
@@ -346,11 +346,11 @@ class DDTT_HTACCESS {
 
             // Are we testing?
             if ( $testing ) {
-                dpr( '$enabled: ' );
-                dpr( $enabled );
-                // dpr( '<br><br><hr><br><br>' );
-                // dpr( 'BEFORE:<br>' );
-                // dpr( $safe_file_lines );
+                ddtt_print_r( '$enabled: ' );
+                ddtt_print_r( $enabled );
+                ddtt_print_r( '<br><br><hr><br><br>' );
+                ddtt_print_r( 'BEFORE:<br>' );
+                ddtt_print_r( $safe_file_lines );
             }
 
             // Cycle each snippet
@@ -360,7 +360,7 @@ class DDTT_HTACCESS {
                 $exists = $this->snippet_exists( $file_contents, $snippet );
 
                 // if ( $exists ) {
-                //     dpr( $this->snippet_to_string( $snippet, '<br>' ) );
+                //     ddtt_print_r( $this->snippet_to_string( $snippet, '<br>' ) );
                 // }
 
                 // Enabled
@@ -370,7 +370,7 @@ class DDTT_HTACCESS {
                     $is_enabled = false;
                 }
                 // $is_enabled = in_array( $snippet_key, $enabled ) ? true : false;
-                // dpr( $snippet_key.': '.$is_enabled );
+                // ddtt_print_r( $snippet_key.': '.$is_enabled );
 
                 // Does NOT exist
                 // NOT enabled
@@ -402,7 +402,7 @@ class DDTT_HTACCESS {
 
                             // If there is a space directly below it, remove that too
                             $end_of_snippet = $file_key + count( $snippet[ 'lines' ] );
-                            if ( isset( $safe_file_lines[ $end_of_snippet + 1 ] ) && strlen( $safe_file_lines[ $end_of_snippet + 1 ] ) >= 0 && empty( trim( $safe_file_lines[ $file_key + 1 ] ) ) ) {
+                            if ( isset( $safe_file_lines[ $end_of_snippet + 1 ] ) && strlen( $safe_file_lines[ $end_of_snippet + 1 ] ) >= 0 && empty( trim( $safe_file_lines[ $end_of_snippet + 1 ] ) ) ) {
                                 unset( $safe_file_lines[ $end_of_snippet + 1 ] );
                             }
 
@@ -537,9 +537,9 @@ class DDTT_HTACCESS {
 
                 // Are we testing?
                 if ( $testing ) {
-                    dpr( '<br><br><hr><br><br>' );
-                    dpr( 'AFTER:<br>' );
-                    dpr( $safe_file_lines );
+                    ddtt_print_r( '<br><br><hr><br><br>' );
+                    ddtt_print_r( 'AFTER:<br>' );
+                    ddtt_print_r( $safe_file_lines );
 
                 // Otherwise continue with production
                 } else {
@@ -554,29 +554,47 @@ class DDTT_HTACCESS {
                         }
                     }
 
-                    // Copy old file if we are making edits
+                    // File names
                     $old_file = str_replace( '.htaccess', '.htaccess-'.date( 'Y-m-d-H-i-s' ), $file );
-                    if ( copy( $file, $old_file ) ) {
-                        ddtt_admin_notice( 'success', 'The previous '.$filename.' file has been copied to '.$old_file );
+                    $temp_file = str_replace( '.htaccess', '.htaccess-'.DDTT_GO_PF.'temp', $file );
+
+                    // Are we confirming?
+                    if ( $confirm ) {
+
+                        // Make human readable
+                        if ( file_put_contents( $temp_file, $separate_safe_lines ) ) {
+                            ddtt_admin_notice( 'error', '&#9888; CAUTION! You are about to replace your '.$filename.' file, which may result in your site breaking. Please confirm below that the new file looks as you expect it to. Once confirmed, a copy of your old '.$filename.' file will be copied here:<br>"'.$old_file.'"<br>Please make note of this location so you can restore it if needed. To restore this file you will need to access your file manager from your host or through FTP, then simply delete the current '.$filename.' file and rename the copied version as '.$filename.'.' );
+                        }
+
+                    // We have confirmed
                     } else {
-                        ddtt_admin_notice( 'error', 'There was a problem making a back-up of the original '.$filename.' file.' );
-                    }
 
-                    // Back up the original
-                    if ( !get_option( 'ddtt_htaccess_og' ) ) {
-                        update_option( 'ddtt_htaccess_og', $htaccess );
-                        update_option( 'ddtt_htaccess_og_replaced_date', date( 'Y-m-d-H-i-s' ) );
-                    }
+                        // Delete temp file
+                        wp_delete_file( $temp_file );
 
-                    // Back up the previous file string to site option
-                    update_option( 'ddtt_htaccess_last', $htaccess );
-                    update_option( 'ddtt_htaccess_last_updated', date( 'Y-m-d-H-i-s' ) );
+                        // Copy old file if we are making edits
+                        if ( copy( $file, $old_file ) ) {
+                            ddtt_admin_notice( 'success', 'The previous '.$filename.' file has been copied to '.$old_file );
+                        } else {
+                            ddtt_admin_notice( 'error', 'There was a problem making a back-up of the original '.$filename.' file.' );
+                        }
 
-                    // Turn the new lines into a string
-                    if ( file_put_contents( $file, $separate_safe_lines ) ) {
-                        ddtt_admin_notice( 'success', 'Your '.$filename.' file has been updated successfully!' );
-                    } else {
-                        ddtt_admin_notice( 'error', 'There was a problem updating your '.$filename.' file.' );
+                        // Back up the original
+                        if ( !get_option( 'ddtt_htaccess_og' ) ) {
+                            update_option( 'ddtt_htaccess_og', $htaccess );
+                            update_option( 'ddtt_htaccess_og_replaced_date', date( 'Y-m-d-H-i-s' ) );
+                        }
+
+                        // Back up the previous file string to site option
+                        update_option( 'ddtt_htaccess_last', $htaccess );
+                        update_option( 'ddtt_htaccess_last_updated', date( 'Y-m-d-H-i-s' ) );
+
+                        // Turn the new lines into a string
+                        if ( file_put_contents( $file, $separate_safe_lines ) ) {
+                            ddtt_admin_notice( 'success', 'Your '.$filename.' file has been updated successfully!' );
+                        } else {
+                            ddtt_admin_notice( 'error', 'There was a problem updating your '.$filename.' file.' );
+                        }
                     }
                 }
             }

@@ -321,8 +321,14 @@ class DDTT_ADMIN_BAR {
                     ] );
 
                     $sc_num = 0;
-                    foreach ( $shortcodes as $shortcode ) {
-                        $loaded_text = sprintf( __( '[%1$s]', 'dev-debug-tools' ), $shortcode );       
+                    $shortcode_counts = array_count_values( $shortcodes );
+                    foreach ( $shortcode_counts as $sc => $shortcode_count ) {
+                        if ( $shortcode_count > 1 ) {
+                            $incl_count = ' <span class="'.DDTT_GO_PF.'shortcode-count">x'.$shortcode_count.'</span>';
+                        } else {
+                            $incl_count = '';
+                        }
+                        $loaded_text = sprintf( __( '[%1$s]%2$s', 'dev-debug-tools' ), $sc, $incl_count );       
                         $wp_admin_bar->add_node( [
                             'id' => DDTT_GO_PF.'shortcode-'.$sc_num,
                             'parent' => DDTT_GO_PF.'shortcodes-found',
@@ -380,6 +386,14 @@ class DDTT_ADMIN_BAR {
          * ADD CSS
          */
         echo '<style>
+        .'.esc_attr( DDTT_GO_PF ).'shortcode-count {
+            background-color: #26BECF;
+            border-radius: 25px !important;
+            display: inline-block;
+            padding: 0 5px !important;
+            color: black;
+            line-height: 1.5 !important;
+        }
         @media (max-width: 1200px) { 
             li#wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'my-account .full-width-only {
                 display: none !important;
@@ -388,7 +402,6 @@ class DDTT_ADMIN_BAR {
         ul li .ab-item, #wpadminbar .quicklinks .menupop ul li a strong, #wpadminbar .quicklinks .menupop.hover ul li .ab-item, #wpadminbar .shortlink-input, #wpadminbar.nojs .quicklinks .menupop:hover ul li .ab-item {
             line-height: 2.5 !important;
         }
-
         div#ct-top {
             height: 25px;
             transition: height 300ms;

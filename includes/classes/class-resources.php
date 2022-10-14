@@ -32,10 +32,18 @@ class DDTT_RESOURCES {
      * @return array
      */
     public function get_resources() {
+        // Check if they are a member of the discord server
+        if ( get_option( DDTT_GO_PF.'switch_discord_link' ) == '1' ) {
+            $discord_link = 'https://discord.com/channels/991553521197518878/1020384748918542426';
+        } else {
+            $discord_link = 'https://discord.gg/VeMTXRVkm5';
+        }
+
+        // The links
         $links = apply_filters( 'ddtt_resource_links', [
             [ 
                 'title' => 'WordPress Support Discord Server', 
-                'url'   => 'https://discord.gg/VeMTXRVkm5',
+                'url'   => $discord_link,
                 'desc'  => 'Get WP support from other developers, including the author of this plugin. Support for this plugin specifically is also available on this server.' 
             ],
             [ 

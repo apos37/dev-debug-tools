@@ -253,6 +253,8 @@ if ( $screen && $screen->id == $options_page ) {
         padding: 8px 12px !important;
         width: 43.75rem;
         max-width: 43.75rem;
+        min-height: 2.85rem !important;
+        vertical-align: revert;
     }
     .<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?>-includes-admin-options-php textarea {
         width: 100%;

@@ -1,3 +1,9 @@
+<style>
+.admin-large-table td {
+    text-align: center;
+}
+</style>
+
 <?php include 'header.php'; ?>
 
 <?php 
@@ -43,8 +49,8 @@ $notice = false;
 if ( $shortcode != '' ) {
 
     // Set the param
-    if ( $attr != '' && $attr_is != '') {
-        $param = ' '.$attr.'="'.$attr_is.'"';
+    if ( $attr != '' && $attr_is != '' ) {
+        $param = $attr.'="'.$attr_is.'"';
     } else {
         $param = '';
     }
@@ -53,7 +59,7 @@ if ( $shortcode != '' ) {
     $results = [];
 
     // Shortcode string
-    $shortcode_string = '['.$shortcode.$param.']';
+    $shortcode_string = '['.$shortcode.' '.$param.']';
 
     // Get the post types
     $post_types = get_post_types();
@@ -95,7 +101,9 @@ if ( $shortcode != '' ) {
     if ( $the_query->have_posts() ) {
 
         // Let's build the full shortcode we are looking for
-        $full_shortcode_prefix = '['.$shortcode.$param;
+        $full_shortcode_prefix = '['.$shortcode;
+
+        dpr( $param );
 
         // For each list item...
         while ( $the_query->have_posts() ) {
@@ -111,8 +119,32 @@ if ( $shortcode != '' ) {
             $content = apply_filters( 'ddtt_shortcode_finder_exclude_post_types', $content );
 
             // Check if the content has this shortcode
-            if ( strpos( $content, $full_shortcode_prefix ) !== false ) {
+            // if ( strpos( $content, $full_shortcode_prefix ) !== false ) {
+            $shortcode_regex = '/'.get_shortcode_regex( [ $shortcode ] ).'/';
+            if ( preg_match_all( $shortcode_regex, $content, $matches ) ) {
+                // dpr( $matches );
+                // dpr( $matches[3] );
 
+                // Count
+                $count = count( $matches[0] );
+
+                // Check if we are searching for attribute as well
+                if ( $attr != '' && $attr_is != '' ) {
+
+                    // Verify we found matches
+                    if ( isset( $matches[3] ) && !empty( $matches[3] ) ) {
+
+                        // Iter the matches
+                        foreach ( $matches[3] as $params ) {
+
+                            // If so get the shortcode params
+                            if ( strpos( $params, $param ) !== false ) {
+                                continue;
+                            }
+                        }
+                    }
+                }
+                
                 // Post type and status
                 $post_type = get_post_type();
                 $post_type_obj = get_post_type_object( $post_type );
@@ -142,7 +174,8 @@ if ( $shortcode != '' ) {
                     'id' => get_the_ID(),
                     'url' => get_the_permalink(),
                     'post_type' => $pt_name,
-                    'post_status' => $current_status
+                    'post_status' => $current_status,
+                    'count' => $count
                 ];
             }
         }
@@ -183,15 +216,30 @@ if ( !empty( $results ) ) {
     <?php
 }
 
+// Get available shortcodes
+global $shortcode_tags;
+
+// Sort the shortcodes with alphabetical order
+ksort( $shortcode_tags );
 ?>
 
-<p>Example: <code class="hl">[shortcode_name attribute="attribute value"]</code></p>
+<p>Example: <code class="hl">[shortcode attribute="attribute value"]</code></p>
 
 <form method="get" action="<?php echo esc_url( $current_url ); ?>">
     <table class="form-table">
         <tr valign="top">
-            <th scope="row"><label for="find-shortcode-input">Shortcode Name<br><em>Do not include brackets</em></label></th>
-            <td><input type="text" name="shortcode" id="find-shortcode-input" value="<?php echo esc_attr( $shortcode ); ?>" required></td>
+            <th scope="row"><label for="find-shortcode-input">Shortcode</label></th>
+            <td><select name="shortcode" id="find-shortcode-input" required>
+                <option></option>
+                <?php 
+                foreach ( $shortcode_tags as $sc => $value ) {
+                    ?>
+                    <option value="<?php echo esc_attr( $sc ); ?>"<?php echo esc_attr( ddtt_is_qs_selected( $sc, $shortcode ) ); ?>>[<?php echo esc_attr( $sc ); ?>]</option>
+                    <?php
+                }
+                ?>
+            </select>
+            </td>
         </tr>
         <tr valign="top">
             <th scope="row"><label for="find-shortcode-attr-input">Attribute</label></th>
@@ -225,15 +273,17 @@ if ( $shortcode != '' && !empty( $results ) ) {
                 <th>Title</th>
                 <th>Post Type</th>
                 <th>Post Status</th>
+                <th>Quantity</th>
             </tr>
             <?php
             foreach( $results as $result ) {
                 ?>
                 <tr>
                     <td><?php echo esc_attr( $result[ 'id' ] ); ?></td>
-                    <td><a href="<?php echo esc_url( $result[ 'url' ] ) ?>" target="_blank"><?php echo esc_html( $result[ 'title' ] ); ?></a></td>
+                    <td style="text-align: left;"><a href="<?php echo esc_url( $result[ 'url' ] ) ?>" target="_blank"><?php echo esc_html( $result[ 'title' ] ); ?></a></td>
                     <td><?php echo esc_html( $result[ 'post_type' ] ); ?></td>
                     <td><?php echo esc_html( $result[ 'post_status' ] ); ?></td>
+                    <td><?php echo absint( $result[ 'count' ] ); ?></td>
                 </tr>
                 <?php
             }
@@ -245,26 +295,114 @@ if ( $shortcode != '' && !empty( $results ) ) {
 // Otherwise we are going to list all available shortcodes
 } else {
 
-    // Get the shortcodes
-    global $shortcode_tags;
+    // Plural or singular
+    $as = count( $shortcode_tags ) == 1 ? '' : 's';
 
-    // Sort the shortcodes with alphabetical order
-    ksort( $shortcode_tags );
+    // Get all active plugins
+    $active_plugins = get_option( 'active_plugins' );
+
+    // Get all themes
+    $themes = wp_get_themes();
+    // dpr( $themes );
     ?>
 
     <!-- The table -->
     <br><br><hr><br></br>
-    <h2>Available Shortcodes</h2>
+    <h2><?php echo absint( count( $shortcode_tags ) ); ?> Available Shortcode<?php echo esc_attr( $as ); ?></h2>
     <div class="full_width_container">
         <table class="admin-large-table">
             <tr>
                 <th>Shortcode</th>
+                <th>Source</th>
             </tr>
             <?php
-            foreach( $shortcode_tags as $sc => $value ) {
+            foreach( $shortcode_tags as $sc => $callback ) {
+
+                // Avoid callbacks that are arrays
+                if ( is_array( $callback ) ) {
+                    $fx = new ReflectionMethod( $callback[0], $callback[1] );
+                } else {
+                    $fx = new ReflectionFunction( $callback );
+                }
+
+                // Default short file path
+                $short_file_path = '<em>Object</em>';
+
+                // Include var
+                $include = '';
+                
+                // Get the function details
+                $file_path = $fx->getFileName();
+                $file_path = str_replace( ABSPATH, '', $file_path );
+
+                // Check if it's a plugin
+                if ( strpos( $file_path, DDTT_PLUGINS_URL ) !== false ) {
+
+                    // If so, get the plugin slug
+                    $plugin_path_and_filename = str_replace( DDTT_PLUGINS_URL, '', $file_path );
+                    $plugin_path_parts = explode( '/', $plugin_path_and_filename );
+                    $plugin_slug = $plugin_path_parts[1];
+                    $plugin_filename = substr( $plugin_path_and_filename, strpos( $plugin_path_and_filename, '/' ) + 1);
+
+                    // Now check the active plugins for the file
+                    $plugin_folder_and_file = false;
+                    foreach( $active_plugins as $ap ) {
+                        if ( str_starts_with( $ap, $plugin_slug ) ) {
+                            $plugin_folder_and_file = $ap;
+                        }
+                    }
+
+                    // Make sure we found the file
+                    if ( $plugin_folder_and_file ) {
+
+                        // Require the get_plugin_data function
+                        if( !function_exists( 'get_plugin_data' ) ){
+                            require_once( ABSPATH.DDTT_ADMIN_URL.'/includes/plugin.php' );
+                        }
+
+                        // Get the file
+                        $plugin_file = ABSPATH.DDTT_PLUGINS_URL.'/'.$plugin_folder_and_file;
+
+                        // Get the plugin data
+                        $plugin_data = get_plugin_data( $plugin_file );
+                        // dpr( $plugin_data );
+
+                        // This is what we will display
+                        $include = '<strong>Plugin:</strong> '.$plugin_data[ 'Name' ].'<br>';
+
+                        // Update short file path link
+                        $file_path = '<a href="/'.esc_attr( DDTT_ADMIN_URL ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $file_path ).'</a>';
+                    }
+
+                // Check if it's a theme file
+                } elseif ( strpos( $file_path, DDTT_CONTENT_URL.'/themes/' ) !== false ) {
+
+                    // Theme parts
+                    $theme_parts = explode( '/', $file_path );
+                    $theme_filename = $theme_parts[3];
+                    $theme_slug = $theme_parts[2];
+
+                    // Check if the themes exists in the array
+                    $theme_name = 'Unknown';
+                    foreach ( $themes as $k => $t ) {
+                        if ( $k == $theme_slug ) {
+                            $theme_name = $t->get( 'Name' );
+                        }
+                    }
+
+                    // This is what we will display
+                    $include = '<strong>Theme:</strong> '.$theme_name.'<br>';
+
+                    // Update short file path link
+                    $file_path = '<a href="/'.esc_attr( DDTT_ADMIN_URL ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $file_path ).'</a>';
+                }
+
+                // Add the line number
+                $short_file_path = $file_path.'<br><strong>Line:</strong> '.$fx->getStartLine();
                 ?>
                 <tr>
                     <td><a href="<?php echo esc_url( $current_url ) ?>&shortcode=<?php echo esc_attr( $sc ); ?>">[<?php echo esc_attr( $sc ); ?>]</a></td>
+                    <td><?php echo wp_kses_post( $include.'<strong>Path: </strong>/'.$short_file_path ); ?><br></td>
                 </tr>
                 <?php
             }

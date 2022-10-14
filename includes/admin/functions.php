@@ -1407,7 +1407,7 @@ function ddtt_admin_notice( $type, $msg ) {
     // Set the message
     $message = __( $args[ 'msg' ], 'dev-debug-tools' );
 
-    printf( '<div id="message" class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) );
+    printf( '<div id="message" class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), wp_kses_post( $message ) );
 } // End ddtt_admin_notice()
 
 
