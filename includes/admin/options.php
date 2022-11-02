@@ -84,11 +84,19 @@ $sep = '|';
     </div>
 
     <div class="tab-content">
-        <?php 
+        <?php
         foreach ( $menu_items as $key => $menu_item ) {
             if ( $tab === $key ) { 
                 include 'option-'.$key.'.php';
             }
+        }
+
+        // What to do if there is no tab?
+        if ( !ddtt_get( 'tab' ) || !array_key_exists( ddtt_get( 'tab' ), $menu_items ) ) {
+            ?>
+            <br><br>
+            <?php
+            wp_safe_redirect( ddtt_plugin_options_path( 'settings' ) );
         }
         ?>
     </div>

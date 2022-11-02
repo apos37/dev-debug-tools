@@ -130,7 +130,7 @@ class DDTT_ONLINE_USERS {
      * Check when a user was last online
      *
      * @param int $id
-     * @return void
+     * @return int|false
      */
     public function user_last_online( $id ) {
         // Get the active users from the transient
@@ -158,13 +158,10 @@ class DDTT_ONLINE_USERS {
         // Plural or singular
         $s = ( $active_users_count == 1 ) ? '' : 's';
 
-        // Status symbol
-        $status = '<div style="height: 10px; width: 10px; background-color: green; border-radius: 50%; margin-right: 5px; display: inline-block;"></div>';
-
         // Add the node
         $wp_admin_bar->add_node( [
             'id' => DDTT_GO_PF.'online-users',
-            'title' => $status.$active_users_count.' <span class="full-width-only">User'.$s.' </span>Online',
+            'title' => '<span class="ab-icon"></span>'.$active_users_count.'<span class="full-width-only hide-condensed"> User'.$s.' Online</span>',
             'href' => '/'.DDTT_ADMIN_URL.'/users.php',
             'meta' => [
                 'class' => DDTT_GO_PF.'online-user-count',
@@ -219,8 +216,16 @@ class DDTT_ONLINE_USERS {
 
         // Add some CSS
         echo '<style>
+        #wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'online-users .ab-icon {
+            height: 5px;
+            width: 13px;
+            margin-top: 9px;
+            margin-right: 6px;
+            background-color: green;
+            border-radius: 50%;
+        }
         @media (max-width: 1200px) { 
-            li#wp-admin-bar-eri-online-users .full-width-only {
+            #wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'online-users .full-width-only {
                 display: none !important;
             }
         }
@@ -363,7 +368,7 @@ class DDTT_ONLINE_USERS {
             if ( $this->is_user_online( $user_id ) ){
                 $output .= '<strong style="color: green;">Online Now</strong>';
             } else {
-                $output .= ( $this->user_last_online( $user_id ) )? '<small>Last Seen: <br /><em>' . date('M j, Y @ g:ia', eri_user_last_online($user_id)) . '</em></small>' : '';
+                $output .= ( $this->user_last_online( $user_id ) ) ? '<small>Last Seen: <br /><em>' . date('M j, Y @ g:ia', $this->user_last_online( $user_id ) ) . '</em></small>' : '';
             }
         
             // Return it

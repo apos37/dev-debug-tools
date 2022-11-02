@@ -24,6 +24,14 @@
         <br><hr><br></br>
         <h2>Testing Options</h2>
         <table class="form-table">
+            <?php $log_viewers = [
+                'options' => [
+                    'Easy Reader',
+                    'Classic'
+                ]
+            ]; ?>
+            <?php echo wp_kses( ddtt_options_tr( 'log_viewer', 'Log Viewer', 'select', '<br>// Change how the <a href="'.ddtt_plugin_options_path( 'logs' ).'">debug log</a> is displayed', $log_viewers ), $allowed_html ); ?>
+            
             <?php echo wp_kses( ddtt_options_tr( 'test_number', 'Debugging Test Number', 'number', null, [ 'width' => '10rem' ] ), $allowed_html ); ?>
 
             <?php echo wp_kses( ddtt_options_tr( 'centering_tool_cols', 'Centering Tool Columns (Found on Admin Bar in Front-End)', 'number', null, [ 'width' => '10rem', 'default' => 16 ] ), $allowed_html ); ?>
@@ -32,7 +40,7 @@
 
             <?php echo wp_kses( ddtt_options_tr( 'enable_curl_timeout', 'Extend cURL Timeout', 'checkbox', '// HTTP cURL Timeout Errors' ), $allowed_html ); ?>
 
-            <?php if ( get_option( DDTT_GO_PF.'enable_curl_timeout') == '1' ) { ?>
+            <?php if ( get_option( DDTT_GO_PF.'enable_curl_timeout' ) == '1' ) { ?>
                 <?php echo wp_kses( ddtt_options_tr( 'change_curl_timeout', 'cURL Timeout Seconds', 'text', '// Default is 5 seconds; change # of seconds here to 30 or 120 for testing' ), $allowed_html ); ?>
             <?php } ?>
 
@@ -51,22 +59,37 @@
         </table>
 
         <br><hr><br></br>
-        <h2>Admin Bar Options</h2>
+        <h2>Remove Items from Admin Bar</h2>
         <table class="form-table">
 
-            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_wp_logo', 'Remove WordPress logo from Admin Bar', 'checkbox' ), $allowed_html ); ?>
+            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_wp_logo', '(—) WordPress Logo', 'checkbox' ), $allowed_html ); ?>
 
-            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_resources', 'Remove Resources from Admin Bar', 'checkbox' ), $allowed_html ); ?>
+            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_resources', '(—) Resources', 'checkbox' ), $allowed_html ); ?>
 
             <?php if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
-                echo wp_kses( ddtt_options_tr( 'admin_bar_gf', 'Remove Gravity Form Finder from Admin Bar', 'checkbox' ), $allowed_html );
+                echo wp_kses( ddtt_options_tr( 'admin_bar_gf', '(—) Gravity Form Finder', 'checkbox' ), $allowed_html );
             } ?>
 
-            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_shortcodes', 'Remove Shortcodes from Admin Bar', 'checkbox' ), $allowed_html ); ?>
+            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_shortcodes', '(—) Shortcode Finder', 'checkbox' ), $allowed_html ); ?>
 
-            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_centering_tool', 'Remove Centering Tool from Admin Bar', 'checkbox' ), $allowed_html ); ?>
+            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_centering_tool', '(—) Centering Tool', 'checkbox' ), $allowed_html ); ?>
 
-            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_post_info', 'Remove Post Information from Admin Bar', 'checkbox' ), $allowed_html ); ?>
+            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_post_info', '(—) Post Information', 'checkbox' ), $allowed_html ); ?>
+            
+        </table>
+
+        <br></br>
+        <table class="form-table">
+
+            <?php $condense_options = [
+                'options' => [
+                    'No',
+                    'Everyone',
+                    'Developer Only',
+                    'Everyone Excluding Developer'
+                ]
+            ]; ?>
+            <?php echo wp_kses( ddtt_options_tr( 'admin_bar_condense', 'Consense Admin Bar Items', 'select', '<br>// You can also use the <code>ddtt_admin_bar_condensed_items</code> <a href="'.ddtt_plugin_options_path( 'hooks' ).'">hook</a> to customize items', $condense_options ), $allowed_html ); ?>
             
         </table>
 

@@ -47,6 +47,11 @@ class DDTT_MENU {
      * @since   1.0.0
      */
     public function admin_menu() {
+        // Die if not admin
+        if ( !ddtt_has_role( 'administrator' ) ) {
+            return;
+        }
+
         // The icon
         // https://developer.wordpress.org/resource/dashicons/
         // $icon = 'dashicons-coffee';
@@ -142,7 +147,7 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
     $items = [
         'settings'          => [ __( 'Settings', 'dev-debug-tools' ), 'This area is for developers only.' ],
         'plugins'           => [ __( 'Plugins', 'dev-debug-tools' ), 'We have replaced the default featured plugins with <a href="/'.DDTT_ADMIN_URL.'/plugin-install.php?tab=featured">our own plugin recommendations here</a>.' ],
-        'debug'             => [ __( 'Logs', 'dev-debug-tools' ).$notif, 'Your debug.log file.', true ],
+        'logs'              => [ __( 'Logs', 'dev-debug-tools' ).$notif, 'Your log files.', true ],
         'wpcnfg'            => [ 'WP-CONFIG', 'View and update your wp-config.php. Please backup the original before updating.', true ],
         'htaccess'          => [ 'HTACCESS', 'View and update your .htaccess from here. Please backup the original before updating.', true ],
         'phpini'            => [ 'PHP.INI', 'All registered configuration options from your php.ini', true ],

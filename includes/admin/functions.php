@@ -46,7 +46,7 @@ function ddtt_is_qs_checked( $option, $the_key ) {
 /**
  * Table row for form fields
  * 
- * $args = [ 'default' => 'Default Value', 'required' => true ]
+ * $args = [ 'default' => 'Default Value', 'required' => true, 'submit_button' => true ]
  * 
  * Text $args = [ 'width' => '100%' 'pattern' => '^[a-zA-Z0-9_.-]*$' ]
  * 
@@ -251,10 +251,18 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
             $incl_comments = $comments;
         }
     }
+
+    // Submit button
+    if ( !is_null( $args ) && isset( $args[ 'submit_button' ] ) && $args[ 'submit_button' ] == true ) {
+        $submit_button = get_submit_button( 'Search', 'button button-primary button-large '.$option_name );
+    } else {
+        $submit_button = '';
+    }
+
     // Build the row
     $row = '<tr valign="top">
         <th scope="row">'.$label.'</th>
-        <td>'.$input.' '.$incl_comments.'</td>
+        <td>'.$input.$submit_button.' '.$incl_comments.'</td>
     </tr>';
     
     // Return the row
@@ -270,6 +278,7 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
 function ddtt_wp_kses_allowed_html() {
     $allowed_html = [
         'div' => [
+            'id' => [],
             'class' => []
         ],
         'pre' => [
@@ -283,7 +292,20 @@ function ddtt_wp_kses_allowed_html() {
             'href' => [],
             'id' => [],
             'class' => [],
-            'style' => []
+            'style' => [],
+            'target' => [],
+            'rel' => []
+        ],
+        'img' => [
+            'border' => [],
+            'id' => [],
+            'class' => [],
+            'style' => [],
+            'src' => [],
+            'alt' => []
+        ],
+        'table' => [
+            'class' => []
         ],
         'tr' => [
             'valign' => [],
@@ -298,7 +320,12 @@ function ddtt_wp_kses_allowed_html() {
         ],
         'br' => [],
         'form' => [
-            'method' => []
+            'method' => [],
+            'id' => [],
+            'action' => [],
+        ],
+        'label' => [
+            'for' => [],
         ],
         'input' => [
             'type' => [],
@@ -338,7 +365,9 @@ function ddtt_wp_kses_allowed_html() {
         ],
         'script' => [
             'id' => []
-        ]
+        ],
+        'em' => [],
+        'strong' => []
     ];
     return $allowed_html;
 } // End ddtt_options_tr_allowed_html()
@@ -534,6 +563,7 @@ function ddtt_get_form_selections( $id, $selected, $include_inactive = false ) {
 
 /**
  * Return error counts
+ * ///TODO: Add actual error.log counts to total errors
  *
  * @return int
  */
@@ -588,209 +618,6 @@ function ddtt_error_count(){
 
 
 /**
- * Return error logs from this server
- *
- * @param string $plugin_folder
- * @param string $plugin_admin_page
- * @return void
- */
-function ddtt_error_logs(){
-    // Replace the files if query string exists
-
-    if ( ddtt_get( 'clear_error_log', '==', 'true' ) ) {
-        ddtt_replace_file( 'error_log', 'error_log', true );
-    }
-    if ( ddtt_get( 'clear_debug_log', '==', 'true' ) ) {
-        ddtt_replace_file( DDTT_CONTENT_URL.'/debug.log', 'debug.log', true );
-    }
-    if ( ddtt_get( 'clear_admin_error_log', '==', 'true' ) ) {
-        ddtt_replace_file( DDTT_ADMIN_URL.'/error_log', 'error_log', true );
-    }
-
-    // Get the different error logs
-    $error_log = ddtt_file_exists_with_content( 'error_log' );
-    $error_log_notice = ddtt_check_file_notice( 'error_log' );
-
-    $debug_log = ddtt_file_exists_with_content( DDTT_CONTENT_URL.'/debug.log' );
-    $debug_log_notice = ddtt_check_file_notice( DDTT_CONTENT_URL.'/debug.log' );
-    
-    $admin_error_log = ddtt_file_exists_with_content( DDTT_ADMIN_URL.'/error_log' );
-    $admin_error_log_notice = ddtt_check_file_notice( DDTT_ADMIN_URL.'/error_log' );
-
-    // Echo the table row if any of them exists
-    if ( $error_log || $debug_log || $admin_error_log ) {
-        $logs = [];
-        if ( $error_log ) {
-            $logs[] = $error_log_notice;
-        }
-        if ( $debug_log ) {
-            $logs[] = $debug_log_notice;
-        }
-        if ( $admin_error_log ) {
-            $logs[] = $admin_error_log_notice;
-        }
-        echo '<tr valign="top">
-            <th scope="row">Logs Available</th>
-            <td>'.wp_kses_post( implode('<br>', $logs) ).'</td>
-        </tr>';
-
-        // Allowed HTML
-        $allowed_html = ddtt_wp_kses_allowed_html();
-
-        // Display the error_log with clear button
-        if ( $error_log ) {
-            echo wp_kses( ddtt_file_contents_with_clear_button( 'clear_error_log', 'Error Log', 'error_log', true, array(), false ), $allowed_html );
-        }
-
-        // Display the debug_log with clear button
-        if ( $debug_log ) {
-            $active_theme = str_replace( '%2F', '/', rawurlencode( get_stylesheet() ) );
-            echo wp_kses( ddtt_file_contents_with_clear_button( 'clear_debug_log', 'Debug Log', DDTT_CONTENT_URL.'/debug.log', true, array(
-                ['keyword' => DDTT_INCLUDES_URL, 'class' => 'theme-functions'],
-                ['keyword' => $active_theme, 'class' => 'my-functions'],
-                ['keyword' => DDTT_TEXTDOMAIN, 'class' => 'my-plugin'],
-                ['keyword' => 'Fatal', 'class' => 'fatal'],
-            ), true ), $allowed_html );
-        }
-
-        // Display the admin error_log with clear button
-        if ( $admin_error_log ) {
-            echo wp_kses( ddtt_file_contents_with_clear_button( 'clear_admin_error_log', 'Admin Error Log', DDTT_ADMIN_URL.'/error_log', true, array(), false ), $allowed_html );
-        }
-
-    // If none found
-    } else {
-        if ( WP_DEBUG ) {
-            echo 'Yay! No errors found!';
-        } else {
-            echo 'Debug mode is disabled...';
-        }
-    }
-} // End ddtt_error_logs()
-
-
-/**
- * Replace a file with another one on the server
- * USAGE: ddtt_replace_file( 'debug.log', true )
- *
- * @param string $file_to_replace
- * @param string $file_to_copy
- * @param boolean $plugin_assets
- * @return void
- */
-function ddtt_replace_file( $file_to_replace, $file_to_copy, $plugin_assets = false ){
-    
-    // First check if we are copying a file from the plugin assets folder
-    if ( $plugin_assets ) {
-        $file_to_copy = get_home_path() . DDTT_PLUGIN_FILES_PATH . $file_to_copy;
-    } else {
-        $file_to_copy = get_home_path() . $file_to_copy;
-    }
-    
-    // Get the full path of the file to replace
-    $file_to_replace = get_home_path() . $file_to_replace;
-
-    // Copy the file to new spot
-    copy( $file_to_copy, $file_to_replace );
-} // End ddtt_replace_file()
-
-
-/**
- * Check if file exists and is not empty; return notice
- *
- * @param string $path
- * @return string|bool
- */
-function ddtt_file_exists_with_content( $path ) {
-    $file = FALSE;
-    if ( is_readable( ABSPATH.'/'.$path ) ) {
-        $file = ABSPATH.''.$path;
-    } elseif ( is_readable( dirname( ABSPATH ).'/'.$path ) ) {
-        $file = dirname( ABSPATH ).'/'.$path;
-    }
-
-    if ( $file && filesize($file) > 0 ) {
-        $result = $file;
-    } else {
-        $result = false;
-    }
-
-    return $result;
-} // End ddtt_file_exists_with_content()
-
-
-/**
- * Check if file exists and is not empty; return notice
- *
- * @param string $path
- * @return string
- */
-function ddtt_check_file_notice( $path ) {
-    $file = ddtt_file_exists_with_content( $path );
-    
-    // Include the notice
-    if ( $file ) {
-        $file_link = '<span>&#9888;</span> <strong>Notice! <u><a href="'.get_home_url().'/'.$path.'" target="_blank">'.$path.'</a></u> is available at:</strong> '.$file.' ('.number_format( filesize( $file ) ).' bytes. Last Modified: '.date( "F d, Y H:i", filemtime( $file ) ).')';
-
-        // Direct access
-        if ( strpos( $path, 'debug.log' ) !== false ) {
-            $file_link .= '<br>// If you have blocked access to the debug.log from your .htaccess, this link will show as not found.';
-        }
-
-    } else {
-        $file_link = '';
-    }
-
-    return $file_link;
-} // End ddtt_check_file_notice()
-
-
-/**
- * Display the file contents with a clear button
- *
- * @param string $plugin_folder
- * @param string $plugin_admin_page
- * @param string $query_string_param
- * @param string $button_label
- * @param string $path
- * @param boolean $log
- * @param array $highlight_args
- * @param boolean $allow_repeats
- * @return void
- */
-function ddtt_file_contents_with_clear_button( $query_string_param, $button_label, $path, $log = false, $highlight_args = array(), $allow_repeats = true ) {
-    // The clear url
-    $clear_url = esc_url( add_query_arg( $query_string_param, 'true', ddtt_plugin_options_path( 'debug' ) ) );
-
-    // Button for clearing log
-    $clear_button = '<div><a id="clear-log-button-'.$query_string_param.'" class="button button-warning" href="'.$clear_url.'" style="font-weight: normal;">Clear '.esc_html( $button_label ).'</a></div>';
-
-    // Button for downloading
-    if ( strpos( $path, 'debug.log' ) !== false ) {
-        $dl = 'debug_log';
-    } elseif ( strpos( $path, DDTT_ADMIN_URL.'/error_log' ) !== false ) {
-        $dl = 'admin_error_log';
-    } elseif ( strpos( $path, 'error_log' ) !== false ) {
-        $dl = 'error_log';
-    } else {
-        $dl = 'null';
-    }
-    $download_button = '<div><form method="post">
-        <input type="submit" value="Download '.esc_html( $button_label ).'" name="ddtt_download_'.$dl.'" class="button button-primary"/>
-    </form></div>';
-
-    // Get the contents
-    $contents = ddtt_view_file_contents( $path, $log, $highlight_args, $allow_repeats);
-
-    // Return the row
-    return '<tr valign="top">
-        <th scope="row">Current '.$path.' file (View Only)<br><br>'.$clear_button.'<br>'.$download_button.'</th>
-        <td><div class="full_width_container"> '.$contents.' </div></td>
-    </tr>';
-} // End ddtt_file_contents_with_clear_button()
-
-
-/**
  * Return a log file from this server line by line, numbered, with colors
  * Home path is public_html/
  * Include filename in path
@@ -811,10 +638,11 @@ function ddtt_file_contents_with_clear_button( $query_string_param, $button_labe
 function ddtt_view_file_contents( $path, $log = false, $highlight_args = array(), $allow_repeats = true ){
     // Define the file
     $file = FALSE;
-    if ( is_readable( ABSPATH . $path ) )
-        $file = ABSPATH . $path;
-    elseif ( is_readable( dirname( ABSPATH ) . '/' . $path ) )
-        $file = dirname( ABSPATH ) . '/' . $path;
+    if ( is_readable( ABSPATH.'/'.$path ) ) {
+        $file = ABSPATH.$path;
+    } elseif ( is_readable( dirname( ABSPATH ).'/'.$path ) ) {
+        $file = dirname( ABSPATH ).'/'.$path;
+    }
 
     // Check if the file exists
     if ( $file ) {
@@ -822,7 +650,7 @@ function ddtt_view_file_contents( $path, $log = false, $highlight_args = array()
         $string = file_get_contents( $file );
 
         // Separate each line into an array item
-        $lines = explode(PHP_EOL, $string);
+        $lines = explode( PHP_EOL, $string );
 
         // Empty array
         $modified_lines = [];
@@ -863,14 +691,28 @@ function ddtt_view_file_contents( $path, $log = false, $highlight_args = array()
                         $new_line = $line;
                     }
                     
-                    // Add classes to lines based on keywords found
+                    // Add classes to the line based on keywords found
                     $class = '';
-                    if (!empty($highlight_args)) {
-                        for ($h = 0; $h < count($highlight_args); $h++) {
-                            $keyword = $highlight_args[$h]['keyword'];
+                    if ( !empty( $highlight_args ) ) {
 
-                            if (preg_match('/\b'.$keyword.'\b/', $new_line)) {
-                                $class .= ' '.$highlight_args[$h]['class'];
+                        // Iter the args
+                        foreach ( $highlight_args as $hl_key => $hl ) {
+
+                            // Make sure we have a keyword/class and the column is err
+                            if ( isset( $hl[ 'keyword' ] ) && 
+                                    isset( $hl[ 'column' ] ) && 
+                                    $hl[ 'column' ] == 'err' ) {
+
+                                // Get the keyword
+                                $keyword = sanitize_text_field( $hl[ 'keyword' ] );
+
+                                // Allow slashes
+                                $keyword = str_replace( '/', '\/', $keyword );
+
+                                // Search the line for the keyword
+                                if ( preg_match( '/'.$keyword.'/', $new_line ) ) {
+                                    $class .= ' '.esc_attr( $hl_key );
+                                }
                             }
                         }
                     }
@@ -878,10 +720,10 @@ function ddtt_view_file_contents( $path, $log = false, $highlight_args = array()
                     // Prevent repeats
                     $og_key = null;
                     if ( $allow_repeats ) {
-                        $on_line = strval(strstr($line, 'on line'));
-                        foreach ($modified_lines as $key => $modified_line){
-                            if ($on_line != '') {
-                                if (strpos($modified_line, $on_line) && strpos($modified_line, $on_line) !== false){
+                        $on_line = strval( strstr( $line, 'on line' ) );
+                        foreach ( $modified_lines as $key => $modified_line ){
+                            if ( $on_line != '' ) {
+                                if ( strpos( $modified_line, $on_line ) && strpos( $modified_line, $on_line ) !== false ){
                                     $og_key = $key;
                                 }
                             }
@@ -946,16 +788,750 @@ function ddtt_view_file_contents( $path, $log = false, $highlight_args = array()
         // Otherwise say the file wasn't found
         $code = $path . ' not found';
     }
+
+    // Check if we have lines
+    if ( !empty( $lines ) ) {
+
+        // Get the converted time
+        $utc_time = date( 'Y-m-d H:i:s', filemtime( $file ) );
+        $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
+        $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
+        $last_modified = $dt->format( 'F j, Y g:i A T' );
+            
+        // Display the error count
+        $results .= 'Lines: <strong>'.$line_count.'</strong> <span class="sep">|</span> Filesize: <strong>'.ddtt_format_bytes( filesize( $file ) ).'</strong> <span class="sep">|</span> Last Modified: <strong>'.$last_modified.'</strong><br><br>';
+    }
     
     // Return the code with the defined path at top
-    $results .= '<pre class="code"
-            >Installation path: ' . ABSPATH
-          . "\n\n"
-          . $code
-          . '</pre>';
+    $results .= '<pre class="code">Installation path: '.ABSPATH.$path.'<br><br>'.$code.'</pre>';
 
     return $results;
 } // End ddtt_view_file_contents()
+
+
+/**
+ * Return a log file in an Easy-to-Read format
+ * Home path is public_html/
+ * Include filename in path
+ * USAGE: ddtt_view_file_contents_easy_reader( 'wp-config.php' );
+ * If log file, include highlight args as follows:
+ * ddtt_view_file_contents_easy_reader( $path, true, array(
+ *  ['keyword' => 'wp-includes', 'class' => 'theme-functions'],
+ *  ['keyword' => 'x-child', 'class' => 'my-functions'],
+ *  ['keyword' => 'wp-debug-tools', 'class' => 'my-plugin']
+ * ));
+ *
+ * @param string $path
+ * @param boolean $log
+ * @param array $highlight_args
+ * @param boolean $allow_repeats
+ * @return string
+ */
+function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_args = [], $allow_repeats = true ){
+    // Define the file
+    $file = FALSE;
+    if ( is_readable( ABSPATH.'/'.$path ) ) {
+        $file = ABSPATH.$path;
+    } elseif ( is_readable( dirname( ABSPATH ).'/'.$path ) ) {
+        $file = dirname( ABSPATH ).'/'.$path;
+    }
+
+    // dpr( $highlight_args );
+
+    // Start results
+    $results = '';
+
+    // Store the actual lines we are displaying
+    $actual_lines = [];
+
+    // Check if the file exists
+    if ( $file ) {
+        // If so, get it
+        $string = file_get_contents( $file );
+
+        // Separate each line in the file into an array item
+        $lines = explode( PHP_EOL, $string );
+
+        // Store the rests here for checking repeats
+        $rests = [];
+
+        // Start the line count
+        $line_count = $log ? 0 : 1;
+
+        // Default CSS
+        $results = '';
+
+        // Check if we have lines
+        if ( !empty( $lines ) ) {
+
+            // Get the dev's timezone
+            $dev_timezone = get_option( DDTT_GO_PF.'dev_timezone', wp_timezone_string() );
+
+            // For each file line...
+            foreach( $lines as $line ) {
+
+                // Check if we're viewing a log
+                if ( $log ) {
+
+                    // If so, we're going to filter out blank lines
+                    if ( $line != '' ) {
+
+                        // By default, this should be a new actual line
+                        $new_actual_line = true;
+
+                        // Increase the line count
+                        $line_count ++;
+
+                        // Stack trace bool
+                        $is_stack = false;
+
+                        // Starting qty
+                        $qty = 1;
+
+                        // Check for a date section
+                        $date_section = false;
+                        if ( preg_match( '/\[(.*?)\]/s', $line, $get_date_section ) ) {
+                            if ( ddtt_is_date( $get_date_section[1] ) ) {
+                                $date_section = $get_date_section;
+                            }
+                        }
+        
+                        // Check for a date section
+                        if ( $date_section ) {
+
+                            // Strip the brackets and timezone
+                            $date_parts = explode( ' ', $date_section[1] );
+                            $stripped_date = $date_parts[0].' '.$date_parts[1];
+
+                            // Convert timezone
+                            $datetime = new DateTime( $stripped_date, new DateTimeZone( 'UTC' ) );
+                            $datetime->setTimezone( new DateTimeZone( $dev_timezone ) );
+
+                            // Get the date, time and shortened timezone
+                            $date = $datetime->format('F j, Y');
+                            $time = $datetime->format('g:i A');
+                            $tz = $datetime->format('T');
+                            $display_date = $date.'<br>'.$time.' '.$tz;
+
+                            // Get the rest of the line
+                            $rest = substr( $line, strlen( $date_section[0] ) );
+
+                            // Add classes to the line based on keywords found
+                            $class = '';
+                            if ( !empty( $highlight_args ) ) {
+
+                                // Iter the args
+                                foreach ( $highlight_args as $hl_key => $hl ) {
+
+                                    // Make sure we have a keyword/class and the column is err
+                                    if ( isset( $hl[ 'keyword' ] ) && 
+                                         isset( $hl[ 'column' ] ) && 
+                                         ( $hl[ 'column' ] == 'err' || $hl[ 'column' ] == 'path' ) ) {
+
+                                        // Get the keyword
+                                        $keyword = sanitize_text_field( $hl[ 'keyword' ] );
+
+                                        // Allow slashes
+                                        $keyword = str_replace( '/', '\/', $keyword );
+
+                                        // Search the line for the keyword
+                                        if ( preg_match( '/'.$keyword.'/', $rest ) ) {
+                                            $class .= ' '.esc_attr( $hl_key );
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Separate warning from path
+                            // Remove html from the rest
+                            $esc_line = esc_html( $rest );
+
+                            // Does the path exist?
+                            if ( strpos( $esc_line, 'in /' ) !== false ) {
+
+                                // Let's split it up
+                                $line_parts = explode( ' in /', $esc_line );
+
+                                // The warning and error
+                                $warning_and_error = $line_parts[0];
+
+                                // Split the warning and error
+                                if ( preg_match( '/PHP(.*?)\:/s', $warning_and_error, $wae ) ) {
+                                    $warning = rtrim( $wae[0], ':' );
+                                    $err = trim( str_replace( $warning.':', '', $warning_and_error ) );
+
+                                // Otherwise it's unknown
+                                } else {
+                                    $warning = 'Unknown';
+                                    $err = $warning_and_error;
+                                }
+
+                                // The path with the line number
+                                $full_path = '/'.$line_parts[1];
+                            
+                            // Otherwise the whole thing is the error
+                            } else {
+                                $warning = 'Unknown';
+                                $err = $esc_line;
+                                $full_path = '';
+                            }
+
+                            // Prevent repeats
+                            $path_only = '';
+                            $on_line_num = 0;
+                            if ( $allow_repeats ) {
+
+                                // Iter the rests
+                                $repeat = false;
+                                $repeat_key = false;
+                                foreach ( $rests as $rest_key => $r ) {
+
+                                    // Have we already added this rest?
+                                    if ( in_array( $rest, $r ) ) {
+                                        
+                                        // Found
+                                        $repeat = true;
+                                        $repeat_key = $rest_key;
+
+                                        // Stop looking
+                                        break;
+                                    }
+                                }
+
+                                // Have we already added this rest?
+                                if ( $repeat ) {
+
+                                    // Don't add this line
+                                    $new_actual_line = false;
+
+                                    // Count this as a repeat
+                                    $qty = $rests[ $repeat_key ][ 'qty' ] + 1;
+                                    $rests[ $repeat_key ][ 'qty' ] = $qty;
+                                        
+                                } else {
+
+                                    // Add the rest
+                                    $rests[ $line_count ] = [
+                                        'rest' => $rest,
+                                        'qty' => $qty
+                                    ];
+                                }
+
+                                // Check for a line number
+                                if ( strval( strstr( $full_path, 'on line' ) ) ) {
+                                    $path_parts = explode( ' ', $full_path );
+                                    $path_only = $path_parts[0];
+                                } elseif ( strpos( $full_path, ':' ) !== false ) {
+                                    $path_parts = explode( ':', $full_path );
+                                    $path_only = $path_parts[0];
+                                }
+
+                                // Get the line number by itself
+                                if( preg_match_all( '/\d+/', $rest, $on_line_numbers ) ) {
+                                    $on_line_num = end( $on_line_numbers[0] );
+                                }
+                            }
+
+                        // Or if there is no date
+                        } else {
+
+                            // Check if it is a stack trace
+                            if ( str_starts_with( $line, 'Stack trace' ) || str_starts_with( $line, '#' ) || str_starts_with( ltrim( $line ), 'thrown' ) ) {
+                                $is_stack = true;
+                                $new_actual_line = false;
+
+                            // Otherwise something is fishy
+                            } else {
+                                $display_date = '--';
+                                $warning = 'Unknown';
+                                $err = $line;
+                                $path_only = '';
+                                $on_line_num = '';
+                                $class = '';
+                            }
+                        }
+                            
+                        // Are we creating a new line?
+                        if ( $new_actual_line ) {
+                            
+                            // Check for a search filter
+                            if ( $search = ddtt_get( 's' ) ) {
+
+                                // Sanitize the text
+                                $search = sanitize_text_field( $search );
+                                // dpr( $search );
+
+                                // Convert to lowercase
+                                $search_lc = strtolower( $search );
+
+                                // Which column?
+                                if ( ddtt_get( 'c', '==', 't' ) ) {
+                                    $col = $warning;
+                                } else if ( ddtt_get( 'c', '==', 'p' ) ) {
+                                    $col = $path_only;
+                                } else {
+                                    $col = $err;
+                                }
+
+                                // Continue var
+                                $continue = false;
+
+                                // Separate the words by spaces
+                                $words = explode( ' ', $search_lc );
+
+                                // Store the words to search for here
+                                $add = [];
+
+                                // Store the words to remove here
+                                $remove = [];
+
+                                // Iter the words
+                                foreach ( $words as $w ) {
+
+                                    // Check the word for subtractions
+                                    if ( str_starts_with( $w, '-' ) !== false ) {
+
+                                        // Add the word to the remove array
+                                        $remove[] = ltrim( $w, '\-' );
+
+                                    } else {
+
+                                        // Add the word to the add array
+                                        $add[] = $w;
+                                    }
+                                }
+
+                                // Now search the column for the adds
+                                if ( !empty( $add ) ) {
+
+                                    // Iter the adds
+                                    foreach ( $add as $a ) {
+
+                                        // If the line does not contain the add, then skip it
+                                        if ( strpos( strtolower( $col ), $a ) === false ) {
+                                            $continue = true;
+                                        }
+                                    }
+                                }
+                                
+                                // Now search the column for the removes
+                                if ( !empty( $remove ) ) {
+
+                                    // Iter the removes
+                                    foreach ( $remove as $r ) {
+
+                                        // If the line contains the remove, then skip it
+                                        if ( strpos( strtolower( $col ), $r ) !== false ) {
+                                            $continue = true;
+                                        }
+                                    }
+                                }
+
+                                // Continue now?
+                                if ( $continue ) {
+                                    continue;
+                                }
+                            }
+
+                            // Store the new actual line
+                            $actual_lines[] = [
+                                'line'  => $line_count,
+                                'date'  => $display_date,
+                                'type'  => $warning,
+                                'err'   => $err,
+                                'path'  => $path_only,
+                                'lnum'  => $on_line_num,
+                                'class' => $class
+                            ];
+
+                        // Or add the stack
+                        } elseif ( $is_stack ) {
+
+                            // Get the current stack lines
+                            if ( isset( $actual_lines[ count( $actual_lines ) - 1 ][ 'stack' ] ) ) {
+                                $stack_lines = $actual_lines[ count( $actual_lines ) - 1 ][ 'stack' ];
+                            } else {
+                                $stack_lines = [];
+                            }
+
+                            // If the line has not been added
+                            if ( !in_array( $line, $stack_lines ) ) {
+
+                                // Then add the line
+                                $actual_lines[ count( $actual_lines ) - 1 ][ 'stack' ][] = $line;
+                            }
+                        }
+                    }
+
+                } else {
+
+                    // If not, check for comment marks; add a class
+                    if (substr( $line, 0, 3 ) === '// ' || 
+                        substr( $line, 0, 3 ) === '/**' || 
+                        substr( $line, 0, 2 ) === ' *' || 
+                        substr( $line, 0, 1 ) === '*' || 
+                        substr( $line, 0, 2 ) === '*/' || 
+                        substr( $line, 0, 2 ) === '/*' || 
+                        substr( $line, 0, 1 ) === '#') {
+                            $comment_out = ' comment-out';
+                    } else {
+                        $comment_out = '';
+                    }
+
+                    // Escape the html early
+                    $line = esc_html( $line );
+
+                    // Add a new, modified line to the array
+                    $modified_lines[] = '<div class="debug-li 2"><span class="debug-ln unselectable">'.$line_count.'</span><span class="ln-content'.$comment_out.' selectable">'.$line.'</span></div>';
+
+                    // Increase Line Count
+                    $line_count ++; 
+                }
+            }
+
+            // Now that we have actual lines, let's add them
+            // dpr( $actual_lines );
+            if ( !empty( $actual_lines ) ) {
+
+                // Start the table
+                $code = '<table class="admin-large-table easy-reader">
+                <tr>
+                    <th class="line">Line #</th>
+                    <th class="date">Date/Time</th>
+                    <th class="type">Type</th>
+                    <th class="err">Error</th>
+                    <th class="qty">Qty</th>
+                    <th class="help">Help</th>
+                </th>';
+
+                // Get help links
+                $search_engines = apply_filters( 'ddtt_debug_log_help_col', [
+                    'google' => [
+                        'name'   => 'Google',
+                        'url'    => 'https://www.google.com/search?q=',
+                        'format' => '{type}: {err}',
+                        'filter' => false
+                    ],
+                    'google_past_year' => [
+                        'name'   => 'Google Past Year',
+                        'url'    => 'https://www.google.com/search?as_qdr=y&q=',
+                        'format' => '{type}: {err}',
+                        'filter' => false
+                    ],
+                    'google_with_path' => [
+                        'name'   => 'Google With Path',
+                        'url'    => 'https://www.google.com/search?q=',
+                        'format' => '{type}: {err} in {path}',
+                        'filter' => 'path'
+                    ],
+                    'google_plugin' => [
+                        'name'   => 'Google Plugin',
+                        'url'    => 'https://www.google.com/search?q=',
+                        'format' => '{type}: {err} {plugin}',
+                        'filter' => 'plugin'
+                    ],
+                    'google_theme' => [
+                        'name'   => 'Google Theme',
+                        'url'    => 'https://www.google.com/search?q=',
+                        'format' => '{type}: {err} {theme}',
+                        'filter' => 'theme'
+                    ],
+                    'wp_plugin_support' => [
+                        'name'   => 'Plugin Support',
+                        'url'    => 'https://wordpress.org/search/',
+                        'format' => '{type}: {err} intext:"Plugin: {plugin}"',
+                        'filter' => 'plugin'
+                    ],
+                    'google_stackoverflow' => [
+                        'name'   => 'Google:stackoverflow',
+                        'url'    => 'https://www.google.com/search?as_sitesearch=stackoverflow.com&q=',
+                        'format' => '{err}',
+                        'filter' => false
+                    ],
+                    'stack_exchange' => [
+                        'name'   => 'WP Stack Exchange',
+                        'url'    => 'https://wordpress.stackexchange.com/search?q=',
+                        'format' => '{err}',
+                        'filter' => false
+                    ]
+                ] );
+
+                // Get all active plugins
+                $active_plugins = get_option( 'active_plugins' );
+
+                // Get all themes
+                $themes = wp_get_themes();
+
+                // Are we only displaying the most recent error?
+                if ( $most_recent = absint( ddtt_get( 'r' ) ) ) {
+                    
+                    // Get the last line key
+                    $last_key = array_key_last( $actual_lines );
+                    
+                    // Iter the most recent
+                    $recent_keys = [];
+                    for ( $r = 0; $r < $most_recent; $r++ ) {
+
+                        // Get the keys
+                        $recent_keys[] = $last_key - $r;
+                    }
+
+                    // Unset the others
+                    foreach ( $actual_lines as $al_key => $actual_line ) {
+                        if ( !in_array( $al_key, $recent_keys ) ) {
+                            unset( $actual_lines[ $al_key ] );
+                        }
+                    }
+                }
+
+                // Iter
+                foreach ( $actual_lines as $actual_line ) {
+
+                    // Set the error type class
+                    $error_class = '';
+                    foreach ( $highlight_args as $hl_key => $hl ) {
+
+                        // Make sure we have a keyword/class and the column is err
+                        if ( isset( $hl[ 'keyword' ] ) && 
+                             isset( $hl[ 'column' ] ) && 
+                             $hl[ 'column' ] == 'type' ) {
+
+                            // Get the keyword
+                            $error_type = sanitize_text_field( $hl[ 'keyword' ] );
+
+                            // Search the line for the keyword
+                            if ( preg_match( '/'.$error_type.'/', $actual_line[ 'type' ] ) ) {
+                                $error_class = ' '.esc_attr( $hl_key );
+                            }
+                        }
+                    }
+
+                    // Is there a stack trace?
+                    if ( isset( $actual_line[ 'stack' ] ) ) {
+                        $stack = $actual_line[ 'stack' ];
+
+                        // Iter the stack
+                        $stack_array = [];
+                        foreach ( $stack as $s ) {
+
+                            // Shorten the paths
+                            $s = str_replace( ABSPATH, '/', $s );
+                            
+                            // Add a class to the first line
+                            if ( str_starts_with( $s, 'Stack trace' ) ) {
+                                $stack_array[] = '<span class="stack-trace">'.$s.'</span>';
+
+                            // Add spaces to thrown
+                            } elseif ( str_starts_with( trim( $s ), 'thrown' ) ) {
+                                $stack_array[] = '<span class="stack-thrown">'.$s.'</span>';
+
+                            // Otherwise do nothing
+                            } else {
+                                $stack_array[] = $s;
+                            }
+                        }
+                        $display_stack = '<br><br>'.implode( '<br>', $stack_array );
+                    } else {
+                        $display_stack = '';
+                    }
+                    
+                    // Shorten the path
+                    $short_path = str_replace( ABSPATH, '/', $actual_line[ 'path' ] );
+
+                    // Check if it's a plugin
+                    $plugin_name = '';
+                    $theme_name = '';
+                    $plugin_or_theme = '';
+                    $plugin_requires = false;
+                    if ( strpos( $short_path, DDTT_PLUGINS_URL ) !== false ) {
+
+                        // If so, get the plugin slug
+                        $plugin_path_and_filename = str_replace( DDTT_PLUGINS_URL, '', ltrim( $short_path, '\/' ) );
+                        $plugin_path_parts = explode( '/', $plugin_path_and_filename );
+                        $plugin_slug = $plugin_path_parts[1];
+                        $plugin_filename = substr( $plugin_path_and_filename, strpos( $plugin_path_and_filename, '/' ) + 1);
+                    
+                        // Now check the active plugins for the file
+                        $plugin_folder_and_file = false;
+                        foreach( $active_plugins as $ap ) {                            
+                            if ( str_starts_with( $ap, $plugin_slug ) ) {
+                                $plugin_folder_and_file = $ap;
+                            }
+                        }
+
+                        // Make sure we found the file
+                        if ( $plugin_folder_and_file ) {
+
+                            // Require the get_plugin_data function
+                            if( !function_exists( 'get_plugin_data' ) ){
+                                require_once( ABSPATH.DDTT_ADMIN_URL.'/includes/plugin.php' );
+                            }
+
+                            // Get the file
+                            $plugin_file = ABSPATH.DDTT_PLUGINS_URL.'/'.$plugin_folder_and_file;
+
+                            // Get the plugin data
+                            $plugin_data = get_plugin_data( $plugin_file );
+                            
+                            // Check if requires exists
+                            if ( $plugin_data[ 'RequiresWP' ] && $plugin_data[ 'RequiresWP' ] != '' ) {
+                                $plugin_requires = true;
+                            }
+
+                            // Store for search filter merge tags
+                            $plugin_name = $plugin_data[ 'Name' ];
+
+                            // This is what we will display
+                            $plugin_or_theme = 'Plugin: '.$plugin_name.'<br>';
+
+                            // Update short file path link
+                            $short_path = '<a href="/'.esc_attr( DDTT_ADMIN_URL ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $short_path ).'</a>';
+                            
+                        }
+
+                    // Check if it's a theme file
+                    } elseif ( strpos( $short_path, DDTT_CONTENT_URL.'/themes/' ) !== false ) {
+
+                        // Theme parts
+                        $theme_parts = explode( '/', ltrim( $short_path, '\/' ) );
+                        $theme_filename = $theme_parts[3];
+                        $theme_slug = $theme_parts[2];
+
+                        // Check if the themes exists in the array
+                        $theme_name = 'Unknown';
+                        foreach ( $themes as $k => $t ) {
+                            if ( $k == $theme_slug ) {
+                                $theme_name = $t->get( 'Name' );
+                            }
+                        }
+
+                        // This is what we will display
+                        $plugin_or_theme = 'Theme: '.$theme_name.'<br>';
+
+                        // Update short file path link
+                        $short_path = '<a href="/'.esc_attr( DDTT_ADMIN_URL ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $short_path ).'</a>';
+                    }
+
+                    // Check for a qty
+                    if ( isset( $rests[ $actual_line[ 'line' ] ] ) ) {
+                        $final_qty = $rests[ $actual_line[ 'line' ] ][ 'qty' ];
+                    } else {
+                        $final_qty = 1;
+                    }
+                    
+                    // Iter the search engines
+                    $help_links = [];
+                    foreach ( $search_engines as $se ) {
+
+                        // Get the format
+                        $format = $se[ 'format' ];
+
+                        // Only include "plugin or theme or path" if they exist on the line
+                        if ( $se[ 'filter' ] == 'plugin' && $plugin_name == '' ) {
+                            continue;
+                        } elseif ( $se[ 'filter' ] == 'theme' && $theme_name == '' ) {
+                            continue;
+                        } elseif ( $se[ 'filter' ] == 'path' && $short_path == '' ) {
+                            continue;
+                        }
+
+                        // Now if plugin, check if it's on WP.org, skip if not
+                        if ( $se[ 'filter' ] == 'plugin' && strpos( $se[ 'url' ], 'wordpress.org' ) !== false && !$plugin_requires ) {
+                            continue;
+                        }
+
+                        // Replace merge tags in format
+                        $merge_tags = [
+                            '{type}'            => $actual_line[ 'type' ],
+                            '{err}'             => $actual_line[ 'err' ],
+                            '{path}'            => str_replace( ABSPATH, '/', $actual_line[ 'path' ] ),
+                            '{plugin}'          => $plugin_name,
+                            '{theme}'           => $theme_name
+                        ];
+                        foreach ( $merge_tags as $merge_tag => $search_value ) {
+                            $format = str_replace( $merge_tag, $search_value, $format );
+                        }
+
+                        // Get the name
+                        $name = $se[ 'name' ];
+                        
+                        // Add the link
+                        $help_links[] = '<a class="help-links" href=\''.$se[ 'url' ].$format.'\' target="_blank" rel="noopener noreferrer">'.$name.'</a>';
+                    }
+
+                    // Add file and line number
+                    if ( $actual_line[ 'type' ] != 'Unknown' ) {
+                        $file_and_line = 'File: '.$short_path.'<br>Line: '.$actual_line[ 'lnum' ];
+                    } else {
+                        $file_and_line = '';
+                    }
+                    
+                    // Create the row
+                    $code .= '<tr class="debug-li'.$error_class.$actual_line[ 'class' ].'">
+                        <td class="line"><span class="unselectable">'.$actual_line[ 'line' ].'</span></td>
+                        <td class="date">'.$actual_line[ 'date' ].'</td>
+                        <td class="type">'.$actual_line[ 'type' ].'</td>
+                        <td class="err"><span class="the-error">'.$actual_line[ 'err' ].'</span>'.$plugin_or_theme.$file_and_line.$display_stack.'</td>
+                        <td class="qty">x '.$final_qty.'</td>
+                        <td class="help">'.implode( '<br>', $help_links ).'</td>
+                    </tr>';
+                }
+
+                // End the table
+                $code .= '</table>';
+
+            // Else no lines
+            } else {
+
+                // Are we searching?
+                if ( ddtt_get( 's' ) ) {
+                    $code = 'No lines found when searching "'.ddtt_get( 's' ).'"';
+
+                // No? Okay, then just say it isn't so (but this should never happen)
+                } else {
+                    $code = 'No lines found.';
+                }
+            }
+            // dpr( $actual_lines );
+            
+        } else {
+            $code = 'No errors.';
+        }
+        
+    } else {
+        // Otherwise say the file wasn't found
+        $code = $path . ' not found';
+    }
+
+    // Check if we have lines
+    if ( !empty( $lines ) ) {
+
+        // Get the converted time
+        $utc_time = date( 'Y-m-d H:i:s', filemtime( $file ) );
+        $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
+        $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
+        $last_modified = $dt->format( 'F j, Y g:i A T' );
+            
+        // Display the error count
+        $results .= 'Lines: <strong>'.$line_count.'</strong> <span class="sep">|</span> Unique Errors: <strong>'.count( $actual_lines ).'</strong> <span class="sep">|</span> Filesize: <strong>'.ddtt_format_bytes( filesize( $file ) ).'</strong> <span class="sep">|</span> Last Modified: <strong>'.$last_modified.'</strong><br><br>';
+    }
+
+    // Return the code with the defined path at top
+    $results .= 'Installation path: '.ABSPATH.$path.'<br><br>'.$code;
+
+    return $results;
+} // End ddtt_view_file_contents_easy_reader()
+
+
+/**
+ * Validate that a date is an actual date
+ *
+ * @param [type] $date
+ * @return bool
+ */
+function ddtt_is_date( $date ) {
+    return (bool)strtotime( $date );
+} // End ddtt_validate_date()
 
 
 /**
@@ -1007,7 +1583,7 @@ function ddtt_purge_expired_transients($older_than = '1 day', $safemode = true) 
  
     // If safemode is OFF the just manually delete all the transient rows in the database
     else {
-        $options_names = array();
+        $options_names = [];
         foreach($transients as $transient) {
             $options_names[] = '_transient_' . $transient;
             $options_names[] = '_transient_timeout_' . $transient;
@@ -1037,11 +1613,11 @@ function ddtt_purge_expired_transients($older_than = '1 day', $safemode = true) 
  */
 function ddtt_delete_unused_mk_tab( $post_type, $keyword, $dumk ) {
     // Let's get the published posts
-    $args = array( 
+    $args = [ 
         'post_type' => $post_type,
         'post_status' => 'publish',
         'posts_per_page' => -1,
-    );
+    ];
 
     // Run the query
     $the_query = new WP_Query( $args );
@@ -1287,8 +1863,11 @@ function ddtt_get_active_plugins( $link = false, $path = false, $table = false )
             // $folder_size = number_format( $bytes / ( 1024 * 1024 ), 1 ) . ' MB';
             $folder_size = ddtt_format_bytes( $bytes );
 
-            // Get the last modified date
-            $last_modified = date( 'F j, Y g:i A', filemtime( $directory ) );
+            // Get the last modified date and convert to developer's timezone
+            $utc_time = date( 'Y-m-d H:i:s', filemtime( $directory ) );
+            $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
+            $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
+            $last_modified = $dt->format( 'F j, Y g:i A T' );
 
             // Are we putting it in a table or no?
             if ( $table ) {

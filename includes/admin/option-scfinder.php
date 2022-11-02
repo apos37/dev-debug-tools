@@ -1,5 +1,5 @@
 <style>
-.admin-large-table td {
+.admin-large-table th {
     text-align: center;
 }
 </style>

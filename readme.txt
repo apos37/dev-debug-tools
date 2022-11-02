@@ -1,11 +1,11 @@
 === Developer Debug Tools ===
 Contributors: apos37
-Donate link: https://paypal.me/apos37
+Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
-Tested up to: 6.0.2
+Tested up to: 6.1
 Requires PHP: 7.4
-Stable tag: 1.3.2
+Stable tag: 1.3.5
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -80,7 +80,7 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 == Screenshots ==
 1. Settings page
 2. Activated plugins with warnings
-3. View and clear debug.log file
+3. View, filter, and clear debug.log file
 4. View wp-config.php file
 5. Some of the snippets you can add/remove from your wp-config.php file
 6. View .htaccess file
@@ -90,9 +90,10 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 10. Regex playground
 
 == Changelog ==
-= 1.3.2 =
-* Add setting for swapping out discord link if already a member
-* Add confirmation for updating wp-config.php and .htaccess files
-* Combine repeated shortcodes found on admin bar, replace with count
-* Add sources to available shortcodes on shortcode finder
-* Change shortcode finder input field to select field
+= 1.3.5 =
+* Added setting for condensing admin bar items
+* Updated 'ddtt_highlight_debug_log' and 'ddtt_debug_log_help_col' hooks with more options
+* Added view recent links to debug log in Easy Reader
+* Added links to color key on debug log in Easy Reader to filter results
+* Added a search field to debug log in Easy Reader
+* Removed from menu if not admin

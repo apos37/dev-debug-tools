@@ -27,7 +27,7 @@ ul li {
 <?php
 $buy_me_coffee = '<br><br><br><h3>'. __( 'Support This Plugin', 'dev-debug-tools' ).'</h3>
 <p>At this time, there are no premium add-ons so the only source of income I have to maintain this plugin is from donations.</p>';
-$buy_me_coffee .= sprintf( __( '<a class="button button-primary" href="%s" target="_blank">Buy Me Coffee :)</a><br>', 'dev-debug-tools' ), 'https://paypal.me/apos37' );
+$buy_me_coffee .= sprintf( __( '<a class="button button-primary" href="%s" target="_blank">Buy Me Coffee :)</a><br>', 'dev-debug-tools' ), 'https://paypal.com/donate/?business=3XHJUEHGTMK3N' );
 $coffee_filter = apply_filters( 'ddtt_coffee', $buy_me_coffee );
 if ( $coffee_filter ) {
     echo wp_kses_post( $buy_me_coffee );
@@ -40,8 +40,6 @@ if ( $coffee_filter ) {
 <ul>
     <li>Add common php code snippets, such as wp_query, add_shortcode, etc.</li>
     <li>Add detailed descriptions of code snippets</li>
-    <li>Add field to omit lines from debug.log viewer</li>
-    <li>Add fields for WPCONFIG values</li>
     <li>Make a human-readable version of the debug.log with explanations of common errors</li>
     <li>Add a color converter (hex to RGB, etc.)</li>
     <li>Add light mode (if requested)</li>

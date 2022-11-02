@@ -96,6 +96,7 @@ class DDTT_DEBUG_TOOLS {
         require_once DDTT_PLUGIN_ADMIN_PATH . 'admin-area.php';
 
         // Classes
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-logs.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-wpconfig.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-htaccess.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-quick-links.php';

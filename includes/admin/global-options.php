@@ -44,6 +44,7 @@ class DDTT_GLOBAL_OPTIONS {
             'color_fx_vars',
             'color_syntax',
             'color_text_quotes',
+            'log_viewer',
             'test_number',
             'centering_tool_cols',
             'stop_heartbeat',
@@ -59,12 +60,8 @@ class DDTT_GLOBAL_OPTIONS {
             'admin_bar_gf',
             'admin_bar_shortcodes',
             'admin_bar_centering_tool',
-            'admin_bar_post_info'
-        ] );
-
-        // Log Settings
-        $this->register_group_settings( 'log', [
-            'omit_lines'
+            'admin_bar_post_info',
+            'admin_bar_condense'
         ] );
 
         // Regex Settings

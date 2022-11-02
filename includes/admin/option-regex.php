@@ -10,6 +10,16 @@
     width: 100%;
     max-width: 100% !important;
 }
+.form-table td {
+    padding: 20px 10px 20px 0;
+}
+code {
+    padding: 0;
+}
+code,
+pre {
+    margin: 0;
+}
 </style>
 
 <?php include 'header.php'; ?>
@@ -34,12 +44,9 @@
                 $test = 'This tester is using "preg_match_all()", so the global modifier "/g" is not necessary. Please remove this from your pattern and try again.';
 
             // Continue with pattern
-            } elseif ( preg_match_all( $r, $s, $m ) ){
-                $ms = [];
-                foreach( $m[0] as $mi ) {
-                    $ms[] = htmlentities( $mi );
-                }
-                $test = $ms;
+            } elseif ( preg_match_all( $r, $s, $matches ) ) {
+                $test = '<code>preg_match_all( \''.$r.'\', $string, $matches );<br><br>
+                <pre>'.print_r( $matches, true ).'</pre></code>';
 
             } else {
                 $test = 'No matches found. Check your pattern for mistakes.';
@@ -48,24 +55,10 @@
             $test = 'Enter a string and pattern in the fields below and save the changes to see the results here.';
         }
         
-        // Convert print
-        if ( is_array( $test ) ) {
-            $print = [];
-            foreach ( $test as $key => $t ) {
-                $print[] = '<span class="indent">['.$key.'] => '.$t.'</span>';
-            }
-            $print_this = '<code style="padding: 0;">Array
-                <br>(
-                <br>'.implode( '<br>', $print ).'
-                <br>)</code>';
-        } else {
-            $print_this = $test;
-        }
-        
         ?>
         <tr>
             <th>Test Results</th>
-            <td><?php echo wp_kses_post( $print_this ); ?></td>
+            <td><?php echo wp_kses_post( $test ); ?></td>
         </tr>
 
         <?php 

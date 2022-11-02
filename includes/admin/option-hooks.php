@@ -25,6 +25,21 @@ $hooks = [
     ],
     [ 
         'type' => 'Filter',
+        'hook' => 'ddtt_highlight_debug_log', 
+        'desc' => 'Change highlight colors on the <a href="'.ddtt_plugin_options_path( 'logs' ).'">debug log</a>.' 
+    ],
+    [ 
+        'type' => 'Filter',
+        'hook' => 'ddtt_debug_log_help_col', 
+        'desc' => 'Add, remove or modify the <a href="'.ddtt_plugin_options_path( 'logs' ).'">debug log</a> search links in the Help column.' 
+    ],
+    [ 
+        'type' => 'Filter',
+        'hook' => 'ddtt_debug_log_max_filesize', 
+        'desc' => 'Change the max file size for the <a href="'.ddtt_plugin_options_path( 'logs' ).'">debug log</a> viewer. Default is 2 MB.' 
+    ],
+    [ 
+        'type' => 'Filter',
         'hook' => 'ddtt_resource_links', 
         'desc' => 'Add your own link to <a href="'.ddtt_plugin_options_path( 'resources' ).'">Resources</a>.' 
     ],
@@ -42,6 +57,11 @@ $hooks = [
         'type' => 'Filter',
         'hook' => 'ddtt_admin_bar_dropdown_links',
         'desc' => 'Add a link to the admin bar site name dropdown on the front-end.'
+    ],
+    [
+        'type' => 'Filter',
+        'hook' => 'ddtt_admin_bar_condensed_items',
+        'desc' => 'Modify the admin bar icons that get condensed when the option is set.'
     ],
     [
         'type' => 'Filter',
@@ -71,6 +91,10 @@ $hooks = [
 ];
 ?>
 
+<p><strong>Where do I add these hooks?</strong></p>
+<p>You can place them in your <code>functions.php</code> file, or if you feel uncomfortable doing so you can use the <a href="https://wordpress.org/plugins/code-snippets/" target="_blank">Code Snippets</a> <em>by Code Snippets Pro</em> plugin to add code safely.</p>
+
+<br><br>
 <div class="full_width_container">
     <table class="admin-large-table">
         <tr>

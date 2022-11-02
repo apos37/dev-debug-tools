@@ -344,6 +344,8 @@ class DDTT_WPCONFIG {
                 $snippet_exists = false;
                 $partial = true;
             }
+        } else {
+            $snippet_exists = false;
         }
 
         // Return the results

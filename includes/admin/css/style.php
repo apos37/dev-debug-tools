@@ -34,6 +34,10 @@ if ( $screen && $screen->id == $options_page ) {
     $c1                     = ddtt_get_syntax_color( 'color_comments', '#5E9955' );      // Comments
     $c2                     = ddtt_get_syntax_color( 'color_syntax', '#569CD6' );        // Syntax
     $c3                     = ddtt_get_syntax_color( 'color_text_quotes', '#ACCCCC' );   // Text with quotes
+    
+    // Get the debug log colors
+    $DDTT_LOGS = new DDTT_LOGS();
+    $dl_colors = $DDTT_LOGS->highlight_args();
     ?>
     <style>
     /* ---------------------------------------------
@@ -102,7 +106,7 @@ if ( $screen && $screen->id == $options_page ) {
         width: 50%;
     }
     .snippet_container {
-        width: max-content;
+        width: initial;
     }
 
     /* Tables */
@@ -133,6 +137,10 @@ if ( $screen && $screen->id == $options_page ) {
     }
     .form-table tr td:last-child {
         padding-right: 0;
+    }
+    .admin-large-table pre {
+        word-break: break-word;
+        white-space: pre-wrap;
     }
 
     /* Notices */
@@ -388,7 +396,44 @@ if ( $screen && $screen->id == $options_page ) {
                         LOGS
     --------------------------------------------- */
 
+    /* Logs */
+    .log-cell {
+        vertical-align: top !important;
+    }
+
     /* Debug log */
+    #ddtt-dl-search-bar,
+    #ddtt-dl-reset-btn {
+        display: inline-block;
+    }
+    #ddtt-dl-search-options {
+        display: inline !important;
+        margin-left: 10px !important;
+        vertical-align: top !important;
+    }
+    #ddtt-dl-search-form .update_choice_input {
+        margin-left: 10px !important;
+    }
+    #ddtt-dl-search-form .update_choice_input:first-child {
+        margin-left: 0 !important;
+    }
+    @media screen and (max-width: 1620px) {
+        #ddtt-dl-search-options {
+            display: block !important;
+            margin: 10px 0 !important;
+        }
+    }
+    #ddtt-dl-search-btn,
+    #ddtt-dl-reset-btn {
+        min-height: 46px !important;
+        margin-left: 10px;
+    }
+    #ddtt-dl-search-btn {
+        cursor: pointer;
+    }
+    #ddtt-dl-reset-btn {
+        line-height: 1.7 !important;
+    }
     .debug-li {
         white-space: normal;
     }
@@ -401,9 +446,6 @@ if ( $screen && $screen->id == $options_page ) {
         display: inline-block;
         padding-right: 10px;
     }
-    /* .debug-ln {
-        color: #ccc;
-    } */
     .debug-li .ln-content {
         padding-left: 10px;
     }
@@ -411,11 +453,14 @@ if ( $screen && $screen->id == $options_page ) {
         background: <?php echo esc_attr( $bg_warnings ); ?>;
         color: <?php echo esc_attr( $text_warnings ); ?>;
     }
-    .debug-li.my-plugin {
-        background: #E14F72;
-        color: #FFFFFF;
+    .debug-li.ddtt-plugin {
+        background: #26BECF !important;
     }
-    .debug-li.my-plugin .debug-ln {
+    .debug-li.ddtt-plugin td {
+        color: #000000 !important;
+        font-weight: 500;
+    }
+    .debug-li.ddtt-plugin .debug-ln {
         color: #CCCCCC !important;
     }
     .debug-li.my-functions {
@@ -436,6 +481,135 @@ if ( $screen && $screen->id == $options_page ) {
         font-weight: bold;
     }
 
+    .easy-reader th.line {
+        width: 1%;
+    }
+    .easy-reader th.qty {
+        width: 7%;
+    }
+    .easy-reader th.date {
+        width: 12%;
+    }
+    .easy-reader th.type {
+        width: 10%;
+    }
+    .easy-reader th.help {
+        width: 14%;
+    }
+    .easy-reader th.line,
+    .easy-reader th.date
+    .easy-reader th.type,
+    .easy-reader th.qty,
+    .easy-reader th.help {
+        white-space: nowrap;
+    }
+    .easy-reader th,
+    .easy-reader td.line,
+    .easy-reader td.qty {
+        text-align: center;
+    }
+    .easy-reader td {
+        vertical-align: top;
+    }
+    .easy-reader td.help {
+        padding-right: 10px !important;
+    }
+    .easy-reader .debug-li .ln-content {
+        padding-left: 0;
+    }
+    .easy-reader .php-fatal,
+    .easy-reader .php-parse {
+        padding-left: 0;
+        font-weight: 500 !important;
+        background-color: red !important;
+        color: white !important;
+    }
+    .easy-reader .php-fatal td,
+    .easy-reader .php-parse td {
+        color: white !important;
+    }
+    .easy-reader .the-error {
+        font-weight: 500;
+        display: block;
+        margin-bottom: 20px;
+        background: white;
+        padding: 7px 10px;
+        color: black;
+        width: fit-content;
+        border-radius: 4px;
+        box-shadow: 4px 4px 20px black;
+    }
+    .easy-reader .stack-trace {
+        font-style: italic;
+    }
+    .easy-reader .stack-thrown {
+        margin-left: 10px;
+    }
+    .easy-reader .help-link-icons {
+        height: 20px;
+        width: auto;
+    }
+    <?php
+
+    // Check if there are highlight colors
+    if ( !empty( $dl_colors ) ) {
+
+        // Cycle through each debug log color
+        foreach ( $dl_colors as $dl_key => $dlc ) {
+
+            // Check if it's a priority
+            if ( isset( $dlc[ 'priority' ] ) && $dlc[ 'priority' ] == true ) {
+
+                // Is it also type?
+                if ( isset( $dlc[ 'column' ] ) && $dlc[ 'column' ] == 'type' ) {
+                    $priority_type = '#wpwrap #wpcontent ';
+                } else {
+                    $priority_type = '';
+                }
+
+                // Add more classes to make it a priority over the rest
+                $priority = $priority_type.'#wpbody .tab-content .full_width_container ';
+            } else {
+                $priority = '';
+            }
+
+            if ( isset( $dlc[ 'bg_color' ] ) && isset( $dlc[ 'font_color' ] ) ) {
+                ?>
+                #color-identifiers .color-box.<?php echo esc_attr( $dl_key ); ?>,
+                <?php echo esc_attr( $priority ); ?>.debug-li.<?php echo esc_attr( $dl_key ); ?> {
+                    background-color: <?php echo esc_attr( $dlc[ 'bg_color' ] ); ?> !important;
+                }
+                #color-identifiers .color-box.<?php echo esc_attr( $dl_key ); ?>,
+                <?php echo esc_attr( $priority ); ?>.debug-li.<?php echo esc_attr( $dl_key); ?>,
+                <?php echo esc_attr( $priority ); ?>.debug-li.<?php echo esc_attr( $dl_key ); ?> td,
+                <?php echo esc_attr( $priority ); ?>.debug-li.<?php echo esc_attr( $dl_key ); ?> td a,
+                <?php echo esc_attr( $priority ); ?>.debug-li.<?php echo esc_attr( $dl_key ); ?> .ln-content,
+                <?php echo esc_attr( $priority ); ?>.debug-li.<?php echo esc_attr( $dl_key ); ?> .ln-content a,
+                <?php echo esc_attr( $priority ); ?>.debug-li.<?php echo esc_attr( $dl_key ); ?> .debug-ln {
+                    color: <?php echo esc_attr( $dlc[ 'font_color' ] ); ?> !important;
+                    font-weight: 500;
+                }
+                <?php
+            }
+        }
+        ?>
+        #color-identifiers .color-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: inline-block;
+            text-align: center;
+            vertical-align: bottom;
+        }
+        #color-identifiers .color-cont {
+            display: block;
+        }
+        #color-identifiers .hl-name {
+            display: inline-block;
+        }
+        <?php
+    } ?>
     /* Allow debug lines to be selectable without the line numbers */
     .unselectable {
         -webkit-touch-callout: none;

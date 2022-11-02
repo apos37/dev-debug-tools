@@ -9,12 +9,17 @@ ddtt_testing_playground_helpers();
 $filename = 'TESTING_PLAYGROUND.php';
 
 // File paths
-$local_file_path = ABSPATH.str_replace( site_url( '/' ), '', content_url() ).'/'. $filename;
+$local_file_path = get_stylesheet_directory().'/'. $filename;
+$local_file_path2 = ABSPATH.str_replace( site_url( '/' ), '', content_url() ).'/'. $filename;
 $plugin_file_path = DDTT_PLUGIN_ROOT.$filename;
 
-// Check if there is a local playground
+// Check if there is a local playground in theme folder
 if ( is_readable( $local_file_path ) ) {
     $file = $local_file_path;
+
+// Check if there is a local playground in /wp-content/
+} elseif ( is_readable( $local_file_path2 ) ) {
+    $file = $local_file_path2;
 
 // Otherwise make sure the plugin's playground is available
 } elseif ( is_readable( $plugin_file_path ) ) {
@@ -70,6 +75,11 @@ if ( $file ) {
     // If we did not find test material
     if ( !$found_test_material ) {
 
+        // Theme path
+        $themes_root_uri = str_replace( site_url( '/' ), '', get_theme_root_uri() ).'/';
+        $active_theme = str_replace( '%2F', '/', rawurlencode( get_stylesheet() ) );
+        $active_theme_path = '/'.$themes_root_uri.$active_theme.'/';
+
         // Add instructions
         echo '<div class="snippet_container">
             <h3>How to use this page as a PHP playground:</h3>
@@ -90,7 +100,7 @@ if ( $file ) {
 
             <br><br><hr>
             <h4>Method 2</h4>
-            Do the same thing as Method 1, but download the file below and upload it to your <strong><code>/'.esc_attr( DDTT_CONTENT_URL ).'/</code></strong> folder instead.<br>The benefit of doing it this way is that it won\'t reset when the plugin is updated.
+            Do the same thing as Method 1, but download the file below and upload it to your current theme\'s root folder (<strong><code>'.esc_attr( $active_theme_path ).'</code></strong>) instead.<br>The benefit of doing it this way is that it won\'t reset when the plugin is updated.
             <br><br>
             <form method="post">
                 <input type="submit" value="Download '.esc_attr( $filename ).'" name="ddtt_download_testing_pg" class="button button-primary"/>

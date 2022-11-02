@@ -45,6 +45,9 @@ class DDTT_ADMIN_AREA {
 
         // Allow searching posts/pages by id in admin area
         add_action( 'pre_get_posts', [ $this, 'admin_search_include_ids' ] );
+
+        // Change browser tabs for plugin
+        add_filter( 'admin_title', [ $this, 'browser_tabs' ], 10, 2 );
         
 	} // End __construct()
 
@@ -101,6 +104,7 @@ class DDTT_ADMIN_AREA {
             'import-users-from-csv-with-meta',
             'post-type-switcher',
             'query-monitor',
+            'code-snippets',
             'user-menus',
             'user-role-editor',
             'wp-crontrol',
@@ -111,7 +115,7 @@ class DDTT_ADMIN_AREA {
         ] );
 
         // Sort them
-        rsort( $wp_plugins );
+        sort( $wp_plugins );
 
         // Add plugin list which you want to show as feature in dashboard.
         foreach ( $wp_plugins as $wp_p ) {
@@ -245,8 +249,14 @@ class DDTT_ADMIN_AREA {
 
         // Last Modified
         if ( 'modified' === $column_name ) {
-            // Get the last modified date
-            $last_modified = date( 'F j, Y g:i A', filemtime( $directory ) );
+
+            // Convert the time
+            $utc_time = date( 'Y-m-d H:i:s', filemtime( $directory ) );
+            $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
+            $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
+
+            // $last_modified = date( 'Y-m-d H:i:s', filemtime( $directory ) );
+            $last_modified = $dt->format( 'F j, Y g:i A T' );
             echo esc_html( $last_modified );
         }
     } // End plugins_column_content()
@@ -283,4 +293,113 @@ class DDTT_ADMIN_AREA {
         // Reset the search value to prevent standard search from being used.
         $query->set( 's', '' );
     } // End admin_search_include_ids()
+
+
+    /**
+     * Add tab name to browser tab on plugin only
+     *
+     * @param string $title
+     * @return string
+     */
+    public function browser_tabs( $admin_title, $title ) {
+        // Only fire on back end
+        if ( is_admin() ) {
+
+            // Get the current screen
+            $screen = get_current_screen();
+            if ( $screen->base == DDTT_TEXTDOMAIN.'/includes/admin/options' && ddtt_get( 'tab' ) ) {
+
+                // Get the tab
+                $tab = ddtt_get( 'tab' );
+
+                // Add var
+                $add = '';
+                
+                // User meta
+                if ( $tab == 'usermeta' ) {
+
+                    // Get the user id we are retrieving
+                    if ( ddtt_get( 'user' ) ) {
+                        $user_id = absint( ddtt_get( 'user' ) );
+                    } else {
+                        $user_id = get_current_user_id();
+                    }
+
+                    // Add the user id first
+                    $add = 'ID #'.$user_id.' | ';
+
+                // Post meta
+                } elseif ( $tab == 'postmeta' ) {
+
+                    // Get the post id we are retrieving
+                    if ( ddtt_get( 'post_id' ) ) {
+                        $post_id = filter_var( ddtt_get( 'post_id' ), FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 1 ] ] );
+                    
+                    // Get most recent post
+                    } else {
+                        $recent_posts = wp_get_recent_posts( array( 
+                            'numberposts' => '1',
+                            'post_status' => 'publish',
+                            'post_type' => 'post'
+                        ));
+                        if ( !empty( $recent_posts ) ) {
+                            $most_recent_post = $recent_posts[0];
+                            $post_id = $most_recent_post['ID'];
+                        } else {
+                            $post_id = false;
+                        }
+                    }
+
+                    // Add the user id first
+                    if ( $post_id ) {
+                        $add = 'ID #'.$post_id.' | ';
+                    }
+
+                // Testing
+                } elseif ( $tab == 'testing' ) {
+
+                    // Debugs
+                    $debugs = [];
+
+                    // Check for debugging form
+                    if ( ddtt_get( 'debug_form' ) ) {
+                        $form_id = filter_var( ddtt_get( 'debug_form' ), FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 1 ] ] );
+                        $debugs[] = 'Form: '.$form_id;
+                    }
+
+                    // Check for debugging entry
+                    if ( ddtt_get( 'debug_entry' ) ) {
+                        $entry_id = filter_var( ddtt_get( 'debug_entry' ), FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 1 ] ] );
+                        $debugs[] = 'Entry: '.$entry_id;
+                    }
+
+                    // Add
+                    if ( !empty( $debugs ) && count( $debugs ) > 1 ) {
+                        $debugs_f = [];
+                        foreach( $debugs as $debug ) {
+                            $debug = str_replace( 'Form:', 'F:', $debug );
+                            $debug = str_replace( 'Entry:', 'E:', $debug );
+                            $debugs_f[] = $debug;
+                        }
+                        $add = implode( ' | ', $debugs_f ).' | ';
+                    } elseif ( !empty( $debugs ) && count( $debugs ) == 1 ) {
+                        $add = $debugs[0].' | ';
+                    }
+                }
+
+                // Set the tab title
+                if ( $tab == 'logs' ) {
+                    $tab_title = 'Logs';
+                } else {
+                    $tab_title = ddtt_plugin_menu_items( $tab );
+                }
+                
+                // Get the title of the tab
+                $title = $add.$tab_title.' | DDT';
+            }
+        }
+
+        // Return the title
+        return $title;
+    } // End browser_tabs()
 }
