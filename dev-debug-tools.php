@@ -3,7 +3,7 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.3.5
+ * Version:             1.3.6
  * Requires at least:   5.9.0
  * Tested up to:        6.1
  * Requires PHP:        7.4
@@ -34,7 +34,7 @@ define( 'DDTT_TEXTDOMAIN', 'dev-debug-tools' );
 define( 'DDTT_AUTHOR', 'Apos37' );
 
 // Versions
-define( 'DDTT_VERSION', '1.3.5' );
+define( 'DDTT_VERSION', '1.3.6' );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum
@@ -59,8 +59,18 @@ if ( version_compare( PHP_VERSION, DDTT_MIN_PHP_VERSION, '<=' ) ) {
    return;
 }
 
+// Allow for Multisite dashboard
+function ddtt_admin_url( $path = '', $scheme = 'admin' ) {
+    if ( is_network_admin() ) {
+        $admin_url = network_admin_url( $path, $scheme );
+    } else {
+        $admin_url = admin_url( $path, $scheme );
+    }
+    return $admin_url;
+} // End ddtt_admin_url()
+
 // Paths
-define( 'DDTT_ADMIN_URL', str_replace( site_url( '/' ), '', rtrim( admin_url(), '/' ) ) );          //: wp-admin
+define( 'DDTT_ADMIN_URL', str_replace( site_url( '/' ), '', rtrim( ddtt_admin_url(), '/' ) ) );     //: wp-admin || wp-admin/network
 define( 'DDTT_CONTENT_URL', str_replace( site_url( '/' ), '', content_url() ) );                    //: wp-content
 define( 'DDTT_INCLUDES_URL', str_replace( site_url( '/' ), '', rtrim( includes_url(), '/' ) ) );    //: wp-includes
 define( 'DDTT_PLUGINS_URL', str_replace( site_url( '/' ), '', plugins_url() ) );                    //: wp-content/plugins
@@ -79,7 +89,7 @@ define( 'DDTT_PLUGIN_FILES_PATH', DDTT_PLUGIN_SHORT_DIR.'includes/files/' );    
 //: https://domain.com/wp-admin/admin.php?page=dev-debug-tools%2Fincludes%2Fadmin%2Foptions.php&tab=testing
 function ddtt_plugin_options_path( $tab = null ) {
     $incl_tab = !is_null( $tab ) ? '&tab='.sanitize_html_class( $tab ) : '';
-    return admin_url( 'admin.php?page='. DDTT_TEXTDOMAIN .'%2Fincludes%2Fadmin%2Foptions.php'.$incl_tab );
+    return ddtt_admin_url( 'admin.php?page='. DDTT_TEXTDOMAIN .'%2Fincludes%2Fadmin%2Foptions.php'.$incl_tab );
 } // End ddtt_plugin_options_path()
 
 //: dev-debug-tools/includes/admin/options.php
@@ -88,6 +98,23 @@ function ddtt_plugin_options_short_path( $tab = null ) {
     $incl_tab = !is_null($tab) ? '&tab='.sanitize_html_class( $tab ) : '';
     return DDTT_TEXTDOMAIN .'/includes/admin/options.php'.$incl_tab;
 } // End ddtt_plugin_options_path()
+
+
+/**
+ * Multisite verbiage
+ */
+function ddtt_multisite_suffix() {
+    if ( is_network_admin() ) {
+        $sfx = __( ' <em>- Network</em>', 'dev-debug-tools' );
+    } elseif ( is_multisite() && is_main_site() ) {
+        $sfx = __( ' <em>- Primary</em>', 'dev-debug-tools' );
+    } elseif ( is_multisite() && !is_main_site() ) {
+        $sfx = __( ' <em>- Subsite</em>', 'dev-debug-tools' );
+    } else {
+        $sfx = '';
+    }
+    return $sfx;
+} // End ddtt_multisite_suffix()
 
 
 /**

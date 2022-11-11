@@ -110,6 +110,8 @@ class DDTT_ADMIN_BAR {
                     } else {
                         $post_id = false;
                     }
+                } else {
+                    $post_id = false;
                 }
             }
     

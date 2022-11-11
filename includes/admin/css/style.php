@@ -5,9 +5,20 @@
  */
 
 // Check if we are on options pages
-$screen = get_current_screen();
+global $current_screen;
+if ( !isset( $current_screen->id ) ) {
+    return;
+}
+$screen = $current_screen->id;
 $options_page = str_replace('.php', '', ddtt_plugin_options_short_path());
-if ( $screen && $screen->id == $options_page ) {
+
+// Allow for multisite
+if ( is_network_admin() ) {
+    $options_page .= '-network';
+}
+
+// Are we on the options page?
+if ( $screen && $screen == $options_page ) {
 
     // Set default colors here
     $bg_primary             = '#1E1E1E'; // Background primary
@@ -130,10 +141,10 @@ if ( $screen && $screen->id == $options_page ) {
         word-break:break-all;
     }
     .admin-large-table tr:nth-child(even) {
-        background: <?php echo esc_attr( $bg_primary ); ?>;
+        background: <?php echo esc_attr( $bg_primary ); ?> !important;
     }
     table.alternate-row tr:nth-child(even) {
-        background: <?php echo esc_attr( $bg_primary ); ?>;
+        background: <?php echo esc_attr( $bg_primary ); ?> !important;
     }
     .form-table tr td:last-child {
         padding-right: 0;
@@ -389,6 +400,12 @@ if ( $screen && $screen->id == $options_page ) {
         padding: 2px 9px 4px 8px;
         border-radius: 2px;
         font-weight: 500;
+    }
+    /* .active {
+        filter: brightness(150%);
+    } */
+    .inactive {
+        filter: brightness(50%);
     }
     
 

@@ -1,4 +1,15 @@
 == changelog.txt ==
+= 1.3.7 =
+* Fixed bug on network plugins tab
+
+= 1.3.6 =
+* Added inactive plugins to plugins tab
+* Added "Sites" column to plugins tab on multisite network to see which sites plugins are installed on
+* Added multisite suffixes to title and browser tabs to clearly identify which site you are on
+* Added support for multisite
+* Reverted to display name in Online Users if no first and last name is provided
+* Ensure is_plugin_active() is defined for admin on multisite
+
 = 1.3.5 =
 * Added setting for condensing admin bar items
 * Updated 'ddtt_highlight_debug_log' and 'ddtt_debug_log_help_col' hooks with more options

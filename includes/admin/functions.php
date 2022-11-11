@@ -1256,8 +1256,8 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                     ]
                 ] );
 
-                // Get all active plugins
-                $active_plugins = get_option( 'active_plugins' );
+                // Get all plugins
+                $plugins = get_plugins();
 
                 // Get all themes
                 $themes = wp_get_themes();
@@ -1338,6 +1338,13 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                     // Shorten the path
                     $short_path = str_replace( ABSPATH, '/', $actual_line[ 'path' ] );
 
+                    // Get the admin url
+                    if ( is_multisite() ) {
+                        $admin_url = str_replace( site_url( '/' ), '', rtrim( network_admin_url(), '/' ) );
+                    } else {
+                        $admin_url = DDTT_ADMIN_URL;
+                    }
+
                     // Check if it's a plugin
                     $plugin_name = '';
                     $theme_name = '';
@@ -1353,9 +1360,9 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                     
                         // Now check the active plugins for the file
                         $plugin_folder_and_file = false;
-                        foreach( $active_plugins as $ap ) {                            
-                            if ( str_starts_with( $ap, $plugin_slug ) ) {
-                                $plugin_folder_and_file = $ap;
+                        foreach( $plugins as $key => $ap ) {                            
+                            if ( str_starts_with( $key, $plugin_slug ) ) {
+                                $plugin_folder_and_file = $key;
                             }
                         }
 
@@ -1385,7 +1392,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                             $plugin_or_theme = 'Plugin: '.$plugin_name.'<br>';
 
                             // Update short file path link
-                            $short_path = '<a href="/'.esc_attr( DDTT_ADMIN_URL ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $short_path ).'</a>';
+                            $short_path = '<a href="/'.esc_attr( $admin_url ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $short_path ).'</a>';
                             
                         }
 
@@ -1409,7 +1416,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                         $plugin_or_theme = 'Theme: '.$theme_name.'<br>';
 
                         // Update short file path link
-                        $short_path = '<a href="/'.esc_attr( DDTT_ADMIN_URL ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $short_path ).'</a>';
+                        $short_path = '<a href="/'.esc_attr( $admin_url ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $short_path ).'</a>';
                     }
 
                     // Check for a qty
@@ -1726,20 +1733,87 @@ function ddtt_get_active_plugins( $link = false, $path = false, $table = false )
         $path = false;
         $table = false;
     }
-    
-    // Get the active plugins list
-    $active = get_option( 'active_plugins' );
+
+    // Store the plugins for all sites here
+    $plugins = [];
+
+    // If on the network, let's get all the sites plugins, not just the local
+    if ( is_multisite() ) {
+
+        // Get the network active plugins
+        $network_active = get_site_option( 'active_sitewide_plugins' );
+
+        // Add them to the active array
+        foreach ( $network_active as $na_key => $na ) {
+            $plugins[ $na_key ] = 'network';
+        }
+
+        // Get all the sites
+        global $wpdb;
+        $subsites = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE archived = '0' AND deleted = '0' AND spam = '0' ORDER BY blog_id" );
+        
+        // Iter the sites
+        if ( $subsites && !empty( $subsites ) ) {
+            foreach( $subsites as $subsite ) {
+
+                // Get the plugins
+                $site_active = get_blog_option( $subsite->blog_id, 'active_plugins' );
+
+                // Iter each plugin
+                foreach ( $site_active as $site ) {
+                    
+                    // Only continue if the plugin hasn't already been added by the network
+                    if ( !isset( $plugins[ $site ] ) ) {
+                        
+                        // Add the site
+                        $plugins[ $site ][] = $subsite->blog_id;
+                    }
+                }
+            }
+        }
+
+    // If not on multisite network
+    } else {
+
+        // Get the active plugins
+        $site_active = get_option( 'active_plugins' );
+
+        // Iter each plugin
+        foreach ( $site_active as $site ) {
+            $plugins[ $site ] = 'local';
+        }
+    }
 
     // Get all the plugins full info
     $all = get_plugins();
 
+    // Iter each
+    foreach ( $all as $k => $a ) {
+
+        // Add the non-active plugins
+        if ( !array_key_exists( $k, $plugins ) ) {
+            $plugins[ $k ] = false;
+        }
+    }
+
     // Start the table if we're building one
     if ( $table ) {
+
+        // If on multisite, we need a site column
+        if ( is_network_admin() ) {
+            $site_col = '<th class="col-site">Sites</th>';
+        } else {
+            $site_col = '';
+        }
+
+        // The table
         $results = '<p><em>Note: some plugins may be missing last updated and WP compatibility if they were not downloaded from WP.org. These are usually premium/paid plugins.</em></p>
         <p><em>Items showing <span class="red-example">red</span> may be outdated and should be used with caution.</em></p>
         <table id="active-plugin-list" class="admin-large-table alternate-row">
             <tr>
+                <th class="col-active">Active</th>
                 <th class="col-plugin">Plugin</th>
+                '.$site_col.'
                 <th class="col-version">Version</th>
                 <th class="col-updated">Last Updated</th>
                 <th class="col-compatible">WP Compatibility</th>
@@ -1757,34 +1831,36 @@ function ddtt_get_active_plugins( $link = false, $path = false, $table = false )
         $activated_plugins = array();
     }
 
-    // Only get the full info for the active plugins
-    foreach ( $active as $p ){           
-        if( isset( $all[$p] ) ){
+    // Get the full info for the plugins
+    foreach ( $plugins as $key => $p ){      
+        
+        // Make sure the plugin exists
+        if( isset( $all[ $key ] ) ){
             
             // Check if the plugin has a Plugin URL
             $name = '';
             if ( $link ) {
-                if ( $all[$p]['PluginURI'] && $all[$p]['PluginURI'] != '' ) {
-                    $name = '<a href="'.$all[$p]['PluginURI'].'" target="_blank">'.$all[$p]['Name'].'</a>';
-                } elseif ( $all[$p]['AuthorURI'] && $all[$p]['AuthorURI'] != '' ) {
-                    $name = '<a href="'.$all[$p]['AuthorURI'].'" target="_blank">'.$all[$p]['Name'].'</a>';
+                if ( $all[ $key ][ 'PluginURI' ] && $all[ $key ][ 'PluginURI' ] != '' ) {
+                    $name = '<a href="'.$all[ $key ][ 'PluginURI' ].'" target="_blank">'.$all[ $key ][ 'Name' ].'</a>';
+                } elseif ( $all[ $key ][ 'AuthorURI' ] && $all[ $key ][ 'AuthorURI' ] != '' ) {
+                    $name = '<a href="'.$all[ $key ][ 'AuthorURI' ].'" target="_blank">'.$all[ $key ][ 'Name' ].'</a>';
                 } else {
-                    $name = $all[$p]['Name'];
+                    $name = $all[ $key ][ 'Name' ];
                 }
             } else {
-                $name = $all[$p]['Name'];
+                $name = $all[ $key ][ 'Name' ];
             }
 
             // Add author to name
-            if ( $all[$p]['Author'] && $all[$p]['Author'] != '' ) {
-                $name = $name.' <em>by '.$all[$p]['Author'].'</em>';
-            } elseif ( $all[$p]['AuthorName'] && $all[$p]['AuthorName'] != '' ) {
-                $name = $name.' <em>by '.$all[$p]['AuthorName'].'</em>';
+            if ( $all[ $key ][ 'Author' ] && $all[ $key ][ 'Author' ] != '' ) {
+                $name = $name.' <em>by '.$all[ $key ][ 'Author' ].'</em>';
+            } elseif ( $all[ $key ][ 'AuthorName' ] && $all[ $key ][ 'AuthorName' ] != '' ) {
+                $name = $name.' <em>by '.$all[ $key ][ 'AuthorName' ].'</em>';
             }
 
             // Add description
-            if ( $table && $all[$p]['Description'] && $all[$p]['Description'] != '' ) {
-                $name = $name.'<br>'.$all[$p]['Description'];
+            if ( $table && $all[ $key ][ 'Description' ] && $all[ $key ][ 'Description' ] != '' ) {
+                $name = $name.'<br>'.$all[ $key ][ 'Description' ];
             }
 
             // Get the last updated date and tested up to version
@@ -1793,7 +1869,7 @@ function ddtt_get_active_plugins( $link = false, $path = false, $table = false )
             $compatibility = '';
             $incompatible_class = '';
             $args = [ 
-                'slug' => $all[$p]['TextDomain'], 
+                'slug' => $all[ $key ][ 'TextDomain' ], 
                 'fields' => [
                     'last_updated' => true,
                     'tested' => true
@@ -1837,9 +1913,9 @@ function ddtt_get_active_plugins( $link = false, $path = false, $table = false )
 
             // Displaying path?
             if ( $path && $table ) {
-                $display_path = '<td>'.$p.'</td>';
+                $display_path = '<td>'.$key.'</td>';
             } elseif ( $path && !$table ) {
-                $display_path = ' ('.$p.')';
+                $display_path = ' ('.$key.')';
             } else {
                 $display_path = '';
             }
@@ -1850,7 +1926,7 @@ function ddtt_get_active_plugins( $link = false, $path = false, $table = false )
             }
 
             // Strip the path to get the folder
-            $p_parts = explode('/', $p);
+            $p_parts = explode('/', $key);
             $folder = $p_parts[0];
              
             // Get the path of a directory.
@@ -1871,9 +1947,60 @@ function ddtt_get_active_plugins( $link = false, $path = false, $table = false )
 
             // Are we putting it in a table or no?
             if ( $table ) {
-                $results .= '<tr>
+
+                // If plugin is active or on multisite
+                if ( $p !== false ) {
+
+                    // If on multisite
+                    if ( is_multisite() ) {
+
+                        // If network activated
+                        if ( $p == 'network' ) {
+                            $is_active = 'Network';
+                            $active_class = 'active';
+
+                        // If on this site
+                        } elseif ( ( !is_network_admin() && in_array( get_current_blog_id(), $p ) ) || is_network_admin() ) {
+                            $is_active = 'Local Only';
+                            $active_class = 'active';
+
+                        // If not on this site
+                        } else {
+                            $is_active = 'No';
+                            $active_class = 'inactive';
+                        }
+                    } else {
+                        $is_active = 'Yes';
+                        $active_class = 'active';
+                    }
+
+                // If inactive and not on network
+                } else {
+                    $is_active = 'No';
+                    $active_class = 'inactive';
+                }
+
+                // If on multisite network
+                if ( is_network_admin() ) {
+                    $site_names = [];
+                    if ( $p == 'network' ) {
+                        $site_names[] = 'Network Active';
+                    } elseif ( is_array( $p ) ) {
+                        foreach ( $p as $site_id ) {
+                            $site_names[] = get_blog_details( $site_id )->blogname;
+                        }
+                    }
+                    $site_row = '<td>'.implode( ', ', $site_names ).'</td>';
+                } else {
+                    $site_row = '';
+                }
+
+                // The table row
+                $results .= '<tr class="'.$active_class.'">
+                    <td>'.$is_active.'</td>
                     <td>'.$name.'</td>
-                    <td>Version '.$all[$p]['Version'].'</td>
+                    '.$site_row.'
+                    <td>Version '.$all[ $key ]['Version'].'</td>
                     <td class="'.$old_class.'">'.$last_updated.'</td>
                     <td class="'.$incompatible_class.'">'.$compatibility.'</td>
                     <td>'.$folder_size.'</td>
@@ -1883,7 +2010,7 @@ function ddtt_get_active_plugins( $link = false, $path = false, $table = false )
             } else {
 
                 // Otherwise we are displaying in a single line
-                $activated_plugins[] = $name.' - Version '.$all[$p]['Version'].$display_path;
+                $activated_plugins[] = $name.' - Version '.$all[ $key ]['Version'].$display_path;
             }
         }           
     }

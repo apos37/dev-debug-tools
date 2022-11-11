@@ -218,7 +218,11 @@ class DDTT_LOGS {
         $clear_url = esc_url( add_query_arg( $query_string_param, 'true', ddtt_plugin_options_path( 'logs' ) ) );
 
         // Button for clearing log
-        $clear_button = '<div><a id="clear-log-button-'.$query_string_param.'" class="button button-warning" href="'.$clear_url.'" style="font-weight: normal;">Clear '.esc_html( $button_label ).'</a></div>';
+        if ( ( is_multisite() && !is_network_admin() && is_main_site() ) || !is_multisite() ) {
+            $clear_button = '<div><a id="clear-log-button-'.$query_string_param.'" class="button button-warning" href="'.$clear_url.'" style="font-weight: normal;">Clear '.esc_html( $button_label ).'</a></div>';
+        } else {
+            $clear_button = '';
+        }
 
         // Button for downloading
         if ( strpos( $path, 'debug.log' ) !== false ) {

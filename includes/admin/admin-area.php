@@ -99,6 +99,7 @@ class DDTT_ADMIN_AREA {
             'debug-bar',
             'debug-this',
             'debugpress',
+            'fakerpress',
             'go-live-update-urls',
             'heartbeat-control', // WP Dashboard: 60, Frontend: Disable, Post Editor: 30
             'import-users-from-csv-with-meta',
@@ -306,8 +307,16 @@ class DDTT_ADMIN_AREA {
         if ( is_admin() ) {
 
             // Get the current screen
-            $screen = get_current_screen();
-            if ( $screen->base == DDTT_TEXTDOMAIN.'/includes/admin/options' && ddtt_get( 'tab' ) ) {
+            $screen = get_current_screen()->id;
+            $options_page = str_replace('.php', '', ddtt_plugin_options_short_path());
+
+            // Allow for multisite
+            if ( is_network_admin() ) {
+                $options_page .= '-network';
+            }
+
+            // Are we on an options page?
+            if ( $screen == $options_page && ddtt_get( 'tab' ) ) {
 
                 // Get the tab
                 $tab = ddtt_get( 'tab' );
@@ -393,9 +402,13 @@ class DDTT_ADMIN_AREA {
                 } else {
                     $tab_title = ddtt_plugin_menu_items( $tab );
                 }
+
+                // Are we on a network page?
+                $sfx = ddtt_multisite_suffix();
+                $sfx = strip_tags( $sfx );
                 
                 // Get the title of the tab
-                $title = $add.$tab_title.' | DDT';
+                $title = $add.$tab_title.' | DDT'.$sfx;
             }
         }
 

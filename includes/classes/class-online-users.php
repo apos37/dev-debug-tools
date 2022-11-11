@@ -184,13 +184,20 @@ class DDTT_ONLINE_USERS {
                 $user_id = $active_user[ 'id' ];
                 $user = get_userdata( $user_id );
 
+                // First and last name
+                if ( $user->first_name && $user->last_name ) {
+                    $display_name = $user->first_name.' '.$user->last_name;
+                } else {
+                    $display_name = $user->display_name;
+                }
+
                 // Admins
                 if (in_array( 'administrator', (array) $user->roles) || in_array( 'super_admin', (array) $user->roles)) {               
-                    $users[] = '<span>'.$user->first_name.' '.$user->last_name.' <em>- Admin</em></span>';
+                    $users[] = '<span>'.$display_name.' <em>- Admin</em></span>';
 
                 // Other users
                 } else {
-                    $users[] = $user->first_name.' '.$user->last_name;
+                    $users[] = $display_name;
                 }
             }
         }

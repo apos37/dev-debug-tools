@@ -115,85 +115,87 @@ if ( ddtt_get( $pf.'updated', '==', 'true' ) ) {
         </tr>
     </table>
 
-    <br><br>
-    <h2>Snippets (Beta Testing)</h2>
-    <p>Add or remove snippets from here. <em>Note: this is still in testing with other users and works as expected on a large number of sites so far, but some sites have <?php echo esc_attr( $filename ); ?> files that have been heavily updated and it may not work as expected. Therefore, please make a backup and test with caution. If you have issues with this, I encourage you to give feedback on our <a href="https://discord.gg/VeMTXRVkm5">Discord Support Server</a> so we can work on improving it for everyone.</em></p>
-    <p>Want to modify or add some snippets that aren't listed here? You can <a href="<?php echo esc_url( ddtt_plugin_options_path( 'hooks' ) ); ?>">hook into the snippets array</a>.</p>
-    <hr />
-    <br>
-    <table class="form-table">        
-        <?php 
-        // Check if the file exists
-        if ( $file ) {
+    <?php if ( ( is_multisite() && !is_network_admin() && is_main_site() ) || !is_multisite() ) { ?>
+        <br><br>
+        <h2>Snippets (Beta Testing)</h2>
+        <p>Add or remove snippets from here. <em>Note: this is still in testing with other users and works as expected on a large number of sites so far, but some sites have <?php echo esc_attr( $filename ); ?> files that have been heavily updated and it may not work as expected. Therefore, please make a backup and test with caution. If you have issues with this, I encourage you to give feedback on our <a href="https://discord.gg/VeMTXRVkm5">Discord Support Server</a> so we can work on improving it for everyone.</em></p>
+        <p>Want to modify or add some snippets that aren't listed here? You can <a href="<?php echo esc_url( ddtt_plugin_options_path( 'hooks' ) ); ?>">hook into the snippets array</a>.</p>
+        <hr />
+        <br>
+        <table class="form-table">        
+            <?php 
+            // Check if the file exists
+            if ( $file ) {
+                
+                // Get the file once
+                $file_contents = file_get_contents( $file );
+
+                // Allowed HTML
+                $allowed_html = [
+                    'tr' => [
+                        'valign' => []
+                    ],
+                    'th' => [
+                        'scope' => []
+                    ],
+                    'td' => [
+                        'class' => []
+                    ],
+                    'div' => [
+                        'class' => []
+                    ],
+                    'span' => [
+                        'class' => []
+                    ],
+                    'input' => [
+                        'type'      => [],
+                        'name'      => [],
+                        'value'     => [],
+                        'checked'   => []
+                    ],
+                    'br' => []
+                ];
             
-            // Get the file once
-            $file_contents = file_get_contents( $file );
+                // Cycle each snippet
+                foreach ( $snippets as $key => $snippet ) {
 
-            // Allowed HTML
-            $allowed_html = [
-                'tr' => [
-                    'valign' => []
-                ],
-                'th' => [
-                    'scope' => []
-                ],
-                'td' => [
-                    'class' => []
-                ],
-                'div' => [
-                    'class' => []
-                ],
-                'span' => [
-                    'class' => []
-                ],
-                'input' => [
-                    'type'      => [],
-                    'name'      => [],
-                    'value'     => [],
-                    'checked'   => []
-                ],
-                'br' => []
-            ];
-        
-            // Cycle each snippet
-            foreach ( $snippets as $key => $snippet ) {
+                    // Check if it exists
+                    $exists = $DDTT_WPCONFIG->snippet_exists( $file_contents, $snippet );
 
-                // Check if it exists
-                $exists = $DDTT_WPCONFIG->snippet_exists( $file_contents, $snippet );
+                    // Are we checking the item at load?
+                    if ( $confirm && in_array( $key.' ', $enabled ) ) {
+                        $checked = true;
+                    } elseif ( $confirm && !in_array( $key.' ', $enabled ) ) {
+                        $checked = false;
+                    } else {
+                        $checked = $exists[ 'exists' ];
+                    }
 
-                // Are we checking the item at load?
-                if ( $confirm && in_array( $key.' ', $enabled ) ) {
-                    $checked = true;
-                } elseif ( $confirm && !in_array( $key.' ', $enabled ) ) {
-                    $checked = false;
-                } else {
-                    $checked = $exists[ 'exists' ];
+                    // Add the row to the table
+                    echo wp_kses( $DDTT_WPCONFIG->options_tr( $key, $snippet[ 'label' ], $checked, $exists[ 'strings' ][ 'true' ], $exists[ 'strings' ][ 'false' ] ), $allowed_html );
                 }
-
-                // Add the row to the table
-                echo wp_kses( $DDTT_WPCONFIG->options_tr( $key, $snippet[ 'label' ], $checked, $exists[ 'strings' ][ 'true' ], $exists[ 'strings' ][ 'false' ] ), $allowed_html );
             }
-        }
-        ?>
+            ?>
 
-    </table>
+        </table>
 
-    <!-- WARNING TO BACK UP -->
-    <?php if ( !get_option( 'ddtt_wpconfig_og' ) ) { ?>
+        <!-- WARNING TO BACK UP -->
+        <?php if ( !get_option( 'ddtt_wpconfig_og' ) ) { ?>
+            <br><br>
+            <span>&#9888;</span> <strong>WARNING!</strong> Modifying your <?php echo esc_attr( $filename ); ?> file can break your site if you add or remove something that isn't supposed to be changed. All sites are different, so the snippets above will not necessarily work for you. This just gives you an easy way to turn things on and off. It is <strong>ALWAYS</strong> best to make a copy of this file prior to making any changes, no matter how safe it might be.
+            <br><br>
+        <?php } ?>
+
+        <input type="hidden" name="page" value="<?php echo esc_attr( $page ); ?>">
+        <input type="hidden" name="tab" value="<?php echo esc_attr( $tab ); ?>">
+        <input type="hidden" name="<?php echo esc_attr( $pf ); ?>updated" value="true">
+        <?php if ( !$confirm ) { ?>
+            <input type="hidden" name="confirm" value="true">
+        <?php } ?>
         <br><br>
-        <span>&#9888;</span> <strong>WARNING!</strong> Modifying your <?php echo esc_attr( $filename ); ?> file can break your site if you add or remove something that isn't supposed to be changed. All sites are different, so the snippets above will not necessarily work for you. This just gives you an easy way to turn things on and off. It is <strong>ALWAYS</strong> best to make a copy of this file prior to making any changes, no matter how safe it might be.
-        <br><br>
+        
+        <input type="submit" value="<?php echo esc_html( $update_btn_text ); ?> <?php echo esc_attr( $filename ); ?>" class="button button-warning"/>
     <?php } ?>
-
-    <input type="hidden" name="page" value="<?php echo esc_attr( $page ); ?>">
-    <input type="hidden" name="tab" value="<?php echo esc_attr( $tab ); ?>">
-    <input type="hidden" name="<?php echo esc_attr( $pf ); ?>updated" value="true">
-    <?php if ( !$confirm ) { ?>
-        <input type="hidden" name="confirm" value="true">
-    <?php } ?>
-    <br><br>
-    
-    <input type="submit" value="<?php echo esc_html( $update_btn_text ); ?> <?php echo esc_attr( $filename ); ?>" class="button button-warning"/>
 </form>
 
 <br><br>

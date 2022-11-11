@@ -5,7 +5,7 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.1
 Requires PHP: 7.4
-Stable tag: 1.3.5
+Stable tag: 1.3.6
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -90,10 +90,10 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 10. Regex playground
 
 == Changelog ==
-= 1.3.5 =
-* Added setting for condensing admin bar items
-* Updated 'ddtt_highlight_debug_log' and 'ddtt_debug_log_help_col' hooks with more options
-* Added view recent links to debug log in Easy Reader
-* Added links to color key on debug log in Easy Reader to filter results
-* Added a search field to debug log in Easy Reader
-* Removed from menu if not admin
+= 1.3.6 =
+* Added inactive plugins to plugins tab
+* Added "Sites" column to plugins tab on multisite network to see which sites plugins are installed on
+* Added multisite suffixes to title and browser tabs to clearly identify which site you are on
+* Added support for multisite
+* Reverted to display name in Online Users if no first and last name is provided
+* Ensure is_plugin_active() is defined for admin on multisite

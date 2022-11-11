@@ -122,8 +122,6 @@ if ( $shortcode != '' ) {
             // if ( strpos( $content, $full_shortcode_prefix ) !== false ) {
             $shortcode_regex = '/'.get_shortcode_regex( [ $shortcode ] ).'/';
             if ( preg_match_all( $shortcode_regex, $content, $matches ) ) {
-                // dpr( $matches );
-                // dpr( $matches[3] );
 
                 // Count
                 $count = count( $matches[0] );
@@ -303,7 +301,6 @@ if ( $shortcode != '' && !empty( $results ) ) {
 
     // Get all themes
     $themes = wp_get_themes();
-    // dpr( $themes );
     ?>
 
     <!-- The table -->
@@ -335,6 +332,13 @@ if ( $shortcode != '' && !empty( $results ) ) {
                 $file_path = $fx->getFileName();
                 $file_path = str_replace( ABSPATH, '', $file_path );
 
+                // Get the admin url
+                if ( is_multisite() ) {
+                    $admin_url = str_replace( site_url( '/' ), '', rtrim( network_admin_url(), '/' ) );
+                } else {
+                    $admin_url = DDTT_ADMIN_URL;
+                }
+
                 // Check if it's a plugin
                 if ( strpos( $file_path, DDTT_PLUGINS_URL ) !== false ) {
 
@@ -365,13 +369,12 @@ if ( $shortcode != '' && !empty( $results ) ) {
 
                         // Get the plugin data
                         $plugin_data = get_plugin_data( $plugin_file );
-                        // dpr( $plugin_data );
 
                         // This is what we will display
                         $include = '<strong>Plugin:</strong> '.$plugin_data[ 'Name' ].'<br>';
 
                         // Update short file path link
-                        $file_path = '<a href="/'.esc_attr( DDTT_ADMIN_URL ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $file_path ).'</a>';
+                        $file_path = '<a href="/'.esc_attr( $admin_url ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $file_path ).'</a>';
                     }
 
                 // Check if it's a theme file
@@ -394,7 +397,7 @@ if ( $shortcode != '' && !empty( $results ) ) {
                     $include = '<strong>Theme:</strong> '.$theme_name.'<br>';
 
                     // Update short file path link
-                    $file_path = '<a href="/'.esc_attr( DDTT_ADMIN_URL ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $file_path ).'</a>';
+                    $file_path = '<a href="/'.esc_attr( $admin_url ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $file_path ).'</a>';
                 }
 
                 // Add the line number

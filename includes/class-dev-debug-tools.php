@@ -18,6 +18,15 @@ class DDTT_DEBUG_TOOLS {
 	 * Constructor
 	 */
 	public function __construct() {
+        // Ensure is_plugin_active() exists for multisite
+		if ( !function_exists( 'is_plugin_active' ) ) {
+            if ( is_network_admin() ) {
+                $admin_url = str_replace( site_url( '/' ), '', rtrim( admin_url(), '/' ) );
+            } else {
+                $admin_url = DDTT_ADMIN_URL;
+            }
+			include_once( ABSPATH . $admin_url . '/includes/plugin.php' );
+		}
 
         // Add "Settings" link to plugins page
         add_filter( 'plugin_action_links_'.plugin_basename(__FILE__), [ $this, 'settings_link' ] );
@@ -57,7 +66,6 @@ class DDTT_DEBUG_TOOLS {
      * @return void
      */
     public function load_dependencies() {
-
         // Admin Options page
         require_once DDTT_PLUGIN_ADMIN_PATH . 'global-options.php';
 
