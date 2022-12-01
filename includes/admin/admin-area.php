@@ -47,7 +47,7 @@ class DDTT_ADMIN_AREA {
         add_action( 'pre_get_posts', [ $this, 'admin_search_include_ids' ] );
 
         // Change browser tabs for plugin
-        add_filter( 'admin_title', [ $this, 'browser_tabs' ], 10, 2 );
+        add_filter( 'admin_title', [ $this, 'browser_tabs' ], 999, 2 );
         
 	} // End __construct()
 
@@ -307,8 +307,10 @@ class DDTT_ADMIN_AREA {
         if ( is_admin() ) {
 
             // Get the current screen
-            $screen = get_current_screen()->id;
-            $options_page = str_replace('.php', '', ddtt_plugin_options_short_path());
+            global $current_screen;
+            
+            // Get the options page slug
+            $options_page = 'toplevel_page_'.DDTT_TEXTDOMAIN;
 
             // Allow for multisite
             if ( is_network_admin() ) {
@@ -316,7 +318,7 @@ class DDTT_ADMIN_AREA {
             }
 
             // Are we on an options page?
-            if ( $screen == $options_page && ddtt_get( 'tab' ) ) {
+            if ( $current_screen->id == $options_page && ddtt_get( 'tab' ) ) {
 
                 // Get the tab
                 $tab = ddtt_get( 'tab' );

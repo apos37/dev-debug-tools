@@ -6,10 +6,7 @@
 
     <?php 
     // Build the current url
-    $page = ddtt_plugin_options_short_path();
-    $tab = 'settings';
-    $current_url = ddtt_plugin_options_path( $tab );
-    $current_domain = ddtt_get_domain();
+    $admin = str_replace( site_url( '/' ), '', rtrim( admin_url(), '/' ) );
 
     // Get all of the subsites
     global $wpdb;
@@ -21,9 +18,14 @@
         foreach( $subsites as $subsite ) {
             $subsite_id = $subsite->blog_id;
             $subsite_name = get_blog_details( $subsite_id )->blogname;
-            $link = str_replace( $current_domain, $subsite->domain, $current_url );
+            $link = get_site_url( $subsite_id ).'/'.$admin.'/admin.php?page='.DDTT_TEXTDOMAIN.'&tab=settings';
+            if ( is_main_site( $subsite_id ) ) {
+                $is_main_site = ' — <em>Primary</em>';
+            } else {
+                $is_main_site = '';
+            }
             ?>
-            <li><a href="<?php echo esc_url( $link ); ?>"><?php echo esc_attr( $subsite_name ); ?></a> (ID: <?php echo absint( $subsite_id ); ?>)</li>
+            <li><a href="<?php echo esc_url( $link ); ?>"><?php echo esc_attr( $subsite_name ); ?></a> (ID: <?php echo absint( $subsite_id ); ?>)<?php echo wp_kses_post( $is_main_site ); ?></li>
             <?php
         }
         ?></ul><?php

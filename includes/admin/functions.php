@@ -108,11 +108,13 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
         }
         if ( !is_null( $args ) && isset( $args[ 'pattern' ] ) ) {
             $pattern = ' pattern="'.$args[ 'pattern' ].'"';
+            $autocomplete = ' autocomplete="off"';
         } else {
             $pattern = '';
+            $autocomplete = '';
         }
         
-        $input = '<input type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="'.esc_attr( $value ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$required.'/>';
+        $input = '<input type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="'.esc_attr( $value ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$autocomplete.$required.'/>';
 
     // Number Field
     } elseif ( $type == 'number' ) {
@@ -187,8 +189,10 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
         }
         if ( !is_null( $args ) && isset( $args[ 'pattern' ] ) ) {
             $pattern = ' pattern="'.$args[ 'pattern' ].'"';
+            $autocomplete = ' autocomplete="off"';
         } else {
             $pattern = '';
+            $autocomplete = '';
         }
 
         if ( !is_array( $value ) ) {
@@ -197,7 +201,7 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
         
         $input = '<div id="text_plus_'.esc_attr( $option_name ).'">
             <a href="#" class="add_form_field">Add New Field +</a>
-            <div><input type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'[]" value="'.esc_attr( $value[0] ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$required.'/></div>
+            <div><input type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'[]" value="'.esc_attr( $value[0] ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$autocomplete.$required.'/></div>
         </div>';
 
         // Add jQuery
@@ -338,7 +342,8 @@ function ddtt_wp_kses_allowed_html() {
             'style' => [],
             'pattern' => [],
             'disabled' => [],
-            'size' => []
+            'size' => [],
+            'autocomplete' => [],
         ],
         'textarea' => [
             'type' => [],
@@ -348,12 +353,14 @@ function ddtt_wp_kses_allowed_html() {
             'rows' => [],
             'cols' => [],
             'required' => [],
+            'autocomplete' => [],
         ],
         'select' => [
             'id' => [],
             'class' => [],
             'name' => [],
             'required' => [],
+            'autocomplete' => [],
         ],
         'option' => [
             'value' => [],
@@ -655,23 +662,37 @@ function ddtt_view_file_contents( $path, $log = false, $highlight_args = array()
         // Empty array
         $modified_lines = [];
 
-        // Start the line count
-        $line_count = $log ? 0 : 1;
-
         // Default CSS
         $results = '';
+
+        // Count the total number of lines
+        $total_count = count( $lines );
         
-        // For each line...
-        foreach( $lines as $key => $line ){
+        // How many lines are we allowing?
+        $allowed_qty = 100;
 
-            // Check if we're viewing a log
-            if ( $log ) {
+        // Offset
+        $allowed_qty_with_offset = $allowed_qty + 1;
 
+        // Get the difference
+        if ( $total_count > $allowed_qty_with_offset ) {
+            $start_count = $total_count - $allowed_qty_with_offset;
+        } else {
+            $start_count = 0;
+        }
+
+        // Are we displaying the debug.log?
+        if ( $log ) {
+
+            // Iter
+            for ( $i = $start_count; $i < $total_count; $i++ ){
+
+                // Line var
+                $line = $lines[ $i ];
+            
                 // If so, we're going to filter out blank lines
                 if ( $line != '' ) {
-                    // Increase the line count
-                    $line_count ++; 
-    
+
                     // Convert UTC times to local
                     $dev_timezone = get_option( DDTT_GO_PF.'dev_timezone', wp_timezone_string() );
 
@@ -690,82 +711,33 @@ function ddtt_view_file_contents( $path, $log = false, $highlight_args = array()
                     } else {
                         $new_line = $line;
                     }
-                    
-                    // Add classes to the line based on keywords found
-                    $class = '';
-                    if ( !empty( $highlight_args ) ) {
-
-                        // Iter the args
-                        foreach ( $highlight_args as $hl_key => $hl ) {
-
-                            // Make sure we have a keyword/class and the column is err
-                            if ( isset( $hl[ 'keyword' ] ) && 
-                                    isset( $hl[ 'column' ] ) && 
-                                    $hl[ 'column' ] == 'err' ) {
-
-                                // Get the keyword
-                                $keyword = sanitize_text_field( $hl[ 'keyword' ] );
-
-                                // Allow slashes
-                                $keyword = str_replace( '/', '\/', $keyword );
-
-                                // Search the line for the keyword
-                                if ( preg_match( '/'.$keyword.'/', $new_line ) ) {
-                                    $class .= ' '.esc_attr( $hl_key );
-                                }
-                            }
-                        }
-                    }
     
-                    // Prevent repeats
-                    $og_key = null;
-                    if ( $allow_repeats ) {
-                        $on_line = strval( strstr( $line, 'on line' ) );
-                        foreach ( $modified_lines as $key => $modified_line ){
-                            if ( $on_line != '' ) {
-                                if ( strpos( $modified_line, $on_line ) && strpos( $modified_line, $on_line ) !== false ){
-                                    $og_key = $key;
-                                }
-                            }
-                        }
-                    }
-
-                    // Separate line from path
+                    // Escape any html
                     $esc_line = esc_html( $new_line );
-                    if ( strpos( $esc_line, 'in /' ) !== false ) {
-                        $line_parts = explode( ' in /', $esc_line );
-                        $warning_with_date = $line_parts[0];
-                        
-                        if ( strpos( $warning_with_date, '] PHP ' ) !== false ) {
-                            $warning_parts = explode( '] PHP ', $warning_with_date );
-                            $warning_date = $warning_parts[0].']';
-                            $warning = ' PHP '.$warning_parts[1];
 
-                            $warning_path = ' in /'.$line_parts[1];
-                            $esc_line = $warning_date.' <a href="https://www.google.com/search?q='.$warning.'" target="_blank">'.$warning.'</a>'.$warning_path;
-                        }
-                    }
-
-                    // If the line number already exists
-                    if ( $og_key ) {
-                        $modified_lines[ $og_key ] = '<div class="debug-li'.$class.'"><span class="debug-ln unselectable">'.$line_count.'</span><span class="ln-content"><span class="repeat">REPEAT</span> '.$esc_line.' </span></div>';
-
-                    } else {
-                        $modified_lines[] = '<div class="debug-li'.$class.'"><span class="debug-ln unselectable">'.$line_count.'</span><span class="ln-content">'.$esc_line.'</span></div>';
-                    }
+                    // Add the line
+                    $modified_lines[] = '<div class="debug-li"><span class="debug-ln unselectable">'.round( $i + 1 ).'</span><span class="ln-content">'.$esc_line.'</span></div>';
                 }
+            }
 
-            } else {
+        // Otherwise, no log
+        } else {
+
+            // Start the line count
+            $line_count = 1;
+
+            // For each line...
+            foreach( $lines as $key => $line ) {
 
                 // If not, check for comment marks; add a class
                 if (substr( $line, 0, 3 ) === '// ' || 
-                    substr( $line, 0, 3 ) === '/**' || 
-                    substr( $line, 0, 2 ) === ' *' || 
-                    substr( $line, 0, 1 ) === '*' || 
-                    substr( $line, 0, 2 ) === '*/' || 
-                    substr( $line, 0, 2 ) === '/*' || 
-                    substr( $line, 0, 1 ) === '#') {
-                        $comment_out = ' comment-out';
+                substr( $line, 0, 3 ) === '/**' || 
+                substr( $line, 0, 2 ) === ' *' || 
+                substr( $line, 0, 1 ) === '*' || 
+                substr( $line, 0, 2 ) === '*/' || 
+                substr( $line, 0, 2 ) === '/*' || 
+                substr( $line, 0, 1 ) === '#') {
+                    $comment_out = ' comment-out';
                 } else {
                     $comment_out = '';
                 }
@@ -782,7 +754,7 @@ function ddtt_view_file_contents( $path, $log = false, $highlight_args = array()
         }
         
         // Turn the new lines into a string
-        $code = implode('', $modified_lines);
+        $code = implode( '', $modified_lines );
         
     } else {
         // Otherwise say the file wasn't found
@@ -797,9 +769,16 @@ function ddtt_view_file_contents( $path, $log = false, $highlight_args = array()
         $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
         $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
         $last_modified = $dt->format( 'F j, Y g:i A T' );
+
+        // Include last number of lines for log
+        if ( $log && $total_count > $allowed_qty ) {
+            $incl_showing = ' (Showing last '.$allowed_qty.')';
+        } else {
+            $incl_showing = '';
+        }
             
         // Display the error count
-        $results .= 'Lines: <strong>'.$line_count.'</strong> <span class="sep">|</span> Filesize: <strong>'.ddtt_format_bytes( filesize( $file ) ).'</strong> <span class="sep">|</span> Last Modified: <strong>'.$last_modified.'</strong><br><br>';
+        $results .= 'Lines: <strong>'.$total_count.'</strong>'.$incl_showing.' <span class="sep">|</span> Filesize: <strong>'.ddtt_format_bytes( filesize( $file ) ).'</strong> <span class="sep">|</span> Last Modified: <strong>'.$last_modified.'</strong><br><br>';
     }
     
     // Return the code with the defined path at top
@@ -1194,7 +1173,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
             if ( !empty( $actual_lines ) ) {
 
                 // Start the table
-                $code = '<table class="admin-large-table easy-reader">
+                $code = '<table class="log-table easy-reader">
                 <tr>
                     <th class="line">Line #</th>
                     <th class="date">Date/Time</th>

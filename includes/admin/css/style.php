@@ -9,16 +9,17 @@ global $current_screen;
 if ( !isset( $current_screen->id ) ) {
     return;
 }
-$screen = $current_screen->id;
-$options_page = str_replace('.php', '', ddtt_plugin_options_short_path());
+
+// Get the options page slug
+$options_page = 'toplevel_page_'.DDTT_TEXTDOMAIN;
 
 // Allow for multisite
 if ( is_network_admin() ) {
     $options_page .= '-network';
 }
 
-// Are we on the options page?
-if ( $screen && $screen == $options_page ) {
+// Are we on an options page?
+if ( $current_screen->id == $options_page ) {
 
     // Set default colors here
     $bg_primary             = '#1E1E1E'; // Background primary
@@ -121,23 +122,23 @@ if ( $screen && $screen == $options_page ) {
     }
 
     /* Tables */
-    .admin-large-table {
+    .admin-large-table, .log-table {
         width: 100%;
     }
-    .admin-large-table {
+    .admin-large-table, .log-table {
         border-collapse: collapse;
     }
-    .admin-large-table,
-    .admin-large-table th,
-    .admin-large-table td {
+    .admin-large-table, .log-table,
+    .admin-large-table th, .log-table th,
+    .admin-large-table td, .log-table td {
         border: 1px solid <?php echo esc_attr( $borders_main ); ?>;
     }
-    .admin-large-table th,
-    .admin-large-table td {
+    .admin-large-table th, .log-table th,
+    .admin-large-table td, .log-table td {
         color: <?php echo esc_attr( $text_primary ); ?> !important;
         padding: 10px;
     }
-    .admin-large-table td {
+    .admin-large-table td, .log-table td {
         word-break:break-all;
     }
     .admin-large-table tr:nth-child(even) {
@@ -149,7 +150,7 @@ if ( $screen && $screen == $options_page ) {
     .form-table tr td:last-child {
         padding-right: 0;
     }
-    .admin-large-table pre {
+    .admin-large-table pre, .log-table pre {
         word-break: break-word;
         white-space: pre-wrap;
     }
@@ -263,10 +264,10 @@ if ( $screen && $screen == $options_page ) {
     }
 
     /* Input fields */
-    .<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?>-includes-admin-options-php input[type=text],
-    .<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?>-includes-admin-options-php input[type=number],
-    .<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?>-includes-admin-options-php textarea,
-    .<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?>-includes-admin-options-php select {
+    .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> input[type=text],
+    .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> input[type=number],
+    .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> textarea,
+    .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> select {
         background-color: <?php echo esc_attr( $bg_secondary ); ?> !important;
         color: <?php echo esc_attr( $text_primary ); ?> !important;
         padding: 8px 12px !important;
@@ -275,18 +276,18 @@ if ( $screen && $screen == $options_page ) {
         min-height: 2.85rem !important;
         vertical-align: revert;
     }
-    .<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?>-includes-admin-options-php textarea {
+    .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> textarea {
         width: 100%;
         height: 20rem;
         cursor: auto;
     }
-    .<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?>-includes-admin-options-php select {
+    .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> select {
         background: none;
         -webkit-appearance: menulist !important;
         -moz-appearance: menulist !important; 
         appearance: menulist !important;
     }
-    .<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?>-includes-admin-options-php input[type=color] {
+    .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> input[type=color] {
         background-color: <?php echo esc_attr( $bg_secondary ); ?> !important;
         height: 4rem;
     }

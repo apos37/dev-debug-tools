@@ -302,7 +302,7 @@ class DDTT_LOGS {
         }
 
         // Add color panel
-        if ( $dl == 'debug_log' && $filesize < absint( $dl_max_filesize ) && !empty( $highlight_args ) ) {
+        if ( $dl == 'debug_log' && $dl_viewer == 'easy' && $filesize < absint( $dl_max_filesize ) && !empty( $highlight_args ) ) {
 
             // Outer container
             $highlights = '<br><br><div id="color-identifiers">';

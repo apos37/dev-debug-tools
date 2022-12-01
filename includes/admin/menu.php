@@ -33,11 +33,14 @@ class DDTT_MENU {
 	 */
 	public function __construct() {
         // Define the menu slug
-        $this->slug = DDTT_TEXTDOMAIN . '/includes/admin/options.php';
+        $this->slug = DDTT_TEXTDOMAIN;
 
         // Add the menu
         $hook = is_network_admin() ? 'network_' : '';
         add_action( $hook.'admin_menu', [ $this, 'admin_menu' ] );
+
+        // Show active menu
+        add_filter( 'parent_file', [ $this, 'submenus' ] );
 	} // End __construct()
 
 
@@ -87,13 +90,13 @@ class DDTT_MENU {
 
         // Add a new top level menu link to the ACP
         add_menu_page(
-            DDTT_NAME,          // Title of the page
-            DDTT_NAME.$sfx,     // Text to show on the menu link
-            'manage_options',   // Capability requirement to see the link
-            $this->slug,        // The 'slug' (file to display when clicking the link)
-            '',                 // Additional function to call
-            $icon,              // The admin menu icon
-            2                   // Position on the menu
+            DDTT_NAME,                  // Title of the page
+            DDTT_NAME.$sfx,             // Text to show on the menu link
+            'manage_options',           // Capability requirement to see the link
+            $this->slug,                // The 'slug' (file to display when clicking the link)
+            [ $this, 'options_page' ],  // Function to call
+            $icon,                      // The admin menu icon
+            2                           // Position on the menu
         );
 
         // Fetch the global submenu
@@ -114,7 +117,7 @@ class DDTT_MENU {
         ];
 
         // Add them
-        foreach ($menu_items as $key => $menu_item) {
+        foreach ( $menu_items as $key => $menu_item ) {
             
             // Skip if multisite
             if ( is_network_admin() && in_array( $key, $multisite_skip ) ) {
@@ -122,14 +125,51 @@ class DDTT_MENU {
             }
             
             // Skip hidden subpages
-            if ( isset($menu_item[3]) && $menu_item[3] == true ) {
+            if ( isset( $menu_item[3] ) && $menu_item[3] == true ) {
                 continue;
             }
 
             // Add the menu item
-            $submenu[$this->slug][] = array( $menu_item[0], 'manage_options', ddtt_plugin_options_path($key) );
+            $submenu[ $this->slug ][] = array( $menu_item[0], 'manage_options', 'admin.php?page='.DDTT_TEXTDOMAIN.'&tab='.$key );
         }
     } // End admin_menu()
+
+
+    /**
+     * Call the options page
+     *
+     * @return void
+     */
+    public function options_page() {
+        include DDTT_PLUGIN_ADMIN_PATH.'options.php';
+    } // End options_page()
+
+
+    /**
+     * Show the active submenu
+     *
+     * @param string $parent_file
+     * @return string
+     */
+    public function submenus( $parent_file ) {
+        // Get the global vars
+        global $submenu_file, $current_screen;
+
+        // Get the options page
+        $options_page = 'toplevel_page_'.DDTT_TEXTDOMAIN;
+
+        // Allow for multisite
+        if ( is_network_admin() ) {
+            $options_page .= '-network';
+        }
+
+        // Help Docs
+        if ( $current_screen->id == $options_page ) {
+            $tab = ddtt_get( 'tab' ) ?? '';
+            $submenu_file = 'admin.php?page='.DDTT_TEXTDOMAIN.'&tab='.$tab;
+        }
+        return $parent_file;
+    } // End submenus()
 }
 
 
@@ -170,7 +210,9 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         } else {
             $multisite .= 'Note that this site is on a multisite network.';
         }
-        $multisite .= ' All sites share the same file located on the primary site. Please go to the primary site if you need to update it.</em></strong>';
+        $admin = str_replace( site_url( '/' ), '', rtrim( admin_url(), '/' ) );
+        $main_site_url = get_site_url( get_main_site_id() ).'/'.$admin.'/admin.php?page='.DDTT_TEXTDOMAIN.'&tab=logs';
+        $multisite .= ' All sites share the same file located on the primary site. Please go to the <a href="'.$main_site_url.'" target="_blank">primary site</a> if you need to update it.</em></strong>';
     }
 
     // The menu items

@@ -3,9 +3,9 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.3.6
+ * Version:             1.3.9
  * Requires at least:   5.9.0
- * Tested up to:        6.1
+ * Tested up to:        6.1.1
  * Requires PHP:        7.4
  * Author:              Apos37
  * Author URI:          https://github.com/apos37
@@ -34,7 +34,7 @@ define( 'DDTT_TEXTDOMAIN', 'dev-debug-tools' );
 define( 'DDTT_AUTHOR', 'Apos37' );
 
 // Versions
-define( 'DDTT_VERSION', '1.3.6' );
+define( 'DDTT_VERSION', '1.3.9' );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum
@@ -85,18 +85,18 @@ define( 'DDTT_PLUGIN_ADMIN_PATH', DDTT_PLUGIN_INCLUDES_PATH.'admin/' );         
 define( 'DDTT_PLUGIN_CLASSES_PATH', DDTT_PLUGIN_INCLUDES_PATH.'classes/' );                         //: /home/.../public_html/wp-content/plugins/dev-debug-tools/includes/classes/
 define( 'DDTT_PLUGIN_FILES_PATH', DDTT_PLUGIN_SHORT_DIR.'includes/files/' );                        //: /wp-content/plugins/dev-debug-tools/includes/files/
 
-//: https://domain.com/wp-admin/admin.php?page=dev-debug-tools%2Fincludes%2Fadmin%2Foptions.php
-//: https://domain.com/wp-admin/admin.php?page=dev-debug-tools%2Fincludes%2Fadmin%2Foptions.php&tab=testing
+//: https://domain.com/wp-admin/admin.php?page=dev-debug-tools
+//: https://domain.com/wp-admin/admin.php?page=dev-debug-tools&tab=testing
 function ddtt_plugin_options_path( $tab = null ) {
     $incl_tab = !is_null( $tab ) ? '&tab='.sanitize_html_class( $tab ) : '';
-    return ddtt_admin_url( 'admin.php?page='. DDTT_TEXTDOMAIN .'%2Fincludes%2Fadmin%2Foptions.php'.$incl_tab );
+    return ddtt_admin_url( 'admin.php?page='.DDTT_TEXTDOMAIN.$incl_tab );
 } // End ddtt_plugin_options_path()
 
-//: dev-debug-tools/includes/admin/options.php
-//: dev-debug-tools/includes/admin/options.php&tab=testing
+//: dev-debug-tools
+//: dev-debug-tools&tab=testing
 function ddtt_plugin_options_short_path( $tab = null ) {
     $incl_tab = !is_null($tab) ? '&tab='.sanitize_html_class( $tab ) : '';
-    return DDTT_TEXTDOMAIN .'/includes/admin/options.php'.$incl_tab;
+    return DDTT_TEXTDOMAIN.$incl_tab;
 } // End ddtt_plugin_options_path()
 
 
@@ -123,7 +123,9 @@ function ddtt_multisite_suffix() {
 register_activation_hook( __FILE__, 'ddtt_activate_plugin' );
 function ddtt_activate_plugin() {
     // Log when this plugin was installed
-    update_option( DDTT_GO_PF.'plugin_installed', date( 'Y-m-d H:i:s' ) );
+    if ( !get_option( DDTT_GO_PF.'plugin_installed' ) ) {
+        update_option( DDTT_GO_PF.'plugin_installed', date( 'Y-m-d H:i:s' ) );
+    }
 
 	// Log when this plugin was last activated
     update_option( DDTT_GO_PF.'plugin_activated', date( 'Y-m-d H:i:s' ) );

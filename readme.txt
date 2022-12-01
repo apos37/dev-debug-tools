@@ -3,9 +3,9 @@ Contributors: apos37
 Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
-Tested up to: 6.1
+Tested up to: 6.1.1
 Requires PHP: 7.4
-Stable tag: 1.3.6
+Stable tag: 1.3.9
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -90,10 +90,12 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 10. Regex playground
 
 == Changelog ==
-= 1.3.6 =
-* Added inactive plugins to plugins tab
-* Added "Sites" column to plugins tab on multisite network to see which sites plugins are installed on
-* Added multisite suffixes to title and browser tabs to clearly identify which site you are on
-* Added support for multisite
-* Reverted to display name in Online Users if no first and last name is provided
-* Ensure is_plugin_active() is defined for admin on multisite
+= 1.3.9 =
+* Add link to primary site on debug log if not on primary site
+* Fixed subsite links on network settings page
+* Fixed debug log easy viewer highlighting issue
+
+= 1.3.8 =
+* Changed classic debug log viewer to show raw last 100 lines with user's timezone
+* Shortened submenu slugs to not include full url
+* Removed 'clear_debug_log' query string so we can refresh log without clearing it again
