@@ -5,14 +5,14 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.1.1
 Requires PHP: 7.4
-Stable tag: 1.3.9
+Stable tag: 1.3.11
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 WordPress debugging and testing tools for developers
 
 == Description ==
-A simple plugin that gives developers the tools they need to debug and test things as they develop and troubleshoot their WordPress site.
+Developers tools for debugging and testing things as you develop and troubleshoot your WordPress site.
 
 * View debug.log and error logs directly from admin in your timezone, conveniently combining repeats for readability, and with quick links to search Google for suggested solutions.
 * Quickly clear your debug and error logs with a click of a button.
@@ -90,12 +90,6 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 10. Regex playground
 
 == Changelog ==
-= 1.3.9 =
-* Add link to primary site on debug log if not on primary site
-* Fixed subsite links on network settings page
-* Fixed debug log easy viewer highlighting issue
-
-= 1.3.8 =
-* Changed classic debug log viewer to show raw last 100 lines with user's timezone
-* Shortened submenu slugs to not include full url
-* Removed 'clear_debug_log' query string so we can refresh log without clearing it again
+= 1.3.11 =
+* Minor fixes related to multisite
+* Added a couple more recommended plugins

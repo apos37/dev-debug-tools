@@ -71,7 +71,7 @@ class DDTT_ADMIN_AREA {
             </style>
             <div class="misc-pub-section misc-pub-debug">
                 <label for="my_custom_post_action">Debug:</label>
-                <a href="<?php echo esc_url( ddtt_plugin_options_path( 'post_meta' ) ); ?>&post_id=<?php echo absint( $post_id ); ?>" target="_blank">Post Meta</a>
+                <a href="<?php echo esc_url( ddtt_plugin_options_path( 'postmeta' ) ); ?>&post_id=<?php echo absint( $post_id ); ?>" target="_blank">Post Meta</a>
             </div>
             <?php
         }
@@ -94,8 +94,10 @@ class DDTT_ADMIN_AREA {
 
         // WP.org plugins
         $wp_plugins = apply_filters( 'ddtt_recommended_plugins', [
+            'another-show-hooks',
             'aryo-activity-log',
             'asgaros-forum',
+            'code-snippets',
             'debug-bar',
             'debug-this',
             'debugpress',
@@ -105,7 +107,6 @@ class DDTT_ADMIN_AREA {
             'import-users-from-csv-with-meta',
             'post-type-switcher',
             'query-monitor',
-            'code-snippets',
             'user-menus',
             'user-role-editor',
             'wp-crontrol',
@@ -116,7 +117,7 @@ class DDTT_ADMIN_AREA {
         ] );
 
         // Sort them
-        sort( $wp_plugins );
+        rsort( $wp_plugins );
 
         // Add plugin list which you want to show as feature in dashboard.
         foreach ( $wp_plugins as $wp_p ) {

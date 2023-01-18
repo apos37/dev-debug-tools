@@ -25,5 +25,5 @@ $user_id = ddtt_get_user_from_query_string();
 
 
 
-// $test = my_test_function();
+// $test = wp_get_upload_dir();
 // dpr( $test );

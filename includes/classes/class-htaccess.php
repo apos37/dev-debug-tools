@@ -546,11 +546,11 @@ class DDTT_HTACCESS {
 
                     // Separate into lines and make html characters work again
                     $separate_safe_lines = [];
-                    foreach($safe_file_lines as $k => $sfl) {
-                        if ($k === array_key_last($safe_file_lines)) {
-                            $separate_safe_lines[] = html_entity_decode($sfl);
+                    foreach( $safe_file_lines as $k => $sfl ) {
+                        if ( $k === array_key_last( $safe_file_lines ) ) {
+                            $separate_safe_lines[] = html_entity_decode( $sfl );
                         } else {
-                            $separate_safe_lines[] = html_entity_decode($sfl).PHP_EOL;
+                            $separate_safe_lines[] = html_entity_decode( $sfl ).PHP_EOL;
                         }
                     }
 

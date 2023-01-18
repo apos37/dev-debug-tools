@@ -3,7 +3,7 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.3.9
+ * Version:             1.3.11
  * Requires at least:   5.9.0
  * Tested up to:        6.1.1
  * Requires PHP:        7.4
@@ -34,7 +34,7 @@ define( 'DDTT_TEXTDOMAIN', 'dev-debug-tools' );
 define( 'DDTT_AUTHOR', 'Apos37' );
 
 // Versions
-define( 'DDTT_VERSION', '1.3.9' );
+define( 'DDTT_VERSION', '1.3.11' );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum
