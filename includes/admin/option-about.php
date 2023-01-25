@@ -2,9 +2,57 @@
 ul {
     list-style: square;
     padding: revert;
+    padding-top: 10px;
+    padding-bottom: 5px;
 }
 ul li {
     padding-inline-start: 1ch;
+}
+#feedback-message {
+    margin-bottom: 10px;
+}
+#feedback-message::placeholder {
+    color: #ccc;
+}
+#feedback-sending {
+    line-height: 2.25;
+    font-style: italic;
+    margin-left: 10px;
+    display: none;
+}
+#feedback-sending:after {
+    display: inline-block;
+    animation: dotty steps(1,end) 1s infinite;
+    content: '';
+}
+@keyframes dotty {
+    0%   { content: ''; }
+    25%  { content: '.'; }
+    50%  { content: '..'; }
+    75%  { content: '...'; }
+    100% { content: ''; }
+}
+#feedback-result {
+    color: white;
+    font-weight: 500;
+    width: fit-content;
+    border-radius: 4px;
+    padding: 6px 10px;
+}
+#feedback-result.success {
+    background-color: green;
+    display: inline-block;
+    margin-left: 10px;
+}
+#feedback-result.fail {
+    background-color: red;
+    margin-top: 10px;
+}
+.plugin-card, .plugin-card-bottom {
+    background-color: #2D2D2D;
+}
+body #wpbody-content .plugin-card .plugin-action-buttons a.button.install-now[aria-disabled="true"] {
+    color: #2D2D2D !important;
 }
 </style>
 
@@ -35,6 +83,24 @@ if ( $coffee_filter ) {
 ?>
 
 <br><br><br>
+<h3>How Can We Improve?</h3>
+<div id="feedback-form">
+    <div class="form-group">
+        <label for="message" style="display: block;">If there was one thing you would change about this plugin, what would it be?</label> 
+        <br><textarea id="feedback-message" name="message" class="form-control input-message" rows="6" style="width: 40rem; height: 10rem;" placeholder="Your feedback..."></textarea><br>
+    </div>
+    <?php 
+    $nonce = wp_create_nonce( DDTT_GO_PF.'feedback' );
+    $user = get_userdata( get_current_user_id() ); 
+    $display_name = $user->display_name; 
+    $email = $user->user_email; 
+    ?>
+    <button class="button button-secondary submit" data-nonce="<?php echo esc_attr( $nonce ); ?>" data-name="<?php echo esc_attr( $display_name ); ?>" data-email="<?php echo esc_attr( $email ); ?>" disabled>Send Feedback</button>
+    <div id="feedback-sending">Sending</div>
+    <div id="feedback-result"></div>
+</div>
+
+<br><br><br>
 <h3>Planned Features</h3>
 <p>The following features are currently planned, but are not necessarily in order. If you would like to request a feature, please do so on Discord at the link above.</p>
 <ul>
@@ -44,3 +110,7 @@ if ( $coffee_filter ) {
     <li>Add a color converter (hex to RGB, etc.)</li>
     <li>Add light mode (if requested)</li>
 </ul>
+
+<br><br>
+<h3>Try My Other Plugin</h3>
+<?php echo wp_kses_post( ddtt_plugin_card( 'admin-help-docs' ) ); ?>

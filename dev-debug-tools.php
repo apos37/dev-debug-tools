@@ -3,11 +3,11 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.3.11
+ * Version:             1.3.12
  * Requires at least:   5.9.0
  * Tested up to:        6.1.1
  * Requires PHP:        7.4
- * Author:              Apos37
+ * Author:              Aristocles
  * Author URI:          https://github.com/apos37
  * Text Domain:         dev-debug-tools
  * License:             GPL v2 or later
@@ -31,10 +31,11 @@ define( 'DDTT_GO_PF', 'ddtt_' ); // Global options prefix
 // Names
 define( 'DDTT_NAME', 'Developer Debug Tools' );
 define( 'DDTT_TEXTDOMAIN', 'dev-debug-tools' );
-define( 'DDTT_AUTHOR', 'Apos37' );
+define( 'DDTT_AUTHOR', 'Aristocles' );
+define( 'DDTT_AUTHOR_EMAIL', 'apos37@pm.me' );
 
 // Versions
-define( 'DDTT_VERSION', '1.3.11' );
+define( 'DDTT_VERSION', '1.3.12' );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum
@@ -83,6 +84,7 @@ define( 'DDTT_PLUGIN_IMG_PATH', DDTT_PLUGIN_DIR.'includes/admin/img/' );        
 define( 'DDTT_PLUGIN_INCLUDES_PATH', DDTT_PLUGIN_ROOT.'includes/' );                                //: /home/.../public_html/wp-content/plugins/dev-debug-tools/includes/
 define( 'DDTT_PLUGIN_ADMIN_PATH', DDTT_PLUGIN_INCLUDES_PATH.'admin/' );                             //: /home/.../public_html/wp-content/plugins/dev-debug-tools/includes/admin/
 define( 'DDTT_PLUGIN_CLASSES_PATH', DDTT_PLUGIN_INCLUDES_PATH.'classes/' );                         //: /home/.../public_html/wp-content/plugins/dev-debug-tools/includes/classes/
+define( 'DDTT_PLUGIN_JS_PATH', DDTT_PLUGIN_SHORT_DIR.'includes/admin/js/' );                        //: /wp-content/plugins/dev-debug-tools/includes/admin/js/
 define( 'DDTT_PLUGIN_FILES_PATH', DDTT_PLUGIN_SHORT_DIR.'includes/files/' );                        //: /wp-content/plugins/dev-debug-tools/includes/files/
 
 //: https://domain.com/wp-admin/admin.php?page=dev-debug-tools

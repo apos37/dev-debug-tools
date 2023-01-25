@@ -12,7 +12,7 @@ $timezone = get_option( DDTT_GO_PF.'dev_timezone', wp_timezone_string() );
 // Plugin installed date
 if ( $installed_date = get_option( 'ddtt_plugin_installed' ) ) {
     $installed_date = ddtt_convert_timezone( $installed_date, 'F j, Y g:i A', $timezone );
-    echo '<br>Plugin was installed on '.esc_html( $installed_date );
+    echo '<br>Plugin was installed/updated on '.esc_html( $installed_date );
 }
 
 // Plugin activated date

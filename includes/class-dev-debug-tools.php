@@ -108,6 +108,7 @@ class DDTT_DEBUG_TOOLS {
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-wpconfig.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-htaccess.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-quick-links.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-feedback.php';
 
         // Admin additional CSS from php file
         // Must not be initialized too early, or else error upon activation:
@@ -131,6 +132,9 @@ class DDTT_DEBUG_TOOLS {
                 }
             }
         } );
+
+        // Enqueue scripts
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
     } // End load_admin_dependencies()
 
 
@@ -156,4 +160,43 @@ class DDTT_DEBUG_TOOLS {
         $protocols[] = 'data';
         return $protocols;
     } // End kses_allowed_protocols()
+
+
+    /**
+     * Enqueue scripts
+     * Reminder to bump version number during testing to avoid caching
+     *
+     * @param string $hook
+     * @return void
+     */
+    public function enqueue_scripts( $screen ) {
+        
+        // Get the options page slug
+        $options_page = 'toplevel_page_'.DDTT_TEXTDOMAIN;
+
+        // Allow for multisite
+        if ( is_network_admin() ) {
+            $options_page .= '-network';
+        }
+
+        // Are we on the options page?
+        if ( $screen != $options_page ) {
+            return;
+        }
+
+        // Handle
+        $handle = DDTT_GO_PF.'script';
+
+        // Feedback form
+        if ( ddtt_get( 'tab', '==', 'about' ) ) {
+            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'feedback.js', [ 'jquery' ], '1.0.2' );
+            wp_localize_script( $handle, 'feedbackAjax', [ 'ajaxurl' => admin_url( 'admin-ajax.php' ) ] );
+        }
+
+        // Run jQuery, et al
+        if ( ddtt_get( 'tab', '==', 'about' ) ) {
+            wp_enqueue_script( 'jquery' );
+            wp_enqueue_script( $handle );
+        }
+    }
 }

@@ -1,4 +1,9 @@
 == changelog.txt ==
+= 1.3.12 =
+* Changed author name from Apos37 to Aristocles
+* Added feedback form in about tab
+* Added Admin Help Docs plugin to recommended plugins and on about tab
+
 = 1.3.11 =
 * Minor fixes related to multisite
 * Added a couple more recommended plugins

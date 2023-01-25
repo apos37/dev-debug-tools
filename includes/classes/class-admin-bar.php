@@ -27,6 +27,7 @@ class DDTT_ADMIN_BAR {
 
         // Customize the admin bar menu
         add_action( 'admin_bar_menu', [ $this, 'admin_bar' ], 99999 );
+        
 	} // End __construct()
 
 

@@ -94,6 +94,7 @@ class DDTT_ADMIN_AREA {
 
         // WP.org plugins
         $wp_plugins = apply_filters( 'ddtt_recommended_plugins', [
+            'admin-help-docs',
             'another-show-hooks',
             'aryo-activity-log',
             'asgaros-forum',

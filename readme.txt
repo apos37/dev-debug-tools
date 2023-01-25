@@ -5,11 +5,11 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.1.1
 Requires PHP: 7.4
-Stable tag: 1.3.11
+Stable tag: 1.3.12
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
-WordPress debugging and testing tools for developers
+Lots of debugging and testing tools for developers.
 
 == Description ==
 Developers tools for debugging and testing things as you develop and troubleshoot your WordPress site.
@@ -90,6 +90,7 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 10. Regex playground
 
 == Changelog ==
-= 1.3.11 =
-* Minor fixes related to multisite
-* Added a couple more recommended plugins
+= 1.3.12 =
+* Changed author name from Apos37 to Aristocles
+* Added feedback form in about tab
+* Added Admin Help Docs plugin to recommended plugins and on about tab
