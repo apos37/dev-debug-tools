@@ -25,6 +25,12 @@ class DDTT_ADMIN_AREA {
 	 * Constructor
 	 */
 	public function __construct() {
+        // Add a settings link to plugins list page
+        add_filter( 'plugin_action_links_'.DDTT_TEXTDOMAIN.'/'.DDTT_TEXTDOMAIN.'.php', [ $this, 'settings_link' ] );
+
+        // Add links to the website and discord
+        add_filter( 'plugin_row_meta', [ $this, 'plugin_row_meta' ], 10, 2 );
+
         // Add debug links
         add_action( 'post_submitbox_misc_actions', [ $this, 'post_submitbox_actions' ] );
 
@@ -50,6 +56,53 @@ class DDTT_ADMIN_AREA {
         add_filter( 'admin_title', [ $this, 'browser_tabs' ], 999, 2 );
         
 	} // End __construct()
+
+
+    /**
+     * Add a settings link to plugins list page
+     *
+     * @param array $links
+     * @return array
+     */
+    public function settings_link( $links ) {
+        // Build and escape the URL.
+        $url = esc_url( ddtt_plugin_options_path( 'settings' ) );
+        
+        // Create the link.
+        $settings_link = "<a href='$url'>" . __( 'Settings', 'dev-debug-tools' ) . '</a>';
+        
+        // Adds the link to the end of the array.
+        array_unshift(
+            $links,
+            $settings_link
+        );
+
+        // Return the links
+        return $links;
+    } // End settings_link()
+
+
+    /**
+     * Add links to the website and discord
+     *
+     * @param array $links
+     * @return array
+     */
+    public function plugin_row_meta( $links, $file ) {
+        // Only apply to this plugin
+        if ( DDTT_TEXTDOMAIN.'/'.DDTT_TEXTDOMAIN.'.php' == $file ) {
+
+            // Add the link
+            $row_meta = [
+                'docs' => '<a href="'.esc_url( 'https://apos37.com/wordpress-developer-debug-tools/' ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Website Link', 'dev-debug-tools' ).'">'.esc_html__( 'Website', 'dev-debug-tools' ).'</a>',
+                'discord' => '<a href="'.esc_url( 'https://discord.gg/VeMTXRVkm5' ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Support on Discord', 'dev-debug-tools' ).'">'.esc_html__( 'Discord Support', 'dev-debug-tools' ).'</a>'
+            ];
+            return array_merge( $links, $row_meta );
+        }
+
+        // Return the links
+        return (array) $links;
+    } // End plugin_row_meta()
 
 
     /**

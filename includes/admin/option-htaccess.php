@@ -15,6 +15,10 @@
 .full_width_container.temp {
     filter: invert( 100% );
 }
+.wp-core-ui .button:disabled, 
+.wp-core-ui .button[disabled] {
+    cursor: not-allowed;
+}
 </style>
 
 <?php include 'header.php'; ?>
@@ -73,6 +77,16 @@ if ( ddtt_get( $pf.'updated', '==', 'true' ) ) {
     $DDTT_HTACCESS->rewrite( $filename, $snippets, $enabled, $testing, $confirm );
     // dpr( $enabled );
 }
+
+// Are we deleting backups?
+if ( ddtt_get( 'delete_backups', '==', 'true' ) ) {
+    $deleted_backups = $DDTT_HTACCESS->delete_backups();
+    if ( $deleted_backups ) {
+        $s = count( $deleted_backups ) > 1 ? 's' : '';
+        ddtt_admin_notice( 'success', '&#x1F4A5; You have successfully destroyed '.absint( count( $deleted_backups ) ).' old backup'.$s.'.' );
+    }
+    ddtt_remove_qs_without_refresh( [ 'delete_backups' ] );
+}
 ?>
 
 <form method="get" action="<?php echo esc_url( $current_url ); ?>">
@@ -112,6 +126,67 @@ if ( ddtt_get( $pf.'updated', '==', 'true' ) ) {
             <th scope="row">Current <?php echo esc_html( $filename ); ?> file (View Only)</th>
             <td><div class="full_width_container">
                 <?php echo wp_kses_post( ddtt_view_file_contents( $filename ) ); ?>
+            </div></td>
+        </tr>
+    </table>
+
+    <table class="form-table">
+        <tr valign="top">
+            <th scope="row">Backups</th>
+            <td><div class="full_width_container">
+                <?php
+                $backups = ddtt_get_files( 'htaccess', '.htaccess' );
+                if ( !empty( $backups ) ) {
+                    ?>
+                    <!--All files in your root directory that contain "<strong>htaccess</strong>" in the filename will show up here with links to preview them. By clicking on a "Preview" link, you will be able to preview the file's contents and choose whether or not you want to restore it or delete it. Restoring it replaces the current "<strong>wp-config.php</strong>" file.<br><br><em>Backups made from this plugin will named like so:</em> <code>wp-config-[YEAR]-[MONTH]-[DAY]-[HOUR]-[MINUTE]-[SECOND].php</code><br><em>All others will be marked as possibly unsafe to restore.</em>-->
+                    All files in your root directory that contain "<strong>htaccess</strong>" in the filename are shown here for reference.<br><br><em>Backups made from this plugin will named like so:</em> <code>.htaccess-[YEAR]-[MONTH]-[DAY]-[HOUR]-[MINUTE]-[SECOND]</code><br><em>All others will be marked as possibly unsafe.</em><br><br><hr><br><strong><?php echo absint( count( $backups ) ); ?> Files Found:</strong>
+                    <ul>
+                        <?php
+                        // Count ones that can be deleted
+                        $can_delete = 0;
+
+                        // Number them
+                        $count_backups = 0;
+                        
+                        // Iter the backups
+                        foreach ( $backups as $backup ) {
+
+                            // Remove the filepath
+                            $exp = explode( '/', $backup );
+                            $short = trim( array_pop( $exp ) );
+                            
+                            // Check if it's ours
+                            $ours = ' - <strong>&#9888; Possibly Unsafe</strong>';
+                            $pattern = '/.htaccess\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}/';
+                            if ( preg_match( $pattern, $short ) ) {
+                                $ours = '';
+
+                                // Skip the first one as it will always be the most recent
+                                $count_backups++;
+                                if ( $count_backups > 1 ) {
+                                    $can_delete++;
+                                }
+                            }
+                            ?>
+                            <li><?php echo esc_attr( $short ); ?> <?php echo wp_kses_post( $ours ); ?></li>
+                            <?php
+                        }
+                        ?>
+                    </ul>
+                    <?php
+                    if ( $can_delete > 0 ) {
+                        ?>
+                        <br><hr>
+                        <a href="<?php echo esc_url( $current_url.'&delete_backups=true' ); ?>">Clear All Except Most Recent</a> (Doing so will delete all other files added by this plugin only)
+                        <?php
+                    }
+                } else {
+                    ?>
+                    All files in your root directory that contain "<strong>htaccess</strong>" in the filename will show up here for reference.<br>
+                    <br><strong><em>No backups found...</em></strong>
+                    <?php
+                }
+                ?>
             </div></td>
         </tr>
     </table>
@@ -200,8 +275,7 @@ if ( ddtt_get( $pf.'updated', '==', 'true' ) ) {
             <input type="hidden" name="confirm" value="true">
         <?php } ?>
         <br><br>
-        
-        <input type="submit" value="<?php echo esc_html( $update_btn_text ); ?> <?php echo esc_html( $filename ); ?>" class="button button-warning"/>
+        <input id="preview_btn" type="submit" value="<?php echo esc_html( $update_btn_text ); ?> <?php echo esc_attr( $filename ); ?>" class="button button-warning" disabled/>
     <?php } ?>
 </form>
 
@@ -209,3 +283,16 @@ if ( ddtt_get( $pf.'updated', '==', 'true' ) ) {
 <form method="post">
     <input type="submit" value="Download current <?php echo esc_html( $filename ); ?>" name="ddtt_download_htaccess" class="button button-primary"/>
 </form>
+
+<script>
+// Show/Hide Preview Button
+var ddttCheckBox = document.querySelectorAll( ".checkbox-cell input[type='checkbox']" );
+ddttCheckBox.forEach( function( item ) {
+  item.addEventListener( 'click', function() {
+    var previewBtn = document.getElementById( "preview_btn" );
+    if ( previewBtn.disabled == true ) {
+        previewBtn.disabled = false;
+    }
+  } )
+} )
+</script>

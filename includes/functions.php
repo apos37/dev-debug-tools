@@ -756,6 +756,56 @@ function ddtt_get_styles( $path = true ) {
 
 
 /**
+ * Get the path to files that include a keyword
+ *
+ * @param string $keyword
+ * @param string|array $exclude
+ * @param string|false $path
+ * @return array
+ */
+function ddtt_get_files( $keyword, $exclude = [], $path = false ) {
+    // Full directory path
+    if ( $path ) {
+        $dir = ABSPATH.$path;
+    } else {
+        $dir = ABSPATH;
+    }
+
+    // Scan the css folder
+    $scan = scandir( $dir );
+
+    // Files to exclude
+    $exc = ['.', '..', 'index.php'];
+    if ( is_array( $exclude ) && !empty( $exclude ) ) {
+        $exc = array_merge( $exc, $exclude );
+    } elseif ( !is_array( $exclude ) && $exclude != '' ) {
+        $exc[] = $exclude;
+    }
+
+    // Store the files here
+    $files = [];
+
+    // Cycle through each filename
+    foreach( $scan as $file ) {
+
+        // Check if the directory exists, the file is not excluded
+        if ( !is_dir( $dir.$file ) && !in_array( $file, $exc ) ) {
+
+            // Check if it contains the keyword
+            if ( strpos( $file, $keyword ) !== false ) {
+
+                // Return the file
+                $files[] = $dir.$file;
+            }
+        }
+    }
+
+    // Return the array
+    return $files;
+} // End ddtt_get_files()
+
+
+/**
  * Debug $_POST via Email
  * USAGE: ddtt_debug_form_post( 'yourname@youremail.com', 2 );
  *

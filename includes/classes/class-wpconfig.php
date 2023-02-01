@@ -205,6 +205,26 @@ class DDTT_WPCONFIG {
                     ]
                 ]
             ],
+            'disallow_file_edit' => [
+                'label' => 'Disable Plugin/Theme Editors',
+                'lines' => [
+                    [
+                        'prefix' => 'define',
+                        'variable' => 'DISALLOW_FILE_EDIT',
+                        'value' => TRUE
+                    ]
+                ]
+            ],
+            'disable_wp_cron' => [
+                'label' => 'Disable WP Cron Scheduler',
+                'lines' => [
+                    [
+                        'prefix' => 'define',
+                        'variable' => 'DISABLE_WP_CRON',
+                        'value' => TRUE
+                    ]
+                ]
+            ],
         ] );
         return $snippets;
     } // End snippets()
@@ -850,4 +870,65 @@ class DDTT_WPCONFIG {
             return;
         }
     } // End rewrite()
+
+
+    /**
+     * Delete all backups added by our plugin except for most recent
+     *
+     * @return array|false
+     */
+    public function delete_backups() {
+        // Get the backups
+        $backups = ddtt_get_files( 'wp-config', 'wp-config.php' );
+
+        // Make sure there are backups
+        if ( !empty( $backups ) ) {
+
+            // Reverse sort them
+            rsort( $backups );
+
+            // Store the filenames that were deleted
+            $deleted = [];
+
+            // Number them so we can skip the first one that is ours
+            $delete = 0;
+
+            // Iter the backups
+            foreach ( $backups as $backup ) {
+
+                // Remove the filepath
+                $exp = explode( '/', $backup );
+                $short = trim( array_pop( $exp ) );
+                
+                // Check if it's ours
+                $pattern = '/wp\-config\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}.php/';
+                if ( preg_match( $pattern, $short ) ) {
+
+                    // Get the date from the filename
+                    // $date_string = str_replace( [ 'wp-config-', '.php' ], '', $short );
+                    // $d = explode( '-', $date_string );
+                    // $date = date( 'Y-m-d H:i:s', strtotime( $d[0].'-'.$d[1].'-'.$d[2].' '.$d[3].':'.$d[4].':'.$d[5] ) );
+                    
+                    // Skip the first one as it will always be the most recent
+                    $delete++;
+                    if ( $delete == 1 ) {
+                        continue;
+                    }
+
+                    // Otherwise delete it
+                    if ( file_exists( $backup ) && unlink( $backup ) ) {
+                        $deleted[] = $short;
+                    }
+                }
+            }
+
+            // If we deleted some, let's return them
+            if ( !empty( $deleted ) ) {
+                return $deleted;
+            }
+        }
+
+        // Else return false
+        return false;
+    } // delete_backups()
 }

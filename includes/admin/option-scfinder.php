@@ -373,8 +373,17 @@ if ( $shortcode != '' && !empty( $results ) ) {
                         // This is what we will display
                         $include = '<strong>Plugin:</strong> '.$plugin_data[ 'Name' ].'<br>';
 
-                        // Update short file path link
-                        $file_path = '<a href="/'.esc_attr( $admin_url ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $file_path ).'</a>';
+                        // Make sure editors are not disabled
+                        if ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) {
+                                
+                            // Update short file path link
+                            $file_path = esc_attr( $file_path );
+
+                        } else {
+                            
+                            // Update short file path link
+                            $file_path = '<a href="/'.esc_attr( $admin_url ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $file_path ).'</a>';
+                        }
                     }
 
                 // Check if it's a theme file
@@ -396,8 +405,17 @@ if ( $shortcode != '' && !empty( $results ) ) {
                     // This is what we will display
                     $include = '<strong>Theme:</strong> '.$theme_name.'<br>';
 
-                    // Update short file path link
-                    $file_path = '<a href="/'.esc_attr( $admin_url ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $file_path ).'</a>';
+                    // Make sure editors are not disabled
+                    if ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) {
+                            
+                        // Update short file path link
+                        $file_path = esc_attr( $file_path );
+
+                    } else {
+                        
+                        // Update short file path link
+                        $file_path = '<a href="/'.esc_attr( $admin_url ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $file_path ).'</a>';
+                    }
                 }
 
                 // Add the line number

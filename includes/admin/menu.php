@@ -129,6 +129,11 @@ class DDTT_MENU {
                 continue;
             }
 
+            // Skip subpages if not dev
+            if ( isset( $menu_item[2] ) && $menu_item[2] == true && !ddtt_is_dev() ) {
+                continue;
+            }
+
             // Add the menu item
             $submenu[ $this->slug ][] = array( $menu_item[0], 'manage_options', 'admin.php?page='.DDTT_TEXTDOMAIN.'&tab='.$key );
         }
@@ -224,6 +229,7 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'logs'              => [ __( 'Logs', 'dev-debug-tools' ).$notif, 'Your log files.'.$multisite, true ],
         'wpcnfg'            => [ 'WP-CONFIG', 'View and update your wp-config.php. Please backup the original before updating.'.$multisite, true ],
         'htaccess'          => [ 'HTACCESS', 'View and update your .htaccess from here. Please backup the original before updating.'.$multisite, true ],
+        'fx'                => [ 'FX', 'A simple functions.php viewer.', true ],
         'phpini'            => [ 'PHP.INI', 'All registered configuration options from your php.ini', true ],
         'phpinfo'           => [ 'PHP Info', ' Information about your PHP\'s configuration', true ],
         'cookies'           => [ __( 'Cookies', 'dev-debug-tools' ), 'Cookies currently on your site.', true ],

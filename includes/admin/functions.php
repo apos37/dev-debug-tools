@@ -97,7 +97,7 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
 
     // Checkbox
     if ($type == 'checkbox') {
-        $input = '<input type="checkbox" name="'.esc_attr( $option_name ).'" value="1" '.checked( 1, $value, false ).''.$required.'/>';
+        $input = '<input type="checkbox" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="1" '.checked( 1, $value, false ).''.$required.'/>';
 
     // Text Field
     } elseif ( $type == 'text' ) {
@@ -264,7 +264,7 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
     }
 
     // Build the row
-    $row = '<tr valign="top">
+    $row = '<tr valign="top" id="row_'.esc_attr( $option_name ).'">
         <th scope="row">'.$label.'</th>
         <td>'.$input.$submit_button.' '.$incl_comments.'</td>
     </tr>';
@@ -313,7 +313,8 @@ function ddtt_wp_kses_allowed_html() {
         ],
         'tr' => [
             'valign' => [],
-            'class' => []
+            'class' => [],
+            'id' => [],
         ],
         'th' => [
             'scope' => [],
@@ -1370,9 +1371,17 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                             // This is what we will display
                             $plugin_or_theme = 'Plugin: '.$plugin_name.'<br>';
 
-                            // Update short file path link
-                            $short_path = '<a href="/'.esc_attr( $admin_url ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $short_path ).'</a>';
-                            
+                            // Make sure editors are not disabled
+                            if ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) {
+                                
+                                // Update short file path link
+                                $short_path = esc_attr( $short_path );
+
+                            } else {
+                                
+                                // Update short file path link
+                                $short_path = '<a href="/'.esc_attr( $admin_url ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $short_path ).'</a>';
+                            }
                         }
 
                     // Check if it's a theme file
@@ -1394,8 +1403,17 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                         // This is what we will display
                         $plugin_or_theme = 'Theme: '.$theme_name.'<br>';
 
-                        // Update short file path link
-                        $short_path = '<a href="/'.esc_attr( $admin_url ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $short_path ).'</a>';
+                        // Make sure editors are not disabled
+                        if ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) {
+                            
+                            // Update short file path link
+                            $short_path = esc_attr( $short_path );
+
+                        } else {
+                            
+                            // Update short file path link
+                            $short_path = '<a href="/'.esc_attr( $admin_url ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $short_path ).'</a>';
+                        }
                     }
 
                     // Check for a qty
@@ -2074,8 +2092,9 @@ function ddtt_time_elapsed_string( $datetime, $full = false ) {
 
 /**
  * Simplify admin notice that allows passing arguments
+ * USAGE: ddtt_admin_notice( 'warning', 'Your message!' ); // <-- No need to echo
  *
- * @param string $type // Accepts 'success' or 'error'
+ * @param string $type // Accepts 'success', 'error', or 'warning'
  * @param string $msg
  * @return void
  */

@@ -34,13 +34,51 @@
 
 <?php } else { ?>
 
+    <?php
+    // Check if the developer is already added as a developer
+    $is_dev = false;
+    $user = get_userdata( get_current_user_id() );
+    if ( get_option( 'admin_email' ) == $user->user_email || ( get_option( DDTT_GO_PF.'dev_email' ) && get_option( DDTT_GO_PF.'dev_email' ) != '' ) ) {
+        $get_dev_emails = get_option( DDTT_GO_PF.'dev_email' );
+        $exp_dev_emails = explode( ',', $get_dev_emails );
+        foreach ( $exp_dev_emails as $dev_email ) {
+            if ( strtolower( $user->user_email ) == trim( strtolower( $dev_email ) ) ) {
+                $is_dev = true;
+            }
+        }
+    }
+
+    // If they are not a developer
+    if ( !$is_dev ) {
+
+        // Add extra instructions
+        $instructions = '<br>// This will give you access to additional settings and all of the debugging and testing tabs available for developers.';
+
+        // Activated by the current user?
+        if ( get_option( DDTT_GO_PF.'plugin_activated_by' ) && get_option( DDTT_GO_PF.'plugin_activated_by' ) == get_current_user_id() ) {
+            ddtt_admin_notice( 'success', 'Thank you for activating this plugin! If you are a developer using this plugin for debugging and testing, please enter your email address in the "Developer Account Email Addresses" field below. This must be the email address of the account you will be logged in as.' );
+        }
+
+    } else {
+
+        // Activated by the current user?
+        if ( get_option( DDTT_GO_PF.'plugin_activated_by' ) && get_option( DDTT_GO_PF.'plugin_activated_by' ) == get_current_user_id() ) {
+            $instructions = '<br>// If you would like to give access to additional developers, just add their account email addresses above.';
+
+        } else {
+
+            // No extra instructions
+            $instructions = '';
+        }
+    }
+    ?>
+
     <form method="post" action="options.php">
         <?php settings_fields( DDTT_PF.'group_settings' ); ?>
         <?php do_settings_sections( DDTT_PF.'group_settings' ); ?>
         <table class="form-table">
-            <?php echo wp_kses( ddtt_options_tr( 'dev_email', 'Developer Email Addresses', 'text', '<br>// Default is admin email
-            <br>// Used for testing code using the <strong>ddtt_is_dev()</strong> function globally
-            <br>// Displays debug notifications, additional debug tabs, and other helpful things for developers', [ 'default' => get_bloginfo( 'admin_email' ), 'pattern' => '^^([\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})(\s*,\s*[\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})*$' ] ), $allowed_html ); ?>
+            <?php echo wp_kses( ddtt_options_tr( 'dev_email', 'Developer Account Email Addresses', 'text', $instructions.'<br>// Default is the admin email
+            <br>// You may use multiple email addresses separated by commas', [ 'default' => get_bloginfo( 'admin_email' ), 'pattern' => '^^([\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})(\s*,\s*[\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})*$' ] ), $allowed_html ); ?>
 
             <?php $timezone_args = [ 
                 'default' => wp_timezone_string(),
@@ -48,7 +86,6 @@
                 'options' => DateTimeZone::listIdentifiers()
             ]; ?>
             <?php echo wp_kses( ddtt_options_tr( 'dev_timezone', 'Developer Timezone', 'select', '<br>// Default is what the site uses', $timezone_args ), $allowed_html ); ?>
-
             
         </table>
 
@@ -144,3 +181,19 @@
         <?php submit_button(); ?>
     </form>
 <?php } ?>
+
+<script>
+// Display cURL change field
+ddtt_curl_timeout_seconds();
+function ddtt_curl_timeout_seconds() {
+    var enableCURL = document.getElementById( "<?php echo esc_attr( DDTT_GO_PF ); ?>enable_curl_timeout" );
+    enableCURL.addEventListener( "change", function() {
+        var changeCURL = document.getElementById( "row_<?php echo esc_attr( DDTT_GO_PF ); ?>change_curl_timeout" );
+        if ( this.checked ) {
+            changeCURL.style.display = 'table-row';
+        } else {
+            changeCURL.style.display = 'none';
+        }
+    } );
+}
+</script>

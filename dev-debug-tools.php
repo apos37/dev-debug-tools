@@ -3,12 +3,12 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.3.12
+ * Version:             1.4.0
  * Requires at least:   5.9.0
  * Tested up to:        6.1.1
  * Requires PHP:        7.4
- * Author:              Aristocles
- * Author URI:          https://github.com/apos37
+ * Author:              Apos37
+ * Author URI:          https://apos37.com/
  * Text Domain:         dev-debug-tools
  * License:             GPL v2 or later
  * License URI:         http://www.gnu.org/licenses/gpl-2.0.txt
@@ -31,11 +31,11 @@ define( 'DDTT_GO_PF', 'ddtt_' ); // Global options prefix
 // Names
 define( 'DDTT_NAME', 'Developer Debug Tools' );
 define( 'DDTT_TEXTDOMAIN', 'dev-debug-tools' );
-define( 'DDTT_AUTHOR', 'Aristocles' );
+define( 'DDTT_AUTHOR', 'Apos37' );
 define( 'DDTT_AUTHOR_EMAIL', 'apos37@pm.me' );
 
 // Versions
-define( 'DDTT_VERSION', '1.3.12' );
+define( 'DDTT_VERSION', '1.4.0' );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum
@@ -131,6 +131,9 @@ function ddtt_activate_plugin() {
 
 	// Log when this plugin was last activated
     update_option( DDTT_GO_PF.'plugin_activated', date( 'Y-m-d H:i:s' ) );
+
+    // Log who activated this plugin
+    update_option( DDTT_GO_PF.'plugin_activated_by', get_current_user_id() );
 
     // Uninstall
     register_uninstall_hook( __FILE__, DDTT_GO_PF.'uninstall_plugin' );

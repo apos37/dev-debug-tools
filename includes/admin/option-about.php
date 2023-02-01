@@ -104,6 +104,7 @@ if ( $coffee_filter ) {
 <h3>Planned Features</h3>
 <p>The following features are currently planned, but are not necessarily in order. If you would like to request a feature, please do so on Discord at the link above.</p>
 <ul>
+    <li>Add ability to restore old backups of wp-config and .htaccess files</li>
     <li>Add common php code snippets, such as wp_query, add_shortcode, etc.</li>
     <li>Add detailed descriptions of code snippets</li>
     <li>Make a human-readable version of the debug.log with explanations of common errors</li>

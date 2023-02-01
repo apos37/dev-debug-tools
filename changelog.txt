@@ -1,6 +1,18 @@
 == changelog.txt ==
+= 1.4.0 =
+* Added a simple functions.php viewer
+* Added backups sections to wp-config/htaccess tabs with ability to clear old backups
+* Disabled preview button on wp-config/htaccess tabs if nothing is checked or unchecked
+* Fixed deprecated function in online users class
+* Fixed admin side menu showing tabs for non-devs
+* Made cURL seconds field show/hide with JS instead of needing to save the changes first
+* Added settings link, website link, and discord support link to plugins list page
+* Added message for user that activated the plugin with instructions on how to begin
+* Only make paths to plugin/theme editor pages if editors are not disabled
+* Added notice to top of Cron Jobs page if WP cron is disabled
+* Added two more snippets to wp-config: "DISALLOW_FILE_EDIT", "DISABLE_WP_CRON"
+
 = 1.3.12 =
-* Changed author name from Apos37 to Aristocles
 * Added feedback form in about tab
 * Added Admin Help Docs plugin to recommended plugins and on about tab
 

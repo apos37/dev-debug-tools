@@ -159,6 +159,11 @@ if ( $crons ) {
 }
 // dpr( $my_crons );
 
+// Check if wp cron is disabled
+if ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) {
+    ddtt_admin_notice( 'warning', 'WP Cron is disabled on your <code>wp-config.php</code> file, but it does not prevent the schedules from firing if called directly.' );
+}
+
 // Return the table
 echo '<div class="full_width_container">
     <table class="admin-large-table">

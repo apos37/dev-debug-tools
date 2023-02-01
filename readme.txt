@@ -5,14 +5,14 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.1.1
 Requires PHP: 7.4
-Stable tag: 1.3.12
+Stable tag: 1.4.0
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 Lots of debugging and testing tools for developers.
 
 == Description ==
-Developers tools for debugging and testing things as you develop and troubleshoot your WordPress site.
+Developer tools for debugging and testing things as you develop and troubleshoot your WordPress site.
 
 * View debug.log and error logs directly from admin in your timezone, conveniently combining repeats for readability, and with quick links to search Google for suggested solutions.
 * Quickly clear your debug and error logs with a click of a button.
@@ -35,7 +35,7 @@ Developers tools for debugging and testing things as you develop and troubleshoo
 * Regex playground with cheat sheet.
 * Enable/disable WP heartbeat from settings.
 * Extend cURL timeout errors easily.
-* Shortcode Finder displays all available shortcodes and lets you search posts and pages where they used.
+* Shortcode Finder displays all available shortcodes and lets you search posts and pages where they are used.
 * Additional user and post information on admin bar.
 * View online users to avoid working on the site at the same time as other admins and users.
 * Centering tool added to the admin bar that helps you line up elements on a page.
@@ -90,7 +90,15 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 10. Regex playground
 
 == Changelog ==
-= 1.3.12 =
-* Changed author name from Apos37 to Aristocles
-* Added feedback form in about tab
-* Added Admin Help Docs plugin to recommended plugins and on about tab
+= 1.4.0 =
+* Added a simple functions.php viewer
+* Added backups sections to wp-config/htaccess tabs with ability to clear old backups
+* Disabled preview button on wp-config/htaccess tabs if nothing is checked or unchecked
+* Fixed deprecated function in online users class
+* Fixed admin side menu showing tabs for non-devs
+* Made cURL seconds field show/hide with JS instead of needing to save the changes first
+* Added settings link, website link, and discord support link to plugins list page
+* Added message for user that activated the plugin with instructions on how to begin
+* Only make paths to plugin/theme editor pages if editors are not disabled
+* Added notice to top of Cron Jobs page if WP cron is disabled
+* Added two more snippets to wp-config: "DISALLOW_FILE_EDIT", "DISABLE_WP_CRON"

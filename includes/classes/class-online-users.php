@@ -54,7 +54,7 @@ class DDTT_ONLINE_USERS {
      */
     public function online_users( $return = 'count' ){
         // Get the user status transient
-        $logged_in_users = get_transient('users_status');
+        $logged_in_users = get_transient( 'users_status' );
         
         // If no users are online
         if ( empty( $logged_in_users ) ){
@@ -90,15 +90,13 @@ class DDTT_ONLINE_USERS {
      */
     public function users_status_init() {
         // Get the active users from the transient
-        $logged_in_users = get_transient('users_status'); 
+        $logged_in_users = get_transient( 'users_status' ); 
 
         // Get the current user's data
-        $user = wp_get_current_user(); 
+        $user = wp_get_current_user();
 
         // Update the user if they are not on the list, or if they have not been online in the last 900 seconds (15 minutes)
         if ( !isset( $logged_in_users[ $user->ID ][ 'last' ] ) || $logged_in_users[ $user->ID ][ 'last' ] <= time()-900 ) {
-            $timezone = get_option( 'timezone_string' );
-            date_default_timezone_set( $timezone );
             $logged_in_users[ $user->ID ] = [
                 'id' => $user->ID,
                 'username' => $user->user_login,
@@ -134,7 +132,7 @@ class DDTT_ONLINE_USERS {
      */
     public function user_last_online( $id ) {
         // Get the active users from the transient
-        $logged_in_users = get_transient('users_status'); 
+        $logged_in_users = get_transient( 'users_status' ); 
         
         // Determine if the user has ever been logged in (and return their last active date if so)
         if ( isset( $logged_in_users[ $id ][ 'last' ] ) ) {
@@ -375,7 +373,8 @@ class DDTT_ONLINE_USERS {
             if ( $this->is_user_online( $user_id ) ){
                 $output .= '<strong style="color: green;">Online Now</strong>';
             } else {
-                $output .= ( $this->user_last_online( $user_id ) ) ? '<small>Last Seen: <br /><em>' . date('M j, Y @ g:ia', $this->user_last_online( $user_id ) ) . '</em></small>' : '';
+                $last_seen = ddtt_convert_timezone( $this->user_last_online( $user_id ), 'M j, Y @ g:ia' );
+                $output .= ( $this->user_last_online( $user_id ) ) ? '<small>Last Seen: <br /><em>'.$last_seen.'</em></small>' : '';
             }
         
             // Return it
