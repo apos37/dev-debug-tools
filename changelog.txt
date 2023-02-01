@@ -1,4 +1,7 @@
 == changelog.txt ==
+= 1.4.1 =
+* Updated functions.php viewer
+
 = 1.4.0 =
 * Added a simple functions.php viewer
 * Added backups sections to wp-config/htaccess tabs with ability to clear old backups

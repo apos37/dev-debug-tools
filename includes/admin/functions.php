@@ -2194,13 +2194,26 @@ function ddtt_download_error_log() {
     ddtt_download_root_file( 'error_log' );
 }
 
+// FUNCTIONS.PHP
+if ( isset( $_POST[ 'ddtt_download_fx' ] ) ) {
+    add_action( 'init', 'ddtt_download_fx' );
+}
+function ddtt_download_fx() {
+    ddtt_download_root_file( 'functions.php', null, get_stylesheet_directory() );
+}
+
 // The function
-function ddtt_download_root_file( $filename, $content_type = null ) {
+function ddtt_download_root_file( $filename, $content_type = null, $path = null ) {
+    // File path
+    if ( is_null( $path ) ) {
+        $path = rtrim( ABSPATH, '/' );
+    }
+
     // Read the WPCONFIG
-    if ( is_readable( ABSPATH.$filename ) ) {
-        $file = ABSPATH.$filename;
-    } elseif ( is_readable( dirname( ABSPATH ).'/'.$filename ) ) {
-        $file = dirname( ABSPATH ).'/'.$filename;
+    if ( is_readable( $path.'/'.$filename ) ) {
+        $file = $path.'/'.$filename;
+    } elseif ( is_readable( dirname( $path ).'/'.$filename ) ) {
+        $file = dirname( $path ).'/'.$filename;
     } else {
         $file = false;
     }
