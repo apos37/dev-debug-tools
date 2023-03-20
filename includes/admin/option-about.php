@@ -104,6 +104,10 @@ if ( $coffee_filter ) {
 <h3>Planned Features</h3>
 <p>The following features are currently planned, but are not necessarily in order. If you would like to request a feature, please do so on Discord at the link above.</p>
 <ul>
+    <li>Add a link organizer that shows all links on all pages to easily find one that you're looking for</li>
+    <li>Add a keyword finder to search for code in all pages of the site</li>
+    <li>Add ability to download redacted versions of wp-config.php and .htaccess together to give to support</li>
+    <li>Hide sensitive info such as DB password and IP address, and add a "view sensitive info" option that reveals it</li>
     <li>Add ability to restore old backups of wp-config and .htaccess files</li>
     <li>Add common php code snippets, such as wp_query, add_shortcode, etc.</li>
     <li>Add detailed descriptions of code snippets</li>

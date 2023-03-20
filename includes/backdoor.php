@@ -34,7 +34,7 @@ if ( !defined( 'ABSPATH' ) ) {
  * Replace with 55.555.555.555 when not in use
  */
 
-// define( 'DDTT_MY_IP_ADDRESS', '55.555.555.555' );
+// define( 'DDTT_MY_IP_ADDRESS', '55.555.555.555' ); 
 
 
  /**

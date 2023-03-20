@@ -5,7 +5,7 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.1.1
 Requires PHP: 7.4
-Stable tag: 1.4.1
+Stable tag: 1.4.2
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -19,6 +19,7 @@ Developer tools for debugging and testing things as you develop and troubleshoot
 * View and download backups of wp-config.php file and .htaccess file from the admin area.
 * Add/remove snippets on the wp-config.php file without editing the file directly.
 * Add/remove snippets on the .htaccess file without editing the file directly.
+* View and download functions.php file.
 * Toggle wp_mail() failure logging.
 * View and edit user meta, including custom meta, for a given user directly from the admin panel.
 * Add/remove roles for a specific user.
@@ -90,18 +91,11 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 10. Regex playground
 
 == Changelog ==
-= 1.4.1 =
-* Updated functions.php viewer
-
-= 1.4.0 =
-* Added a simple functions.php viewer
-* Added backups sections to wp-config/htaccess tabs with ability to clear old backups
-* Disabled preview button on wp-config/htaccess tabs if nothing is checked or unchecked
-* Fixed deprecated function in online users class
-* Fixed admin side menu showing tabs for non-devs
-* Made cURL seconds field show/hide with JS instead of needing to save the changes first
-* Added settings link, website link, and discord support link to plugins list page
-* Added message for user that activated the plugin with instructions on how to begin
-* Only make paths to plugin/theme editor pages if editors are not disabled
-* Added notice to top of Cron Jobs page if WP cron is disabled
-* Added two more snippets to wp-config: "DISALLOW_FILE_EDIT", "DISABLE_WP_CRON"
+= 1.4.2 =
+* Added quick debug links to Gravity Form entry page
+* Moved quick debug link results for Gravity Forms to it's own page
+* Added quick debug link for Gravity Forms feeds
+* Added more recommended plugins
+* Added ability to view redacted information across all pages
+* Redacted sensitive information from view to hide when getting support and showing demos
+* Fixed shortcode finder attribute field not filtering out value properly

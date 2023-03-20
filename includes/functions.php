@@ -2,7 +2,7 @@
 /**
  * Functions that can be used globally.
  * If you are using these functions outside of the plugin, 
- * please use `if (is_plugin_active( 'wp-debug-tools' )) {}`
+ * please use `if ( is_plugin_active( 'dev-debug-tools/dev-debug-tools.php' ) ) { ... }`
  */
 
 // Exit if accessed directly.
@@ -29,7 +29,7 @@ function ddtt_alert( $msg, $user_id = null ) {
 
 
 /**
- * Undocumented function
+ * Console log with PHP
  *
  * @param string|array|object $msg
  * @param int $user_id
@@ -1412,6 +1412,20 @@ function ddtt_convert_timestamp_to_string( $ts ) {
         return date( 'F Y', $ts );
     }
 } // End ddtt_convert_timestamp_to_string()
+
+
+/**
+ * Display Example Script
+ * USAGE: [example to="John"]
+ * 
+ * @param array $atts
+ * @return string
+ */
+add_shortcode( 'example', 'ddtt_example_shortcode' );
+function ddtt_example_shortcode( $atts ) {
+    $atts = shortcode_atts( [ 'to' => 'Michael' ], $atts );
+    return 'Hello, '.$atts[ 'to' ];
+} // End ddtt_example_shortcode()
 
 
 /**

@@ -571,10 +571,17 @@ if ( $user ) {
                     $value = $val;
                 }
 
+                // Are we redacting?
+                if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+
+                    // Check if the value is an ip address
+                    if ( $key == 'user_login' ) {
+                        $value = str_replace( $value, '<div class="redact">'.$value.'</div>', $value );
+                    }
+                }
+
                 if ( $key == 'user_pass' ) {
                     $value = '<em><a href="/'.DDTT_ADMIN_URL.'/user-edit.php?user_id='.$user_id.'" target="_blank">Edit profile to change password</a></em>';
-                } else {
-                    $value = esc_html( $value );
                 }
                 ?>
                 <tr>
@@ -601,11 +608,42 @@ if ( $user ) {
                 if ( $key == $mk && $good ) {
                     $value = $val;
                 }
+                $value = $value[0];
 
+                // Are we redacting?
+                if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+
+                    // Check if the value is an ip address
+                    if ( preg_match( '/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/', $value ) ) {
+                        $value = str_replace( $value, '<div class="redact">'.$value.'</div>', $value );
+
+                    // Or if it's an array, let's search for an ip
+                    } elseif ( $array = unserialize( $value ) ) {
+                        $new_array = [];
+                        foreach ( $array as $k => $a ) {
+                            if ( strtolower( $k ) == 'ip' ) {
+                                $new_array[ $k ] = str_replace( $a, '<div class="redact">'.$a.'</div>', $a );
+                            } elseif ( is_array( $a ) ) {
+                                $new_sub_array = [];
+                                foreach ( $a as $sub_k => $sub_a ) {
+                                    if ( strtolower( $sub_k ) == 'ip' ) {
+                                        $new_sub_array[ $sub_k ] = str_replace( $sub_a, '<div class="redact">'.$sub_a.'</div>', $sub_a );
+                                    } else {
+                                        $new_sub_array[ $sub_k ] = $sub_a;
+                                    }
+                                }
+                                $new_array[ $k ] = $new_sub_array;
+                            } else {
+                                $new_array[ $k ] = $a;
+                            }
+                        }
+                        $value = serialize( $new_array );
+                    }
+                }
                 ?>
                 <tr>
                     <td><?php echo esc_attr( $key ); ?></td>
-                    <td><?php echo esc_html( $value[0] ); ?></td>
+                    <td><?php echo wp_kses_post( $value ); ?></td>
                 </tr>
                 <?php
             }

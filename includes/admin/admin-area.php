@@ -155,6 +155,7 @@ class DDTT_ADMIN_AREA {
             'debug-bar',
             'debug-this',
             'debugpress',
+            'disk-usage-sunburst',
             'fakerpress',
             'go-live-update-urls',
             'heartbeat-control', // WP Dashboard: 60, Frontend: Disable, Post Editor: 30
@@ -215,7 +216,7 @@ class DDTT_ADMIN_AREA {
             array_unshift( $res->plugins, $plugin_info );
 
         } else {
-            $plugin_info = plugins_api('plugin_information', array(
+            $plugin_info = plugins_api( 'plugin_information', array(
             'slug'   => $plugin_slug,
             'is_ssl' => is_ssl(),
             'fields' => array(
@@ -421,8 +422,8 @@ class DDTT_ADMIN_AREA {
                         $add = 'ID #'.$post_id.' | ';
                     }
 
-                // Testing
-                } elseif ( $tab == 'testing' ) {
+                // Gravity Form Debugging
+                } elseif ( $tab == 'gfdebug' ) {
 
                     // Debugs
                     $debugs = [];
@@ -439,12 +440,19 @@ class DDTT_ADMIN_AREA {
                         $debugs[] = 'Entry: '.$entry_id;
                     }
 
+                    // Check for debugging feed
+                    if ( ddtt_get( 'debug_feed' ) ) {
+                        $feed_id = filter_var( ddtt_get( 'debug_feed' ), FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 1 ] ] );
+                        $debugs[] = 'Feed: '.$feed_id;
+                    }
+
                     // Add
                     if ( !empty( $debugs ) && count( $debugs ) > 1 ) {
                         $debugs_f = [];
                         foreach( $debugs as $debug ) {
                             $debug = str_replace( 'Form:', 'F:', $debug );
                             $debug = str_replace( 'Entry:', 'E:', $debug );
+                            $debug = str_replace( 'Feed:', 'F:', $debug );
                             $debugs_f[] = $debug;
                         }
                         $add = implode( ' | ', $debugs_f ).' | ';

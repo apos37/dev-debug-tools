@@ -95,8 +95,11 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
         $required = '';
     }
 
+    // Autocomplete?
+    $autocomplete = ' autocomplete="off"';
+
     // Checkbox
-    if ($type == 'checkbox') {
+    if ( $type == 'checkbox' ) {
         $input = '<input type="checkbox" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="1" '.checked( 1, $value, false ).''.$required.'/>';
 
     // Text Field
@@ -108,10 +111,10 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
         }
         if ( !is_null( $args ) && isset( $args[ 'pattern' ] ) ) {
             $pattern = ' pattern="'.$args[ 'pattern' ].'"';
-            $autocomplete = ' autocomplete="off"';
+            // $autocomplete = ' autocomplete="off"';
         } else {
             $pattern = '';
-            $autocomplete = '';
+            // $autocomplete = '';
         }
         
         $input = '<input type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="'.esc_attr( $value ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$autocomplete.$required.'/>';
@@ -129,7 +132,7 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
             $pattern = '';
         }
         
-        $input = '<input type="number" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="'.esc_attr( $value ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$required.'/>';
+        $input = '<input type="number" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="'.esc_attr( $value ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$autocomplete.$required.'/>';
 
 
     // Text with Color Field
@@ -150,7 +153,7 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
             $rows = 6;
             $cols = 50;
         }
-        $input = '<textarea type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" rows="'.esc_attr( $rows ).'" cols="'.esc_attr( $cols ).'"'.$required.'>'.esc_html( $value ).'</textarea>';
+        $input = '<textarea type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" rows="'.esc_attr( $rows ).'" cols="'.esc_attr( $cols ).'"'.$autocomplete.$required.'>'.esc_html( $value ).'</textarea>';
 
     // Select    
     } elseif ( $type == 'select' ) {
@@ -189,10 +192,10 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
         }
         if ( !is_null( $args ) && isset( $args[ 'pattern' ] ) ) {
             $pattern = ' pattern="'.$args[ 'pattern' ].'"';
-            $autocomplete = ' autocomplete="off"';
+            // $autocomplete = ' autocomplete="off"';
         } else {
             $pattern = '';
-            $autocomplete = '';
+            // $autocomplete = '';
         }
 
         if ( !is_array( $value ) ) {
@@ -746,6 +749,29 @@ function ddtt_view_file_contents( $path, $log = false, $highlight_args = array()
                 // Escape the html early
                 $line = esc_html( $line );
 
+                // Check if we are redacting
+                if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+
+                    // Redact sensitive info
+                    $substrings = [
+                        'Require ip ',
+                    ];
+
+                    // Iter the globals
+                    foreach ( $substrings as $substring ) {
+
+                        // Attempt to find it
+                        if ( strpos( $line, $substring ) !== false ) {
+                            
+                            // Get the remaining piece of text
+                            $redact = trim( str_replace( $substring, '', $line ) );
+
+                            // Add redact div
+                            $line = str_replace( $redact, '<div class="redact">'.$redact.'</div>', $line );
+                        }
+                    }
+                }
+
                 // Add a new, modified line to the array
                 $modified_lines[] = '<div class="debug-li 2"><span class="debug-ln unselectable">'.$line_count.'</span><span class="ln-content'.$comment_out.' selectable">'.$line.'</span></div>';
 
@@ -782,8 +808,18 @@ function ddtt_view_file_contents( $path, $log = false, $highlight_args = array()
         $results .= 'Lines: <strong>'.$total_count.'</strong>'.$incl_showing.' <span class="sep">|</span> Filesize: <strong>'.ddtt_format_bytes( filesize( $file ) ).'</strong> <span class="sep">|</span> Last Modified: <strong>'.$last_modified.'</strong><br><br>';
     }
     
+    // Check if we are redacting
+    if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+
+        // Add redacted div to ABSPATH
+        $public_html = strstr( ABSPATH, '/public_html', true );
+        $abspath = str_replace( $public_html, '<span class="redact">'.$public_html.'</span>', ABSPATH );
+    } else {
+        $abspath = ABSPATH;
+    }
+
     // Return the code with the defined path at top
-    $results .= '<pre class="code">Installation path: '.ABSPATH.$path.'<br><br>'.$code.'</pre>';
+    $results .= '<pre class="code">Installation path: '.$abspath.$path.'<br><br>'.$code.'</pre>';
 
     return $results;
 } // End ddtt_view_file_contents()
@@ -1520,8 +1556,18 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
         $results .= 'Lines: <strong>'.$line_count.'</strong> <span class="sep">|</span> Unique Errors: <strong>'.count( $actual_lines ).'</strong> <span class="sep">|</span> Filesize: <strong>'.ddtt_format_bytes( filesize( $file ) ).'</strong> <span class="sep">|</span> Last Modified: <strong>'.$last_modified.'</strong><br><br>';
     }
 
+    // Check if we are redacting
+    if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+
+        // Add redacted div to ABSPATH
+        $public_html = strstr( ABSPATH, '/public_html', true );
+        $abspath = str_replace( $public_html, '<span class="redact">'.$public_html.'</span>', ABSPATH );
+    } else {
+        $abspath = ABSPATH;
+    }
+
     // Return the code with the defined path at top
-    $results .= 'Installation path: '.ABSPATH.$path.'<br><br>'.$code;
+    $results .= 'Installation path: '.$abspath.$path.'<br><br>'.$code;
 
     return $results;
 } // End ddtt_view_file_contents_easy_reader()
@@ -1696,23 +1742,74 @@ function ddtt_delete_unused_mk_tab( $post_type, $keyword, $dumk ) {
  * @return void|bool
  */
 function ddtt_highlight_file2( $filename, $return = false ) {
-    $str = highlight_file( $filename, true );
-    preg_match_all("/\<span style=\"color: #([\d|A|B|C|D|E|F]{6})\"\>.*?\<\/span\>/", $str, $mtch);
-    $m = array_unique( $mtch[1] );
+    // Highlight the file
+    $string = highlight_file( $filename, true );
 
+    // Find each of the spans
+    preg_match_all( "/\<span style=\"color: #([\d|A|B|C|D|E|F]{6})\"\>.*?\<\/span\>/", $string, $match );
+    $m = array_unique( $match[1] );
+
+    // Replace them with anchors and our own color classes
     $cls = '<style type="text/css">'."\n";
-    $rpl = array("</a>");
-    $mtc = array("</span>");
+    $rpl = [ "</a>" ];
+    $mtc = [ "</span>" ];
     $i = 0;
-    foreach($m as $clr) {
+    foreach( $m as $clr ) {
         $cls .= "a.c".$i."{color: #".$clr.";}\n";
         $rpl[] = "<a class=\"c".$i++."\">";
         $mtc[] = "<span style=\"color: #".$clr."\">";
     }
     $cls .= "</style>";
-    $str2 = str_replace($mtc,$rpl,$str);
-    if ( $return ) return $str2;
-    else echo wp_kses_post( $str2 );
+    $string2 = str_replace( $mtc, $rpl, $string );
+
+    // Check if we are redacting
+    if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+
+        // Redact sensitive info
+        $globals = [
+            'DB_USER',
+            'DB_NAME',
+            'DB_PASSWORD',
+            'AUTH_KEY',
+            'SECURE_AUTH_KEY',
+            'LOGGED_IN_KEY',
+            'NONCE_KEY',
+            'AUTH_SALT',
+            'SECURE_AUTH_SALT',
+            'LOGGED_IN_SALT',
+            'NONCE_SALT'
+        ];
+
+        // Iter the globals
+        foreach ( $globals as $global ) {
+
+            // The pattern we're searching for
+            $pattern = '/\<a class=\"c0\"\>define\<\/a\><a class=\"c2\"\>\((&nbsp;)*\<\/a\>\<a class=\"c3\"\>(\'|\")'.$global.'(\'|\")\<\/a\>\<a class=\"c2\"\>,(&nbsp;)*\<\/a\>\<a class=\"c3\"\>(\'|\")(.+?)(\'|\")/';
+
+            // Attempt to find it
+            if ( preg_match( $pattern, $string2, $define_pw ) ) {
+                
+                // Strip the tags
+                $stripped = strip_tags( $define_pw[0] );
+
+                // Remove any spaces
+                $despace = str_replace( '&nbsp;', '', $stripped );
+
+                // Remove quotes
+                $single = str_replace( [ '"', "'" ], '', $despace );
+
+                // Remove the beginning
+                $pw = substr( $single, strpos( $single, ',') + 1 );
+
+                // Add redact div
+                $string2 = str_replace( $pw, '<div class="redact">'.$define_pw[6].'</div>', $string2 );
+            }
+        }
+    }
+
+    // Return it
+    if ( $return ) return $string2;
+    else echo wp_kses_post( $string2 );
 } // End ddtt_highlight_file2()
 
 
@@ -2113,39 +2210,6 @@ function ddtt_admin_notice( $type, $msg ) {
 
     printf( '<div id="message" class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), wp_kses_post( $message ) );
 } // End ddtt_admin_notice()
-
-
-/**
- * Do some stuff on the testing tab
- *
- * @return void
- */
-function ddtt_testing_playground_helpers() {
-    // Increase the test number on every page load
-    ddtt_increase_test_number();
-
-    // Debug form and entry from query string
-    $gf_not_active = 'Gravity Forms must be installed and activated.';
-    if ( $form_id = ddtt_get( 'debug_form' ) ) {
-        if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
-            $form = GFAPI::get_form( $form_id );
-            ddtt_print_r( $form );
-        } else {
-            ddtt_print_r( $gf_not_active );
-        }
-        echo '<br><br>';
-    }
-    if ( $entry_id = ddtt_get( 'debug_entry' ) ) {
-        if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
-            $entry = GFAPI::get_entry( $entry_id );
-            ddtt_print_r( $entry );
-        } else {
-            ddtt_print_r( $gf_not_active );
-        }
-        echo '<br><br>';
-    }
-    echo '<br><br>';
-} // End ddtt_testing_playground_helpers()
 
 
 /**

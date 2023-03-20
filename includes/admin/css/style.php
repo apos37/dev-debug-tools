@@ -186,6 +186,17 @@ if ( $current_screen->id == $options_page ) {
         border-radius: 0;
     }
 
+    /* Redact */
+    .redact {
+        display: inline;
+        background: black;
+        color: black;
+    }
+    .redact.show {
+        background: revert !important;
+        color: revert !important;
+    }
+
 
     /* ---------------------------------------------
                     ALL PAGES - FORMS

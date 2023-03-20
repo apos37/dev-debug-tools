@@ -103,8 +103,6 @@ if ( $shortcode != '' ) {
         // Let's build the full shortcode we are looking for
         $full_shortcode_prefix = '['.$shortcode;
 
-        dpr( $param );
-
         // For each list item...
         while ( $the_query->have_posts() ) {
 
@@ -126,55 +124,67 @@ if ( $shortcode != '' ) {
                 // Count
                 $count = count( $matches[0] );
 
+                // Filter if attribute doesn't match
+                $stop = false;
+
                 // Check if we are searching for attribute as well
                 if ( $attr != '' && $attr_is != '' ) {
+
+                    // Let's assume we don't find it
+                    $stop = true;
 
                     // Verify we found matches
                     if ( isset( $matches[3] ) && !empty( $matches[3] ) ) {
 
                         // Iter the matches
-                        foreach ( $matches[3] as $params ) {
+                        foreach ( $matches[3] as $match ) {
 
-                            // If so get the shortcode params
-                            if ( strpos( $params, $param ) !== false ) {
-                                continue;
+                            // Check if it matches
+                            if ( strpos( strtolower( $match ), strtolower( $param ) ) !== false ) {
+
+                                // Yes? Then let's not stop after all
+                                $stop = false;
                             }
                         }
                     }
                 }
-                
-                // Post type and status
-                $post_type = get_post_type();
-                $post_type_obj = get_post_type_object( $post_type );
-                if ( $post_type_obj ) {
-                    $pt_name = esc_html( $post_type_obj->labels->singular_name ).' ';
-                } else {
-                    $pt_name = '';
-                }
 
-                // Post status
-                $post_status = get_post_status();
-                if ( $post_status == 'publish' ) {
-                    $current_status = 'Published';
-                } elseif ( $post_status == 'draft' ) {
-                    $current_status = 'Draft';
-                } elseif ( $post_status == 'private' ) {
-                    $current_status = 'Private';
-                } elseif ( $post_status == 'archive' ) {
-                    $current_status = 'Archived';
-                } else {
-                    $current_status = 'Unknown';
-                }
+                // Do we need to stop?
+                if ( !$stop ) {
 
-                // Add the result
-                $results[] = [
-                    'title' => get_the_title(),
-                    'id' => get_the_ID(),
-                    'url' => get_the_permalink(),
-                    'post_type' => $pt_name,
-                    'post_status' => $current_status,
-                    'count' => $count
-                ];
+                    // Post type and status
+                    $post_type = get_post_type();
+                    $post_type_obj = get_post_type_object( $post_type );
+                    if ( $post_type_obj ) {
+                        $pt_name = esc_html( $post_type_obj->labels->singular_name ).' ';
+                    } else {
+                        $pt_name = '';
+                    }
+
+                    // Post status
+                    $post_status = get_post_status();
+                    if ( $post_status == 'publish' ) {
+                        $current_status = 'Published';
+                    } elseif ( $post_status == 'draft' ) {
+                        $current_status = 'Draft';
+                    } elseif ( $post_status == 'private' ) {
+                        $current_status = 'Private';
+                    } elseif ( $post_status == 'archive' ) {
+                        $current_status = 'Archived';
+                    } else {
+                        $current_status = 'Unknown';
+                    }
+
+                    // Add the result
+                    $results[] = [
+                        'title' => get_the_title(),
+                        'id' => get_the_ID(),
+                        'url' => get_the_permalink(),
+                        'post_type' => $pt_name,
+                        'post_status' => $current_status,
+                        'count' => $count
+                    ];
+                }
             }
         }
 
@@ -221,7 +231,7 @@ global $shortcode_tags;
 ksort( $shortcode_tags );
 ?>
 
-<p>Example: <code class="hl">[shortcode attribute="attribute value"]</code></p>
+<p>Example: <code class="hl">[shortcode attribute="value"]</code></p>
 
 <form method="get" action="<?php echo esc_url( $current_url ); ?>">
     <table class="form-table">

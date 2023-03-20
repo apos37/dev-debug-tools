@@ -1,4 +1,13 @@
 == changelog.txt ==
+= 1.4.2 =
+* Added quick debug links to Gravity Form entry page
+* Moved quick debug link results for Gravity Forms to it's own page
+* Added quick debug link for Gravity Forms feeds
+* Added more recommended plugins
+* Added ability to view redacted information across all pages
+* Redacted sensitive information from view to hide when getting support and showing demos
+* Fixed shortcode finder attribute field not filtering out value properly
+
 = 1.4.1 =
 * Updated functions.php viewer
 

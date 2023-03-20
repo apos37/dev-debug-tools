@@ -2,9 +2,6 @@
 // Page header
 include 'header.php';
 
-// Include helpers
-ddtt_testing_playground_helpers();
-
 // Filename of the testing playground
 $filename = 'TESTING_PLAYGROUND.php';
 

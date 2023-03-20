@@ -241,6 +241,7 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'scfinder'          => [ __( 'Shortcode Finder', 'dev-debug-tools' ), 'Search through posts and pages for a shortcode.' ],
         'regex'             => [ 'Regex', 'Learn and test regex patterns.', true ],
         'testing'           => [ __( 'Testing', 'dev-debug-tools' ).$test_num, 'Use this page as a testing ground for PHP - Only developer accounts can see this.', true ],
+        'gfdebug'           => [ __( 'Debug Gravity Forms', 'dev-debug-tools' ), '', false, true ],
         'functions'         => [ __( 'Functions', 'dev-debug-tools' ), 'The following functions are available to use for making debugging easier. Note that if you continue to use these functions after deactivating or uninstalling this plugin, it will result in a fatal error.', true ],
         'hooks'             => [ __( 'Hooks', 'dev-debug-tools' ), 'Action and filters available to modify this plugin.', true ],
         'resources'         => [ __( 'Resources', 'dev-debug-tools' ), 'Helpful resources for WP developers.', true ],

@@ -45,6 +45,7 @@ class DDTT_GLOBAL_OPTIONS {
             'color_syntax',
             'color_text_quotes',
             'log_viewer',
+            'view_sensitive_info',
             'test_number',
             'centering_tool_cols',
             'stop_heartbeat',

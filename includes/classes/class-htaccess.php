@@ -217,6 +217,30 @@ class DDTT_HTACCESS {
         // Convert the snippet to a string
         $lines = $this->snippet_to_string( $snippet, '<br>' );
 
+        // Check if we are redacting
+        if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+
+            // Redact sensitive info
+            $substrings = [
+                'Require ip ',
+            ];
+
+            // Iter the globals
+            foreach ( $substrings as $substring ) {
+
+                // Attempt to find it
+                if ( preg_match_all( '/'.$substring.'(\s?)(.+?)\<br\>/', $lines, $matches ) ) {
+
+                    // Iter each match
+                    foreach ( $matches[2] as $match ) {
+                        
+                        // Add redact div
+                        $lines = str_replace( $match, '<div class="redact">'.$match.'</div>', $lines );
+                    }
+                }
+            }
+        }
+
         // The Checkbox
         $input = '<input type="checkbox" name="l[]" value="'.$name.' " '.checked( 1, $checkbox_value, false ).'/>';
 

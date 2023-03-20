@@ -94,6 +94,8 @@
             <br><hr><br></br>
             <h2>Testing Options</h2>
             <table class="form-table">
+                <?php echo wp_kses( ddtt_options_tr( 'view_sensitive_info', 'View Sensitive Info', 'checkbox', '// Displays redacted database login info, IP addresses, etc.' ), $allowed_html ); ?>
+
                 <?php $log_viewers = [
                     'options' => [
                         'Easy Reader',
