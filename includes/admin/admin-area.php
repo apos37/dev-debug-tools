@@ -216,19 +216,19 @@ class DDTT_ADMIN_AREA {
             array_unshift( $res->plugins, $plugin_info );
 
         } else {
-            $plugin_info = plugins_api( 'plugin_information', array(
-            'slug'   => $plugin_slug,
-            'is_ssl' => is_ssl(),
-            'fields' => array(
-                'banners'           => true,
-                'reviews'           => true,
-                'downloaded'        => true,
-                'active_installs'   => true,
-                'icons'             => true,
-                'short_description' => true,
-            )
-            ));
-            if ( !is_wp_error($plugin_info) ) {
+            $plugin_info = plugins_api( 'plugin_information', [
+                'slug'   => $plugin_slug,
+                'is_ssl' => is_ssl(),
+                'fields' => [
+                    'banners'           => true,
+                    'reviews'           => true,
+                    'downloaded'        => true,
+                    'active_installs'   => true,
+                    'icons'             => true,
+                    'short_description' => true,
+                ]            
+            ] );
+            if ( !is_wp_error( $plugin_info ) ) {
                 $res->plugins[] = $plugin_info;
                 set_transient( 'wf-plugin-info-' . $plugin_slug, $plugin_info, DAY_IN_SECONDS * 7 );
             }
@@ -258,9 +258,9 @@ class DDTT_ADMIN_AREA {
      * @return array
      */
     public function plugins_column( $columns ) {
-        $columns['main_file'] = 'Main File';
-        $columns['file_size'] = 'File Size';
-        $columns['modified'] = 'Last Modified';
+        $columns[ 'main_file' ] = 'Main File';
+        $columns[ 'file_size' ] = 'File Size';
+        $columns[ 'modified' ] = 'Last Modified';
         return $columns;
     } // End plugins_column()
 
@@ -311,8 +311,6 @@ class DDTT_ADMIN_AREA {
             $utc_time = date( 'Y-m-d H:i:s', filemtime( $directory ) );
             $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
             $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
-
-            // $last_modified = date( 'Y-m-d H:i:s', filemtime( $directory ) );
             $last_modified = $dt->format( 'F j, Y g:i A T' );
             echo esc_html( $last_modified );
         }

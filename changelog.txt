@@ -1,4 +1,8 @@
 == changelog.txt ==
+= 1.4.3 =
+* Fixed error with GFAPI not being found
+* Sorted plugins alphabetically by name
+
 = 1.4.2 =
 * Added quick debug links to Gravity Form entry page
 * Moved quick debug link results for Gravity Forms to it's own page

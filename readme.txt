@@ -5,7 +5,7 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.1.1
 Requires PHP: 7.4
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -91,6 +91,10 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 10. Regex playground
 
 == Changelog ==
+= 1.4.3 =
+* Fixed error with GFAPI not being found
+* Sorted plugins alphabetically by name
+
 = 1.4.2 =
 * Added quick debug links to Gravity Form entry page
 * Moved quick debug link results for Gravity Forms to it's own page

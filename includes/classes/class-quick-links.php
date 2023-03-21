@@ -85,17 +85,8 @@ class DDTT_QUICK_LINKS {
             add_action( 'gform_entries_first_column_actions', [ $this, 'gf_entry_quick_link' ], 10, 4 );
             add_filter( 'gform_entry_detail_meta_boxes', [ $this, 'gf_entry_meta_box' ], 10, 3 );
 
-            // Iter the feeds
-            $feed_slugs = [];
-            $feeds = GFAPI::get_feeds();
-            foreach ( $feeds as $feed ) {
-                $feed_slug = $feed[ 'addon_slug' ];
-                if ( !in_array( $feed_slug, $feed_slugs ) ) {
-                    
-                    // Add a link to debug the feed's meta
-                    add_filter( $feed_slug.'_feed_actions', [ $this, 'gf_feed_quick_link' ], 10, 3 );
-                }
-            }
+            // Add feed actions after gform is loaded
+            add_action( 'gform_loaded', [ $this, 'gf_load_feed_quick_link'], 5 );
         }
 	} // End __construct()
 
@@ -318,6 +309,33 @@ class DDTT_QUICK_LINKS {
         // Return everything
         echo $results;
     } // End gf_entry_meta_box_content()
+
+    
+    /**
+     * Load the filters for the feed quick link
+     *
+     * @return void
+     */
+    public function gf_load_feed_quick_link() {
+        // Make ure the class exists
+        if ( class_exists( 'GFAPI' ) ) {
+            $feed_slugs = [];
+
+            // Get the feeds
+            $feeds = GFAPI::get_feeds();
+
+            // Iter the feeds
+            foreach ( $feeds as $feed ) {
+                
+                $feed_slug = $feed[ 'addon_slug' ];
+                if ( !in_array( $feed_slug, $feed_slugs ) ) {
+                    
+                    // Add a link to debug the feed's meta
+                    add_filter( $feed_slug.'_feed_actions', [ $this, 'gf_feed_quick_link' ], 10, 3 );
+                }
+            }
+        }
+    } // End gf_load_feed_quick_link()
 
 
     /**
