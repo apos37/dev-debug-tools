@@ -235,6 +235,7 @@ class DDTT_LOGS {
             $dl = 'null';
         }
         $download_button = '<div><form method="post">
+            '.wp_nonce_field( DDTT_GO_PF.$dl.'_dl', '_wpnonce' ).'
             <input type="submit" value="Download '.esc_html( $button_label ).'" name="ddtt_download_'.$dl.'" class="button button-primary"/>
         </form></div>';
 
@@ -383,8 +384,7 @@ class DDTT_LOGS {
                     }
 
                     // Get all of the query strings
-                    $qs = $_SERVER[ 'QUERY_STRING' ];
-                    $qs = parse_str( $qs, $qs_array );
+                    $qs_array = filter_input_array( INPUT_GET, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
                     
                     // Iter the params
                     $hidden_inputs = [];

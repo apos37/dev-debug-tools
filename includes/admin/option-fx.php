@@ -45,6 +45,7 @@ if ( is_readable( get_stylesheet_directory().'/'.$filename ) ) {
 <p><em>Your functions.php file is <?php echo esc_html( $filesize ); ?></em></p>
 <br><br>
 <form method="post">
+    <?php wp_nonce_field( DDTT_GO_PF.'fx_dl', '_wpnonce' ); ?>
     <input type="submit" value="Download current <?php echo esc_attr( $filename ); ?>" name="ddtt_download_fx" class="button button-primary"/>
 </form>
 <br><br>

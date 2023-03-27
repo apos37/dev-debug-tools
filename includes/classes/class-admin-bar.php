@@ -255,7 +255,7 @@ class DDTT_ADMIN_BAR {
                 }
 
                 // Display
-                $url_to_parse = parse_url( $_SERVER['REQUEST_URI'] );
+                $url_to_parse = parse_url( htmlspecialchars( $_SERVER[ 'REQUEST_URI' ] ) );
                 $qsi = isset( $url_to_parse['query'] ) ? '&' : '?';
                 if ( get_user_meta( $user_id, DDTT_GO_PF.'centering_tool', true ) && get_user_meta( $user_id, DDTT_GO_PF.'centering_tool', true ) != '' ) {
                     $ct_is_enabled = true;

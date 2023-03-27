@@ -275,6 +275,7 @@ if ( ddtt_get( 'delete_backups', '==', 'true' ) ) {
 
 <br><br>
 <form method="post">
+    <?php wp_nonce_field( DDTT_GO_PF.'wpconfig_dl', '_wpnonce' ); ?>
     <input type="submit" value="Download current <?php echo esc_attr( $filename ); ?>" name="ddtt_download_wpconfig" class="button button-primary"/>
 </form>
 

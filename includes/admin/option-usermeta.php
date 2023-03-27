@@ -40,8 +40,8 @@ $s = false;
 if ( ddtt_get( 'user' ) ) {
     $s = ddtt_get( 'user' );
     $searched = true;
-} elseif ( isset( $_POST['user'] ) && $_POST['user'] != '' ) {
-    $s = sanitize_text_field( $_POST['user'] );
+} elseif ( isset( $_POST[ 'user' ] ) && $_POST[ 'user' ] != '' ) {
+    $s = sanitize_text_field( $_POST[ 'user' ] );
     $searched = true;
 }
 
@@ -618,7 +618,8 @@ if ( $user ) {
                         $value = str_replace( $value, '<div class="redact">'.$value.'</div>', $value );
 
                     // Or if it's an array, let's search for an ip
-                    } elseif ( $array = unserialize( $value ) ) {
+                    } elseif ( $value && is_serialized( $value ) ) {
+                        $array = unserialize( $value );
                         $new_array = [];
                         foreach ( $array as $k => $a ) {
                             if ( strtolower( $k ) == 'ip' ) {

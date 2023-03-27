@@ -3,7 +3,7 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.4.3
+ * Version:             1.4.4
  * Requires at least:   5.9.0
  * Tested up to:        6.1.1
  * Requires PHP:        7.4
@@ -35,7 +35,7 @@ define( 'DDTT_AUTHOR', 'Apos37' );
 define( 'DDTT_AUTHOR_EMAIL', 'apos37@pm.me' );
 
 // Versions
-define( 'DDTT_VERSION', '1.4.3' );
+define( 'DDTT_VERSION', '1.4.4' );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum
@@ -71,10 +71,11 @@ function ddtt_admin_url( $path = '', $scheme = 'admin' ) {
 } // End ddtt_admin_url()
 
 // Paths
-define( 'DDTT_ADMIN_URL', str_replace( site_url( '/' ), '', rtrim( ddtt_admin_url(), '/' ) ) );     //: wp-admin || wp-admin/network
-define( 'DDTT_CONTENT_URL', str_replace( site_url( '/' ), '', content_url() ) );                    //: wp-content
-define( 'DDTT_INCLUDES_URL', str_replace( site_url( '/' ), '', rtrim( includes_url(), '/' ) ) );    //: wp-includes
-define( 'DDTT_PLUGINS_URL', str_replace( site_url( '/' ), '', plugins_url() ) );                    //: wp-content/plugins
+$site_url = site_url( '/' );
+define( 'DDTT_ADMIN_URL', str_replace( $site_url, '', rtrim( ddtt_admin_url(), '/' ) ) );           //: wp-admin || wp-admin/network
+define( 'DDTT_CONTENT_URL', str_replace( $site_url, '', content_url() ) );                          //: wp-content
+define( 'DDTT_INCLUDES_URL', str_replace( $site_url, '', rtrim( includes_url(), '/' ) ) );          //: wp-includes
+define( 'DDTT_PLUGINS_URL', str_replace( $site_url, '', plugins_url() ) );                          //: wp-content/plugins
 define( 'DDTT_PLUGIN_ABSOLUTE', __FILE__ );                                                         //: /home/.../public_html/wp-content/plugins/dev-debug-tools/dev-debug-tools.php)
 define( 'DDTT_PLUGIN_ROOT', plugin_dir_path( __FILE__ ) );                                          //: /home/.../public_html/wp-content/plugins/dev-debug-tools/
 define( 'DDTT_PLUGIN_DIR', plugins_url( '/'.DDTT_TEXTDOMAIN.'/' ) );                                //: https://domain.com/wp-content/plugins/dev-debug-tools/
@@ -126,11 +127,11 @@ register_activation_hook( __FILE__, 'ddtt_activate_plugin' );
 function ddtt_activate_plugin() {
     // Log when this plugin was installed
     if ( !get_option( DDTT_GO_PF.'plugin_installed' ) ) {
-        update_option( DDTT_GO_PF.'plugin_installed', date( 'Y-m-d H:i:s' ) );
+        update_option( DDTT_GO_PF.'plugin_installed', gmdate( 'Y-m-d H:i:s' ) );
     }
 
 	// Log when this plugin was last activated
-    update_option( DDTT_GO_PF.'plugin_activated', date( 'Y-m-d H:i:s' ) );
+    update_option( DDTT_GO_PF.'plugin_activated', gmdate( 'Y-m-d H:i:s' ) );
 
     // Log who activated this plugin
     update_option( DDTT_GO_PF.'plugin_activated_by', get_current_user_id() );
@@ -138,15 +139,6 @@ function ddtt_activate_plugin() {
     // Uninstall
     register_uninstall_hook( __FILE__, DDTT_GO_PF.'uninstall_plugin' );
 } // End ddtt_activate_plugin()
-
-
-/**
- * Deactivate
- */
-// register_deactivation_hook( __FILE__, 'ddtt_deactivate_plugin' );
-// function ddtt_deactivate_plugin() {
-// 	// Do something when plugin is deactivated
-// }
 
 
 /**

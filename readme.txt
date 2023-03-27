@@ -5,7 +5,7 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.1.1
 Requires PHP: 7.4
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -91,15 +91,137 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 10. Regex playground
 
 == Changelog ==
+= 1.4.4 =
+* Tweak: Added full changelog to readme.txt
+* Tweak: Updated changelog to use commonly used prefixes (Fix, Tweak, and Update)
+* Tweak: Changed `date()` to `gmdate()` in activation hook (props [@Cybr](https://github.com/sybrew))
+* Tweak: Changed multiple calls to `site_url()` to variable in root file (props [@Cybr](https://github.com/sybrew))
+* Tweak: Moved `TESTING_PLAYGROUND.php` file to `includes` folder (props [@Cybr](https://github.com/sybrew))
+* Fix: Patched security issues with downloads (props [@Cybr](https://github.com/sybrew))
+* Fix: Unserialize notice on usermeta tab
+
 = 1.4.3 =
-* Fixed error with GFAPI not being found
-* Sorted plugins alphabetically by name
+* Fix: Error with GFAPI not being found on feed page
+* Tweak: Sorted plugins alphabetically by name
 
 = 1.4.2 =
-* Added quick debug links to Gravity Form entry page
-* Moved quick debug link results for Gravity Forms to it's own page
-* Added quick debug link for Gravity Forms feeds
-* Added more recommended plugins
-* Added ability to view redacted information across all pages
-* Redacted sensitive information from view to hide when getting support and showing demos
-* Fixed shortcode finder attribute field not filtering out value properly
+* Update: Added quick debug links to Gravity Form entry page
+* Tweak: Moved quick debug link results for Gravity Forms to it's own page instead of sharing the Testing tab
+* Update: Added quick debug link for Gravity Forms feeds
+* Update: Added more recommended plugins
+* Tweak: Redacted sensitive information from view to hide when getting support and showing demos
+* Fix: Shortcode finder attribute field not filtering out value properly
+
+= 1.4.1 =
+* Update: Added functions.php viewer
+
+= 1.4.0 =
+* Update: Added a simple functions.php viewer
+* Update: Added backups sections to wp-config/htaccess tabs with ability to clear old backups
+* Tweak: Disabled preview button on wp-config/htaccess tabs if nothing is checked or unchecked
+* Fix: Deprecated function in online users class
+* Fix: Admin side menu showing tabs for non-devs
+* Tweak: Made cURL seconds field show/hide with JS instead of needing to save the changes first
+* Update: Added settings link, website link, and Discord support link to plugins list page
+* Update: Added message for user that activated the plugin with instructions on how to begin
+* Tweak: Only make paths to plugin/theme editor pages if editors are not disabled
+* Update: Added notice to top of Cron Jobs page if `WP Cron` is disabled
+* Update: Added two more snippets to wp-config: `DISALLOW_FILE_EDIT`, `DISABLE_WP_CRON`
+
+= 1.3.12 =
+* Update: Added feedback form in About tab
+* Update: Added [Admin Help Docs](https://wordpress.org/plugins/admin-help-docs/) plugin to recommended plugins and on About tab
+
+= 1.3.11 =
+* Fix: Minor bugs related to multisite
+* Update: Added a couple more recommended plugins
+
+= 1.3.10 =
+* Update: Added buttons to cookies tab for clearing cookies and browser local storage
+* Fix: Debug quick link on post edit screens not showing up
+
+= 1.3.9 =
+* Update: Added link to primary site on debug log if not on primary site
+* Fix: Subsite links on network settings page all pointing to primary site
+* Fix: Debug log easy viewer highlighting issue
+
+= 1.3.8 =
+* Tweak: Changed classic debug log viewer to show raw last 100 lines with user's timezone
+* Tweak: Shortened submenu slugs to not include full url
+* Tweak: Removed `clear_debug_log` query string so we can refresh log without clearing it again
+
+= 1.3.7 =
+* Fix: Browser tab customization on subsites that are not primary
+* Fix: Active tab highlighting on side menu
+* Tweak: Updated plugin slug in url to not include path to options page
+* Fix: Bug on network plugins tab
+
+= 1.3.6 =
+* Update: Added inactive plugins to plugins tab
+* Update: Added "Sites" column to plugins tab on multisite network to see which sites plugins are installed on
+* Update: Added multisite suffixes to title and browser tabs to clearly identify which site you are on
+* Update: Added support for multisite
+* Tweak: Reverted to display name in Online Users if no first and last name is provided
+* Tweak: Ensured `is_plugin_active()` is defined for admin on multisite
+
+= 1.3.5 =
+* Update: Added setting for condensing admin bar items
+* Tweak: Updated `ddtt_highlight_debug_log` and `ddtt_debug_log_help_col` hooks with more options
+* Update: Added view recent links to debug log in Easy Reader
+* Update: Added links to color key on debug log in Easy Reader to filter results
+* Update: Added a search field to debug log in Easy Reader
+* Fix: Removed plugin from menu if not admin
+
+= 1.3.4 =
+* Fix: Error on debug log easy reader
+* Fix: Error in online user column
+
+= 1.3.3 =
+* Update: Added max filesize for debug log to prevent site crashing with filter to change amount
+* Tweak: Changed plugins last modified date to developer's timezone
+* Update: Added filter for changing debug log help links
+* Update: Added filter for changing debug log highlight colors
+* Update: Added Easy Reader view and viewer options to debug log
+* Tweak: Changed logs tab slug to "logs" instead of "debug"
+* Update: Added full regex array and preg_match_all with pattern to Regex tab for easy copying
+* Update: Added tab titles to browser tabs, and push user/post ids on user/post meta tabs
+* Tweak: Changed PHP testing playground local path to theme root folder, old path still works as backup
+* Fix: PHP Warning for undefined variable
+
+= 1.3.2 =
+* Update: Added setting for swapping out discord link if already a member
+* Update: Added confirmation for updating wp-config.php and .htaccess files
+* Tweak: Combined repeated shortcodes found on admin bar, replaced with count
+* Update: Added sources to available shortcodes on shortcode finder
+* Tweak: Changed shortcode finder input field to select field
+
+= 1.3.1 =
+* Update: Added filter for omitting shortcodes from shortcode finder, good for minimizing page builders
+* Update: Added capability for posts and pages to be searched by ID in the admin area
+* Tweak: Changed order of admin bar items
+* Update: Added online users feature
+* Update: Added quick debug links to Gravity Forms action links
+* Tweak: Changed admin bar user info to existing wp-account so Debug Bar will work
+* Tweak: Minimized space at top of each page
+* Fix: Log path notice
+
+= 1.3.0 =
+* Update: Added shortcode finder
+* Tweak: Allowed disabling of admin bar items
+* Fix: Beta htaccess editing was still in test mode
+* Update: Added Resource dropdown to admin bar
+* Update: Added additional resources
+* Update: Added jQuery versions to header
+* Update: Added Cron Jobs tab
+* Update: Added Cookies tab
+* Update: Added PHP Info tab
+* Tweak: Added WP.org links to About tab
+* Fix: Test # incrementing when not used
+* Fix: Not finding Gravity Form forms on admin bar if added via Cornerstone element
+* Fix: Not allowing updating user or post meta keys that are not all lowercase
+
+= 1.2.0 =
+* Update: Added Preparations for release to WP.org repository
+
+= 1.0.1 =
+* Created plugin on May 13, 2022

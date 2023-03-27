@@ -289,19 +289,16 @@ class DDTT_QUICK_LINKS {
     
         // Get the testing url
         $url = ddtt_plugin_options_path( 'gfdebug' );
-
-        // The quick link icon
-        $quick_link_icon = apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon );
-    
+        
         // Start the container
         $results = '<div>';
     
         // Add the links
-        $results .= '<a href="'.$url.'&debug_entry='.$entry[ 'id' ].'" target="_blank">Debug Entry '.$quick_link_icon.'</a>
+        $results .= '<a href="'.$url.'&debug_entry='.$entry[ 'id' ].'" target="_blank">Debug Entry</a>
         <br>
-        <a href="'.$url.'&debug_form='.$form[ 'id' ].'" target="_blank">Debug Form '.$quick_link_icon.'</a>
+        <a href="'.$url.'&debug_form='.$form[ 'id' ].'" target="_blank">Debug Form</a>
         <br>
-        <a href="'.$url.'&debug_entry='.$entry[ 'id' ].'&debug_form='.$form[ 'id' ].'" target="_blank">Debug Both '.$quick_link_icon.'</a>';
+        <a href="'.$url.'&debug_entry='.$entry[ 'id' ].'&debug_form='.$form[ 'id' ].'" target="_blank">Debug Both</a>';
     
         // Start the container
         $results .= '</div>';
@@ -327,6 +324,12 @@ class DDTT_QUICK_LINKS {
             // Iter the feeds
             foreach ( $feeds as $feed ) {
                 
+                // Skip if no addon
+                if ( !isset( $feed[ 'addon_slug' ] ) ) {
+                    continue;
+                }
+
+                // Check if it's the array
                 $feed_slug = $feed[ 'addon_slug' ];
                 if ( !in_array( $feed_slug, $feed_slugs ) ) {
                     
