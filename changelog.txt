@@ -1,5 +1,6 @@
 == changelog.txt ==
 = 1.4.5 =
+* Tweak: Update Discord support link
 * Update: Added search field for Site Options to include options not registered
 
 = 1.4.4 =
