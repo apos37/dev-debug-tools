@@ -194,7 +194,7 @@ if ( ddtt_get( 'delete_backups', '==', 'true' ) ) {
     <?php if ( ( is_multisite() && !is_network_admin() && is_main_site() ) || !is_multisite() ) { ?>
         <br><br>
         <h2>Snippets (Beta Testing)</h2>
-        <p>Add or remove snippets from here. <em>Note: this is still in testing with other users and works as expected on a large number of sites so far, but some sites have <?php echo esc_attr( $filename ); ?> files that have been heavily updated and it may not work as expected. Therefore, please make a backup and test with caution. If you have issues with this, I encourage you to give feedback on our <a href="https://discord.gg/VeMTXRVkm5">Discord Support Server</a> so we can work on improving it for everyone.</em></p>
+        <p>Add or remove snippets from here. <em>Note: this is still in testing with other users and works as expected on a large number of sites so far, but some sites have <?php echo esc_attr( $filename ); ?> files that have been heavily updated and it may not work as expected. Therefore, please make a backup and test with caution. If you have issues with this, I encourage you to give feedback on our <a href="https://discord.gg/3HnzNEJVnR">Discord Support Server</a> so we can work on improving it for everyone.</em></p>
         <p>Want to modify or add some snippets that aren't listed here? You can <a href="<?php echo esc_url( ddtt_plugin_options_path( 'hooks' ) ); ?>">hook into the snippets array</a>.</p>
         <hr />
         <br>

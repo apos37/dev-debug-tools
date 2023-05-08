@@ -1,11 +1,14 @@
 == changelog.txt ==
+= 1.4.5 =
+* Update: Added search field for Site Options to include options not registered
+
 = 1.4.4 =
 * Tweak: Added full changelog to readme.txt
 * Tweak: Updated changelog to use commonly used prefixes (Fix, Tweak, and Update)
-* Tweak: Changed `date()` to `gmdate()` in activation hook (props [@Cybr](https://github.com/sybrew))
-* Tweak: Changed multiple calls to `site_url()` to variable in root file (props [@Cybr](https://github.com/sybrew))
-* Tweak: Moved `TESTING_PLAYGROUND.php` file to `includes` folder (props [@Cybr](https://github.com/sybrew))
-* Fix: Patched security issues with downloads (props [@Cybr](https://github.com/sybrew))
+* Tweak: Changed `date()` to `gmdate()` in activation hook (props [@sybrew](https://github.com/sybrew))
+* Tweak: Changed multiple calls to `site_url()` to variable in root file (props [@sybrew](https://github.com/sybrew))
+* Tweak: Moved `TESTING_PLAYGROUND.php` file to `includes` folder (props [@sybrew](https://github.com/sybrew))
+* Fix: Patched security issues with downloads (props [@sybrew](https://github.com/sybrew))
 * Fix: Unserialize notice on usermeta tab
 
 = 1.4.3 =
@@ -129,7 +132,7 @@
 * Fix: Not allowing updating user or post meta keys that are not all lowercase
 
 = 1.2.0 =
-* Update: Added Preparations for release to WP.org repository
+* Update: Made preparations for release to WP.org repository
 
 = 1.0.1 =
 * Created plugin on May 13, 2022

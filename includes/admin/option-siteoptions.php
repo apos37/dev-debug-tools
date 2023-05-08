@@ -25,9 +25,37 @@ if ( ddtt_get( 'transients', '==', 'Delete All' ) ) {
 $page = ddtt_plugin_options_short_path();
 $tab = 'siteoptions';
 $current_url = ddtt_plugin_options_path( $tab );
+
+// Hidden inputs
+$hidden_allowed_html = [
+    'input' => [
+        'type'      => [],
+        'name'      => [],
+        'value'     => []
+    ],
+];
+$hidden_path = '<input type="hidden" name="page" value="'.$page.'">
+<input type="hidden" name="tab" value="'.$tab.'">';
 ?>
 
 <?php include 'header.php'; ?>
+
+<?php
+// Check for deleting transients
+if ( ddtt_get( 'lookup' ) ) {
+
+    // Sanitize it
+    $lookup = sanitize_key( ddtt_get( 'lookup' ) );
+    
+    // Attempt to look up an option with that name
+    $option = get_option( $lookup );
+
+    // Display it
+    echo '<br><h3>$'.esc_attr( $lookup ).' returns:</h3><br>';
+    ddtt_print_r( $option );
+    return;
+}
+?>
 
 <table class="form-table">
     <?php if ( ddtt_is_dev() ) { ?>
@@ -36,6 +64,16 @@ $current_url = ddtt_plugin_options_path( $tab );
             <td><a href="/<?php echo esc_attr( DDTT_ADMIN_URL ); ?>/options.php" target="_blank">Open</a> &#9888; <em>Warning: This page allows direct access to your site settings. You can break things here. Please be cautious!</em></td>
         </tr>
     <?php } ?>
+    <tr valign="top">
+        <th scope="row"><label for="option-search-input">Search Option by Keyword</label></th>
+        <td><div class="search-options">
+            <form method="get" action="<?php echo esc_url( $current_url ); ?>">
+                <?php echo wp_kses( $hidden_path, $hidden_allowed_html ); ?>
+                <input type="text" name="lookup" id="option-search-input" value="<?php echo esc_attr( $s ); ?>" required>
+                <input type="submit" value="Search" id="post-search-button" class="button button-primary"/>
+            </form>
+        </div></td>
+    </tr>
     <tr valign="top">
         <th scope="row">Clean Transients</th>
         <td><div class="delete-transients">

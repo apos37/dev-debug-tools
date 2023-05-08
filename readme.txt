@@ -76,7 +76,7 @@ Viewable only on the front-end, there is a link on the admin bar that shows +Off
 You have to enable them on the Developer Debug Tools settings first. Once they are enabled, an "ID" column will be added to the user and/or post admin list pages. Next to the user or post's ID you will see a lightning bolt icon. Clicking on the lightning bolt will redirect you to the User Meta or Post Meta tab on our plugin where you can view and edit all of the meta easily.
 
 = Where can I get further support? =
-Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
+Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 
 == Screenshots ==
 1. Settings page
@@ -94,10 +94,10 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 = 1.4.4 =
 * Tweak: Added full changelog to readme.txt
 * Tweak: Updated changelog to use commonly used prefixes (Fix, Tweak, and Update)
-* Tweak: Changed `date()` to `gmdate()` in activation hook (props [@Cybr](https://github.com/sybrew))
-* Tweak: Changed multiple calls to `site_url()` to variable in root file (props [@Cybr](https://github.com/sybrew))
-* Tweak: Moved `TESTING_PLAYGROUND.php` file to `includes` folder (props [@Cybr](https://github.com/sybrew))
-* Fix: Patched security issues with downloads (props [@Cybr](https://github.com/sybrew))
+* Tweak: Changed `date()` to `gmdate()` in activation hook (props [@sybrew](https://github.com/sybrew))
+* Tweak: Changed multiple calls to `site_url()` to variable in root file (props [@sybrew](https://github.com/sybrew))
+* Tweak: Moved `TESTING_PLAYGROUND.php` file to `includes` folder (props [@sybrew](https://github.com/sybrew))
+* Fix: Patched security issues with downloads (props [@sybrew](https://github.com/sybrew))
 * Fix: Unserialize notice on usermeta tab
 
 = 1.4.3 =
@@ -221,7 +221,7 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 * Fix: Not allowing updating user or post meta keys that are not all lowercase
 
 = 1.2.0 =
-* Update: Added Preparations for release to WP.org repository
+* Update: Made preparations for release to WP.org repository
 
 = 1.0.1 =
 * Created plugin on May 13, 2022

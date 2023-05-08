@@ -62,7 +62,7 @@ body #wpbody-content .plugin-card .plugin-action-buttons a.button.install-now[ar
 <h3>Plugin Support</h3>
 <br><img class="admin_helpbox_title" src="<?php echo esc_url( DDTT_PLUGIN_IMG_PATH ); ?>discord.png" width="auto" height="100">
 <p>If you need assistance with this plugin or have suggestions for improving it, please join the Discord server below.</p>
-<?php echo sprintf( __( '<a class="button button-primary" href="%s" target="_blank">Join Our Support Server »</a><br>', 'dev-debug-tools' ), 'https://discord.gg/VeMTXRVkm5' ); ?>
+<?php echo sprintf( __( '<a class="button button-primary" href="%s" target="_blank">Join Our Support Server »</a><br>', 'dev-debug-tools' ), 'https://discord.gg/3HnzNEJVnR' ); ?>
 <br>
 <p>Or if you would rather get support on WordPress.org, you can do so here:</p>
 <?php echo sprintf( __( '<a class="button button-primary" href="%s" target="_blank">WordPress.org Plugin Support Page »</a><br>', 'dev-debug-tools' ), 'https://wordpress.org/support/plugin/dev-debug-tools/' ); ?>
