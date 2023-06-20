@@ -197,6 +197,77 @@ if ( $current_screen->id == $options_page ) {
         color: revert !important;
     }
 
+    /* Tooltips */
+    .tooltip {
+        position: relative;
+        display: inline-block;
+        cursor: help;
+    }
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        white-space: nowrap;
+        width: auto;
+        background-color: red;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 10px 20px;
+        position: absolute;
+        top: 1px;
+        left: 36px;
+        z-index: 1;
+    }
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+    }
+
+    /* Warning Symbol */
+    .warning-symbol,
+    .warning-symbol::before,
+    .warning-symbol::after {
+        position: relative;
+        padding: 0;
+        margin: 0;
+    }
+    .warning-symbol {
+        font-size: 25px;
+        color: transparent;
+        display: inline-block;
+        top: 0.225em;
+        width: 1.15em;
+        height: 1.15em;
+        overflow: hidden;
+        border: none;
+        background-color: transparent;
+        border-radius: 0.625em;
+    }
+    .warning-symbol::before {
+        content: "";
+        display: block;
+        top: -0.08em;
+        left: 0.0em;
+        position: absolute;
+        border: transparent 0.6em solid;
+        border-bottom-color: #fd3;
+        border-bottom-width: 1em;
+        border-top-width: 0;
+        box-shadow: #999 0 1px 1px;
+    }
+    .warning-symbol::after {
+        display: block;
+        position: absolute;
+        top: 0.3em;
+        left: 0;
+        width: 100%;
+        padding: 0 1px;
+        text-align: center;
+        font-family: "Garamond";
+        content: "!";
+        font-size: 0.65em;
+        font-weight: bold;
+        color: #333;
+    }
+
 
     /* ---------------------------------------------
                     ALL PAGES - FORMS

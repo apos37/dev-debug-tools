@@ -274,12 +274,12 @@ function ddtt_remove_qs_without_refresh( $qs = null, $is_admin = true ) {
 function ddtt_convert_timezone( $date = null, $format = 'F j, Y g:i A', $timezone = null ) {
 
     // Get today as default
-    if ( !is_null( $date ) ) {
+    if ( is_null( $date ) ) {
         $date = date( 'Y-m-d H:i:s' );
     }
 
     // Get the date in UTC time
-    $date = new DateTime( $date, new DateTimeZone('UTC') );
+    $date = new DateTime( $date, new DateTimeZone( 'UTC' ) );
 
     // Get the timezone string
     if ( !is_null( $timezone ) ) {
@@ -906,18 +906,18 @@ function ddtt_is_enabled( $variable ) {
  * @return bool
  */
 if ( version_compare( PHP_VERSION, 8.0, '<=' ) && !function_exists( 'str_starts_with' ) ) {
-    function str_starts_with ( $haystack, $needle ) {
+    function str_starts_with( $haystack, $needle ) {
         return strpos( $haystack , $needle ) === 0;
     }
 }
-if ( version_compare( PHP_VERSION, 8.0, '<=' ) && !function_exists('str_ends_with') ) {
-    function str_ends_with($haystack, $needle) {
-        return $needle !== '' && substr($haystack, -strlen($needle)) === (string)$needle;
+if ( version_compare( PHP_VERSION, 8.0, '<=' ) && !function_exists( 'str_ends_with' ) ) {
+    function str_ends_with( $haystack, $needle ) {
+        return $needle !== '' && substr( $haystack, -strlen( $needle ) ) === (string)$needle;
     }
 }
-if ( version_compare( PHP_VERSION, 8.0, '<=' ) && !function_exists('str_contains') ) {
-    function str_contains($haystack, $needle) {
-        return $needle !== '' && mb_strpos($haystack, $needle) !== false;
+if ( version_compare( PHP_VERSION, 8.0, '<=' ) && !function_exists( 'str_contains' ) ) {
+    function str_contains( $haystack, $needle ) {
+        return $needle !== '' && mb_strpos( $haystack, $needle ) !== false;
     }
 }
 
@@ -1365,7 +1365,7 @@ function ddtt_stop_timer( $start, $timeout = true, $milliseconds = false ) {
  * @param int $ts
  * @return string
  */
-function ddtt_convert_timestamp_to_string( $ts ) {
+function ddtt_convert_timestamp_to_string( $ts, $short = false ) {
     // Make sure the format is correct
     if( !ctype_digit( $ts ) ) {
         $ts = strtotime( $ts );
@@ -1373,6 +1373,23 @@ function ddtt_convert_timestamp_to_string( $ts ) {
     
     // Get the difference in time
     $diff = time() - $ts;
+
+    // Short?
+    if ( $short ) {
+        $minute = 'm';
+        $minutes = 'm';
+        $hour = 'h';
+        $hours = 'h';
+        $days = 'd';
+        $weeks = 'w';
+    } else {
+        $minute = ' minute ago';
+        $minutes = ' minutes ago';
+        $hour = ' hour ago';
+        $hours = ' hours ago';
+        $days = ' days ago';
+        $weeks = ' weeks ago';
+    }
 
     // If no difference, return now
     if ( $diff == 0 ) {
@@ -1383,14 +1400,14 @@ function ddtt_convert_timestamp_to_string( $ts ) {
         $day_diff = floor( $diff / 86400 );
         if ( $day_diff == 0 ) {
             if ( $diff < 60 ) return 'Just now';
-            if ( $diff < 120 ) return '1 minute ago';
-            if ( $diff < 3600 ) return floor( $diff / 60 ) . ' minutes ago';
-            if ( $diff < 7200 ) return '1 hour ago';
-            if ( $diff < 86400 ) return floor( $diff / 3600 ) . ' hours ago';
+            if ( $diff < 120 ) return '1'.$minute;
+            if ( $diff < 3600 ) return floor( $diff / 60 ).$minutes;
+            if ( $diff < 7200 ) return '1'.$hour;
+            if ( $diff < 86400 ) return floor( $diff / 3600 ).$hours;
         }
         if ( $day_diff == 1 ) return 'Yesterday';
-        if ( $day_diff < 7 ) return $day_diff . ' days ago';
-        if ( $day_diff < 31 ) return ceil( $day_diff / 7 ) . ' weeks ago';
+        if ( $day_diff < 7 ) return $day_diff.$days;
+        if ( $day_diff < 31 ) return ceil( $day_diff / 7 ).$weeks;
         if ( $day_diff < 60 ) return 'Last month';
         return date( 'F Y', $ts );
 

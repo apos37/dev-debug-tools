@@ -2157,5 +2157,80 @@ function ddtt_get_five_point_rating ( $r1, $r2, $r3, $r4, $r5 ) {
 
 
 /**
+ * Get the latest version of this plugin
+ *
+ * @return string
+ */
+function ddtt_get_latest_plugin_version() {
+    // Set the args
+    $args = [ 'slug' => DDTT_TEXTDOMAIN ];
+
+    // Fetch the plugin info from the wp repository
+    $response = wp_remote_post(
+        'http://api.wordpress.org/plugins/info/1.0/',
+        [
+            'body' => [
+                'action' => 'plugin_information',
+                'request' => serialize( (object)$args )
+            ]
+        ]
+    );
+
+    // If there is no error, continue
+    if ( !is_wp_error( $response ) ) {
+
+        // Unserialize
+        $returned_object = unserialize( wp_remote_retrieve_body( $response ) );   
+        if ( $returned_object ) {
+            return $returned_object->version;
+        }
+    }
+} // End ddtt_get_latest_plugin_version()
+
+
+/**
+ * Get the latest PHP version
+ *
+ * @return array
+ */
+function ddtt_get_latest_php_version( $major_only = false ) {
+    // Get the latest releases from php.net
+    $response = wp_remote_get( 'https://www.php.net/releases/?json' );
+
+    // Make sure we got a response
+    if ( is_array( $response ) && !is_wp_error( $response ) ) {
+
+        // Grab the json content
+        $json = $response[ 'body' ];
+
+        // Decode it
+        $php_releases = json_decode( $json );
+
+        // Store the latest major release (ie 8.x)
+        $latest_major = 0;
+
+        // Iter the releases
+        foreach ( $php_releases as $major_version => $release ) {
+
+            // Only retrieve if the version is later than the stored version
+            if ( $major_version > $latest_major ) {
+                $latest_major = $major_version;
+            } else {
+                continue;
+            }
+        }
+
+        // Get what we need
+        if ( $major_only ) {
+            return $latest_major;
+        } else {
+            return $php_releases->$latest_major->version;
+        }
+    }
+    return 0;
+} // End ddtt_get_latest_php_version()
+
+
+/**
  * THE END
  */

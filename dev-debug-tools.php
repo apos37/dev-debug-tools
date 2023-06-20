@@ -3,9 +3,9 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.4.5
+ * Version:             1.4.7
  * Requires at least:   5.9.0
- * Tested up to:        6.2
+ * Tested up to:        6.2.2
  * Requires PHP:        7.4
  * Author:              Apos37
  * Author URI:          https://apos37.com/
@@ -35,7 +35,7 @@ define( 'DDTT_AUTHOR', 'Apos37' );
 define( 'DDTT_AUTHOR_EMAIL', 'apos37@pm.me' );
 
 // Versions
-define( 'DDTT_VERSION', '1.4.5' );
+define( 'DDTT_VERSION', '1.4.7' );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum
@@ -118,6 +118,60 @@ function ddtt_multisite_suffix() {
     }
     return $sfx;
 } // End ddtt_multisite_suffix()
+
+
+/**
+ * Add user and url when an error occurs
+ *
+ * @param int $num
+ * @param string $str
+ * @param string $file
+ * @param string $line
+ * @param null $context
+ * @return void
+ */
+function ddtt_log_error( $num, $str, $file, $line, $context = null ) {
+    // Get user id
+    $user_id = get_current_user_id();
+
+    // Check for a user name
+    if ( is_user_logged_in() ) {
+        $user = get_userdata( $user_id );
+        $display_name = sanitize_text_field( $user->display_name );
+    } else {
+        $display_name = 'Visitor';
+    }
+
+    // Log
+    error_log( 'Error triggered by user '.$user_id.' ('.$display_name.') on '.$_SERVER[ 'REQUEST_URI' ] );
+    
+    // Restore the old handler
+    restore_error_handler();
+} // End ddtt_log_error()
+
+// Option to set it
+if ( get_option( DDTT_GO_PF.'log_user_url' ) && get_option( DDTT_GO_PF.'log_user_url' ) == 1 ) {
+    set_error_handler( 'ddtt_log_error' );
+}
+
+
+/**
+ * Checks for fatal errors and parse errors, work around for set_error_handler not working on them.
+ *
+ * @return void
+ */
+function ddtt_check_for_fatal() {
+    $error = error_get_last();
+    $additional_errors = [ E_ERROR, E_PARSE ];
+    if ( isset( $error[ 'type' ] ) && in_array( $error[ 'type' ], $additional_errors ) ) {
+        ddtt_log_error( $error[ 'type' ], $error[ 'message' ], $error[ 'file' ], $error[ 'line' ] );
+    }
+} // End ddtt_check_for_fatal()
+
+// Option to set it
+if ( get_option( DDTT_GO_PF.'log_user_url' ) && get_option( DDTT_GO_PF.'log_user_url' ) == 1 ) {
+    register_shutdown_function( 'ddtt_check_for_fatal' );
+}
 
 
 /**

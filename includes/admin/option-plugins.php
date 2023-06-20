@@ -209,24 +209,29 @@ $current_url = ddtt_plugin_options_path( $tab );
                 if ( $returned_object ) {
                     
                     // Last Updated
-                    $last_updated = $returned_object->last_updated;
-                    $last_updated = ddtt_time_elapsed_string( $last_updated );
-                    
-                    // Add old class if more than 11 months old
-                    $earlier = new DateTime( $last_updated );
-                    $today = new DateTime( date( 'Y-m-d' ) );
-                    $diff = $today->diff( $earlier )->format("%a");
-                    if ( $diff >= 335 ) {
-                        $old_class = ' warning';
-                    }
+                    if ( $name != 'Hello Dolly' ) {
+                        $last_updated = $returned_object->last_updated;
+                        $last_updated = ddtt_time_elapsed_string( $last_updated );
+                        
+                        // Add old class if more than 11 months old
+                        $earlier = new DateTime( $last_updated );
+                        $today = new DateTime( date( 'Y-m-d' ) );
+                        $diff = $today->diff( $earlier )->format("%a");
+                        if ( $diff >= 335 ) {
+                            $old_class = ' warning';
+                        }
 
-                    // Compatibility
-                    $compatibility = $returned_object->tested;
+                        // Compatibility
+                        $compatibility = $returned_object->tested;
 
-                    // Add incompatibility class
-                    global $wp_version;
-                    if ( $compatibility < $wp_version ) {
-                        $incompatible_class = ' warning';
+                        // Add incompatibility class
+                        global $wp_version;
+                        if ( $compatibility < $wp_version ) {
+                            $incompatible_class = ' warning';
+                        }
+                    } else {
+                        $last_updated = 'just now';
+                        $compatibility = '';
                     }
                 }
             }
@@ -260,10 +265,14 @@ $current_url = ddtt_plugin_options_path( $tab );
             $folder_size = ddtt_format_bytes( $bytes );
 
             // Get the last modified date and convert to developer's timezone
-            $utc_time = date( 'Y-m-d H:i:s', filemtime( $directory ) );
-            $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
-            $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
-            $last_modified = $dt->format( 'F j, Y g:i A T' );
+            if ( $name != 'Hello Dolly' ) {
+                $utc_time = date( 'Y-m-d H:i:s', filemtime( $directory ) );
+                $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
+                $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
+                $last_modified = $dt->format( 'F j, Y g:i A T' );
+            } else {
+                $last_modified = '';
+            }
 
             // Are we putting it in a table or no?
             if ( $table ) {

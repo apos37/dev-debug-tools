@@ -103,6 +103,8 @@
                     ]
                 ]; ?>
                 <?php echo wp_kses( ddtt_options_tr( 'log_viewer', 'Log Viewer', 'select', '<br>// Change how the <a href="'.ddtt_plugin_options_path( 'logs' ).'">debug log</a> is displayed', $log_viewers ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'log_user_url', 'Also Log User and URL With Errors', 'checkbox', '// Adds an additional line to debug.log errors with the user ID, user display name, and url with query strings when an error is triggered.' ), $allowed_html ); ?>
                 
                 <?php echo wp_kses( ddtt_options_tr( 'test_number', 'Debugging Test Number', 'number', null, [ 'width' => '10rem' ] ), $allowed_html ); ?>
 
@@ -126,7 +128,13 @@
 
                 <?php echo wp_kses( ddtt_options_tr( 'wp_mail_failure', 'Capture WP_Mail Failure Details in Debug.log', 'checkbox', '// Must have debug log enabled.' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'online_users', 'Show Online Users', 'checkbox', '// Adds indicator to admin bar, a dashboard widget, and users admin list column' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'online_users', 'Show Online Users', 'checkbox', '// Adds indicator to admin bar, a dashboard widget, and users admin list column.' ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'online_users_seconds', 'Online Users # of Seconds', 'number', '<br>// Checks if users were logged in this amount of time ago. Recommended 900 seconds (15 minutes).<br>// Note that logged-in time is stored on page load, so if a user is on a page for longer than the amount of time you specify here, it may show them as offline when they are not.', [ 'width' => '10rem', 'default' => 900 ] ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'online_users_show_last', 'Online Users Show Last in Admin Bar', 'checkbox', '// Show the last online time in the admin bar. Note that the logged-in status only updates if they are not already stored.' ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'online_users_link', 'Online Users Link', 'text', '<br>// Link online users in the admin bar<br>// Merge tags available: {user_id}, {user_email} (ie. '.DDTT_ADMIN_URL( 'user-edit.php?user_id={user_id}' ).'<br>// Leave blank to remove link' ), $allowed_html ); ?>
 
             </table>
 

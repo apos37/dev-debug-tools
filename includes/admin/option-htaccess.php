@@ -55,8 +55,18 @@ if ( is_readable( ABSPATH . $filename ) ) {
 if ( ddtt_get( 'confirm', '==', 'true' ) ) {
     $confirm = true;
     $update_btn_text = 'Confirm and update';
+
+// Cancelled update
+} elseif ( ddtt_get( 'confirm', '==', 'cancel' ) ) {
+    $confirm = true;
+    $cancel = true;
+    $update_btn_text = 'Preview update of';
+    ddtt_remove_qs_without_refresh( [ 'confirm' ] );
+
+// No confirm param
 } else {
     $confirm = false;
+    $cancel = false;
     $update_btn_text = 'Preview update of';
 }
 
@@ -106,19 +116,23 @@ if ( ddtt_get( 'delete_backups', '==', 'true' ) ) {
         }
 
         // If the temp exists, show it
-        if ( $temp_file ) { ?>
+        if ( $temp_file && !$cancel ) { ?>
             <table class="form-table">
                 <tr valign="top">
                     <th scope="row">THIS IS WHAT YOUR NEW FILE WILL LOOK LIKE, PLEASE CONFIRM:<br><br>
                         <input type="submit" value="CONFIRM" class="button button-warning"/><br><br>
-                        <a href="<?php echo esc_url( $current_url ); ?>" class="button button-primary">Cancel</a>
+                        <a href="<?php echo esc_url( $current_url ); ?>&confirm=cancel" class="button button-primary">Cancel</a>
                     </th>
                     <td><div class="full_width_container temp">
                         <?php echo wp_kses_post( ddtt_view_file_contents( $temp_filename ) ); ?>
                     </div></td>
                 </tr>
             </table>
-        <?php } 
+        <?php } elseif ( $temp_file && $cancel ) {
+
+            // Or delete it if cancelled
+            unlink( $temp_file );
+        }
     } ?>
 
     <table class="form-table">

@@ -251,7 +251,7 @@ class DDTT_WPCONFIG {
         foreach ( $line_strings_1 as $line_1 ) {
 
             // Put the snippet together
-            $lines[] = '<span class="line-exists true">'.$line_1.'</span>';
+            $lines[] = '<span class="line-exists true">'.$line_1.';</span>';
         }
         foreach ( $line_strings_0 as $line_0 ) {
 
@@ -545,7 +545,7 @@ class DDTT_WPCONFIG {
             // Make it html safe
             $safe_file_lines = [];
             foreach( $file_lines as $file_line ) {
-                $safe_file_lines[] =  htmlentities( $file_line );
+                $safe_file_lines[] =  htmlentities( $file_line, ENT_NOQUOTES );
             }
 
             // Count edits
@@ -602,6 +602,9 @@ class DDTT_WPCONFIG {
 
                         // Search the file lines
                         foreach( $safe_file_lines as $file_key => $safe_file_line ) {
+
+                            // Sanitize the line
+                            $safe_file_line = sanitize_text_field( $safe_file_line );
                             
                             // Check the file for the line
                             if ( preg_match_all( $regex, $safe_file_line, $matches ) ) {
@@ -651,6 +654,8 @@ class DDTT_WPCONFIG {
                     $edits++;
                 }
             }
+
+            // dpr( $safe_file_lines );
 
             // Check if we need to add anything
             if ( $edits > 0 ) {

@@ -305,7 +305,8 @@ class DDTT_ADMIN_AREA {
         }
 
         // Last Modified
-        if ( 'modified' === $column_name ) {
+        // We will skip Hello Dolly
+        if ( 'modified' === $column_name && $folder != 'hello.php' ) {
 
             // Convert the time
             $utc_time = date( 'Y-m-d H:i:s', filemtime( $directory ) );

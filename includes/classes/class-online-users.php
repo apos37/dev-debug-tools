@@ -21,9 +21,20 @@ new DDTT_ONLINE_USERS;
 class DDTT_ONLINE_USERS {
 
     /**
+     * Number of seconds to check last online
+     *
+     * @var integer
+     */
+    public static $seconds = 900;
+
+
+    /**
 	 * Constructor
 	 */
 	public function __construct() {
+
+        // Update seconds based on setting
+        self::$seconds = get_option( DDTT_GO_PF.'online_users_seconds', 900 );
 
         // Update user online status
         add_action('init', [ $this, 'users_status_init' ] );
@@ -52,7 +63,7 @@ class DDTT_ONLINE_USERS {
      * @param string $return
      * @return int|array
      */
-    public function online_users( $return = 'count' ){
+    public function online_users( $return = 'count' ) {
         // Get the user status transient
         $logged_in_users = get_transient( 'users_status' );
         
@@ -69,17 +80,17 @@ class DDTT_ONLINE_USERS {
         $online_users = [];
 
         // Iter the users
-        foreach ( $logged_in_users as $user ){
+        foreach ( $logged_in_users as $user ) {
 
-            // If the user has been online in the last 900 seconds, add them to the array and increase the online count.
-            if ( !empty( $user[ 'username' ] ) && isset( $user[ 'last' ] ) && $user[ 'last' ] > time()-900 ){ 
+            // If the user has been online in the last # of seconds, add them to the array and increase the online count.
+            if ( !empty( $user[ 'username' ] ) && isset( $user[ 'last' ] ) && $user[ 'last' ] > time() - self::$seconds ) { 
                 $online_users[] = $user;
                 $user_online_count++;
             }
         }
 
         // Return either an integer count, or an array of all online user data.
-        return ( $return == 'count' )? $user_online_count : $online_users; 
+        return ( $return == 'count' ) ? $user_online_count : $online_users; 
     } // End online_users()
 
     
@@ -95,16 +106,16 @@ class DDTT_ONLINE_USERS {
         // Get the current user's data
         $user = wp_get_current_user();
 
-        // Update the user if they are not on the list, or if they have not been online in the last 900 seconds (15 minutes)
-        if ( !isset( $logged_in_users[ $user->ID ][ 'last' ] ) || $logged_in_users[ $user->ID ][ 'last' ] <= time()-900 ) {
+        // Update the user if they are not on the list, or if they have not been online in the last # of seconds
+        if ( !isset( $logged_in_users[ $user->ID ][ 'last' ] ) || $logged_in_users[ $user->ID ][ 'last' ] <= time() - self::$seconds ) {
             $logged_in_users[ $user->ID ] = [
-                'id' => $user->ID,
+                'id'       => $user->ID,
                 'username' => $user->user_login,
-                'last' => time(),
+                'last'     => time(),
             ];
 
             // Set this transient to expire 15 minutes after it is created
-            set_transient( 'users_status', $logged_in_users, 900 ); 
+            set_transient( 'users_status', $logged_in_users, self::$seconds ); 
         }
     } // End users_status_init()
 
@@ -119,8 +130,8 @@ class DDTT_ONLINE_USERS {
         // Get the active users from the transient
         $logged_in_users = get_transient( 'users_status' ); 
         
-        // Return boolean if the user has been online in the last 900 seconds (15 minutes)
-        return isset( $logged_in_users[ $id ][ 'last' ] ) && $logged_in_users[ $id ][ 'last' ] > time()-900; 
+        // Return boolean if the user has been online in the last # of seconds
+        return isset( $logged_in_users[ $id ][ 'last' ] ) && $logged_in_users[ $id ][ 'last' ] > time() - self::$seconds; 
     } // End is_user_online()
 
 
@@ -158,10 +169,10 @@ class DDTT_ONLINE_USERS {
 
         // Add the node
         $wp_admin_bar->add_node( [
-            'id' => DDTT_GO_PF.'online-users',
-            'title' => '<span class="ab-icon"></span>'.$active_users_count.'<span class="full-width-only hide-condensed"> User'.$s.' Online</span>',
-            'href' => '/'.DDTT_ADMIN_URL.'/users.php',
-            'meta' => [
+            'id'    => DDTT_GO_PF.'online-users',
+            'title' => '<span class = "ab-icon"></span>'.$active_users_count.'<span class = "full-width-only hide-condensed"> User'.$s.' Online</span>',
+            'href'  => '/'.DDTT_ADMIN_URL.'/users.php',
+            'meta'  => [
                 'class' => DDTT_GO_PF.'online-user-count',
             ],
         ] );
@@ -169,14 +180,22 @@ class DDTT_ONLINE_USERS {
         // Store the users here
         $users = [];
 
+        // We are not linking by default
+        $link = false;
+
         // Make sure we found active users
         if ( $active_users_count > 0 ) {
 
             // Get the active users
             $active_users = $this->online_users( 'get_users' );
 
+            // Are we linking?
+            if ( get_option( DDTT_GO_PF.'online_users_link' ) && get_option( DDTT_GO_PF.'online_users_link' ) != '' ) {
+                $link = get_option( DDTT_GO_PF.'online_users_link' );
+            }
+
             // Iter the active users
-            foreach( $active_users as $active_user ) {
+            foreach ( $active_users as $active_user ) {
 
                 // Get the user
                 $user_id = $active_user[ 'id' ];
@@ -189,14 +208,35 @@ class DDTT_ONLINE_USERS {
                     $display_name = $user->display_name;
                 }
 
+                // Are we showing last online?
+                if ( get_option( DDTT_GO_PF.'online_users_show_last' ) && get_option( DDTT_GO_PF.'online_users_show_last' ) == 1 ) {
+                    $last_date = ddtt_convert_timestamp_to_string( $active_user[ 'last' ], true );
+                    $show_last = ' ('.$last_date.')';
+                } else {
+                    $show_last = '';
+                }
+
                 // Admins
-                if (in_array( 'administrator', (array) $user->roles) || in_array( 'super_admin', (array) $user->roles)) {               
-                    $users[] = '<span>'.$display_name.' <em>- Admin</em></span>';
+                if ( in_array( 'administrator', (array) $user->roles ) || in_array( 'super_admin', (array) $user->roles ) ) {
+                    $this_user[ 'name' ] = '<span>'.$display_name.' <em>- Admin</em>'.$show_last.'</span>';
 
                 // Other users
                 } else {
-                    $users[] = $display_name;
+                    $this_user[ 'name' ] = $display_name.$show_last;
                 }
+
+                // Are we linking?
+                if ( $link ) {
+                    if ( strpos( $link, '{user_id}' ) !== false ) {
+                        $this_user[ 'link' ] = str_replace( '{user_id}', $user_id, $link );
+                    }
+                    if ( strpos( $link, '{user_email}' ) !== false ) {
+                        $this_user[ 'link' ] = str_replace( '{user_email}', $user->user_email, $link );
+                    }
+                }
+
+                // Add the user
+                $users[] = $this_user;
             }
         }
 
@@ -204,18 +244,22 @@ class DDTT_ONLINE_USERS {
         if ( !empty( $users ) ) {
             
             // Sort them alphabetically
-            sort($users);
+            sort( $users );
 
             // Add them to the submenu
-            foreach( $users as $key => $value ) {
-                $wp_admin_bar->add_node( array(
-                    'id' => DDTT_GO_PF.'online-users-li-'.$key,
+            foreach ( $users as $key => $user ) {
+                $node_args = [
+                    'id'     => DDTT_GO_PF.'online-users-li-'.$key,
                     'parent' => DDTT_GO_PF.'online-users',
-                    'title' => $value,
-                    'meta' => array(
+                    'title'  => $user[ 'name' ],
+                    'meta'   => [
                         'class' => DDTT_GO_PF.'online-user-li',
-                    ),
-                ));
+                    ],
+                ];
+                if ( $link ) {
+                    $node_args[ 'href' ] = isset( $user[ 'link' ] ) ? $user[ 'link' ] : '#';
+                }
+                $wp_admin_bar->add_node( $node_args );
             }
         }
 
@@ -243,7 +287,7 @@ class DDTT_ONLINE_USERS {
      *
      * @return void
      */
-    public function dashboard_widget_metabox(){
+    public function dashboard_widget_metabox() {
         if ( current_user_can( 'administrator' ) ) {
             wp_add_dashboard_widget(
                 DDTT_GO_PF.'active_users',
@@ -263,7 +307,7 @@ class DDTT_ONLINE_USERS {
      *
      * @return void
      */
-    public function dashboard_active_users(){
+    public function dashboard_active_users() {
         // Count the number of users
         $user_count = count_users();
 
@@ -352,7 +396,7 @@ class DDTT_ONLINE_USERS {
      *
      * @return void
      */
-    public function user_column_style(){
+    public function user_column_style() {
         echo '<style>.column-online_status{width: 10%}</style>';
     } // End users_column_style()
 
@@ -390,7 +434,7 @@ class DDTT_ONLINE_USERS {
      * @param [type] $atts
      * @return void
      */
-    public function shortcode( $atts ){
+    public function shortcode( $atts ) {
         $atts = shortcode_atts(array(
             'indicator' => 'true',
             'text' => 'true'
