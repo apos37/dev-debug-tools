@@ -154,8 +154,8 @@ if ( ddtt_get( 'delete_backups', '==', 'true' ) ) {
                 $backups = ddtt_get_files( 'wp-config', 'wp-config.php' );
                 if ( !empty( $backups ) ) {
                     ?>
-                    <!--All files in your root directory that contain "<strong>wp-config</strong>" in the filename will show up here with links to preview them. By clicking on a "Preview" link, you will be able to preview the file's contents and choose whether or not you want to restore it or delete it. Restoring it replaces the current "<strong>wp-config.php</strong>" file.<br><br><em>Backups made from this plugin will named like so:</em> <code>wp-config-[YEAR]-[MONTH]-[DAY]-[HOUR]-[MINUTE]-[SECOND].php</code><br><em>All others will be marked as possibly unsafe to restore.</em>-->
-                    All files in your root directory that contain "<strong>wp-config</strong>" in the filename are shown here for reference.<br><br><em>Backups made from this plugin will named like so:</em> <code>wp-config-[YEAR]-[MONTH]-[DAY]-[HOUR]-[MINUTE]-[SECOND].php</code><br><em>All others will be marked as possibly unsafe.</em><br><br><hr><br><strong><?php echo absint( count( $backups ) ); ?> Files Found:</strong>
+                    <!--All files in your root directory that contain "<strong>wp-config</strong>" in the filename will show up here with links to preview them. By clicking on a "Preview" link, you will be able to preview the file's contents and choose whether or not you want to restore it or delete it. Restoring it replaces the current "<strong>wp-config.php</strong>" file.<br><br><em>Backups made from this plugin will be named like so:</em> <code>wp-config-[YEAR]-[MONTH]-[DAY]-[HOUR]-[MINUTE]-[SECOND].php</code><br><em>All others will be marked as possibly unsafe to restore.</em>-->
+                    All files in your root directory that contain "<strong>wp-config</strong>" in the filename are shown here for reference.<br><br><em>Backups made from this plugin will be named like so:</em> <code>wp-config-[YEAR]-[MONTH]-[DAY]-[HOUR]-[MINUTE]-[SECOND].php</code><br><em>All others will be marked as possibly unsafe.</em><br><br><hr><br><strong><?php echo absint( count( $backups ) ); ?> Files Found:</strong>
                     <ul>
                         <?php
                         // Count ones that can be deleted
@@ -172,7 +172,7 @@ if ( ddtt_get( 'delete_backups', '==', 'true' ) ) {
                             $short = trim( array_pop( $exp ) );
                             
                             // Check if it's ours
-                            $ours = ' - <strong>&#9888; Possibly Unsafe</strong>';
+                            $ours = ' <span class="warning-symbol" style="margin-left: 10px;"></span> <strong>Possibly Unsafe —</strong> <em>Remove via FTP or File Manager on Host</em>';
                             $pattern = '/wp\-config\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}.php/';
                             if ( preg_match( $pattern, $short ) ) {
                                 $ours = '';
@@ -210,7 +210,7 @@ if ( ddtt_get( 'delete_backups', '==', 'true' ) ) {
     <?php if ( ( is_multisite() && !is_network_admin() && is_main_site() ) || !is_multisite() ) { ?>
         <br><br>
         <h2>Snippets (Beta Testing)</h2>
-        <p>Add or remove snippets from here. <em>Note: this is still in testing with other users and works as expected on a large number of sites so far, but some sites have <?php echo esc_attr( $filename ); ?> files that have been heavily updated and it may not work as expected. Therefore, please make a backup and test with caution. If you have issues with this, I encourage you to give feedback on our <a href="https://discord.gg/3HnzNEJVnR">Discord Support Server</a> so we can work on improving it for everyone.</em></p>
+        <p>Add or remove snippets from here. <em>Note: this is still in testing with other users and works as expected on a large number of sites so far, but some sites have <?php echo esc_attr( $filename ); ?> files that have been heavily updated and it may not work as expected. Therefore, please make a backup and test with caution. If you have issues with this, I encourage you to give feedback on our <a href="<?php echo esc_url( DDTT_DISCORD_SUPPORT_URL ); ?>">Discord Support Server</a> so we can work on improving it for everyone.</em></p>
         <p>Want to modify or add some snippets that aren't listed here? You can <a href="<?php echo esc_url( ddtt_plugin_options_path( 'hooks' ) ); ?>">hook into the snippets array</a>.</p>
         <hr />
         <br>

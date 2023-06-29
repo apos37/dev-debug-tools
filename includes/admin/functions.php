@@ -843,7 +843,7 @@ function ddtt_view_file_contents( $path, $log = false, $highlight_args = array()
  * @param boolean $allow_repeats
  * @return string
  */
-function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_args = [], $allow_repeats = true ){
+function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_args = [], $allow_repeats = true ) {
     // Define the file
     $file = FALSE;
     if ( is_readable( ABSPATH.'/'.$path ) ) {
@@ -867,6 +867,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
 
         // Separate each line in the file into an array item
         $lines = explode( PHP_EOL, $string );
+        // dpr( $lines );
 
         // Store the rests here for checking repeats
         $rests = [];
@@ -881,10 +882,14 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
         if ( !empty( $lines ) ) {
 
             // Get the dev's timezone
-            $dev_timezone = get_option( DDTT_GO_PF.'dev_timezone', wp_timezone_string() );
+            if ( get_option( DDTT_GO_PF.'dev_timezone' ) && get_option( DDTT_GO_PF.'dev_timezone' ) != '' ) {
+                $dev_timezone = sanitize_text_field( get_option( DDTT_GO_PF.'dev_timezone' ) );
+            } else {
+                $dev_timezone = wp_timezone_string();
+            }
 
             // For each file line...
-            foreach( $lines as $line ) {
+            foreach ( $lines as $line ) {
 
                 // Check if we're viewing a log
                 if ( $log ) {
@@ -900,6 +905,10 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
 
                         // Stack trace bool
                         $is_stack = false;
+
+                        // Array bool
+                        $is_array = false;
+                        $start_collecting_array = true;
 
                         // Starting qty
                         $qty = 1;
@@ -1043,9 +1052,16 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                                 }
 
                                 // Get the line number by itself
-                                if( preg_match_all( '/\d+/', $rest, $on_line_numbers ) ) {
+                                if ( preg_match_all( '/\d+/', $rest, $on_line_numbers ) ) {
                                     $on_line_num = end( $on_line_numbers[0] );
                                 }
+                            }
+
+                            // Check if array
+                            if ( str_starts_with( $rest, ' Array' ) ) {
+                                $err = 'Array';
+                                $warning = 'Array';
+                                $start_collecting_array = true;
                             }
 
                         // Or if there is no date
@@ -1055,6 +1071,19 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                             if ( str_starts_with( $line, 'Stack trace' ) || str_starts_with( $line, '#' ) || str_starts_with( ltrim( $line ), 'thrown' ) ) {
                                 $is_stack = true;
                                 $new_actual_line = false;
+
+                            // Check if we are still looking for the rest of the array
+                            } elseif ( $start_collecting_array && 
+                                      ( iconv_strlen( $line, 'UTF-8' ) == 1 && str_starts_with( $line, '(' ) ) || 
+                                      ( iconv_strlen( $line, 'UTF-8' ) > 1 && !str_starts_with( $line, ')' ) ) ) {
+                                $is_array = true;
+                                $new_actual_line = false;
+                            
+                            // Stop looking for the rest of the array
+                            } elseif ( $start_collecting_array && iconv_strlen( $line, 'UTF-8' ) == 1 && str_starts_with( $line, ')' ) ) {
+                                $is_array = true;
+                                $new_actual_line = false;
+                                $start_collecting_array = false;
 
                             // Otherwise something is fishy
                             } else {
@@ -1083,7 +1112,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                                 // Which column?
                                 if ( ddtt_get( 'c', '==', 't' ) ) {
                                     $col = $warning;
-                                } else if ( ddtt_get( 'c', '==', 'p' ) ) {
+                                } elseif ( ddtt_get( 'c', '==', 'p' ) ) {
                                     $col = $path_only;
                                 } else {
                                     $col = $err;
@@ -1175,6 +1204,21 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
 
                                 // Then add the line
                                 $actual_lines[ count( $actual_lines ) - 1 ][ 'stack' ][] = $line;
+                            }
+
+                        // Or add the array
+                        } elseif ( $is_array ) {
+
+                            // Check for a search filter
+                            if ( ddtt_get( 's' ) ) {
+                                continue;
+                            }
+
+                            // Check if the line # matches
+                            if ( $actual_lines[ count( $actual_lines ) - 1 ][ 'err' ] == 'Array' ) {
+
+                                // Then add the line
+                                $actual_lines[ count( $actual_lines ) - 1 ][ 'array' ][] = $line;
                             }
                         }
                     }
@@ -1350,6 +1394,31 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                     } else {
                         $display_stack = '';
                     }
+
+                    // Is there an array?
+                    if ( isset( $actual_line[ 'array' ] ) ) {
+                        $array = $actual_line[ 'array' ];
+
+                        // Iter the array
+                        $array_array = [];
+                        foreach ( $array as $a ) {
+
+                            // Shorten the paths
+                            $a = str_replace( ABSPATH, '/', $a );
+                            
+                            // Add a class to the first line
+                            if ( str_starts_with( $a, 'Array' ) ) {
+                                $array_array[] = '<span class="array">'.$a.'</span>';
+
+                            // Otherwise do nothing
+                            } else {
+                                $array_array[] = $a;
+                            }
+                        }
+                        $display_array = '<pre>'.print_r( $array_array, true ).'</pre>';
+                    } else {
+                        $display_array = '';
+                    }
                     
                     // Shorten the path
                     $short_path = str_replace( ABSPATH, '/', $actual_line[ 'path' ] );
@@ -1500,18 +1569,18 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                     }
 
                     // Add file and line number
-                    if ( $actual_line[ 'type' ] != 'Unknown' ) {
+                    if ( $actual_line[ 'type' ] != 'Unknown' && $actual_line[ 'type' ] != 'Array' ) {
                         $file_and_line = 'File: '.$short_path.'<br>Line: '.$actual_line[ 'lnum' ];
                     } else {
                         $file_and_line = '';
                     }
-                    
+
                     // Create the row
                     $code .= '<tr class="debug-li'.$error_class.$actual_line[ 'class' ].'">
                         <td class="line"><span class="unselectable">'.$actual_line[ 'line' ].'</span></td>
                         <td class="date">'.$actual_line[ 'date' ].'</td>
                         <td class="type">'.$actual_line[ 'type' ].'</td>
-                        <td class="err"><span class="the-error">'.$actual_line[ 'err' ].'</span>'.$plugin_or_theme.$file_and_line.$display_stack.'</td>
+                        <td class="err"><span class="the-error">'.$actual_line[ 'err' ].'</span>'.$plugin_or_theme.$file_and_line.$display_stack.$display_array.'</td>
                         <td class="qty">x '.$final_qty.'</td>
                         <td class="help">'.implode( '<br>', $help_links ).'</td>
                     </tr>';
@@ -1546,10 +1615,17 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
     // Check if we have lines
     if ( !empty( $lines ) ) {
 
+        // Get the dev's timezone
+        if ( get_option( DDTT_GO_PF.'dev_timezone' ) && get_option( DDTT_GO_PF.'dev_timezone' ) != '' ) {
+            $dev_timezone = sanitize_text_field( get_option( DDTT_GO_PF.'dev_timezone' ) );
+        } else {
+            $dev_timezone = wp_timezone_string();
+        }
+
         // Get the converted time
         $utc_time = date( 'Y-m-d H:i:s', filemtime( $file ) );
         $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
-        $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
+        $dt->setTimezone( new DateTimeZone( $dev_timezone ) );
         $last_modified = $dt->format( 'F j, Y g:i A T' );
             
         // Display the error count

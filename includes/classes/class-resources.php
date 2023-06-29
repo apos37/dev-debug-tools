@@ -36,7 +36,7 @@ class DDTT_RESOURCES {
         if ( get_option( DDTT_GO_PF.'switch_discord_link' ) == '1' ) {
             $discord_link = 'https://discord.com/channels/991553521197518878/1020384748918542426';
         } else {
-            $discord_link = 'https://discord.gg/3HnzNEJVnR';
+            $discord_link = DDTT_DISCORD_SUPPORT_URL;
         }
 
         // The links

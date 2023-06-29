@@ -272,10 +272,19 @@ function ddtt_remove_qs_without_refresh( $qs = null, $is_admin = true ) {
  * @return string
  */
 function ddtt_convert_timezone( $date = null, $format = 'F j, Y g:i A', $timezone = null ) {
-
     // Get today as default
-    if ( is_null( $date ) ) {
+    if ( is_null( $date ) || !$date ) {
         $date = date( 'Y-m-d H:i:s' );
+
+    // Or else format it properly for converting purposes
+    } else {
+
+        // Check if the date is a timestamp
+        if ( is_numeric( $date ) && (int)$date == $date ) {
+            $date = date( 'Y-m-d H:i:s', $date );
+        } else {
+            $date = date( 'Y-m-d H:i:s', strtotime( $date ) );
+        }
     }
 
     // Get the date in UTC time

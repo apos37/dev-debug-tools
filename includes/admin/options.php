@@ -25,7 +25,7 @@ $updates_url = ddtt_admin_url( 'update-core.php' );
 // Check if we have the latest plugin version
 $plugin_warning = '';
 $latest_plugin = ddtt_get_latest_plugin_version();
-if ( DDTT_VERSION !== $latest_plugin ) {
+if ( version_compare( DDTT_VERSION, $latest_plugin, '<' ) ) {
     
     // Add the warning
     $plugin_warning = '<div class="tooltip"><a href="'.$updates_url.'"><span class="warning-symbol"></span></a>

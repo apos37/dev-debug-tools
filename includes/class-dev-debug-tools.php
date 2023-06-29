@@ -94,6 +94,16 @@ class DDTT_DEBUG_TOOLS {
 	 * @return void
      */
     public function load_admin_dependencies() {
+        // Classes
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-logs.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-download-files.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-wpconfig.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-htaccess.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-quick-links.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-discord.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-deactivate.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-feedback.php';
+
         // Admin menu, also loads options.php
         require_once DDTT_PLUGIN_ADMIN_PATH . 'menu.php';
         
@@ -103,32 +113,24 @@ class DDTT_DEBUG_TOOLS {
         // All functions modifying the admin area only
         require_once DDTT_PLUGIN_ADMIN_PATH . 'admin-area.php';
 
-        // Classes
-        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-logs.php';
-        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-download-files.php';
-        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-wpconfig.php';
-        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-htaccess.php';
-        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-quick-links.php';
-        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-feedback.php';
-
         // Admin additional CSS from php file
         // Must not be initialized too early, or else error upon activation:
         // "The plugin generated X characters of unexpected output during activation"
         add_action( 'admin_init', function() {
 
             // Check if we have any files in our css folder
-            if ( $stylesheets = ddtt_get_styles( true ) ) {
+            if ( $stylesheets = ddtt_get_styles( false ) ) {
 
                 // Add each stylesheet
                 for ( $i = 0; $i < count( $stylesheets ); $i++ ) {
 
                     // Add the spreadsheets
                     if ( str_ends_with( $stylesheets[$i], '.php' ) ) {
-                        require_once DDTT_PLUGIN_ADMIN_PATH . 'css/style.php';
+                        require_once DDTT_PLUGIN_ADMIN_PATH.'css/'.$stylesheets[$i];
 
                     } elseif ( str_ends_with( $stylesheets[$i], '.css' ) ) {
-                        wp_register_style( DDTT_PF.'admin'.$i, $stylesheets[$i], array(), DDTT_VERSION );
-                        wp_enqueue_style( DDTT_PF.'admin'.$i );
+                        wp_register_style( DDTT_GO_PF.'admin'.$i, DDTT_PLUGIN_CSS_PATH.$stylesheets[$i], [], DDTT_VERSION );
+                        wp_enqueue_style( DDTT_GO_PF.'admin'.$i );
                     }
                 }
             }
@@ -167,7 +169,7 @@ class DDTT_DEBUG_TOOLS {
      * Enqueue scripts
      * Reminder to bump version number during testing to avoid caching
      *
-     * @param string $hook
+     * @param string $screen
      * @return void
      */
     public function enqueue_scripts( $screen ) {
@@ -199,5 +201,5 @@ class DDTT_DEBUG_TOOLS {
             wp_enqueue_script( 'jquery' );
             wp_enqueue_script( $handle );
         }
-    }
+    } // End enqueue_scripts()
 }

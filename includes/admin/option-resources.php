@@ -20,7 +20,7 @@ td.usage code {
             <?php 
             $allowed_html = ddtt_wp_kses_allowed_html();
 
-            echo wp_kses( ddtt_options_tr( 'switch_discord_link', 'I am a member of the <a href="https://discord.gg/3HnzNEJVnR">WordPress Support Server</a>', 'checkbox', ' // Swaps out the discord invite link with the plugin support channel link' ), $allowed_html );
+            echo wp_kses( ddtt_options_tr( 'switch_discord_link', 'I am a member of the <a href="'.DDTT_DISCORD_SUPPORT_URL.'">WordPress Support Server</a>', 'checkbox', ' // Swaps out the discord invite link with the plugin support channel link' ), $allowed_html );
             ?>
 
         </table>

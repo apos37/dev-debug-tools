@@ -3,7 +3,7 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.4.7
+ * Version:             1.4.8
  * Requires at least:   5.9.0
  * Tested up to:        6.2.2
  * Requires PHP:        7.4
@@ -33,9 +33,11 @@ define( 'DDTT_NAME', 'Developer Debug Tools' );
 define( 'DDTT_TEXTDOMAIN', 'dev-debug-tools' );
 define( 'DDTT_AUTHOR', 'Apos37' );
 define( 'DDTT_AUTHOR_EMAIL', 'apos37@pm.me' );
+define( 'DDTT_AUTHOR_URL', 'https://apos37.com/' );
+define( 'DDTT_DISCORD_SUPPORT_URL', 'https://discord.gg/3HnzNEJVnR' );
 
 // Versions
-define( 'DDTT_VERSION', '1.4.7' );
+define( 'DDTT_VERSION', '1.4.8' );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum
@@ -85,6 +87,7 @@ define( 'DDTT_PLUGIN_IMG_PATH', DDTT_PLUGIN_DIR.'includes/admin/img/' );        
 define( 'DDTT_PLUGIN_INCLUDES_PATH', DDTT_PLUGIN_ROOT.'includes/' );                                //: /home/.../public_html/wp-content/plugins/dev-debug-tools/includes/
 define( 'DDTT_PLUGIN_ADMIN_PATH', DDTT_PLUGIN_INCLUDES_PATH.'admin/' );                             //: /home/.../public_html/wp-content/plugins/dev-debug-tools/includes/admin/
 define( 'DDTT_PLUGIN_CLASSES_PATH', DDTT_PLUGIN_INCLUDES_PATH.'classes/' );                         //: /home/.../public_html/wp-content/plugins/dev-debug-tools/includes/classes/
+define( 'DDTT_PLUGIN_CSS_PATH', DDTT_PLUGIN_SHORT_DIR.'includes/admin/css/' );                      //: /wp-content/plugins/dev-debug-tools/includes/admin/css/
 define( 'DDTT_PLUGIN_JS_PATH', DDTT_PLUGIN_SHORT_DIR.'includes/admin/js/' );                        //: /wp-content/plugins/dev-debug-tools/includes/admin/js/
 define( 'DDTT_PLUGIN_FILES_PATH', DDTT_PLUGIN_SHORT_DIR.'includes/files/' );                        //: /wp-content/plugins/dev-debug-tools/includes/files/
 
@@ -203,7 +206,8 @@ function ddtt_uninstall_plugin() {
     // Delete options
     delete_option( DDTT_GO_PF.'plugin_installed' ); // Date the plugin was installed
     delete_option( DDTT_GO_PF.'test_number' ); // Test number
-    delete_option( DDTT_GO_PF.'centering_tool_cols' ); // Test number
+    delete_option( DDTT_GO_PF.'centering_tool_cols' ); // Centering tool columns
+    delete_option( DDTT_GO_PF.'dev_email' ); // Dev email
 } // End ddtt_uninstall_plugin()
 
 

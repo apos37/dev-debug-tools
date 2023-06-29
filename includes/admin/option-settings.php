@@ -48,6 +48,13 @@
         }
     }
 
+    // Get the activated email
+    if ( get_option( DDTT_GO_PF.'plugin_activated_by' ) && absint( get_option( DDTT_GO_PF.'plugin_activated_by' ) ) > 0 ) {
+        $activated_email = absint( get_option( DDTT_GO_PF.'plugin_activated_by' ) );
+    } else {
+        $activated_email = get_bloginfo( 'admin_email' );
+    }
+
     // If they are not a developer
     if ( !$is_dev ) {
 
@@ -56,7 +63,7 @@
 
         // Activated by the current user?
         if ( get_option( DDTT_GO_PF.'plugin_activated_by' ) && get_option( DDTT_GO_PF.'plugin_activated_by' ) == get_current_user_id() ) {
-            ddtt_admin_notice( 'success', 'Thank you for activating this plugin! If you are a developer using this plugin for debugging and testing, please enter your email address in the "Developer Account Email Addresses" field below. This must be the email address of the account you will be logged in as.' );
+            ddtt_admin_notice( 'success', 'If you are a developer using this plugin for debugging and testing, please enter your email address in the "Developer Account Email Addresses" field below. This must be the email address of the account you will be logged in as.' );
         }
 
     } else {
@@ -77,8 +84,8 @@
         <?php settings_fields( DDTT_PF.'group_settings' ); ?>
         <?php do_settings_sections( DDTT_PF.'group_settings' ); ?>
         <table class="form-table">
-            <?php echo wp_kses( ddtt_options_tr( 'dev_email', 'Developer Account Email Addresses', 'text', $instructions.'<br>// Default is the admin email
-            <br>// You may use multiple email addresses separated by commas', [ 'default' => get_bloginfo( 'admin_email' ), 'pattern' => '^^([\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})(\s*,\s*[\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})*$' ] ), $allowed_html ); ?>
+            <?php echo wp_kses( ddtt_options_tr( 'dev_email', 'Developer Account Email Addresses', 'text', $instructions.'<br>// Default is the email of the user that activated the plugin.
+            <br>// You may use multiple email addresses separated by commas', [ 'default' => $activated_email, 'pattern' => '^^([\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})(\s*,\s*[\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})*$' ] ), $allowed_html ); ?>
 
             <?php $timezone_args = [ 
                 'default' => wp_timezone_string(),
@@ -134,7 +141,7 @@
 
                 <?php echo wp_kses( ddtt_options_tr( 'online_users_show_last', 'Online Users Show Last in Admin Bar', 'checkbox', '// Show the last online time in the admin bar. Note that the logged-in status only updates if they are not already stored.' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'online_users_link', 'Online Users Link', 'text', '<br>// Link online users in the admin bar<br>// Merge tags available: {user_id}, {user_email} (ie. '.DDTT_ADMIN_URL( 'user-edit.php?user_id={user_id}' ).'<br>// Leave blank to remove link' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'online_users_link', 'Online Users Link', 'text', '<br>// Link online users in the admin bar<br>// Merge tags available: {user_id}, {user_email} ie. '.DDTT_ADMIN_URL( 'user-edit.php?user_id={user_id}' ).'<br>// Leave blank to remove link' ), $allowed_html ); ?>
 
             </table>
 

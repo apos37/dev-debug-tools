@@ -160,6 +160,9 @@ if ( $notice ) {
                         'user_registered'
                     ];
 
+                    // Define err
+                    $err = '';
+
                     // User Login
                     if ( $mk == 'user_login' ) {
                         if ( validate_username( $val ) ) {

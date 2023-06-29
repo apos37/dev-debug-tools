@@ -69,7 +69,7 @@ if ( ddtt_get( 'lookup' ) ) {
         <td><div class="search-options">
             <form method="get" action="<?php echo esc_url( $current_url ); ?>">
                 <?php echo wp_kses( $hidden_path, $hidden_allowed_html ); ?>
-                <input type="text" name="lookup" id="option-search-input" value="<?php echo esc_attr( $s ); ?>" required>
+                <input type="text" name="lookup" id="option-search-input" value="" required>
                 <input type="submit" value="Search" id="post-search-button" class="button button-primary"/>
             </form>
         </div></td>

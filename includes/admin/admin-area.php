@@ -94,8 +94,8 @@ class DDTT_ADMIN_AREA {
 
             // Add the link
             $row_meta = [
-                'docs' => '<a href="'.esc_url( 'https://apos37.com/wordpress-developer-debug-tools/' ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Website Link', 'dev-debug-tools' ).'">'.esc_html__( 'Website', 'dev-debug-tools' ).'</a>',
-                'discord' => '<a href="'.esc_url( 'https://discord.gg/3HnzNEJVnR' ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Support on Discord', 'dev-debug-tools' ).'">'.esc_html__( 'Discord Support', 'dev-debug-tools' ).'</a>'
+                'docs' => '<a href="'.esc_url( DDTT_AUTHOR_URL.'wordpress-developer-debug-tools/' ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Website Link', 'dev-debug-tools' ).'">'.esc_html__( 'Website', 'dev-debug-tools' ).'</a>',
+                'discord' => '<a href="'.esc_url( DDTT_DISCORD_SUPPORT_URL ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Support on Discord', 'dev-debug-tools' ).'">'.esc_html__( 'Discord Support', 'dev-debug-tools' ).'</a>'
             ];
             return array_merge( $links, $row_meta );
         }

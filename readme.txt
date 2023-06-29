@@ -5,7 +5,7 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.2.2
 Requires PHP: 7.4
-Stable tag: 1.4.7
+Stable tag: 1.4.8
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -91,6 +91,17 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.4.8 =
+* Fix: Easy Reader debug log viewer causing issues if writing an array to the logs
+* Tweak: Move author URL and support server to defines
+* Update: Added deactivation survey
+* Fix: Timezone conversion on false date or timestamp returning error
+* Tweak: Changed default developer email to the user that activated the plugin instead of the admin email
+* Fix: A few minor text corrections
+* Tweak: Update planned features list on About tab
+* Tweak: Stylized warning symbols
+* Fix: PHP Warning for undefined variable $err
+
 = 1.4.7 =
 * Fix: Issue removing some snippets on wp-config
 * Tweak: Added semicolon to end of existing snippets
