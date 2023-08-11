@@ -50,7 +50,9 @@
 
     // Get the activated email
     if ( get_option( DDTT_GO_PF.'plugin_activated_by' ) && absint( get_option( DDTT_GO_PF.'plugin_activated_by' ) ) > 0 ) {
-        $activated_email = absint( get_option( DDTT_GO_PF.'plugin_activated_by' ) );
+        $activated_user_id = absint( get_option( DDTT_GO_PF.'plugin_activated_by' ) );
+        $user = get_userdata( $activated_user_id );
+        $activated_email = $user->user_email;
     } else {
         $activated_email = get_bloginfo( 'admin_email' );
     }

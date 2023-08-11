@@ -3,9 +3,9 @@ Contributors: apos37
 Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
-Tested up to: 6.2.2
+Tested up to: 6.3
 Requires PHP: 7.4
-Stable tag: 1.4.8
+Stable tag: 1.4.9
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -91,6 +91,12 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.4.9 =
+* Fix: New install dev email address field populating user id instead of email
+* Tweak: Wordwrapped plugin file path on plugin pages if super long
+* Fix: Error on Post Meta tab if the website does not have any posts
+* Fix: Timezone error if someone tries to save their timezone as blank, revert back to default
+
 = 1.4.8 =
 * Fix: Easy Reader debug log viewer causing issues if writing an array to the logs
 * Tweak: Move author URL and support server to defines

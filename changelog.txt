@@ -1,5 +1,8 @@
 == changelog.txt ==
-= 1.4.9 = //TODO: Beta
+= 1.4.9 =
+* Fix: New install dev email address field populating user id instead of email
+* Tweak: Wordwrapped plugin file path on plugin pages if super long
+* Fix: Error on Post Meta tab if the website does not have any posts
 * Fix: Timezone error if someone tries to save their timezone as blank, revert back to default
 
 = 1.4.8 =

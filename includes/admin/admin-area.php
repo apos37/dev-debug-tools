@@ -275,7 +275,10 @@ class DDTT_ADMIN_AREA {
     public function plugins_column_content( $column_name, $plugin_file ) {
         // Main File Path
         if ( 'main_file' === $column_name ) {
-            echo esc_html( $plugin_file );
+            echo wp_kses( wordwrap( $plugin_file, 80, '<br>\n', true ), [ 'br' => [] ] );
+            if ( strlen( $plugin_file ) > 150 ) {
+                echo '<span style="font-weight: bold; color: red; margin-left: 10px;">Wow! That is a long file path.</span>';
+            }
         }
 
         // File Size and Last Modified

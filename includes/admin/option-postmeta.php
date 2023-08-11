@@ -403,6 +403,11 @@ if ( $searched && ( !$post_id || $post_id == 0 || !get_post_status( $post_id ) )
 <?php
 if ( $valid_search ) {
 
+    // Make sure we have a valid post id
+    if ( $post_id == 0 ) {
+        return;
+    }
+
     // Get the post object
     $post = get_post( $post_id );
     
