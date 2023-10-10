@@ -154,6 +154,9 @@ if ( $current_screen->id == $options_page ) {
         word-break: break-word;
         white-space: pre-wrap;
     }
+    .form-table .checkbox_cont {
+        margin-bottom: 10px;
+    }
 
     /* Notices */
     #message.updated,

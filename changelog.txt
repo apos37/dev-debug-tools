@@ -1,4 +1,12 @@
 == changelog.txt ==
+= 1.5.0 =
+* Tweak: Changed order of deactivate feedback form options
+* Update: Automatically prioritize online users with same email domain as website
+* Update: Added setting to choose priority roles for "show online users"
+* Update: Removed "show online users" active users dashboard widget as it's redundant
+* Update: Added total users count to "show online users" admin bar dropdown
+* Fix: Automatic conversion of false to array being deprecated
+
 = 1.4.9 =
 * Fix: New install dev email address field populating user id instead of email
 * Tweak: Wordwrapped plugin file path on plugin pages if super long

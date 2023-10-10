@@ -82,7 +82,7 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
     // Get default
     if ( get_option( $option_name ) ) {
         $value = get_option( $option_name );
-    } elseif ( !is_null( $args ) && isset( $args[ 'default' ]) && $args[ 'default' ] != '' ) {
+    } elseif ( !is_null( $args ) && isset( $args[ 'default' ] ) && $args[ 'default' ] != '' ) {
         $value = $args[ 'default' ];
     } else {
         $value = '';
@@ -101,6 +101,39 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
     // Checkbox
     if ( $type == 'checkbox' ) {
         $input = '<input type="checkbox" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="1" '.checked( 1, $value, false ).''.$required.'/>';
+
+    // Checkboxes
+    } elseif ( $type == 'checkboxes' ) {
+        if ( !is_null( $args ) ) {
+            $options = $args[ 'options' ];
+            $class = isset( $args[ 'class' ] ) ? ' class="'.esc_attr( $args[ 'class' ] ).'"' : '';
+        } else {
+            return false;
+        }
+
+        // Sort by label
+        usort( $options, function ( $item1, $item2 ) {
+            return strtolower( $item1[ 'label' ] ) <=> strtolower( $item2[ 'label' ] );
+        });
+
+        // Iter the options
+        $input = '';
+        foreach ( $options as $option ) {
+            if ( isset( $option[ 'value' ] ) && isset( $option[ 'label' ] ) ) {
+                $option_value = $option[ 'value' ];
+                $option_label = $option[ 'label' ];
+            } elseif ( !is_array( $option ) ) {
+                $option_value = $option;
+                $option_label = $option;
+            }
+            if ( ( !empty( $value ) && array_key_exists( $option_value, $value ) ) || ( get_option( $option_name ) === false && isset( $option[ 'checked' ] ) && $option[ 'checked' ] == true ) ) {
+                $checked = ' checked="checked"';
+            } else {
+                $checked = '';
+            }
+
+            $input .= '<div class="checkbox_cont"><input type="checkbox" id="'.esc_attr( $option_name.'_'.$option_value ).'"'.$class.' name="'.esc_attr( $option_name ).'['.$option_value.']" value="1"'.$checked.'/> <label for="'.esc_attr( $option_name.'_'.$option_value ).'">'.$option_label.'</label></div>';
+        }
 
     // Text Field
     } elseif ( $type == 'text' ) {

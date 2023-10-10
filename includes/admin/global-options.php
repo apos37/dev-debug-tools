@@ -60,6 +60,7 @@ class DDTT_GLOBAL_OPTIONS {
             'online_users_seconds',
             'online_users_show_last',
             'online_users_link',
+            'online_users_priority_roles',
             'admin_bar_wp_logo',
             'admin_bar_resources',
             'admin_bar_gf',

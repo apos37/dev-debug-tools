@@ -137,13 +137,51 @@
 
                 <?php echo wp_kses( ddtt_options_tr( 'wp_mail_failure', 'Capture WP_Mail Failure Details in Debug.log', 'checkbox', '// Must have debug log enabled.' ), $allowed_html ); ?>
 
+            </table>
+
+            <br><hr><br></br>
+            <h2>Show Online Users</h2>
+            <table class="form-table">
+
                 <?php echo wp_kses( ddtt_options_tr( 'online_users', 'Show Online Users', 'checkbox', '// Adds indicator to admin bar, a dashboard widget, and users admin list column.' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'online_users_seconds', 'Online Users # of Seconds', 'number', '<br>// Checks if users were logged in this amount of time ago. Recommended 900 seconds (15 minutes).<br>// Note that logged-in time is stored on page load, so if a user is on a page for longer than the amount of time you specify here, it may show them as offline when they are not.', [ 'width' => '10rem', 'default' => 900 ] ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'online_users_seconds', '# of Seconds', 'number', '<br>// Checks if users were logged in this amount of time ago. Recommended 900 seconds (15 minutes).<br>// Note that logged-in time is stored on page load, so if a user is on a page for longer than the amount of time you specify here, it may show them as offline when they are not.', [ 'width' => '10rem', 'default' => 900 ] ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'online_users_show_last', 'Online Users Show Last in Admin Bar', 'checkbox', '// Show the last online time in the admin bar. Note that the logged-in status only updates if they are not already stored.' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'online_users_show_last', 'Show Last Time in Admin Bar', 'checkbox', '// Show the last online time in the admin bar. Note that the logged-in status only updates if they are not already stored.' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'online_users_link', 'Online Users Link', 'text', '<br>// Link online users in the admin bar<br>// Merge tags available: {user_id}, {user_email} ie. '.DDTT_ADMIN_URL( 'user-edit.php?user_id={user_id}' ).'<br>// Leave blank to remove link' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'online_users_link', 'User Link URL', 'text', '<br>// Link online users in the admin bar<br>// Merge tags available: {user_id}, {user_email} ie. '.DDTT_ADMIN_URL( 'user-edit.php?user_id={user_id}' ).'<br>// Leave blank for no link' ), $allowed_html ); ?>
+
+                <?php
+                // Get the role details
+                $roles = get_editable_roles();
+
+                // Store the roles here
+                $role_options = [];
+
+                // Iter the roles
+                foreach ( $roles as $key => $role ) {
+
+                    // Pre check it
+                    if ( $key == 'administrator' ) {
+                        $pre_check_role = true;
+                    } else {
+                        $pre_check_role = false;
+                    }
+
+                    // Add the option's label and value
+                    $role_options[] = [
+                        'label'   => $role[ 'name' ],
+                        'value'   => $key,
+                        'checked' => $pre_check_role
+                    ];
+                }
+
+                // Set the args
+                $prioritize_roles_args = [
+                    'options' => $role_options,
+                    'class'   => DDTT_GO_PF.'role_checkbox'
+                ]; ?>
+                <?php echo wp_kses( ddtt_options_tr( 'online_users_priority_roles', 'Roles to Prioritize on Top', 'checkboxes', '', $prioritize_roles_args ), $allowed_html ); ?>
 
             </table>
 

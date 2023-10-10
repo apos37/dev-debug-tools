@@ -18,13 +18,12 @@ jQuery( $ => {
 
         // Reasons
         const options = {
-            'better': 'I found a better plugin',
-            'short': 'I only needed the plugin for a short period',
             'noneed': 'I no longer need the plugin',
-            'broke': 'The plugin broke my site',
+            'short': 'I only needed the plugin for a short period',
             'errors': 'Found errors on the plugin',
             'conflict': 'There is a conflict with another plugin',
             'temp': 'It\'s temporary; just debugging an issue',
+            'better': 'I found a better plugin',
             'other': 'Other',
         };
 
@@ -35,7 +34,7 @@ jQuery( $ => {
         } );
 
         // Add comment section
-        var comments = $( '<br><label for="ddtt-deactivate-comments">Kindly explain your reason so I can improve (optional):</label><br><br><textarea id="ddtt-deactivate-comments" name="comments"></textarea><br><br>');
+        var comments = $( '<br><label for="ddtt-deactivate-comments">Kindly explain your reason so I can improve:</label><br><br><textarea id="ddtt-deactivate-comments" name="comments"></textarea><br><br>');
         modal.find( '#ddtt-dialog-cont' ).append( comments );
 
         // Add Anonymous checkbox

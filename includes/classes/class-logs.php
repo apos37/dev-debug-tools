@@ -101,8 +101,14 @@ class DDTT_LOGS {
 
         // Get the different error logs
         $error_log = $this->file_exists_with_content( 'error_log' );
-        $debug_log = $this->file_exists_with_content( DDTT_CONTENT_URL.'/debug.log' );
         $admin_error_log = $this->file_exists_with_content( DDTT_ADMIN_URL.'/error_log' );
+
+        if ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
+            $debug_loc = WP_DEBUG_LOG;
+        } else {
+            $debug_loc =  DDTT_CONTENT_URL.'/debug.log';
+        }
+        $debug_log = $this->file_exists_with_content( $debug_loc );
 
         // Echo the table row if any of them exists
         if ( $error_log || $debug_log || $admin_error_log ) {

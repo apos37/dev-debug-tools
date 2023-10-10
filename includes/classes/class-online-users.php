@@ -43,9 +43,6 @@ class DDTT_ONLINE_USERS {
         // Admin bar
         add_action('admin_bar_menu', [ $this, 'admin_bar' ], 999);
 
-        // Dashboard widget
-        add_action( 'wp_dashboard_setup', [ $this, 'dashboard_widget_metabox'] );
-
         // User column
         add_filter( 'manage_users_columns', [ $this, 'user_column' ] );
         add_action( 'admin_head-users.php', [ $this, 'user_column_style' ] );
@@ -107,7 +104,7 @@ class DDTT_ONLINE_USERS {
         $user = wp_get_current_user();
 
         // Update the user if they are not on the list, or if they have not been online in the last # of seconds
-        if ( !isset( $logged_in_users[ $user->ID ][ 'last' ] ) || $logged_in_users[ $user->ID ][ 'last' ] <= time() - self::$seconds ) {
+        if ( !isset( $logged_in_users[ $user->ID ] ) || !isset( $logged_in_users[ $user->ID ][ 'last' ] ) || $logged_in_users[ $user->ID ][ 'last' ] <= time() - self::$seconds ) {
             $logged_in_users[ $user->ID ] = [
                 'id'       => $user->ID,
                 'username' => $user->user_login,
@@ -194,6 +191,12 @@ class DDTT_ONLINE_USERS {
                 $link = get_option( DDTT_GO_PF.'online_users_link' );
             }
 
+            // Get the role details
+            if ( !function_exists( 'get_editable_roles' ) ) {
+                require_once ABSPATH.DDTT_ADMIN_URL.'/includes/user.php';
+            }
+            $roles = get_editable_roles();
+
             // Iter the active users
             foreach ( $active_users as $active_user ) {
 
@@ -216,13 +219,65 @@ class DDTT_ONLINE_USERS {
                     $show_last = '';
                 }
 
-                // Admins
-                if ( in_array( 'administrator', (array) $user->roles ) || in_array( 'super_admin', (array) $user->roles ) ) {
-                    $this_user[ 'name' ] = '<span>'.$display_name.' <em>- Admin</em>'.$show_last.'</span>';
+                // The user roles
+                $user_roles = $user->roles;
+
+                // Priority roles
+                $priority_roles = get_option( DDTT_GO_PF.'online_users_priority_roles' );
+                if ( $priority_roles && !empty( $priority_roles ) ) {
+                    $priority_roles = array_keys( $priority_roles );
+                    $intersect = array_intersect( $user_roles, $priority_roles );
+                }
+                if ( $priority_roles && !empty( $intersect ) ) {
+
+                    // Store the role names here
+                    $intersect_names = [];
+
+                    // Iter the roles
+                    foreach ( $roles as $key => $role ) {
+
+                        // Iter the user roles that match
+                        foreach ( $intersect as $i ) {
+
+                            // Get the name
+                            if ( $i == $key ) {
+                                if ( $key == 'administrator' || $key == 'super_admin' ) {
+                                    $intersect_names[] = 'Admin';
+                                } else {
+                                    $intersect_names[] = $role[ 'name' ];
+                                }
+                            }
+                        }
+                    }
+
+                    // Sort the slugs
+                    sort( $user_roles );
+
+                    // Add them
+                    $this_user[ 'name' ] = '<span class="'.implode( ' ', $user_roles ).'">'.$display_name.' <em>- '.implode( ', ', $intersect_names ).'</em>'.$show_last.'</span>'; 
+
+                // Otherwise add admin anyway
+                } elseif ( $priority_roles === false && ( in_array( 'administrator', (array) $user_roles ) || in_array( 'super_admin', (array) $user_roles ) ) ) {
+                    $this_user[ 'name' ] = '<span class="admin">'.$display_name.' <em>- Admin</em>'.$show_last.'</span>';
 
                 // Other users
                 } else {
-                    $this_user[ 'name' ] = $display_name.$show_last;
+
+                    // Check for staff (matching email domains to website domain)
+                    $email_parts = explode( '@', strtolower( $user->user_email ) );
+                    $email_domain = $email_parts[1];
+                    $urlparts = wp_parse_url( home_url() );
+                    $domain = isset( $urlparts[ 'host' ] ) ? $urlparts[ 'host' ] : '';
+                    if ( preg_match( '/(?P<domain>[a-z0-9][a-z0-9\-]{1,63}\.[a-z\.]{2,6})$/i', $domain, $regs ) ) {
+                        $website_domain = $regs[ 'domain' ];
+                    } else {
+                        $website_domain = $domain;
+                    }
+                    if ( $email_domain == $website_domain ) {
+                        $this_user[ 'name' ] = '<span class="staff">'.$display_name.' <em>- &#x2B50;</em>'.$show_last.'</span>';
+                    } else {
+                        $this_user[ 'name' ] = $display_name.$show_last;
+                    }
                 }
 
                 // Are we linking?
@@ -263,6 +318,30 @@ class DDTT_ONLINE_USERS {
             }
         }
 
+        // Add a blank row
+        $wp_admin_bar->add_node( [
+            'id'     => DDTT_GO_PF.'online-users-li-blank',
+            'parent' => DDTT_GO_PF.'online-users',
+            'title'  => '',
+            'meta'   => [
+                'class' => DDTT_GO_PF.'online-user-li',
+            ],
+        ] );
+
+        // Count the total number of users
+        $user_count = count_users();
+
+        // Add total users
+        $wp_admin_bar->add_node( [
+            'id'     => DDTT_GO_PF.'online-users-li-total',
+            'parent' => DDTT_GO_PF.'online-users',
+            'title'  => 'Total Users: '.$user_count[ 'total_users' ],
+            'meta'   => [
+                'class' => DDTT_GO_PF.'online-user-li',
+            ],
+            'href'   => '/'.DDTT_ADMIN_URL.'/users.php'
+        ] );
+
         // Add some CSS
         echo '<style>
         #wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'online-users .ab-icon {
@@ -278,105 +357,14 @@ class DDTT_ONLINE_USERS {
                 display: none !important;
             }
         }
+        #wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'online-users-li-blank {
+            height: 10px;
+        }
+        #wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'online-users-li-total {
+            border-top: 1px solid #A7AAAD;
+        }
         </style>';
     } // End admin_bar()
-
-
-    /**
-     * Dasboard widget metabox
-     *
-     * @return void
-     */
-    public function dashboard_widget_metabox() {
-        if ( current_user_can( 'administrator' ) ) {
-            wp_add_dashboard_widget(
-                DDTT_GO_PF.'active_users',
-                'Active Users', 
-                [ $this, 'dashboard_active_users' ],
-                null,
-                null,
-                'normal',
-                'high' 
-            );
-        }
-    } // End dashboard_widget_metabox()
-
-
-    /**
-     * Dashboard widget content
-     *
-     * @return void
-     */
-    public function dashboard_active_users() {
-        // Count the number of users
-        $user_count = count_users();
-
-        // User or Users
-        $users_plural = ( $user_count[ 'total_users' ] == 1 ) ? 'User' : 'Users';
-
-        // Count the active users
-        $active_users_count = $this->online_users( 'count' );
-        
-        // Add the totals
-        echo '<div>
-            <a href="users.php">' . absint( $user_count[ 'total_users' ] ) . ' ' . esc_html( $users_plural ) . '</a> 
-            <span style="color: green;">( <strong>' . absint( $active_users_count ) . '</strong> currently active)</span>
-        </div><br>';
-
-        // Store the users here
-        $users = [];
-
-        // Check if there are any online (there should be at all times)
-        if ( $active_users_count > 0 ) {
-
-            // Get the active users
-            $active_users = $this->online_users( 'get_users' );
-
-            // Iter each active user
-            foreach( $active_users as $active_user ) {
-
-                // Get the user
-                $user_id = $active_user['id'];
-                $user = get_userdata( $user_id );
-
-                // If they are an admin
-                if ( in_array( 'administrator', (array) $user->roles) || in_array( 'super_admin', (array) $user->roles ) ) {               
-                    // Add admin to the end
-                    $users[] = '<strong>'.$user->first_name.' '.$user->last_name.'</strong> <em>- Administrator</em>';
-
-                // Other users
-                } else {
-
-                    // Just add their name
-                    $users[] = $user->first_name.' '.$user->last_name;
-                }
-            }
-        }
-
-        // Did we find users?
-        if ( !empty( $users ) ) {
-
-            // Sort them alphabetically
-            sort( $users );
-
-            // Add them to the dashboard widget
-            echo '<div><ul style="list-style: square; margin-left: 20px;">';
-            foreach( $users as $listuser ) {
-                echo '<li>'.wp_kses_post( $listuser ).'</li>';
-            }
-            echo '</ul></div>';
-        }
-    
-        // While we're here, let's hide those annoying empty containers
-        echo '<style>
-        #dashboard-widgets .postbox-container .empty-container {
-            outline: 0;
-        }
-        #dashboard-widgets .postbox-container .empty-container:after {
-            content: "";
-        }
-        </style>';
-    } // End dashboard_active_users()
 
 
     /**

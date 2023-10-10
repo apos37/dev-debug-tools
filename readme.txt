@@ -3,9 +3,9 @@ Contributors: apos37
 Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
-Tested up to: 6.3
+Tested up to: 6.3.1
 Requires PHP: 7.4
-Stable tag: 1.4.9
+Stable tag: 1.5.0
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -91,6 +91,14 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.5.0 =
+* Tweak: Changed order of deactivate feedback form options
+* Update: Automatically prioritize online users with same email domain as website
+* Update: Added setting to choose priority roles for "show online users"
+* Update: Removed "show online users" active users dashboard widget as it's redundant
+* Update: Added total users count to "show online users" admin bar dropdown
+* Fix: Automatic conversion of false to array being deprecated
+
 = 1.4.9 =
 * Fix: New install dev email address field populating user id instead of email
 * Tweak: Wordwrapped plugin file path on plugin pages if super long
