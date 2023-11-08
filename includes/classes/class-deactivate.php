@@ -12,7 +12,9 @@ if ( !defined( 'ABSPATH' ) ) {
 /**
  * Initiate the class
  */
-new DDTT_DEACTIVATE;
+if ( !get_option( DDTT_GO_PF.'disable_fb_form' ) ) {
+    new DDTT_DEACTIVATE;
+}
 
 
 /**
@@ -55,6 +57,7 @@ class DDTT_DEACTIVATE {
         $message = isset( $_REQUEST[ 'comments' ] ) ? sanitize_textarea_field( $_REQUEST[ 'comments' ] ) : '';
         $anonymous = isset( $_REQUEST[ 'anonymous' ] ) ? filter_var( $_REQUEST[ 'anonymous' ], FILTER_VALIDATE_BOOLEAN ) : false;
         $contact = isset( $_REQUEST[ 'contact' ] ) ? filter_var( $_REQUEST[ 'contact' ], FILTER_VALIDATE_BOOLEAN ) : false;
+        $disable = isset( $_REQUEST[ 'disable' ] ) ? filter_var( $_REQUEST[ 'disable' ], FILTER_VALIDATE_BOOLEAN ) : false;
        
         // Check for a message
         if ( $reason ) {
@@ -83,6 +86,17 @@ class DDTT_DEACTIVATE {
             } else {
                 $name = 'Anonymous';
                 $email = 'Wishes not to be contacted';
+            }
+
+            // Stop showing the form
+            $disable_reasons = [
+                'broke',
+                'errors',
+                'conflict',
+                'temp'
+            ];
+            if ( in_array( $reason, $disable_reasons ) || $disable ) {
+                update_option( DDTT_GO_PF.'disable_fb_form', true );
             }
 
             // Reason
@@ -126,6 +140,11 @@ class DDTT_DEACTIVATE {
                     [
                         'name'   => 'Reason for Deactivating',
                         'value'  => $reason,
+                        'inline' => false
+                    ],
+                    [
+                        'name'   => 'Disable',
+                        'value'  => $disable ? 'Yes' : 'No',
                         'inline' => false
                     ],
                     [

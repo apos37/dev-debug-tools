@@ -1,4 +1,7 @@
 == changelog.txt ==
+= 1.5.1 =
+* Tweak: Added an option to stop showing feedback form on deactivate; will automatically disable for certain choices
+
 = 1.5.0 =
 * Tweak: Changed order of deactivate feedback form options
 * Update: Automatically prioritize online users with same email domain as website

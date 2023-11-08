@@ -34,7 +34,7 @@ jQuery( $ => {
         } );
 
         // Add comment section
-        var comments = $( '<br><label for="ddtt-deactivate-comments">Kindly explain your reason so I can improve:</label><br><br><textarea id="ddtt-deactivate-comments" name="comments"></textarea><br><br>');
+        var comments = $( '<br><label for="ddtt-deactivate-comments">Additional comments for improving the plugin:</label><br><br><textarea id="ddtt-deactivate-comments" name="comments"></textarea><br><br>' );
         modal.find( '#ddtt-dialog-cont' ).append( comments );
 
         // Add Anonymous checkbox
@@ -44,6 +44,10 @@ jQuery( $ => {
         // Add contact checkbox
         var contact = $( '<br><input type="checkbox" id="ddtt-deactivate-contact" class="ddtt-checkbox" name="contact" value="1"> <label for="ddtt-deactivate-contact" id="ddtt-deactivate-contact-label" class="ddtt-checkbox-label">You may contact me for more information</label>' );
         modal.find( '#ddtt-deactivate-footer' ).append( contact );
+        
+        // Add disable checkbox
+        var disable = $( '<br><input type="checkbox" id="ddtt-deactivate-disable" class="ddtt-checkbox" name="disable" value="1"> <label for="ddtt-deactivate-disable" id="ddtt-deactivate-disable-label" class="ddtt-checkbox-label">Don\'t show this form again</label>' );
+        modal.find( '#ddtt-deactivate-footer' ).append( disable );
 
         // Add buttons
         var buttons = $( '<div id="ddtt-deactivate-buttons"><input type="submit" id="ddtt-submit" class="button button-primary" value="Deactivate" disabled> <input type="submit" id="ddtt-cancel"class="button button-secondary" value="Cancel"></div>' );
@@ -125,6 +129,7 @@ jQuery( $ => {
             var commentsVal = $( '#ddtt-deactivate-comments' ).val();
             var anonVal = $( '#ddtt-deactivate-anonymously' ).is( ':checked' );
             var canContact = $( '#ddtt-deactivate-contact' ).is( ':checked' );
+            var disableVal = $( '#ddtt-deactivate-disable' ).is( ':checked' );
 
             // Validate
             if ( nonce !== '' && reasonVal !== '' ) {
@@ -140,7 +145,8 @@ jQuery( $ => {
                         reason: reasonVal,
                         comments: commentsVal,
                         anonymous: anonVal,
-                        contact: canContact
+                        contact: canContact,
+                        disable: disableVal
                     },
                     success: function( response ) {
 

@@ -3,9 +3,9 @@ Contributors: apos37
 Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
-Tested up to: 6.3.1
+Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -91,6 +91,9 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.5.1 =
+* Tweak: Added an option to stop showing feedback form on deactivate; will automatically disable for certain choices
+
 = 1.5.0 =
 * Tweak: Changed order of deactivate feedback form options
 * Update: Automatically prioritize online users with same email domain as website
