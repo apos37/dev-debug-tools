@@ -23,9 +23,21 @@ if ( !get_option( DDTT_GO_PF.'disable_fb_form' ) ) {
 class DDTT_DEACTIVATE {
 
     /**
+     * Discord webhook
+     * Please do not abuse this webhook or use it for anything else; it helps me manage feedback on Discord rather than through email
+     *
+     * @var string
+     */
+    public static $webhook = 'W43HWlpdBeMa3BuU7mSB5pWHUGpjvUe5AUrBIX0X0r4CKU0OL0o4T2u6cWTswU-ZsdTB';
+
+
+    /**
 	 * Constructor
 	 */
 	public function __construct() {
+
+        // Add prefix
+        self::$webhook = base64_decode( 'aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTEyMTE5NzIyNzc0Mjg2MzM2MC8' ).self::$webhook;
 
         // Add javascript to footer of plugin page only
         // Note: this is not added to multisite network plugin page, and doesn't work with bulk deactivations
@@ -156,7 +168,7 @@ class DDTT_DEACTIVATE {
             ];
             
             // First try sending to Discord
-            if ( DDTT_DISCORD::send( $args ) ) {
+            if ( DDTT_DISCORD::send( self::$webhook, $args ) ) {
                 $result[ 'type' ] = 'success';
 
                 // Method of sending

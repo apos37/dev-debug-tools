@@ -29,6 +29,14 @@ class DDTT_ONLINE_USERS {
 
 
     /**
+     * The discord webhook
+     *
+     * @var string
+     */
+    public static $discord_webhook;
+
+
+    /**
 	 * Constructor
 	 */
 	public function __construct() {
@@ -37,11 +45,10 @@ class DDTT_ONLINE_USERS {
         self::$seconds = get_option( DDTT_GO_PF.'online_users_seconds', 900 );
 
         // Update user online status
-        add_action('init', [ $this, 'users_status_init' ] );
-        add_action('admin_init', [ $this, 'users_status_init' ] );
+        add_action( 'init', [ $this, 'users_status_init' ] );
 
         // Admin bar
-        add_action('admin_bar_menu', [ $this, 'admin_bar' ], 999);
+        add_action( 'admin_bar_menu', [ $this, 'admin_bar' ], 999 );
 
         // User column
         add_filter( 'manage_users_columns', [ $this, 'user_column' ] );
@@ -51,7 +58,84 @@ class DDTT_ONLINE_USERS {
         // Shortcode
         add_shortcode( 'online_users_count', [ $this, 'shortcode' ] );
 
+        // Get discord webhook
+        self::$discord_webhook = get_option( DDTT_GO_PF.'discord_webhook' );
+        $discord_page_loads = get_option( DDTT_GO_PF.'discord_page_loads' );
+        $discord_login = get_option( DDTT_GO_PF.'discord_login' );
+        
+        // Notifify on page load
+        if ( self::$discord_webhook && self::$discord_webhook != '' &&
+             $discord_page_loads && $discord_page_loads == 1 ) {
+            add_action( 'init', [ $this, 'page_load_discord_notification' ] );
+        }
+
+        // Discord notifications
+        if ( self::$discord_webhook && self::$discord_webhook != '' &&
+             $discord_login && $discord_login == 1 ) {
+            add_action( 'wp_login', [ $this, 'login_discord_notification' ], 10, 2 );
+        }
+
 	} // End __construct()
+
+
+    /**
+     * Check if the current page is notification worthy
+     *
+     * @param string $current_url
+     * @return boolean
+     */
+    public function is_notify_worthy_page( $current_url ) {
+        // Pages to ignore
+        $pages = apply_filters( 'ddtt_ignore_pages_for_discord_notifications', [
+            [ 
+                'url'    => get_rest_url(),
+                'prefix' => true
+            ],
+            [ 
+                'url'    => ddtt_admin_url( 'admin-ajax.php' ),
+                'prefix' => true
+            ],
+            [ 
+                'url'    => ddtt_admin_url( 'options.php' ),
+                'prefix' => false
+            ]
+        ] );
+
+        // Iter the pages
+        foreach ( $pages as $page ) {     
+
+            // Validate and sanitize
+            if ( isset( $page[ 'prefix' ] ) && 
+                 isset( $page[ 'url' ] ) && 
+                 filter_var( $page[ 'url' ], FILTER_SANITIZE_URL ) != '' ) {
+                $prefix = filter_var( $page[ 'prefix' ], FILTER_VALIDATE_BOOLEAN );
+                $url = filter_var( $page[ 'url' ], FILTER_SANITIZE_URL );
+
+                // Is this url just a prefix?
+                if ( $prefix && str_starts_with( $current_url, $url ) ||
+                     !$prefix && $current_url === $url ) {
+                    return false;
+                    break;
+                }
+            }
+        }
+
+        // Otherwise we're good
+        return true;
+    } // End is_notify_worthy_page()
+
+
+    /**
+     * Ignore devs
+     *
+     * @return boolean
+     */
+    public function maybe_ignore_devs() {
+        if ( get_option( DDTT_GO_PF.'discord_ingore_devs' ) && ddtt_is_dev() ) {
+            return true;
+        }
+        return false;
+    } // End maybe_ignore_devs()
 
     
     /**
@@ -97,19 +181,56 @@ class DDTT_ONLINE_USERS {
      * @return void
      */
     public function users_status_init() {
-        // Get the active users from the transient
-        $logged_in_users = get_transient( 'users_status' ); 
+        // Ignore visitors
+        if ( !is_user_logged_in() ) {
+            return;
+        }
 
-        // Get the current user's data
+        // The current url
+        $current_url = ddtt_get_current_url();
+
+        // Skip if just loading ajax, otherwise it loads twice
+        if ( !$this->is_notify_worthy_page( $current_url ) ) {
+            return;
+        }
+
+        // Get the active users from the transient
+        $logged_in_users = get_transient( 'users_status' );
+
+        // Get the current user
         $user = wp_get_current_user();
 
         // Update the user if they are not on the list, or if they have not been online in the last # of seconds
         if ( !isset( $logged_in_users[ $user->ID ] ) || !isset( $logged_in_users[ $user->ID ][ 'last' ] ) || $logged_in_users[ $user->ID ][ 'last' ] <= time() - self::$seconds ) {
-            $logged_in_users[ $user->ID ] = [
+
+            // Check for discord notifications
+            $discord_transient = get_option( DDTT_GO_PF.'discord_transient' );
+            if ( $discord_transient && $discord_transient == 1 && !$this->maybe_ignore_devs() ) {
+
+                // Notify
+                $this->validate_and_send_discord_notification( $user, 'Intermittent Logged-In User', $current_url );
+            }
+
+            // The user array to set in the transient
+            $user_array = [
                 'id'       => $user->ID,
                 'username' => $user->user_login,
                 'last'     => time(),
             ];
+
+            // Check if user exists
+            if ( isset( $logged_in_users[ $user->ID ] ) ) {
+                $logged_in_users[ $user->ID ] = $user_array;
+
+            // Otherwise merge
+            } else {
+                $this_user = [ $user->ID => $user_array ];
+                if ( $logged_in_users && is_array( $logged_in_users ) ) {
+                    $logged_in_users += $this_user;
+                } else {
+                    $logged_in_users = $this_user;
+                }
+            }
 
             // Set this transient to expire 15 minutes after it is created
             set_transient( 'users_status', $logged_in_users, self::$seconds ); 
@@ -449,4 +570,133 @@ class DDTT_ONLINE_USERS {
         // Return it
         return $status.$active_users_count.$text;
     } // End shortcode()
+
+
+    /**
+     * Send Discord notification
+     * 
+     * @return boolean
+     */
+    public function page_load_discord_notification() {
+        // Ignore visitors
+        if ( !is_user_logged_in() ) {
+            return;
+        }
+
+        // The current url
+        $current_url = ddtt_get_current_url();
+        
+        // Skip pages
+        if ( !$this->is_notify_worthy_page( $current_url ) ) {
+            return;
+        }
+
+        // Ignore devs
+        if ( $this->maybe_ignore_devs() ) {
+            return false;
+        }
+
+        // Get the current user
+        $user = wp_get_current_user();
+
+        // Send the notification
+        return $this->validate_and_send_discord_notification( $user, 'New Page Load', $current_url );
+    } // End login_discord_notification()
+
+
+    /**
+     * Send Discord notification
+     * 
+     * @return boolean
+     */
+    public function login_discord_notification( $user_login, WP_User $user ) {
+        $this->validate_and_send_discord_notification( $user, 'New Login' );
+    } // End login_discord_notification()
+
+
+    /**
+     * Send Discord notification
+     * 
+     * @return boolean
+     */
+    public function validate_and_send_discord_notification( $user, $title, $current_url = null ) {
+        // Check for a webhook url
+        if ( !self::$discord_webhook || self::$discord_webhook == '' ) {
+            return false;
+        }
+
+        // Found
+        $found = false;
+
+        // Get the roles
+        $roles = get_option( DDTT_GO_PF.'online_users_priority_roles' );
+        foreach ( $user->roles as $role ) {
+            if ( array_key_exists( $role, $roles ) ) {
+                $found = true;
+                break;
+            }
+        }
+        
+        // Check that this user has the role
+        if ( !$found ) {
+            return false;
+        }
+
+        // Args
+        $domain = ddtt_get_domain();
+        $website = get_bloginfo( 'name' );
+        if ( !$website || $website == '' ) {
+            $website = $domain;
+        }
+        $args = [
+            'embed'          => true,
+            'title'          => $title.' on '.$website,
+            'title_url'      => $domain,
+            'disable_footer' => false,
+            'fields'         => [
+                [
+                    'name'   => 'User ID',
+                    'value'  => $user->ID,
+                    'inline' => false
+                ],
+                [
+                    'name'   => 'Name',
+                    'value'  => $user->display_name,
+                    'inline' => false
+                ],
+                [
+                    'name'   => 'Email',
+                    'value'  => $user->user_email,
+                    'inline' => false
+                ],
+                [
+                    'name'   => 'Website',
+                    'value'  => $domain,
+                    'inline' => false
+                ]
+            ]
+        ];
+
+        // Include current page
+        if ( !is_null( $current_url ) && $current_url != '' ) {
+            $args[ 'fields' ][] = [
+                'name'   => 'Page',
+                'value'  => $current_url,
+                'inline' => false
+            ];
+        }
+
+        // Add a thumbnail if site icon exists
+        $icon = get_site_icon_url();
+        if ( $icon && $icon != '' ) {
+            $args[ 'thumbnail_url' ] = $icon;
+        }
+        
+        // First try sending to Discord
+        if ( DDTT_DISCORD::send( self::$discord_webhook, $args ) ) {
+            return true;
+        } else {
+            return false;
+        }
+    } // End validate_and_send_discord_notification()
 }

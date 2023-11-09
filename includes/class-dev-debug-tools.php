@@ -20,12 +20,7 @@ class DDTT_DEBUG_TOOLS {
 	public function __construct() {
         // Ensure is_plugin_active() exists for multisite
 		if ( !function_exists( 'is_plugin_active' ) ) {
-            if ( is_network_admin() ) {
-                $admin_url = str_replace( site_url( '/' ), '', rtrim( admin_url(), '/' ) );
-            } else {
-                $admin_url = DDTT_ADMIN_URL;
-            }
-			include_once( ABSPATH . $admin_url . '/includes/plugin.php' );
+			include_once( ABSPATH . DDTT_ADMIN_URL . '/includes/plugin.php' );
 		}
 
         // Add "Settings" link to plugins page
@@ -80,6 +75,9 @@ class DDTT_DEBUG_TOOLS {
             require_once DDTT_PLUGIN_CLASSES_PATH . 'class-online-users.php';
         }
 
+        // Discord notifications
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-discord.php';
+
         // Miscellaneous functions
         require_once DDTT_PLUGIN_INCLUDES_PATH . 'functions.php';
 
@@ -100,7 +98,6 @@ class DDTT_DEBUG_TOOLS {
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-wpconfig.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-htaccess.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-quick-links.php';
-        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-discord.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-deactivate.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-feedback.php';
 

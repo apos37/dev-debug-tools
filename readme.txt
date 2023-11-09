@@ -3,9 +3,9 @@ Contributors: apos37
 Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
-Tested up to: 6.4
+Tested up to: 6.4.1
 Requires PHP: 7.4
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -50,6 +50,14 @@ Developer tools for debugging and testing things as you develop and troubleshoot
 * Access to a handful of additional functions and hooks that you can use for debugging.
 * A great list of links to helpful resources.
 
+NEW in version 1.5.2 (BETA) - Discord webhook notifications!
+---------------------
+In the middle of making updates and another teammate gets on and starts messing with things? It's good to know so you can put a pause on things. Specify priority roles that you want to get notified for, such as admins, editors, or custom roles. Then get notifications straight to your Discord server for the following activity:
+
+* Login notifications
+* Intermittent logged-in notifications showing if they are still online
+* Page load notifications
+
 == Installation ==
 1. Install the plugin from your website's plugin directory, or upload the plugin to your plugins folder. 
 2. Activate it.
@@ -91,6 +99,11 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.5.2 =
+* Tweak: ddtt_print_r() / dpr() now accepts array for user id
+* Fix: Improved performance on show online users feature
+* Update: Added option for Discord Notifications of online priority users
+
 = 1.5.1 =
 * Tweak: Added an option to stop showing feedback form on deactivate; will automatically disable for certain choices
 

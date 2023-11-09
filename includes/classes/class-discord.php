@@ -21,15 +21,6 @@ new DDTT_DISCORD;
  */
 class DDTT_DISCORD {
 
-    /**
-     * Discord webhook
-     * Please do not abuse this webhook or use it for anything else; it helps me manage feedback on Discord rather than through email
-     *
-     * @var string
-     */
-    public static $webhook = 'W43HWlpdBeMa3BuU7mSB5pWHUGpjvUe5AUrBIX0X0r4CKU0OL0o4T2u6cWTswU-ZsdTB';
-    
-
     // $args = [
     //     'msg'           => 'This is a test',
     //     'embed'         => true,
@@ -57,7 +48,20 @@ class DDTT_DISCORD {
      * @param string $webhook
      * @return boolean
      */
-    public static function send( $args ) {
+    public static function send( $webhook, $args ) {
+        // Webhook prefix
+        $webhook_prefix = 'https://discord.com/api/webhooks/';
+
+        // Validate webhook
+        if ( !str_starts_with( $webhook, $webhook_prefix ) && str_starts_with( $webhook, 'http' ) ) {
+            ddtt_write_log( 'Could not send notification to Discord. Webhook URL ('.$webhook.') is not valid. URL should look like this: https://discord.com/api/webhooks/xxx/xxx...' );
+            return false;
+        } elseif ( !str_starts_with( $webhook, $webhook_prefix ) ) {
+            $webhook_url = $webhook_prefix.$webhook;
+        } else {
+            $webhook_url = $webhook;
+        }
+
         // Timestamp
         $timestamp = date( 'c', strtotime( 'now' ) );
 
@@ -100,10 +104,10 @@ class DDTT_DISCORD {
             // Are we adding the footer?
             if ( !isset( $args[ 'disable_footer' ] ) || $args[ 'disable_footer' ] !== true ) {
                 // Footer
-                $data[ 'embeds' ][0][ 'footer' ] = [
-                    'text' => DDTT_AUTHOR_URL,
-                    'icon_url' => "https://avatars.githubusercontent.com/u/58490438?v=4"
-                ];
+                // $data[ 'embeds' ][0][ 'footer' ] = [
+                //     'text'     => DDTT_AUTHOR_URL,
+                //     'icon_url' => "https://avatars.githubusercontent.com/u/58490438?v=4"
+                // ];
                 $data[ 'embeds' ][0][ 'timestamp' ] = $timestamp;
             }
 
@@ -142,9 +146,6 @@ class DDTT_DISCORD {
 
         // Encode
         $json_data = json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
-
-        // Convert webhook url
-        $webhook_url = base64_decode( 'aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTEyMTE5NzIyNzc0Mjg2MzM2MC8' ).self::$webhook;
 
         // Send it to discord
         $options = [

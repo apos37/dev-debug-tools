@@ -43,7 +43,7 @@ if ( is_object( $latest_wp ) && isset( $latest_wp->updates[0]->version ) && $wp_
 
     // Add the warning
     $wp_warning = '<div class="tooltip"><a href="'.$updates_url.'"><span class="warning-symbol"></span></a>
-        <span class="tooltiptext">A newer version of WordPress is available ('.$latest_wp->version_checked.')</span>
+        <span class="tooltiptext">A newer version of WordPress is available ('.$latest_wp->updates[0]->version.')</span>
     </div>';
 }
 

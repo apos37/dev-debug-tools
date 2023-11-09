@@ -396,18 +396,25 @@ function ddtt_is_dev( $email = false, $array = false ){
  * Only display on front end if current user is dev
  *
  * @param array|string|bool $array
- * @param int $user_id
+ * @param int|array $user_id
  * @param bool|int $left_margin
  * @return void
  */
 
-function ddtt_print_r( $var, $user_id = NULL, $left_margin = null, $write_bool = true ) {
-    // Check if this should only be viewable to a specific user
-    if ( !is_null( $user_id ) ) {
-        if ( get_current_user_id() != $user_id ) {
-            return;
-        }
-    } elseif ( !ddtt_is_dev() ) {
+function ddtt_print_r( $var, $user_id = null, $left_margin = null, $write_bool = true ) {
+    // Current user
+    $current_user_id = get_current_user_id();
+
+    // Single id provided
+    if ( !is_null( $user_id ) && !is_array( $user_id ) && $user_id != $current_user_id ) {
+        return;
+
+    // Multiple ids provided
+    } elseif ( !is_null( $user_id ) && is_array( $user_id ) && !in_array( $current_user_id, $user_id ) ) {
+        return;
+    
+    // No id provided
+    } elseif ( is_null( $user_id ) && !ddtt_is_dev() ) {
         return;
     }
 
@@ -496,7 +503,7 @@ function ddtt_is_site( $site_to_check ) {
  * @param boolean $capitalize
  * @return string
  */
-function ddtt_get_domain( $capitalize = false, $remove_ext = false ) {
+function ddtt_get_domain( $capitalize = false, $remove_ext = false, $incl_protocol = false ) {
     // Get the domain
     $domain = sanitize_text_field( $_SERVER[ 'SERVER_NAME' ] );
 
@@ -522,6 +529,17 @@ function ddtt_get_domain( $capitalize = false, $remove_ext = false ) {
         } else {
             $domain = $prefix;
         }
+    }
+
+    // Include the protocol
+    if ( $incl_protocol ) {
+        if ( isset( $_SERVER[ 'HTTPS' ] ) && ( sanitize_text_field( $_SERVER[ 'HTTPS' ] ) == 'on' || sanitize_text_field( $_SERVER[ 'HTTPS' ] ) == 1 ) ||
+            isset( $_SERVER[ 'HTTP_X_FORWARDED_PROTO' ] ) && sanitize_text_field( $_SERVER[ 'HTTP_X_FORWARDED_PROTO' ] ) == 'https' ) {
+            $protocol = 'https://';
+        } else {
+            $protocol = 'http://';
+        }
+        $domain = $protocol.$domain;
     }
 
     // Return it

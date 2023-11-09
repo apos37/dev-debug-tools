@@ -1,4 +1,9 @@
 == changelog.txt ==
+= 1.5.2 =
+* Tweak: ddtt_print_r() / dpr() now accepts array for user id
+* Fix: Improved performance on show online users feature
+* Update: Added option for Discord Notifications of online priority users
+
 = 1.5.1 =
 * Tweak: Added an option to stop showing feedback form on deactivate; will automatically disable for certain choices
 

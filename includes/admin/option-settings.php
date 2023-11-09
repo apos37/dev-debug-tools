@@ -183,6 +183,24 @@
                 ]; ?>
                 <?php echo wp_kses( ddtt_options_tr( 'online_users_priority_roles', 'Roles to Prioritize on Top', 'checkboxes', '', $prioritize_roles_args ), $allowed_html ); ?>
 
+                <?php echo wp_kses( ddtt_options_tr( 'discord_webhook', 'Discord Webhook URL<br>** BETA **', 'text', '<br>// Send notifications to a <a href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks" target="_blank">Discord Webhook</a> when users do different things (enable notification types below)<br>// Useful if you need to stop debugging when there is activity<br>// Webhook URL should look like this: https://discord.com/api/webhooks/xxx/xxx...', [ 'pattern' => "(https:\/\/discord\.com\/api\/webhooks\/([A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)" ] ), $allowed_html ); ?>
+
+                <?php 
+                $seconds = get_option( DDTT_GO_PF.'online_users_seconds', 900 ); 
+                if ( $seconds && $seconds > 0 ) {
+                    $minutes = $seconds / 60;
+                } else {
+                    $minutes = 15;
+                }
+                ?>
+                <?php echo wp_kses( ddtt_options_tr( 'discord_login', 'Login Notifications', 'checkbox', '// Notifies you if a user with a priority role (selected above) has logged in' ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'discord_transient', 'Intermittent Notifications', 'checkbox', '// Notifies you if a user with a priority role is still logged in; updates every '.$minutes.' minutes; you may reset timer by clearing transients on the <a href="'.ddtt_plugin_options_path( 'siteoptions' ).'">Site Options</a> tab' ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'discord_page_loads', 'Page Load Notifications', 'checkbox', '// Notifies you every time a user with a priority role loads a page (warning: this may cause rate limits on Discord if too many pages are loaded at once)' ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'discord_ingore_devs', 'Ignore Developer Notifications', 'checkbox', '// Ignore developers for intermittent notifications and page load notifications' ), $allowed_html ); ?>
+
             </table>
 
             <br><hr><br></br>

@@ -87,6 +87,11 @@ $hooks = [
         'type' => 'Action',
         'hook' => 'ddtt_on_update_post_meta',
         'desc' => 'Do something when you <a href="'.ddtt_plugin_options_path( 'postmeta' ).'">update post meta</a>.'
+    ],
+    [ 
+        'type' => 'Filter',
+        'hook' => 'ddtt_ignore_pages_for_discord_notifications', 
+        'desc' => 'Add, remove or modify pages that should be ignored when using Discord Notifications found in <a href="'.ddtt_plugin_options_path( 'settings' ).'">settings</a> under Show Online Users.' 
     ]
 ];
 ?>
