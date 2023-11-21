@@ -1,8 +1,16 @@
 == changelog.txt ==
+= 1.5.4 =
+* Fix: Attempting to send Discord notifications when there are no priority roles selected causing fatal error
+* Update Added option in settings to disable error counts to improve page load time when there are lots of errors
+* Fix: Debug log not pulling up if location is changed
+
+= 1.5.3 =
+* Fix: Some sites do not have a blog name, so default to domain in Discord notifications
+
 = 1.5.2 =
 * Tweak: ddtt_print_r() / dpr() now accepts array for user id
 * Fix: Improved performance on show online users feature
-* Update: Added option for Discord Notifications of online priority users
+* Update: Added option for Discord notifications of online priority users
 
 = 1.5.1 =
 * Tweak: Added an option to stop showing feedback form on deactivate; will automatically disable for certain choices

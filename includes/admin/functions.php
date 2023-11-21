@@ -611,7 +611,12 @@ function ddtt_get_form_selections( $id, $selected, $include_inactive = false ) {
  *
  * @return int
  */
-function ddtt_error_count(){
+function ddtt_error_count() {
+    // Check if disabled
+    if ( get_option( DDTT_GO_PF.'disable_error_counts' ) ) {
+        return false;
+    }
+
     // Check for error_log
     $error_log = FALSE;
     if ( is_readable( ABSPATH.'error_log' ) ) {
@@ -621,11 +626,18 @@ function ddtt_error_count(){
     }
     
     // Check for debug.log
+    if ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
+        $debug_loc = WP_DEBUG_LOG;
+    } else {
+        $debug_loc =  DDTT_CONTENT_URL.'/debug.log';
+    }
     $debug_log = FALSE;
-    if ( is_readable( ABSPATH.DDTT_CONTENT_URL.'/debug.log' ) ) {
-        $debug_log = ABSPATH.DDTT_CONTENT_URL.'/debug.log';
-    } elseif ( is_readable( dirname( ABSPATH ).'/'.DDTT_CONTENT_URL.'/debug.log' ) ) {
-        $debug_log = dirname( ABSPATH ).'/'.DDTT_CONTENT_URL.'/debug.log';
+    if ( is_readable( ABSPATH.$debug_loc ) ) {
+        $debug_log = ABSPATH.$debug_loc;
+    } elseif ( is_readable( dirname( ABSPATH ).'/'.$debug_loc ) ) {
+        $debug_log = dirname( ABSPATH ).'/'.$debug_loc;
+    } elseif ( is_readable( $debug_loc ) ) {
+        $debug_log = $debug_loc;
     }
 
     // Count debug log lines

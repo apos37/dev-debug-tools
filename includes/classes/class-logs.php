@@ -88,30 +88,32 @@ class DDTT_LOGS {
      * @return void
      */
     public function error_logs() {
-        // Replace the files if query string exists
-        if ( ddtt_get( 'clear_error_log', '==', 'true' ) ) {
-            $this->replace_file( 'error_log', 'error_log', true );
-        }
-        if ( ddtt_get( 'clear_debug_log', '==', 'true' ) ) {
-            $this->replace_file( DDTT_CONTENT_URL.'/debug.log', 'debug.log', true );
-        }
-        if ( ddtt_get( 'clear_admin_error_log', '==', 'true' ) ) {
-            $this->replace_file( DDTT_ADMIN_URL.'/error_log', 'error_log', true );
-        }
-
-        // Get the different error logs
-        $error_log = $this->file_exists_with_content( 'error_log' );
-        $admin_error_log = $this->file_exists_with_content( DDTT_ADMIN_URL.'/error_log' );
-
+        // Get the debug log location
         if ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
             $debug_loc = WP_DEBUG_LOG;
         } else {
             $debug_loc =  DDTT_CONTENT_URL.'/debug.log';
         }
+
+        // Replace the files if query string exists
+        if ( ddtt_get( 'clear_error_log', '==', 'true' ) ) {
+            $this->replace_file( 'error_log', 'error_log', true );
+        }
+        if ( ddtt_get( 'clear_debug_log', '==', 'true' ) ) {
+            $this->replace_file( $debug_loc, 'debug.log', true );
+        }
+        if ( ddtt_get( 'clear_admin_error_log', '==', 'true' ) ) {
+            $this->replace_file( DDTT_ADMIN_URL.'/error_log', 'error_log', true );
+        }
+
+        // Get the different logs
+        $error_log = $this->file_exists_with_content( 'error_log' );
+        $admin_error_log = $this->file_exists_with_content( DDTT_ADMIN_URL.'/error_log' );
         $debug_log = $this->file_exists_with_content( $debug_loc );
 
         // Echo the table row if any of them exists
         if ( $error_log || $debug_log || $admin_error_log ) {
+            
             if ( $error_log ) {
                 $filesize = filesize( $error_log );
             }
@@ -132,7 +134,7 @@ class DDTT_LOGS {
                 $highlight_args = $this->highlight_args();
 
                 // Add the log
-                echo wp_kses( $this->file_contents_with_clear_button( 'clear_debug_log', 'Debug Log', DDTT_CONTENT_URL.'/debug.log', $filesize, true, $highlight_args, true ), $allowed_html );
+                echo wp_kses( $this->file_contents_with_clear_button( 'clear_debug_log', 'Debug Log', $debug_loc, $filesize, true, $highlight_args, true ), $allowed_html );
             }
 
             // Display the error_log with clear button
@@ -194,6 +196,8 @@ class DDTT_LOGS {
             $file = ABSPATH.''.$path;
         } elseif ( is_readable( dirname( ABSPATH ).'/'.$path ) ) {
             $file = dirname( ABSPATH ).'/'.$path;
+        } elseif ( is_readable( $path ) ) {
+            $file = $path;
         }
 
         if ( $file && filesize($file) > 0 ) {
@@ -266,6 +270,11 @@ class DDTT_LOGS {
             // 1MB = 1048576 bytes, 2MB = 2097152 bytes
             $dl_max_filesize = apply_filters( 'ddtt_debug_log_max_filesize', 2097152 );
 
+            // Include issues notice
+            if ( $filesize > 10485760 ) {
+                ddtt_admin_notice( 'warning', 'Uh oh! Your debug log is '.ddtt_format_bytes( $filesize ).'! That is far too big, and may cause issues for your site. It is recommended that you download your log to see what\'s going on, and then clear it. If your log does not download from the button below, try logging into your File Manager on your host or downloading via FTP.' );
+            }
+
             // Check if we are under
             if ( $filesize < absint( $dl_max_filesize ) ) {
 
@@ -278,7 +287,7 @@ class DDTT_LOGS {
     
             // Or display warning that log is too big
             } else {
-                $contents = 'Sorry, your debug log is too big (over '.esc_html( ddtt_format_bytes( absint( $dl_max_filesize ) ) ).') and may cause issues if we try to load it right now. It is recommended that you download your log to see what\'s going on, and then clear it.';
+                $contents = 'Sorry, your debug log is too big ('.esc_html( ddtt_format_bytes( $filesize ) ).'), and may cause issues if we try to load it on this page. Only '.esc_html( ddtt_format_bytes( absint( $dl_max_filesize ) ) ).' is allowed to be viewable here. It is recommended that you download your log to see what\'s going on, and then clear it. A log that is too large can cause issues on your site.';
             }
         }
 

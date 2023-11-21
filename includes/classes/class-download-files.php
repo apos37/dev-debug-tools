@@ -54,7 +54,12 @@ class DDTT_DOWNLOAD_FILES {
             
             // DEBUG.LOG
             if ( isset( $_POST[ 'ddtt_download_debug_log' ] ) ) {
-                $this->download_root_file( DDTT_CONTENT_URL.'/debug.log', DDTT_GO_PF.'debug_log_dl' );
+                if ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
+                    $debug_loc = WP_DEBUG_LOG;
+                } else {
+                    $debug_loc =  DDTT_CONTENT_URL.'/debug.log';
+                }
+                $this->download_root_file( $debug_loc, DDTT_GO_PF.'debug_log_dl' );
             }
             
             // ADMIN ERROR_LOG
@@ -105,6 +110,8 @@ class DDTT_DOWNLOAD_FILES {
             $file = $path.'/'.$filename;
         } elseif ( is_readable( dirname( $path ).'/'.$filename ) ) {
             $file = dirname( $path ).'/'.$filename;
+        } elseif ( is_readable( $filename ) ) {
+            $file = $filename;
         } else {
             $file = false;
         }

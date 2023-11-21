@@ -103,6 +103,8 @@
             <br><hr><br></br>
             <h2>Testing Options</h2>
             <table class="form-table">
+                <?php echo wp_kses( ddtt_options_tr( 'disable_error_counts', 'Disable Error Counts', 'checkbox', '// Disabling this will prevent counting and improve page load time; good to use when you have a lot of errors in your logs' ), $allowed_html ); ?>
+
                 <?php echo wp_kses( ddtt_options_tr( 'view_sensitive_info', 'View Sensitive Info', 'checkbox', '// Displays redacted database login info, IP addresses, etc.' ), $allowed_html ); ?>
 
                 <?php $log_viewers = [

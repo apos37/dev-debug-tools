@@ -5,7 +5,7 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.4.1
 Requires PHP: 7.4
-Stable tag: 1.5.2
+Stable tag: 1.5.4
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -99,6 +99,14 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.5.4 =
+* Fix: Attempting to send Discord notifications when there are no priority roles selected causing fatal error
+* Update Added option in settings to disable error counts to improve page load time when there are lots of errors
+* Fix: Debug log not pulling up if location is changed
+
+= 1.5.3 =
+* Fix: Some sites do not have a blog name, so default to domain in Discord notifications
+
 = 1.5.2 =
 * Tweak: ddtt_print_r() / dpr() now accepts array for user id
 * Fix: Improved performance on show online users feature

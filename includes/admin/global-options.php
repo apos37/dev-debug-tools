@@ -45,6 +45,7 @@ class DDTT_GLOBAL_OPTIONS {
             'color_syntax',
             'color_text_quotes',
             'log_viewer',
+            'disable_error_counts',
             'view_sensitive_info',
             'log_user_url',
             'test_number',

@@ -630,6 +630,9 @@ class DDTT_ONLINE_USERS {
 
         // Get the roles
         $roles = get_option( DDTT_GO_PF.'online_users_priority_roles' );
+        if ( !$roles || $roles == '' || empty( $roles ) ) {
+            return false;
+        }
         foreach ( $user->roles as $role ) {
             if ( array_key_exists( $role, $roles ) ) {
                 $found = true;
