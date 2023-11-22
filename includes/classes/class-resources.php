@@ -1,10 +1,6 @@
 <?php
 /**
  * Resources
- * 
- * USAGE:
- * $DDTT_RESOURCES = new DDTT_RESOURCES();
- * $resources = $DDTT_RESOURCES->get_resources();
  */
 
 // Exit if accessed directly.
@@ -19,32 +15,17 @@ if ( !defined( 'ABSPATH' ) ) {
 class DDTT_RESOURCES {
 
     /**
-	 * Constructor
-	 */
-	public function __construct() {
-        
-	} // End __construct()
-
-
-    /**
      * Resources
      *
      * @return array
      */
     public function get_resources() {
-        // Check if they are a member of the discord server
-        if ( get_option( DDTT_GO_PF.'switch_discord_link' ) == '1' ) {
-            $discord_link = 'https://discord.com/channels/991553521197518878/1020384748918542426';
-        } else {
-            $discord_link = DDTT_DISCORD_SUPPORT_URL;
-        }
-
         // The links
         $links = apply_filters( 'ddtt_resource_links', [
             [ 
-                'title' => 'WordPress Support Discord Server', 
-                'url'   => $discord_link,
-                'desc'  => 'Get WP support from other developers, including the author of this plugin. Support for this plugin specifically is also available on this server.' 
+                'title' => 'Apos37 Support Discord Server', 
+                'url'   => 'https://discord.gg/3HnzNEJVnR',
+                'desc'  => 'Get support from the author of this plugin.' 
             ],
             [ 
                 'title' => 'Official WordPress Support Forum', 

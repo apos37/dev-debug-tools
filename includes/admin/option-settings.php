@@ -61,7 +61,7 @@
     if ( !$is_dev ) {
 
         // Add extra instructions
-        $instructions = '<br>// This will give you access to additional settings and all of the debugging and testing tabs available for developers.';
+        $instructions = '<br>This will give you access to additional settings and all of the debugging and testing tabs available for developers.';
 
         // Activated by the current user?
         if ( get_option( DDTT_GO_PF.'plugin_activated_by' ) && get_option( DDTT_GO_PF.'plugin_activated_by' ) == get_current_user_id() ) {
@@ -72,7 +72,7 @@
 
         // Activated by the current user?
         if ( get_option( DDTT_GO_PF.'plugin_activated_by' ) && get_option( DDTT_GO_PF.'plugin_activated_by' ) == get_current_user_id() ) {
-            $instructions = '<br>// If you would like to give access to additional developers, just add their account email addresses above.';
+            $instructions = '<br>If you would like to give access to additional developers, just add their account email addresses above.';
 
         } else {
 
@@ -86,26 +86,31 @@
         <?php settings_fields( DDTT_PF.'group_settings' ); ?>
         <?php do_settings_sections( DDTT_PF.'group_settings' ); ?>
         <table class="form-table">
-            <?php echo wp_kses( ddtt_options_tr( 'dev_email', 'Developer Account Email Addresses', 'text', $instructions.'<br>// Default is the email of the user that activated the plugin.
-            <br>// You may use multiple email addresses separated by commas', [ 'default' => $activated_email, 'pattern' => '^^([\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})(\s*,\s*[\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})*$' ] ), $allowed_html ); ?>
+            <?php echo wp_kses( ddtt_options_tr( 'dev_email', 'Developer Account Email Addresses', 'text', $instructions.'<br>Default is the email of the user that activated the plugin. You may use multiple email addresses separated by commas.', [ 'default' => $activated_email, 'pattern' => '^^([\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})(\s*,\s*[\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})*$' ] ), $allowed_html ); ?>
 
             <?php $timezone_args = [ 
                 'default' => wp_timezone_string(),
                 'blank' => '-- Select One --',
                 'options' => DateTimeZone::listIdentifiers()
             ]; ?>
-            <?php echo wp_kses( ddtt_options_tr( 'dev_timezone', 'Developer Timezone', 'select', '<br>// Default is what the site uses', $timezone_args ), $allowed_html ); ?>
+            <?php echo wp_kses( ddtt_options_tr( 'dev_timezone', 'Developer Timezone', 'select', '<br>Changes the timezone on Debug Log viewer and other areas in the plugin. Default is what the site uses.', $timezone_args ), $allowed_html ); ?>
             
         </table>
 
-        <?php if ( ddtt_is_dev() ) { ?>
+        <?php if ( !ddtt_is_dev() ) {
+            $readonly = ' style="display: none;"';
+        } else {
+            $readonly = '';
+        } ?>
+
+        <div id="testing-options"<?php echo wp_kses( $readonly, $allowed_html ); ?>>
             
             <br><hr><br></br>
             <h2>Testing Options</h2>
             <table class="form-table">
-                <?php echo wp_kses( ddtt_options_tr( 'disable_error_counts', 'Disable Error Counts', 'checkbox', '// Disabling this will prevent counting and improve page load time; good to use when you have a lot of errors in your logs' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'disable_error_counts', 'Disable Error Counts', 'checkbox', 'Disabling this will prevent counting and improve page load time. Good to use when you have a lot of errors in your logs.' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'view_sensitive_info', 'View Sensitive Info', 'checkbox', '// Displays redacted database login info, IP addresses, etc.' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'view_sensitive_info', 'View Sensitive Info', 'checkbox', 'Displays redacted database login info, IP addresses, etc.' ), $allowed_html ); ?>
 
                 <?php $log_viewers = [
                     'options' => [
@@ -113,31 +118,29 @@
                         'Classic'
                     ]
                 ]; ?>
-                <?php echo wp_kses( ddtt_options_tr( 'log_viewer', 'Log Viewer', 'select', '<br>// Change how the <a href="'.ddtt_plugin_options_path( 'logs' ).'">debug log</a> is displayed', $log_viewers ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'log_viewer', 'Log Viewer', 'select', '<br>// Change how the <a href="'.ddtt_plugin_options_path( 'logs' ).'">debug log</a> is displayed.', $log_viewers ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'log_user_url', 'Also Log User and URL With Errors', 'checkbox', '// Adds an additional line to debug.log errors with the user ID, user display name, and url with query strings when an error is triggered.' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'log_user_url', 'Also Log User and URL With Errors', 'checkbox', 'Adds an additional line to debug.log errors with the user ID, user display name, and url with query strings when an error is triggered.' ), $allowed_html ); ?>
                 
                 <?php echo wp_kses( ddtt_options_tr( 'test_number', 'Debugging Test Number', 'number', null, [ 'width' => '10rem' ] ), $allowed_html ); ?>
 
                 <?php echo wp_kses( ddtt_options_tr( 'centering_tool_cols', 'Centering Tool Columns (Found on Admin Bar in Front-End)', 'number', null, [ 'width' => '10rem', 'default' => 16 ] ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'stop_heartbeat', 'Stop Heartbeat', 'checkbox', '// 503 INTERNAL ERRORS' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'stop_heartbeat', 'Stop Heartbeat', 'checkbox', 'Helpful to resolve 503 INTERNAL ERRORS.' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'enable_curl_timeout', 'Extend cURL Timeout', 'checkbox', '// HTTP cURL Timeout Errors' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'enable_curl_timeout', 'Extend cURL Timeout', 'checkbox', 'Helpful to resolve HTTP cURL Timeout Errors.' ), $allowed_html ); ?>
 
-                <?php if ( get_option( DDTT_GO_PF.'enable_curl_timeout' ) == '1' ) { ?>
-                    <?php echo wp_kses( ddtt_options_tr( 'change_curl_timeout', 'cURL Timeout Seconds', 'text', '// Default is 5 seconds; change # of seconds here to 30 or 120 for testing' ), $allowed_html ); ?>
-                <?php } ?>
+                <?php echo wp_kses( ddtt_options_tr( 'change_curl_timeout', 'cURL Timeout Seconds', 'text', '<br>Change # of seconds here to 30 or 120 for testing. Default is 5 seconds.', [ 'width' => '10rem', 'default' => 5 ] ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'ql_user_id', 'Add User IDs with Quick Debug Links to User Admin List Page', 'checkbox', '// Adds User ID column with a link to debug the user\'s meta.' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'ql_user_id', 'Add User IDs with Quick Debug Links to User Admin List Page', 'checkbox' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'ql_post_id', 'Add Post/Page IDs with Quick Debug Links to Admin List Pages', 'checkbox', '// Adds a link to debug the post or page\'s meta.' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'ql_post_id', 'Add Post/Page IDs with Quick Debug Links to Admin List Pages', 'checkbox' ), $allowed_html ); ?>
 
                 <?php if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) { 
-                    echo wp_kses( ddtt_options_tr( 'ql_gravity_forms', 'Add Quick Debug Links to Gravity Forms', 'checkbox', '// Adds a link to debug forms and entries.' ), $allowed_html ); 
+                    echo wp_kses( ddtt_options_tr( 'ql_gravity_forms', 'Add Quick Debug Links to Gravity Forms & Entries', 'checkbox' ), $allowed_html ); 
                 } ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'wp_mail_failure', 'Capture WP_Mail Failure Details in Debug.log', 'checkbox', '// Must have debug log enabled.' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'wp_mail_failure', 'Capture WP_Mail Failure Details in Debug.log', 'checkbox', 'Must have debug log enabled.' ), $allowed_html ); ?>
 
             </table>
 
@@ -145,13 +148,13 @@
             <h2>Show Online Users</h2>
             <table class="form-table">
 
-                <?php echo wp_kses( ddtt_options_tr( 'online_users', 'Show Online Users', 'checkbox', '// Adds indicator to admin bar, a dashboard widget, and users admin list column.' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'online_users', 'Show Online Users', 'checkbox', 'Adds indicator to admin bar and users admin list column.' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'online_users_seconds', '# of Seconds', 'number', '<br>// Checks if users were logged in this amount of time ago. Recommended 900 seconds (15 minutes).<br>// Note that logged-in time is stored on page load, so if a user is on a page for longer than the amount of time you specify here, it may show them as offline when they are not.', [ 'width' => '10rem', 'default' => 900 ] ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'online_users_seconds', '# of Seconds', 'number', '<br>Checks if users were logged in this amount of time ago. Recommended 900 seconds (15 minutes).<br>Note that logged-in time is stored on page load, so if a user is on a page for longer than the amount of time you specify here, it may show them as offline when they are not.', [ 'width' => '10rem', 'default' => 900 ] ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'online_users_show_last', 'Show Last Time in Admin Bar', 'checkbox', '// Show the last online time in the admin bar. Note that the logged-in status only updates if they are not already stored.' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'online_users_show_last', 'Show Last Time in Admin Bar', 'checkbox', 'Show the last online time in the admin bar. Note that the logged-in status only updates if they are not already stored.' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'online_users_link', 'User Link URL', 'text', '<br>// Link online users in the admin bar<br>// Merge tags available: {user_id}, {user_email} ie. '.DDTT_ADMIN_URL( 'user-edit.php?user_id={user_id}' ).'<br>// Leave blank for no link' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'online_users_link', 'User Link URL', 'text', '<br>Link online users in the admin bar<br>Merge tags available: {user_id}, {user_email} ie. '.DDTT_ADMIN_URL( 'user-edit.php?user_id={user_id}' ).'<br>Leave blank for no link.' ), $allowed_html ); ?>
 
                 <?php
                 // Get the role details
@@ -185,7 +188,7 @@
                 ]; ?>
                 <?php echo wp_kses( ddtt_options_tr( 'online_users_priority_roles', 'Roles to Prioritize on Top', 'checkboxes', '', $prioritize_roles_args ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'discord_webhook', 'Discord Webhook URL<br>** BETA **', 'text', '<br>// Send notifications to a <a href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks" target="_blank">Discord Webhook</a> when users do different things (enable notification types below)<br>// Useful if you need to stop debugging when there is activity<br>// Webhook URL should look like this: https://discord.com/api/webhooks/xxx/xxx...', [ 'pattern' => "(https:\/\/discord\.com\/api\/webhooks\/([A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)" ] ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'discord_webhook', 'Discord Webhook URL<br>** BETA **', 'text', '<br>Send notifications to a <a href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks" target="_blank">Discord Webhook</a> when users do different things (enable notification types below).<br>Useful if you need to stop debugging when there is activity.<br>Webhook URL should look like this: https://discord.com/api/webhooks/xxx/xxx...', [ 'pattern' => "(https:\/\/discord\.com\/api\/webhooks\/([A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)" ] ), $allowed_html ); ?>
 
                 <?php 
                 $seconds = get_option( DDTT_GO_PF.'online_users_seconds', 900 ); 
@@ -195,13 +198,13 @@
                     $minutes = 15;
                 }
                 ?>
-                <?php echo wp_kses( ddtt_options_tr( 'discord_login', 'Login Notifications', 'checkbox', '// Notifies you if a user with a priority role (selected above) has logged in' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'discord_login', 'Login Notifications', 'checkbox', 'Notifies you if a user with a priority role (selected above) has logged in.' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'discord_transient', 'Intermittent Notifications', 'checkbox', '// Notifies you if a user with a priority role is still logged in; updates every '.$minutes.' minutes; you may reset timer by clearing transients on the <a href="'.ddtt_plugin_options_path( 'siteoptions' ).'">Site Options</a> tab' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'discord_transient', 'Intermittent Notifications', 'checkbox', 'Notifies you if a user with a priority role is still logged in. Updates every '.$minutes.' minutes; you may reset timer by clearing transients on the <a href="'.ddtt_plugin_options_path( 'siteoptions' ).'">Site Options</a> tab.' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'discord_page_loads', 'Page Load Notifications', 'checkbox', '// Notifies you every time a user with a priority role loads a page (warning: this may cause rate limits on Discord if too many pages are loaded at once)' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'discord_page_loads', 'Page Load Notifications', 'checkbox', 'Notifies you every time a user with a priority role loads a page (warning: this may cause rate limits on Discord if too many pages are loaded at once).' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'discord_ingore_devs', 'Ignore Developer Notifications', 'checkbox', '// Ignore developers for intermittent notifications and page load notifications' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'discord_ingore_devs', 'Ignore Developer Notifications', 'checkbox', 'Ignore developers for intermittent notifications and page load notifications.' ), $allowed_html ); ?>
 
             </table>
 
@@ -209,19 +212,19 @@
             <h2>Remove Items from Admin Bar</h2>
             <table class="form-table">
 
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_wp_logo', '(—) WordPress Logo', 'checkbox' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_wp_logo', 'WordPress Logo', 'checkbox' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_resources', '(—) Resources', 'checkbox' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_resources', 'Resources', 'checkbox' ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_centering_tool', 'Centering Tool', 'checkbox' ), $allowed_html ); ?>
 
                 <?php if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
-                    echo wp_kses( ddtt_options_tr( 'admin_bar_gf', '(—) Gravity Form Finder', 'checkbox' ), $allowed_html );
+                    echo wp_kses( ddtt_options_tr( 'admin_bar_gf', 'Gravity Form Finder', 'checkbox' ), $allowed_html );
                 } ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_shortcodes', '(—) Shortcode Finder', 'checkbox' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_shortcodes', 'Shortcode Finder', 'checkbox' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_centering_tool', '(—) Centering Tool', 'checkbox' ), $allowed_html ); ?>
-
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_post_info', '(—) Post Information', 'checkbox' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_post_info', 'Post Information', 'checkbox' ), $allowed_html ); ?>
                 
             </table>
 
@@ -236,7 +239,7 @@
                         'Everyone Excluding Developer'
                     ]
                 ]; ?>
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_condense', 'Consense Admin Bar Items', 'select', '<br>// You can also use the <code>ddtt_admin_bar_condensed_items</code> <a href="'.ddtt_plugin_options_path( 'hooks' ).'">hook</a> to customize items', $condense_options ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_condense', 'Consense Admin Bar Items', 'select', '<br>You can also use the <code>ddtt_admin_bar_condensed_items</code> <a href="'.ddtt_plugin_options_path( 'hooks' ).'">hook</a> to customize items.', $condense_options ), $allowed_html ); ?>
                 
             </table>
 
@@ -253,8 +256,8 @@
                 <?php echo wp_kses( ddtt_options_tr( 'color_text_quotes', 'Text with Quotes', 'color', null, [ 'default' => '#ACCCCC' ] ), $allowed_html ); ?>
                 
             </table>
-        <?php } ?>
-        
+        </div>
+
         <?php submit_button(); ?>
     </form>
 <?php } ?>

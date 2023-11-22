@@ -588,7 +588,7 @@ if ( $user ) {
                 }
                 ?>
                 <tr>
-                    <td><?php echo esc_attr( $key ); ?></td>
+                    <td><span class="highlight-variable"><?php echo esc_attr( $key ); ?></span></td>
                     <td><?php echo wp_kses_post( $value ); ?></td>
                 </tr>
                 <?php
@@ -621,7 +621,7 @@ if ( $user ) {
                         $value = str_replace( $value, '<div class="redact">'.$value.'</div>', $value );
 
                     // Or if it's an array, let's search for an ip
-                    } elseif ( $value && is_serialized( $value ) ) {
+                    } elseif ( $value && ddtt_is_serialized_array( $value ) ) {
                         $array = unserialize( $value );
                         $new_array = [];
                         foreach ( $array as $k => $a ) {
@@ -644,9 +644,14 @@ if ( $user ) {
                         $value = serialize( $new_array );
                     }
                 }
+
+                // Check if serialized array
+                if ( ddtt_is_serialized_array( $value ) && !empty( unserialize( $value ) ) ) {
+                    $value = $value.'<br><code><pre>'.print_r( unserialize( $value ), true ).'</pre></code>';
+                }
                 ?>
                 <tr>
-                    <td><?php echo esc_attr( $key ); ?></td>
+                    <td><span class="highlight-variable"><?php echo esc_attr( $key ); ?></span></td>
                     <td><?php echo wp_kses_post( $value ); ?></td>
                 </tr>
                 <?php
@@ -673,7 +678,7 @@ if ( $user ) {
                 }
                 ?>
                 <tr>
-                    <td><?php echo esc_attr( $key ); ?></td>
+                    <td><span class="highlight-variable"><?php echo esc_attr( $key ); ?></span></td>
                     <td><?php echo wp_kses_post( $value ); ?></td>
                 </tr>
                 <?php

@@ -141,7 +141,7 @@ if ( $crons ) {
                     }
 
                     // Add the callback name
-                    $actions[] = '<code>' . $hook_callback[ 'callback' ][ 'name' ] . '</code>';
+                    $actions[] = '<code>'.ddtt_highlight_string( $hook_callback[ 'callback' ][ 'name' ] ).'</code>';
                 }
             }
 
@@ -191,7 +191,7 @@ echo '<div class="full_width_container">
 
             // Print the row
             echo '<tr>
-                <td>'.esc_attr( $my_cron[ 'hook' ] ).'</td>
+                <td><span class="highlight-variable">'.esc_attr( $my_cron[ 'hook' ] ).'</span></td>
                 <td>'.wp_kses_post( $args ).'</td>
                 <td>'.esc_html( ucwords( $my_cron[ 'recurrence' ] ) ).'</td>
                 <td>'.esc_html( $my_cron[ 'next_run' ] ).'<br>'.esc_html( $my_cron[ 'time' ] ).'</td>

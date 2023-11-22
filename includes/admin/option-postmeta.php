@@ -577,7 +577,7 @@ if ( $valid_search ) {
             foreach( $post as $key => $value ) {
                 ?>
                 <tr>
-                    <td><?php echo esc_attr( $key ); ?></td>
+                    <td><span class="highlight-variable"><?php echo esc_attr( $key ); ?></span></td>
                     <td><?php echo esc_html( $value ); ?></td>
                 </tr>
                 <?php
@@ -597,10 +597,16 @@ if ( $valid_search ) {
             </tr>
             <?php
             foreach( $post_meta as $key => $value ) {
+                $value = $value[0];
+                if ( ddtt_is_serialized_array( $value ) && !empty( unserialize( $value ) ) ) {
+                    $value = $value.'<br><code><pre>'.print_r( unserialize( $value ), true ).'</pre></code>';
+                } else {
+                    $value = esc_html( $value );
+                }
                 ?>
                 <tr>
-                    <td><?php echo esc_attr( $key ); ?></td>
-                    <td><?php echo esc_html( $value[0] ); ?></td>
+                    <td><span class="highlight-variable"><?php echo esc_attr( $key ); ?></span></td>
+                    <td><?php echo wp_kses_post( $value ); ?></td>
                 </tr>
                 <?php
             }

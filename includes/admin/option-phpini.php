@@ -15,7 +15,7 @@ echo '<div class="full_width_container">
         // Cycle through the options
         foreach( $all_options as $option => $value ) {
             echo '<tr>
-                <td>'.esc_attr( $option ).'</td>
+                <td><span class="highlight-variable">'.esc_attr( $option ).'</span></td>
                 <td>'.esc_html( $value ).'</td>
             </tr>';
         }

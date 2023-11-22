@@ -63,7 +63,15 @@ if ( $current_screen->id == $options_page ) {
     .wrap h3 {
         margin-top: 0 !important;
         border-top: 0 !important;
-        padding-top: 0 !important;
+    }
+
+    h2,
+    .wrap h2 {
+        background-color: #2C3338;
+        padding: 10px !important;
+        font-size: 1.5rem;
+        line-height: normal;
+        border-radius: 5px;
     }
 
     /* Main backgrounds */
@@ -154,6 +162,9 @@ if ( $current_screen->id == $options_page ) {
         word-break: break-word;
         white-space: pre-wrap;
     }
+    .admin-large-table td {
+        vertical-align: top;
+    }
     .form-table .checkbox_cont {
         margin-bottom: 10px;
     }
@@ -164,8 +175,9 @@ if ( $current_screen->id == $options_page ) {
         background: #B8DCAA !important;
     }
     #message.updated p,
-    .wp-core-ui .notice-success {
-        color: <?php echo esc_attr( $bg_secondary ); ?>;
+    .wp-core-ui .notice-success,
+    .wp-core-ui .notice-success a {
+        color: <?php echo esc_attr( $bg_secondary ); ?> !important;
     }
     .notice-dismiss {
         background: 0 0 !important;
@@ -377,6 +389,31 @@ if ( $current_screen->id == $options_page ) {
         height: 4rem;
     }
 
+    /* Field descriptions/comments */
+    .field-desc {
+        background-color: #2C3338;
+        display: inline-block;
+        padding: 10px;
+        border: 1px solid #2D2D2D;
+        font-size: 12px !important;
+        line-height: 1.5;
+        -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.04);
+        box-shadow: 0 1px 1px #26BECF;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        border-radius: 5px;
+    }
+    .field-desc.break {
+        display: block !important;
+        width: max-content;
+    }
+    .field-desc code {
+        background-color: #2D2D2D;
+        border-radius: 2px;
+        font-size: revert !important;
+    }
+
     /* Color field sample */
     .options_color_sample {
         height: 30px;
@@ -443,7 +480,12 @@ if ( $current_screen->id == $options_page ) {
         background: <?php echo esc_attr( $bg_secondary ); ?> !important;
         color: <?php echo esc_attr( $text_secondary ); ?> !important;
         border: 0px;
-        margin-left: .1em;
+        margin-left: .2em;
+        margin-top: .2em;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        font-size: 0.9rem;
+        padding: 5px 15px;
     }
     .nav-tab:hover {
         background: <?php echo esc_attr( $bg_secondary_hover ); ?> !important;
@@ -741,7 +783,7 @@ if ( $current_screen->id == $options_page ) {
         border-radius: 3px !important;
     }
     .comment-out { color: <?php echo esc_attr( $comment_out ); ?>; } 
-    .wrap a.c0 { color: <?php echo esc_attr( $c0 ); ?> !important; } /* Functions and variables */
+    .wrap a.c0, .highlight-variable { color: <?php echo esc_attr( $c0 ); ?> !important; } /* Functions and variables */
     .wrap a.c1 { color: <?php echo esc_attr( $c1 ); ?> !important; } /* Comments */
     .wrap a.c2 { color: <?php echo esc_attr( $c2 ); ?> !important; } /* Syntax */
     .wrap a.c3 { color: <?php echo esc_attr( $c3 ); ?> !important; } /* Text with quotes */

@@ -44,6 +44,7 @@ if ( $file ) {
 
     // Search for test material
     $last_key = 0;
+    $found_test_line = false;
     $found_test_material = false;
     foreach( $file_lines as $key => $file_line ) {
         $line = htmlentities( $file_line );
@@ -56,6 +57,9 @@ if ( $file ) {
         // If the last key has been identified
         if ( $last_key > 0 && $key > $last_key ) {
 
+            // Found test line
+            $found_test_line = true;
+
             // Check if there are any lines that do not start with comments
             if ( ( str_starts_with( $line, '//' ) === false ) && 
                  ( str_starts_with( $line, ' //' ) === false ) && 
@@ -67,6 +71,17 @@ if ( $file ) {
                 break;
             }
         }
+    } 
+
+    // If no test line, still check if there are any lines that do not start with comments
+    if ( !$found_test_line &&
+         ( str_starts_with( $line, '//' ) === false ) && 
+         ( str_starts_with( $line, ' //' ) === false ) && 
+         strlen( $line ) > 0 &&
+         !ctype_space( $line ) ) {
+            
+        // Stop here because we found some test material
+        $found_test_material = true;
     }
 
     // If we did not find test material
@@ -83,21 +98,18 @@ if ( $file ) {
             <br>
             <h4>Method 1</h4>
             <br>1. Go to the <a href="/'.esc_attr( DDTT_ADMIN_URL ).'/plugin-editor.php?file='.esc_attr( DDTT_TEXTDOMAIN ).'%2Fincludes%2FTESTING_PLAYGROUND.php&plugin='.esc_attr( DDTT_TEXTDOMAIN ).'%2F'.esc_attr( DDTT_TEXTDOMAIN ).'.php" target="_blank">Plugin File Editor</a>, or use FTP to access the plugin root folder:
-            <br><strong><code>/'.esc_attr( DDTT_PLUGINS_URL ).'/'. esc_attr( DDTT_TEXTDOMAIN ) .'/</code></strong>
-            <br><br>2. Open the <strong><code>"'.esc_attr( $filename ).'"</code></strong> file
+            <br><strong><code class="hl">/'.esc_attr( DDTT_PLUGINS_URL ).'/'. esc_attr( DDTT_TEXTDOMAIN ) .'/</code></strong>
+            <br><br>2. Open the <strong><code class="hl">"'.esc_attr( $filename ).'"</code></strong> file
             <br><br>3. Edit the file by adding your test code <strong>AFTER</strong> where it says:
             <span class="comment-out">
             <br>//////////////  '.esc_html( $test_line ).'  //////////////
-            <br>//////////////  '.esc_html( $test_line ).'  //////////////
-            <br>//////////////  '.esc_html( $test_line ).'  //////////////
-            <br>//////////////  '.esc_html( $test_line ).'  //////////////
             </span>
-            <br><br><em>Note: Do NOT delete these comment lines, or else these instructions will continue to show during testing.</em>
+            <br><br><em>Note: These instructions will disappear if you have any non-commented out code below this line.</em>
             <br><br>4. Save the file and refresh this page.
 
             <br><br><hr>
             <h4>Method 2</h4>
-            Do the same thing as Method 1, but download the file below and upload it to your current theme\'s root folder (<strong><code>'.esc_attr( $active_theme_path ).'</code></strong>) instead.<br>The benefit of doing it this way is that it won\'t reset when the plugin is updated.
+            Do the same thing as Method 1, but download the file below and upload it to your current theme\'s root folder (<strong><code class="hl">'.esc_attr( $active_theme_path ).'</code></strong>) instead.<br>The benefit of doing it this way is that it won\'t reset when the plugin is updated.
             <br><br>
             <form method="post">
                 '.wp_nonce_field( DDTT_GO_PF.'testing_playground_dl', '_wpnonce' ).'

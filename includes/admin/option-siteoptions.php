@@ -111,7 +111,7 @@ echo '<div class="full_width_container">
                 $display_value = '<pre>'.print_r( $get_option, true ).'</pre>';
             }
             echo '<tr>
-                <td>'.esc_attr( $option ).'</td>
+                <td><span class="highlight-variable">'.esc_attr( $option ).'</span></td>
                 <td>'.esc_attr( $value['group'] ).'</td>
                 <td>'.wp_kses_post( $display_value ).'</td>
             </tr>';

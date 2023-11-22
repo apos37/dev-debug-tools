@@ -1,4 +1,16 @@
 == changelog.txt ==
+= 1.5.5 =
+* Tweak: Updated the TESTING_PLAYGROUND.php file to allow deletion of all content, added example code
+* Tweak: Changed name of Hooks tab to Available Hooks
+* Tweak: Changed name of Functions tab to Available functions
+* Tweak: Changed name of FX tab to Functions.php
+* Tweak: Updated some CSS styles and highlighted syntax on Functions tab
+* Tweak: Removed planned features from About tab
+* Fix: Links inside notices were too light with the background
+* Fix: If someone is not a dev and saves the settings, it was clearing all settings
+* Tweak: Updated Discord server link on Resources tab
+* Update: Added unserialized array values underneath serialized values in User Meta and Post Meta tabs, making it easier to read
+
 = 1.5.4 =
 * Fix: Attempting to send Discord notifications when there are no priority roles selected causing fatal error
 * Update Added option in settings to disable error counts to improve page load time when there are lots of errors

@@ -285,10 +285,15 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
     // If comments
     $incl_comments = '';
     if ( !is_null( $comments ) ) {
-        if ( $comments == 'get_option' ) {
+        if ( $comments == '' ) {
+            $incl_comments = '';
+        } elseif ( $comments == 'get_option' ) {
             $incl_comments = 'get_option( '.$option_name.' )';
+        } elseif ( str_starts_with( $comments, '<br>' ) ) {
+            $comments = ltrim( $comments, '<br>' );
+            $incl_comments = '<p class="field-desc break">'.$comments.'</p>';
         } else {
-            $incl_comments = $comments;
+            $incl_comments = '<p class="field-desc">'.$comments.'</p>';
         }
     }
 
@@ -321,7 +326,14 @@ function ddtt_wp_kses_allowed_html() {
             'id' => [],
             'class' => []
         ],
+        'p' => [
+            'id' => [],
+            'class' => []
+        ],
         'pre' => [
+            'class' => []
+        ],
+        'code' => [
             'class' => []
         ],
         'span' => [
@@ -541,7 +553,8 @@ function ddtt_get_function_example( $function_name ){
         } else {
             $attributes = '';
         }
-        return $function_name.'('.$attributes.')';
+        $display_fx = $function_name.'('.$attributes.')';
+        return ddtt_highlight_string( $display_fx );
 
     } else {
         return ddtt_admin_error( 'FUNCTION DOES NOT EXIST' );
@@ -1935,6 +1948,37 @@ function ddtt_highlight_file2( $filename, $return = false ) {
 
 
 /**
+ * Highlight syntax in a string
+ *
+ * @param string $text
+ * @param boolean $return
+ * @return string
+ */
+function ddtt_highlight_string( $text ) {
+    // Change the colors
+    ini_set( 'highlight.comment', ddtt_get_syntax_color( 'color_text_quotes', '#ACCCCC' ) );
+    ini_set( 'highlight.default', ddtt_get_syntax_color( 'color_fx_vars', '#DCDCAA' ) );
+    ini_set( 'highlight.html', ddtt_get_syntax_color( 'color_text_quotes', '#ACCCCC' ) );
+    ini_set( 'highlight.keyword', ddtt_get_syntax_color( 'color_comments', '#5E9955' )."; font-weight: bold" );
+    ini_set( 'highlight.string', ddtt_get_syntax_color( 'color_syntax', '#569CD6' ) );
+
+    // Work some magic
+    $text = trim( $text );
+    $text = highlight_string( "<?php " . $text, true );  // highlight_string() requires opening PHP tag or otherwise it will not colorize the text
+    $text = trim( $text );
+    $text = preg_replace( "|^\\<code\\>\\<span style\\=\"color\\: #[a-fA-F0-9]{0,6}\"\\>|", "", $text, 1);
+    $text = preg_replace( "|\\</code\\>\$|", "", $text, 1 );
+    $text = trim( $text );
+    $text = preg_replace( "|\\</span\\>\$|", "", $text, 1 );
+    $text = trim( $text );
+    $text = preg_replace( "|^(\\<span style\\=\"color\\: #[a-fA-F0-9]{0,6}\"\\>)(&lt;\\?php&nbsp;)(.*?)(\\</span\\>)|", "\$1\$3\$4", $text);  // remove custom added "<?php "
+
+    // Return it
+    return $text;
+} // End ddtt_highlight_string()
+
+
+/**
  * Format bytes to b, KB, MB, GB
  *
  * @param int $bytes
@@ -2350,6 +2394,20 @@ function ddtt_get_latest_php_version( $major_only = false ) {
     }
     return 0;
 } // End ddtt_get_latest_php_version()
+
+
+/**
+ * Check if a string is json
+ *
+ * @param string $string
+ * @return boolean
+ */
+function ddtt_is_serialized_array( $string ) {
+    if ( preg_match( '/a:\d+:\{/', $string ) ) {
+        return true;
+    }
+    return false;
+} // End ddtt_is_json()
 
 
 /**

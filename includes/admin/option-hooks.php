@@ -129,7 +129,7 @@ $hooks = [
                 ?>
                 <tr>
                     <td><?php echo wp_kses_post( $hook[ 'desc' ] ); ?></td>
-                    <td><code><strong><?php echo esc_attr( $hook[ 'hook' ] ); ?></strong></code><br><br><strong>TYPE &#8674;</strong> <?php echo esc_attr( $hook[ 'type' ] ); ?></td>
+                    <td><code class="hl"><strong><?php echo esc_attr( $hook[ 'hook' ] ); ?></strong></code><br><br><strong>TYPE &#8674;</strong> <?php echo esc_attr( $hook[ 'type' ] ); ?></td>
                     <td class="usage"><?php ddtt_highlight_file2( $file, false ); ?></td>
                 </tr>
                 <?php

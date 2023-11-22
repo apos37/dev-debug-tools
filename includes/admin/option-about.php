@@ -100,19 +100,6 @@ if ( $coffee_filter ) {
     <div id="feedback-result"></div>
 </div>
 
-<br><br><br>
-<h3>Planned Features</h3>
-<p>The following features are currently planned, but are not necessarily in order. If you would like to request a feature, please do so on Discord at the link above.</p>
-<ul>
-    <li>Add report button if errors appear from Dev Debug Tools or another one of my plugins</li>
-    <li>Add a keyword finder to search for code in all pages of the site</li>
-    <li>Add ability to download redacted versions of wp-config.php and .htaccess together to give to support</li>
-    <li>Add ability to restore old backups of wp-config and .htaccess files</li>
-    <li>Add detailed descriptions of code snippets</li>
-    <li>Add a color converter (hex to RGB, etc.)</li>
-    <li>Add light mode (if requested)</li>
-</ul>
-
 <br><br>
 <h3>Try My Other Plugin</h3>
 <?php echo wp_kses_post( ddtt_plugin_card( 'admin-help-docs' ) ); ?>

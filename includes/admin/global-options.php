@@ -81,11 +81,6 @@ class DDTT_GLOBAL_OPTIONS {
             'regex_string',
             'regex_pattern'
         ] );
-
-        // Resources Settings
-        $this->register_group_settings( 'resources', [
-            'switch_discord_link'
-        ] );
     } // End register_settings()
 
 

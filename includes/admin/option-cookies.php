@@ -47,7 +47,7 @@ echo '<div class="full_width_container">
         // Cycle through the options
         foreach( $cookies as $key => $cookie ) {
             echo '<tr>
-                <td>'.esc_attr( $key ).'</td>
+                <td><span class="highlight-variable">'.esc_attr( $key ).'</span></td>
                 <td>'.esc_html( $cookie ).'</td>
             </tr>';
         }

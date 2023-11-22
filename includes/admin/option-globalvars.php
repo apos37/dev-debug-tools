@@ -407,7 +407,7 @@ echo '<div class="full_width_container">
 
             // If available for print
             if ( isset( $global[ 'avail' ] ) && $global[ 'avail' ] == true && in_array( $global[ 'returns' ], $print_returns ) ) {
-                $returns = '<code>(<a href="'.$current_url.'&gv='.$global[ 'var' ].'">array</a>)</code>';
+                $returns = '<code>(<a href="'.$current_url.'&gv='.$global[ 'var' ].'">Array</a>)</code>';
 
             // If an available non-array
             } elseif ( isset( $global[ 'avail' ] ) && $global[ 'avail' ] == true && !in_array( $global[ 'returns' ], $print_returns ) ) {
@@ -417,18 +417,18 @@ echo '<div class="full_width_container">
 
                 // Attempt to print it
                 if ( ${$global[ 'var' ]} ) {
-                    $returns = '<code>('.$global[ 'returns' ].')</code> => '.${$global[ 'var' ]};
+                    $returns = '<code>('.ucwords( $global[ 'returns' ] ).')</code> => '.${$global[ 'var' ]};
                 } else {
-                    $returns = '<code>('.$global[ 'returns' ].')</code> '.$na;
+                    $returns = '<code>('.ucwords( $global[ 'returns' ] ).')</code> '.$na;
                 }
 
             // Otherwise
             } else {
-                $returns = '<code>('.$global[ 'returns' ].')</code> '.$na;
+                $returns = '<code>('.ucwords( $global[ 'returns' ] ).')</code> '.$na;
             }
 
             echo '<tr>
-                <td>$'.esc_attr( $global[ 'var' ] ).'</td>
+                <td><span class="highlight-variable">$'.esc_attr( $global[ 'var' ] ).'</span></td>
                 <td>'.wp_kses_post( $returns ).'</td>
                 <td>'.esc_html( isset( $sections[ $global[ 'section' ] ] ) ? $sections[ $global[ 'section' ] ] : $global[ 'section' ] ).'</td>
                 <td>'.esc_html( $global[ 'desc' ] ).'</td>
