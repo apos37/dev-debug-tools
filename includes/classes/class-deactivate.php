@@ -127,6 +127,7 @@ class DDTT_DEACTIVATE {
             /**
              * Post to Discord Support Server
              */
+            global $wp_version;
 
             $args = [
                 'embed'          => true,
@@ -157,6 +158,13 @@ class DDTT_DEACTIVATE {
                     [
                         'name'   => 'Disable',
                         'value'  => $disable ? 'Yes' : 'No',
+                        'inline' => false
+                    ],
+                    [
+                        'name'   => 'Versions',
+                        'value'  => 'Plugin: '.DDTT_VERSION.'
+                        WP: '.$wp_version.'
+                        PHP: '.phpversion(),
                         'inline' => false
                     ],
                     [

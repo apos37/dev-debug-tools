@@ -118,7 +118,7 @@
                         'Classic'
                     ]
                 ]; ?>
-                <?php echo wp_kses( ddtt_options_tr( 'log_viewer', 'Log Viewer', 'select', '<br>// Change how the <a href="'.ddtt_plugin_options_path( 'logs' ).'">debug log</a> is displayed.', $log_viewers ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'log_viewer', 'Log Viewer', 'select', '<br>Change how the <a href="'.ddtt_plugin_options_path( 'logs' ).'">debug log</a> is displayed.', $log_viewers ), $allowed_html ); ?>
 
                 <?php echo wp_kses( ddtt_options_tr( 'log_user_url', 'Also Log User and URL With Errors', 'checkbox', 'Adds an additional line to debug.log errors with the user ID, user display name, and url with query strings when an error is triggered.' ), $allowed_html ); ?>
                 

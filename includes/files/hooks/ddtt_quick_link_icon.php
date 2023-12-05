@@ -1,6 +1,7 @@
-<?php 
-if ( is_plugin_active( 'dev-debug-tools/dev-debug-tools.php' ) ) {
-    add_filter( 'ddtt_quick_link_icon', function() {
-        return '👍';
-    } );
-}
+<?php
+/**
+ * Change the Quick Debug Link icon when quick links are added to posts and users in admin lists.
+ */
+add_filter( 'ddtt_quick_link_icon', function() { 
+    return '👍'; 
+} );

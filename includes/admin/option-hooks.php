@@ -71,7 +71,7 @@ $hooks = [
     [ 
         'type' => 'Action',
         'hook' => 'ddtt_admin_list_update_each_user', 
-        'desc' => 'Do something for each <strong>user</strong> when you load the <a href="/'.DDTT_ADMIN_URL.'/users.php"><em>user</em> admin list</a>. Must have Quick Debug Links enabled in <a href="'.ddtt_plugin_options_path( 'settings' ).'">Settings</a>.><br><br>Why? Because sometimes we have to update meta keys for all users (sometimes in the thousands), and running a function using pagination on a smaller amount of users at a time is better for testing, processing, preventing time-outs, etc. It\'s also easier to do this than to code a pagination script that you\'re only going to use once.'
+        'desc' => 'Do something for each <strong>user</strong> when you load the <a href="/'.DDTT_ADMIN_URL.'/users.php"><em>user</em> admin list</a>. Must have Quick Debug Links enabled in <a href="'.ddtt_plugin_options_path( 'settings' ).'">Settings</a>.<br><br>Why? Because sometimes we have to update meta keys for all users (sometimes in the thousands), and running a function using pagination on a smaller amount of users at a time is better for testing, processing, preventing time-outs, etc. It\'s also easier to do this than to code a pagination script that you\'re only going to use once.'
     ],
     [ 
         'type' => 'Action',
@@ -130,7 +130,7 @@ $hooks = [
                 <tr>
                     <td><?php echo wp_kses_post( $hook[ 'desc' ] ); ?></td>
                     <td><code class="hl"><strong><?php echo esc_attr( $hook[ 'hook' ] ); ?></strong></code><br><br><strong>TYPE &#8674;</strong> <?php echo esc_attr( $hook[ 'type' ] ); ?></td>
-                    <td class="usage"><?php ddtt_highlight_file2( $file, false ); ?></td>
+                    <td class="usage"><?php ddtt_highlight_file2( $file, false ); ?><br><br></td>
                 </tr>
                 <?php
             }

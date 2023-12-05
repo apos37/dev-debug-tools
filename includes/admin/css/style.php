@@ -65,8 +65,8 @@ if ( $current_screen->id == $options_page ) {
         border-top: 0 !important;
     }
 
-    h2,
-    .wrap h2 {
+    h2:not(.notice h2),
+    .wrap h2:not(.wrap .notice h2) {
         background-color: #2C3338;
         padding: 10px !important;
         font-size: 1.5rem;
@@ -777,10 +777,12 @@ if ( $current_screen->id == $options_page ) {
 
     /* Syntax */
     code { background: none; }
-    code.hl { 
+    code.hl,
+    .notice code { 
         padding: 3px 5px 4px 5px !important;
         background: #2f3136 !important;
         border-radius: 3px !important;
+        color: #DCF3F6 !important;
     }
     .comment-out { color: <?php echo esc_attr( $comment_out ); ?>; } 
     .wrap a.c0, .highlight-variable { color: <?php echo esc_attr( $c0 ); ?> !important; } /* Functions and variables */

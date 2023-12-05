@@ -37,6 +37,10 @@ jQuery( $ => {
         var comments = $( '<br><label for="ddtt-deactivate-comments">Additional comments for improving the plugin:</label><br><br><textarea id="ddtt-deactivate-comments" name="comments"></textarea><br><br>' );
         modal.find( '#ddtt-dialog-cont' ).append( comments );
 
+        // Add please section
+        var please = $( '<br><label for="ddtt-please"><strong>Please note that 100% of the suggested updates to this plugin have been carried out so far. If you there is something to improve on or a feature you\'d like to add, I ask that you allow me to contact you or send me a message on Discord at the link below. I want this plugin to work for you. :)</strong><br><br>');
+        modal.find( '#ddtt-dialog-cont' ).append( please );
+
         // Add Anonymous checkbox
         var anon = $( '<input type="checkbox" id="ddtt-deactivate-anonymously" class="ddtt-checkbox" name="anonymous" value="1"> <label for="ddtt-deactivate-anonymously" class="ddtt-checkbox-label">Anonymous feedback</label>' );
         modal.find( '#ddtt-deactivate-footer' ).append( anon );

@@ -1,4 +1,11 @@
 == changelog.txt ==
+= 1.5.6 =
+* Tweak: Added title, ID, and post type to Discord page load notifications if on front-end or editing back-end
+* Tweak: Added Redirection to recommended plugins
+* Tweak: Added version logging to deactivation feedback to make it easier to chase down errors
+* Tweak: Reformat hook examples on Hooks tab, removed `is_plugin_active()`
+* Fix: Dark CSS was affecting h2 tags in notices on DDT pages
+
 = 1.5.5 =
 * Tweak: Updated the TESTING_PLAYGROUND.php file to allow deletion of all content, added example code
 * Tweak: Changed name of Hooks tab to Available Hooks

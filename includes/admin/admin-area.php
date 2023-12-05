@@ -162,6 +162,7 @@ class DDTT_ADMIN_AREA {
             'import-users-from-csv-with-meta',
             'post-type-switcher',
             'query-monitor',
+            'redirection',
             'user-menus',
             'user-role-editor',
             'wp-crontrol',

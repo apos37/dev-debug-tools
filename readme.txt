@@ -5,7 +5,7 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.4.1
 Requires PHP: 7.4
-Stable tag: 1.5.5
+Stable tag: 1.5.6
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -99,6 +99,13 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.5.6 =
+* Tweak: Added title, ID, and post type to Discord page load notifications if on front-end or editing back-end
+* Tweak: Added Redirection to recommended plugins
+* Tweak: Added version logging to deactivation feedback to make it easier to chase down errors
+* Tweak: Reformat hook examples on Hooks tab, removed `is_plugin_active()`
+* Fix: Dark CSS was affecting h2 tags in notices on DDT pages
+
 = 1.5.5 =
 * Tweak: Updated the TESTING_PLAYGROUND.php file to allow deletion of all content, added example code
 * Tweak: Changed name of Hooks tab to Available Hooks

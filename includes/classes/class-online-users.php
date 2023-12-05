@@ -66,7 +66,12 @@ class DDTT_ONLINE_USERS {
         // Notifify on page load
         if ( self::$discord_webhook && self::$discord_webhook != '' &&
              $discord_page_loads && $discord_page_loads == 1 ) {
-            add_action( 'init', [ $this, 'page_load_discord_notification' ] );
+            if ( is_admin() ) {
+                $hook = 'admin_init';
+            } else {
+                $hook = 'template_redirect';
+            }
+            add_action( $hook, [ $this, 'page_load_discord_notification' ] );
         }
 
         // Discord notifications
@@ -584,10 +589,22 @@ class DDTT_ONLINE_USERS {
         }
 
         // The current url
-        $current_url = ddtt_get_current_url();
+        if ( $id = get_the_ID() ) {
+            $url = get_the_permalink( $id );
+            $post_type_object = get_post_type_object( get_post_type( $id ) );
+            if ( $post_type_object ) {
+                $post_type = sanitize_text_field( $post_type_object->labels->singular_name );
+            } else {
+                $post_type = null;
+            }
+        } else {
+            $url = ddtt_get_current_url();
+            $id = url_to_postid( $url );
+            $post_type = null;
+        }
         
         // Skip pages
-        if ( !$this->is_notify_worthy_page( $current_url ) ) {
+        if ( !$this->is_notify_worthy_page( $url ) ) {
             return;
         }
 
@@ -600,7 +617,7 @@ class DDTT_ONLINE_USERS {
         $user = wp_get_current_user();
 
         // Send the notification
-        return $this->validate_and_send_discord_notification( $user, 'New Page Load', $current_url );
+        return $this->validate_and_send_discord_notification( $user, 'New Page Load', $url , $id, $post_type );
     } // End login_discord_notification()
 
 
@@ -619,7 +636,7 @@ class DDTT_ONLINE_USERS {
      * 
      * @return boolean
      */
-    public function validate_and_send_discord_notification( $user, $title, $current_url = null ) {
+    public function validate_and_send_discord_notification( $user, $title, $url = null, $id = null, $post_type = null ) {
         // Check for a webhook url
         if ( !self::$discord_webhook || self::$discord_webhook == '' ) {
             return false;
@@ -680,11 +697,60 @@ class DDTT_ONLINE_USERS {
             ]
         ];
 
-        // Include current page
-        if ( !is_null( $current_url ) && $current_url != '' ) {
+        // Include current page if we have a url
+        if ( !is_null( $url ) && $url != '' ) {
+
+            // Start with no title
+            $title = '';
+
+            // If post id is found
+            if ( !is_null( $id ) && $id > 0 ) {
+
+                // Get the title
+                $title = sanitize_text_field( get_the_title( $id ) );
+
+            // No id found from url
+            } else {
+
+                // Check for post id in query string
+                $qs = parse_url( $url );
+                if ( isset( $qs[ 'query' ] ) ) {
+                    parse_str( $qs[ 'query' ], $params );
+
+                    // Check if we're editing a post or page
+                    if ( isset( $params[ 'post' ] ) && isset( $params[ 'action' ] ) && sanitize_key( $params[ 'action' ] ) == 'edit' ) {
+                        $title = 'EDITING: '.sanitize_text_field( get_the_title( absint( $params[ 'post' ] ) ) );
+                    }
+
+                // Check if we're editing with cornerstone
+                } elseif ( strpos( $url, '/cornerstone/edit/' ) !== false ) {
+                    $id  = end( explode( '/', trim( $url,'/' ) ) );
+                    $title = 'EDITING via CORNERSTONE: '.sanitize_text_field( get_the_title( absint( $id ) ) );
+                }
+            }
+
+            // Format the title if we found one
+            if ( $title != '' ) {
+                $title = '
+                Title: '.$title;
+
+                // Add post type if available
+                if ( !is_null( $id ) && $id > 0 ) {
+                    $title .= '
+                    ID: '.$id;
+                }
+
+                // Add post type if available
+                if ( !is_null( $post_type ) && $post_type != '' ) {
+                    $title .= '
+                    Post Type: '.$post_type;
+                }
+            }
+
+            // Add the page field
             $args[ 'fields' ][] = [
                 'name'   => 'Page',
-                'value'  => $current_url,
+                'value'  => $url.$title,
                 'inline' => false
             ];
         }

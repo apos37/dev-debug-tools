@@ -175,7 +175,7 @@ function ddtt_has_role( $role, $user_id = null ) {
  * @param boolean $domain
  * @return string
  */
-function ddtt_get_current_url( $params = true, $domain = true ){
+function ddtt_get_current_url( $params = true, $domain = true ) {
     // Are we including the domain?
     if ( $domain == true ) {
 
