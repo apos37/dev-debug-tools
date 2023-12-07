@@ -5,7 +5,7 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.4.2
 Requires PHP: 7.4
-Stable tag: 1.5.7
+Stable tag: 1.5.7.1
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -99,6 +99,9 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.5.7.1 =
+* Tweak: Added a notice to Error Reporting tab if error reporting is being overwritten by another plugin or custom code
+
 = 1.5.7 =
 * Fix: User error tracking in debug.log causing issues when not executed by a user directly
 * Fix: File size and last modified dates not working on must-use plugins

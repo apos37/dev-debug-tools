@@ -1,6 +1,9 @@
 == changelog.txt ==
+= 1.5.7.1 =
+* Tweak: Added a notice to Error Reporting tab if error reporting is being overwritten by another plugin or custom code
+
 = 1.5.7 =
-* Fix: User error tracking in debug.log causing issues when not executed by a user directly
+* Fix: User error tracking in debug.log causing issues when not executed by a user directly (props bobby_08315 for pointing this out)
 * Fix: File size and last modified dates not working on must-use plugins
 * Update: Added Error Reporting tab
 

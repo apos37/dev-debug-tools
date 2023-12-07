@@ -2,13 +2,19 @@
 // Include the header
 include 'header.php';
 
+// Check if we have enabled custom settings
+$enable_custom_settings = get_option( DDTT_GO_PF.'error_enable' );
+
+// Should we show the overwrite notice
+$overwrite_notice = true;
+
 // Listen for $_REQUEST to add Must-Use-Plugin; we will not be adding it by default
 if ( isset( $_REQUEST ) && isset( $_REQUEST[ 'settings-updated' ] ) && $_REQUEST[ 'settings-updated' ] ) {
     $DDTT_LOGS = new DDTT_LOGS();
-    $add_mu_plugin = get_option( DDTT_GO_PF.'error_enable' );
-    if ( $add_mu_plugin ) {
+    if ( $enable_custom_settings ) {
         if ( $DDTT_LOGS->add_remove_mu_plugin( 'add' ) ) {
             header( 'Refresh:0' );
+            $overwrite_notice = false;
         }
     } else {
         $DDTT_LOGS->add_remove_mu_plugin( 'remove' );
@@ -105,6 +111,15 @@ p.submit {
 
             // Error reporting exceptions
             $actual_constants = ddtt_get_error_reporting_constants();
+
+            // Notice
+            if ( $enable_custom_settings && $overwrite_notice && $enabled_constants != $actual_constants ) {
+                ?>
+                <div class="notice notice-error is-dismissible">
+                <p><?php _e( 'Uh-oh! It appears that another plugin or custom code is overwriting these error reporting values. Unfortunately this tool won\'t work for you. It was a nice thought, though.', 'dev-debug-tools' ); ?></p>
+                </div>
+                <?php
+            }
 
             // Store the total values
             $total_enabled_values = 0;
