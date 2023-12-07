@@ -283,29 +283,62 @@ class DDTT_ADMIN_AREA {
         }
 
         // File Size and Last Modified
+        $folder = false;
         if ( 'file_size' === $column_name || 'modified' === $column_name ) {
             // Get the folder size
             if ( ! function_exists( 'get_dirsize' ) ) {
-                require_once ABSPATH . WPINC . '/ms-functions.php';
+                require_once ABSPATH.WPINC.'/ms-functions.php';
             }
 
             // Strip the path to get the folder
-            $p_parts = explode('/', $plugin_file);
-            $folder = $p_parts[0];
-             
-            // Get the path of a directory.
-            $directory = get_home_path().DDTT_PLUGINS_URL.'/'.$folder.'/';
+            if ( strpos( $plugin_file, '/' ) !== false ) {
+                $p_parts = explode( '/', $plugin_file );
+                $folder = $p_parts[0];
+                
+                // Get the path of a directory.
+                $path = ABSPATH.DDTT_PLUGINS_URL.'/'.$folder.'/';
+
+                // Is not mu
+                $is_mu_plugin = false;
+
+            // Otherwise, there is no folder, so we must be in mu-plugins
+            } else {
+
+                // The path to the file
+                $path = DDTT_MU_PLUGINS_DIR.'/'.$plugin_file;
+
+                // Is mu
+                $is_mu_plugin = true;
+            }
         }
 
         // File Size
         if ( 'file_size' === $column_name ) {
 
-            // Get the size of directory in bytes.
-            $bytes = get_dirsize( $directory );
+            // Not mu
+            if ( !$is_mu_plugin ) {
+                
+                // Get the size of directory in bytes.
+                $bytes = get_dirsize( $path );
+                if ( $bytes ) {
+                    $size = ddtt_format_bytes( $bytes );
+                } else {
+                    $size = '--';
+                }
+
+            // Is mu
+            } else {
+
+                // Get the size of file in bytes.
+                $bytes = filesize( $path );
+                if ( $bytes ) {
+                    $size = ddtt_format_bytes( $bytes );
+                } else {
+                    $size = '--';
+                }
+            }
             
-            // Get the MB
-            $folder_size = ddtt_format_bytes( $bytes );
-            echo esc_html( $folder_size );
+            echo esc_html( $size );
         }
 
         // Last Modified
@@ -313,7 +346,7 @@ class DDTT_ADMIN_AREA {
         if ( 'modified' === $column_name && $folder != 'hello.php' ) {
 
             // Convert the time
-            $utc_time = date( 'Y-m-d H:i:s', filemtime( $directory ) );
+            $utc_time = date( 'Y-m-d H:i:s', filemtime( $path ) );
             $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
             $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
             $last_modified = $dt->format( 'F j, Y g:i A T' );

@@ -64,9 +64,9 @@ pre {
         <?php 
         $allowed_html = ddtt_wp_kses_allowed_html();
 
-        echo wp_kses( ddtt_options_tr( 'regex_string', 'String', 'textarea', '<br>// Enter a string you want to search through for all instances', [ 'required' => true ] ), $allowed_html );
+        echo wp_kses( ddtt_options_tr( 'regex_string', 'String', 'textarea', '<br>Enter a string you want to search through for all instances', [ 'required' => true ] ), $allowed_html );
 
-        echo wp_kses( ddtt_options_tr( 'regex_pattern', 'Pattern', 'text', '<br>// Enter your regex pattern <strong>including the wrapping forward slashes</strong>', [ 'width' => '100%', 'required' => true, 'pattern' => '\/.*?\/(g|i|m|s|x|A|D|S|U|X|J|u)*' ] ), $allowed_html );
+        echo wp_kses( ddtt_options_tr( 'regex_pattern', 'Pattern', 'text', '<br>Enter your regex pattern <strong>including the wrapping forward slashes</strong>', [ 'width' => '100%', 'required' => true, 'pattern' => '\/.*?\/(g|i|m|s|x|A|D|S|U|X|J|u)*' ] ), $allowed_html );
         ?>
 
     </table>

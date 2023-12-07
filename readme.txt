@@ -3,9 +3,9 @@ Contributors: apos37
 Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
-Tested up to: 6.4.1
+Tested up to: 6.4.2
 Requires PHP: 7.4
-Stable tag: 1.5.6
+Stable tag: 1.5.7
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -99,6 +99,11 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.5.7 =
+* Fix: User error tracking in debug.log causing issues when not executed by a user directly
+* Fix: File size and last modified dates not working on must-use plugins
+* Update: Added Error Reporting tab
+
 = 1.5.6 =
 * Tweak: Added title, ID, and post type to Discord page load notifications if on front-end or editing back-end
 * Tweak: Added Redirection to recommended plugins

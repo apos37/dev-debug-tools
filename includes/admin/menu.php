@@ -220,6 +220,13 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         $multisite .= ' All sites share the same file located on the primary site. Please go to the <a href="'.$main_site_url.'" target="_blank">primary site</a> if you need to update it.</em></strong>';
     }
 
+    // Are we currently debugging?
+    if ( WP_DEBUG ) {
+        $debugging = 'ENABLED';
+    } else {
+        $debugging = 'DISABLED';
+    }
+
     // The menu items
     // Set 3rd param to true if the item should only be visible to devs
     // Set 4th param to true if the item should not be added to the menu or tabs, but is a hidden subpage
@@ -227,6 +234,7 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'settings'          => [ __( 'Settings', 'dev-debug-tools' ), 'This area is for developers only.' ],
         'plugins'           => [ __( 'Plugins', 'dev-debug-tools' ), 'We have replaced the default featured plugins with <a href="/'.DDTT_ADMIN_URL.'/plugin-install.php?tab=featured">our own plugin recommendations here</a>.' ],
         'logs'              => [ __( 'Logs', 'dev-debug-tools' ).$notif, 'Your log files.'.$multisite, true ],
+        'error'             => [ __( 'Error Reporting', 'dev-debug-tools' ), 'Choose which errors are reported to your <code class="hl">debug.log</code> file. Note that <code class="hl">WP_DEBUG</code> is currently <code class="'.strtolower( $debugging ).'">'.$debugging.'</code> on your <code class="hl">wp-config.php</code> file. It must be enabled for any of the reporting to work.'.$multisite, true ],
         'wpcnfg'            => [ 'WP-CONFIG', 'View and update your wp-config.php. Please backup the original before updating.'.$multisite, true ],
         'htaccess'          => [ 'HTACCESS', 'View and update your .htaccess from here. Please backup the original before updating.'.$multisite, true ],
         'fx'                => [ 'Functions.php', 'A simple functions.php viewer.', true ],

@@ -167,7 +167,7 @@ class DDTT_LOGS {
      * @param boolean $plugin_assets
      * @return void
      */
-    public function replace_file( $file_to_replace, $file_to_copy, $plugin_assets = false ){
+    public function replace_file( $file_to_replace, $file_to_copy, $plugin_assets = false ) {
         
         // First check if we are copying a file from the plugin assets folder
         if ( $plugin_assets ) {
@@ -438,4 +438,65 @@ class DDTT_LOGS {
             <td class="log-cell"><div class="full_width_container"> '.$contents.' </div></td>
         </tr>';
     } // End file_contents_with_clear_button()
+
+
+    /**
+     * Add or remove the Must Use Plugin
+     * USAGE: add_remove_mu_plugin( 'remove' )
+     *
+     * @param string $file_to_replace
+     * @return boolean
+     */
+    public function add_remove_mu_plugin( $add_or_remove = 'add' ) {
+        // Must-Use-Plugin filename
+        $filename = '000-set-debug-level.php';
+
+        // Check if the file exists
+        $file_path = DDTT_MU_PLUGINS_DIR.$filename;
+        $mu_plugin_exists = file_exists( $file_path );
+
+        // Add
+        if ( $add_or_remove == 'add' ) {
+
+            // Already exists?
+            if ( $mu_plugin_exists ) {
+                return false;
+            }
+
+            // Create the directory if it doesn't exist
+            if ( !file_exists( DDTT_MU_PLUGINS_DIR ) ) {
+                mkdir( DDTT_MU_PLUGINS_DIR );
+            }
+
+            // Path to Must-Use-Plugin file
+            $mu_plugin_file = ABSPATH.DDTT_PLUGIN_FILES_PATH.$filename;
+
+            // Add the file
+            if ( copy( $mu_plugin_file, $file_path ) ) {
+                ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin has been added.' );
+                return true;
+            } else {
+                ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin could not be added.' );
+            }
+
+        // Remove
+        } elseif ( $add_or_remove == 'remove' ) {
+            
+            // Already gone?
+            if ( !$mu_plugin_exists ) {
+                return false;
+            }
+
+            // Remove the file
+            if ( unlink( $file_path ) ) {
+                ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin has been removed.' );
+                return true;
+            } else {
+                ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin could not be deleted. To remove it, please remove the "'.$filename.'" file from "'.DDTT_MU_PLUGINS_DIR.'" via FTP or File Manager.' );
+            }
+        }
+
+        // Did not work out
+        return false;
+    } // End add_remove_mu_plugin()
 }

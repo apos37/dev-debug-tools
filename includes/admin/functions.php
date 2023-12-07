@@ -687,6 +687,38 @@ function ddtt_error_count() {
 
 
 /**
+ * Get current error reporting constants
+ *
+ * @return array
+ */
+function ddtt_get_error_reporting_constants( $return_e_all = false ) {
+    // Store constants
+    $constants = [];
+
+    // Get the code
+    $err_code = error_reporting();
+
+    // If E_ALL
+    if ( $return_e_all && $err_code == E_ALL ) {
+        $constants[] = 'E_ALL';
+
+    // Otherwise break it down
+    } else {
+
+        // Iter the codes
+        $pot = 0;
+        foreach ( array_reverse( str_split( decbin( $err_code ) ) ) as $bit ) {
+            $constants[] = array_search( pow( 2, $pot ), get_defined_constants( true )[ 'Core' ] );
+            $pot++;
+        }
+    }
+
+    // Return them
+    return $constants;
+} // End ddtt_get_error_reporting_constants()
+
+
+/**
  * Return a log file from this server line by line, numbered, with colors
  * Home path is public_html/
  * Include filename in path

@@ -64,11 +64,6 @@ class DDTT_WPCONFIG {
                         'variable' => 'display_errors',
                         'value' => 0
                     ],
-                    // [
-                    //     'prefix' => '@ini_set',
-                    //     'variable' => 'error_reporting',
-                    //     'value' => E_ALL
-                    // ]
                 ]
             ],
             'enable_dev_scripts' => [
@@ -401,16 +396,7 @@ class DDTT_WPCONFIG {
         
         // Convert value
         $value = '.*?';
-        // if ( !is_bool( $line[ 'value' ] ) && $line[ 'value' ] != '' ) {
-        //     $value = '.*?';
-        // } elseif ( ddtt_is_enabled( $line[ 'value' ] ) ) {
-        //     $value = '(true|1)';
-        // } elseif ( !$line[ 'value' ] ) {
-        //     $value = '(false|0)';
-        // } else {
-        //     $value = $line[ 'value' ];
-        // }
-
+        
         // Adding quotes around value
         if ( is_numeric( $line[ 'value' ] ) || is_bool( $line[ 'value' ] ) ) {
             // ddtt_print_r($line_string);
@@ -500,8 +486,6 @@ class DDTT_WPCONFIG {
         // Set the value
         if ( $snippet_line[ 'value' ] === TRUE ) {
             $value = 'true';
-        } else if ( $snippet_line[ 'value' ] == E_ALL ) {
-            $value = 'E_ALL';
         } else if ( is_numeric( $snippet_line[ 'value' ] ) ) {
             $value = $snippet_line[ 'value' ];
         } else if ( $snippet_line[ 'value' ] != '' ) {

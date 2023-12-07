@@ -3,9 +3,9 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.5.6
+ * Version:             1.5.7
  * Requires at least:   5.9.0
- * Tested up to:        6.4.1
+ * Tested up to:        6.4.2
  * Requires PHP:        7.4
  * Author:              Apos37
  * Author URI:          https://apos37.com/
@@ -37,7 +37,7 @@ define( 'DDTT_AUTHOR_URL', 'https://apos37.com/' );
 define( 'DDTT_DISCORD_SUPPORT_URL', 'https://discord.gg/3HnzNEJVnR' );
 
 // Versions
-define( 'DDTT_VERSION', '1.5.6' );
+define( 'DDTT_VERSION', '1.5.7' );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum
@@ -76,6 +76,7 @@ function ddtt_admin_url( $path = '', $scheme = 'admin' ) {
 $site_url = site_url( '/' );
 define( 'DDTT_ADMIN_URL', str_replace( $site_url, '', rtrim( ddtt_admin_url(), '/' ) ) );           //: wp-admin || wp-admin/network
 define( 'DDTT_CONTENT_URL', str_replace( $site_url, '', content_url() ) );                          //: wp-content
+define( 'DDTT_MU_PLUGINS_DIR', ABSPATH.DDTT_CONTENT_URL.'/mu-plugins/' );                           //: /home/.../public_html/wp-content/mu-plugins/
 define( 'DDTT_INCLUDES_URL', str_replace( $site_url, '', rtrim( includes_url(), '/' ) ) );          //: wp-includes
 define( 'DDTT_PLUGINS_URL', str_replace( $site_url, '', plugins_url() ) );                          //: wp-content/plugins
 define( 'DDTT_PLUGIN_ABSOLUTE', __FILE__ );                                                         //: /home/.../public_html/wp-content/plugins/dev-debug-tools/dev-debug-tools.php)
@@ -134,21 +135,36 @@ function ddtt_multisite_suffix() {
  * @return void
  */
 function ddtt_log_error( $num, $str, $file, $line, $context = null ) {
-    // Get user id
-    $user_id = get_current_user_id();
-
-    // Check for a user name
-    if ( is_user_logged_in() ) {
-        $user = get_userdata( $user_id );
-        $display_name = sanitize_text_field( $user->display_name );
-    } else {
-        $display_name = 'Visitor';
+    // This error code is not included in error_reporting, so let it fall through to the standard PHP error handler
+    if ( !( error_reporting() & $num ) ) {
+        return false;
     }
 
-    // Log
-    error_log( 'Error triggered by user '.$user_id.' ('.$display_name.') on '.$_SERVER[ 'REQUEST_URI' ] );
+    // Only apply to user errors
+    $user_errors = [
+        E_USER_ERROR,
+        E_USER_WARNING,
+        E_USER_NOTICE
+    ];
+    if ( in_array( $num, $user_errors ) ) {
+        
+        // Get user id
+        $user_id = get_current_user_id();
+
+        // Check for a user name
+        if ( is_user_logged_in() ) {
+            $user = get_userdata( $user_id );
+            $display_name = sanitize_text_field( $user->display_name );
+        } else {
+            $display_name = 'Visitor';
+        }
+
+        // Log
+        $message = 'Error triggered by user '.absint( $user_id ).' ('.$display_name.') on '.sanitize_text_field( $_SERVER[ 'REQUEST_URI' ] );
+        error_log( $message );
+    }
     
-    // Restore the old handler
+    // Restore the old handler, because we don't want to stop it
     restore_error_handler();
 } // End ddtt_log_error()
 
@@ -204,11 +220,21 @@ function ddtt_activate_plugin() {
  */
 function ddtt_uninstall_plugin() {
     // Delete options
-    delete_option( DDTT_GO_PF.'plugin_installed' ); // Date the plugin was installed
-    delete_option( DDTT_GO_PF.'test_number' ); // Test number
-    delete_option( DDTT_GO_PF.'centering_tool_cols' ); // Centering tool columns
-    delete_option( DDTT_GO_PF.'dev_email' ); // Dev email
-    delete_option( DDTT_GO_PF.'disable_fb_form' ); // Disable the deactivate feedback form
+    delete_option( DDTT_GO_PF.'plugin_installed' );     // Date the plugin was installed
+    delete_option( DDTT_GO_PF.'test_number' );          // Test number
+    delete_option( DDTT_GO_PF.'centering_tool_cols' );  // Centering tool columns
+    delete_option( DDTT_GO_PF.'dev_email' );            // Dev email
+    delete_option( DDTT_GO_PF.'disable_fb_form' );      // Disable the deactivate feedback form
+    
+    // Remove Must-Use-Plugin upon uninstall
+    $remove_mu_plugin = get_option( DDTT_GO_PF.'error_uninstall' );
+    if ( $remove_mu_plugin ) {
+        $DDTT_LOGS = new DDTT_LOGS();
+        $DDTT_LOGS->add_remove_mu_plugin( 'remove' );
+        delete_option( DDTT_GO_PF.'error_enable' ); 
+        delete_option( DDTT_GO_PF.'error_uninstall' );
+        delete_option( DDTT_GO_PF.'error_constants' );
+    }
 } // End ddtt_uninstall_plugin()
 
 

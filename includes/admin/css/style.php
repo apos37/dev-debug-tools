@@ -775,6 +775,20 @@ if ( $current_screen->id == $options_page ) {
         user-select: all;
     }
 
+    /* Enabled */
+    code.enabled,
+    code.disabled { 
+        padding: 3px 5px 4px 5px !important;
+        border-radius: 3px !important;
+        color: #DCF3F6 !important;
+    }
+    code.enabled {
+        background: green !important;
+    }
+    code.disabled {
+        background: red !important;
+    }
+
     /* Syntax */
     code { background: none; }
     code.hl,

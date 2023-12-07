@@ -76,6 +76,13 @@ class DDTT_GLOBAL_OPTIONS {
             'admin_bar_condense'
         ] );
 
+        // Error Reporting Settings
+        $this->register_group_settings( 'error', [
+            'error_enable',
+            'error_uninstall',
+            'error_constants',
+        ] );
+
         // Regex Settings
         $this->register_group_settings( 'regex', [
             'regex_string',

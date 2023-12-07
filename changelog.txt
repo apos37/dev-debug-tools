@@ -1,4 +1,9 @@
 == changelog.txt ==
+= 1.5.7 =
+* Fix: User error tracking in debug.log causing issues when not executed by a user directly
+* Fix: File size and last modified dates not working on must-use plugins
+* Update: Added Error Reporting tab
+
 = 1.5.6 =
 * Tweak: Added title, ID, and post type to Discord page load notifications if on front-end or editing back-end
 * Tweak: Added Redirection to recommended plugins
