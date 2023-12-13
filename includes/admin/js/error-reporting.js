@@ -90,8 +90,8 @@ jQuery( $ => {
                         $( '#error-code-constants' ).css( 'visibility', 'visible' );
                         $( '#error-code-constants-notice' ).css( 'visibility', 'visible' );
 
-                        console.log( constants );
-                        console.log( code );
+                        // console.log( constants );
+                        // console.log( code );
 
                         // Iter the table rows
                         $( '#error-reporting-table tr' ).each( function() {
@@ -124,7 +124,7 @@ jQuery( $ => {
 
                     // No results
                     } else {
-                        console.log( 'no results found' );
+                        console.log( 'No results found.' );
                     }
                 }
             }

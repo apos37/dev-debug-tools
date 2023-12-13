@@ -1,4 +1,7 @@
 == changelog.txt ==
+= 1.5.8.1 =
+* Fix: Developer email field pattern not recognizing dashes or periods in domain
+
 = 1.5.8 =
 * Tweak: Added sections in Logs tab for each log that is being checked
 * Update: Added field in settings for adding custom logs and viewing them on the Logs tab

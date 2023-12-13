@@ -99,7 +99,7 @@
         <?php settings_fields( DDTT_PF.'group_settings' ); ?>
         <?php do_settings_sections( DDTT_PF.'group_settings' ); ?>
         <table class="form-table">
-            <?php echo wp_kses( ddtt_options_tr( 'dev_email', 'Developer Account Email Addresses', 'text', $instructions.'<br>Default is the email of the user that activated the plugin. You may use multiple email addresses separated by commas.', [ 'default' => $activated_email, 'pattern' => '([a-zA-Z0-9+_.\-]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+)(\s*,\s*([a-zA-Z0-9+_.\-]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+))*' ] ), $allowed_html ); ?>
+            <?php echo wp_kses( ddtt_options_tr( 'dev_email', 'Developer Account Email Addresses', 'text', $instructions.'<br>Default is the email of the user that activated the plugin. You may use multiple email addresses separated by commas.', [ 'default' => $activated_email, 'pattern' => '([a-zA-Z0-9+_.\-]+@[a-zA-Z0-9.\-]+.[a-zA-Z0-9]+)(\s*,\s*([a-zA-Z0-9+_.\-]+@[a-zA-Z0-9.\-]+.[a-zA-Z0-9]+))*' ] ), $allowed_html ); ?>
 
             <?php $timezone_args = [ 
                 'default' => wp_timezone_string(),

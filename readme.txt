@@ -5,7 +5,7 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.4.2
 Requires PHP: 7.4
-Stable tag: 1.5.8
+Stable tag: 1.5.8.1
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -99,6 +99,9 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.5.8.1 =
+* Fix: Developer email field pattern not recognizing dashes or periods in domain
+
 = 1.5.8 =
 * Tweak: Added sections in Logs tab for each log that is being checked
 * Update: Added field in settings for adding custom logs and viewing them on the Logs tab
