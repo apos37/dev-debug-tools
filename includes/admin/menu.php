@@ -233,7 +233,7 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
     $items = [
         'settings'          => [ __( 'Settings', 'dev-debug-tools' ), 'This area is for developers only.' ],
         'plugins'           => [ __( 'Plugins', 'dev-debug-tools' ), 'We have replaced the default featured plugins with <a href="/'.DDTT_ADMIN_URL.'/plugin-install.php?tab=featured">our own plugin recommendations here</a>.' ],
-        'logs'              => [ __( 'Logs', 'dev-debug-tools' ).$notif, 'Your log files.'.$multisite, true ],
+        'logs'              => [ __( 'Logs', 'dev-debug-tools' ).$notif, 'All of your log files in one place. You can add more log files in <a href="'.ddtt_plugin_options_path( 'settings' ).'">Settings</a>.'.$multisite, true ],
         'error'             => [ __( 'Error Reporting', 'dev-debug-tools' ), 'Choose which errors are reported to your <code class="hl">debug.log</code> file. Note that <code class="hl">WP_DEBUG</code> is currently <code class="'.strtolower( $debugging ).'">'.$debugging.'</code> on your <code class="hl">wp-config.php</code> file. It must be enabled for any of the reporting to work.'.$multisite, true ],
         'wpcnfg'            => [ 'WP-CONFIG', 'View and update your wp-config.php. Please backup the original before updating.'.$multisite, true ],
         'htaccess'          => [ 'HTACCESS', 'View and update your .htaccess from here. Please backup the original before updating.'.$multisite, true ],

@@ -1,4 +1,10 @@
 == changelog.txt ==
+= 1.5.8 =
+* Tweak: Added sections in Logs tab for each log that is being checked
+* Update: Added field in settings for adding custom logs and viewing them on the Logs tab
+* Tweak: Added String locator to recommended plugins
+* Update: Added quick error_reporting code converter to bottom of Error Reporting tab
+
 = 1.5.7.1 =
 * Tweak: Added a notice to Error Reporting tab if error reporting is being overwritten by another plugin or custom code
 

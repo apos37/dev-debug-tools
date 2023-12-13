@@ -10,14 +10,13 @@ $overwrite_notice = true;
 
 // Listen for $_REQUEST to add Must-Use-Plugin; we will not be adding it by default
 if ( isset( $_REQUEST ) && isset( $_REQUEST[ 'settings-updated' ] ) && $_REQUEST[ 'settings-updated' ] ) {
-    $DDTT_LOGS = new DDTT_LOGS();
     if ( $enable_custom_settings ) {
-        if ( $DDTT_LOGS->add_remove_mu_plugin( 'add' ) ) {
+        if ( DDTT_ERROR_REPORTING::add_remove_mu_plugin( 'add' ) ) {
             header( 'Refresh:0' );
             $overwrite_notice = false;
         }
     } else {
-        $DDTT_LOGS->add_remove_mu_plugin( 'remove' );
+        DDTT_ERROR_REPORTING::add_remove_mu_plugin( 'remove' );
     }
 }
 
@@ -43,6 +42,40 @@ p.submit {
 .false {
     color: #FF99CC;
 }
+#convert-error-code {
+    width: 150px;
+}
+#error-code-constants {
+    background-color: #2D2D2D;
+    font-weight: bold;
+    padding: 10px 12px;
+    border-radius: 5px;
+    visibility: hidden;
+    display: inline-block;
+    height: 18px;
+}
+#error-reporting-table .highlight-row td {
+    background-color: yellow !important;
+    color: black !important;
+    font-weight: bold !important;
+}
+#error-reporting-table .highlight-row td .highlight-variable {
+    color: black !important;
+}
+#error-reporting-table .highlight-row td a {
+    color: #2271B1 !important;
+}
+#error-code-constants-notice {
+    visibility: hidden;
+    display: block;
+    height: 18px;
+    margin-top: 10px;
+    font-style: italic;
+}
+#error-reporting-table td:nth-child(3),
+#error-reporting-table td:nth-child(4) {
+    text-align: center;
+}
 </style>
 
 <form method="post" action="options.php">
@@ -65,7 +98,7 @@ p.submit {
         <em>The "Actual" column has been added to verify what is actually set.</em>
         <br><br>
 
-        <table class="admin-large-table">
+        <table id="error-reporting-table" class="admin-large-table">
             <tr>
                 <th style="width: 50px;">Value</th>
                 <th style="width: 180px;">Constant</th>
@@ -111,12 +144,17 @@ p.submit {
 
             // Error reporting exceptions
             $actual_constants = ddtt_get_error_reporting_constants();
+            
+            // Add E_ALL to actual for comparison only
+            if ( in_array( 'E_ALL', $enabled_constants ) ) {
+                $actual_constants[] = 'E_ALL';
+            }
 
             // Notice
             if ( $enable_custom_settings && $overwrite_notice && $enabled_constants != $actual_constants ) {
                 ?>
                 <div class="notice notice-error is-dismissible">
-                <p><?php _e( 'Uh-oh! It appears that another plugin or custom code is overwriting these error reporting values. Unfortunately this tool won\'t work for you. It was a nice thought, though.', 'dev-debug-tools' ); ?></p>
+                <p><?php _e( 'Uh-oh! It appears that another plugin, custom code, or your host is overwriting these error reporting values. Unfortunately this tool won\'t work for you. It was a nice thought, though. If you are on a Managed WordPress hosting plan, this is likely the problem. You might want to switch to a cPanel plan that gives you more flexibility.', 'dev-debug-tools' ); ?></p>
                 </div>
                 <?php
             }
@@ -152,7 +190,7 @@ p.submit {
                     $enabled = $actual;
                 } else {
                     $enabled = false;
-                }                
+                }
 
                 // Actual
                 $display_actual = $actual ? '<span class="true">TRUE</span>' : '<span class="false">FALSE</span>';
@@ -171,71 +209,35 @@ p.submit {
                 </tr>
                 <?php
             }
+
+            // Remove E_ALL from totals
+            if ( in_array( 'E_ALL', $enabled_constants ) ) {
+                $total_enabled_values -= E_ALL;
+                $total_actual_values -= E_ALL;
+            }
             ?>
+            <tr>
+                <td colspan="2"></td>
+                <td style="text-align: center;"><?php echo absint( $total_enabled_values ); ?></td>
+                <td><?php echo absint( $total_actual_values ); ?></td>
+                <td></td>
+            </tr>
         </table>
     </div>
 
     <?php submit_button(); ?> <div id="all-unchecked">You cannot report on nothing. To disable reporting altogether, simply set <code class="hl">WP_DEBUG</code> to false on your <code class="hl">wp-config.php</code> file.</div>
 </form>
 
-<script>
-jQuery( $ => {
-    // Listen for constant changes
-    $( '.error_constants_checkboxes' ).on( 'change', function() {
+<?php
+$nonce = wp_create_nonce( DDTT_GO_PF.'check_error_code' );
+?>
 
-        // Check if we selecting the E_ALL box
-        const isEALL = $( this ).attr( 'id' ) == 'error_constants_e_all';
-
-        // Uncheck
-        if ( !$( this ).is( ':checked' ) ) {
-
-            // Ensure that we don't uncheck all
-            var allUnchecked = true;
-            if ( !isEALL ) {
-                $( '.error_constants_checkboxes' ).each( function() {
-                    if ( $( this ).is( ':checked' ) ) {
-                        allUnchecked = false;
-                    }
-                } );
-            }
-            if ( isEALL || allUnchecked ) {
-                $( '#submit' ).prop( 'disabled', true );
-                $( '#all-unchecked' ).css( 'display', 'inline-block' );
-            }
-
-            // Make sure E_ALL is unchecked
-            $( '#error_constants_e_all' ).prop( 'checked', false );
-
-            // De-select all
-            if ( isEALL ) {
-                $( '.error_constants_checkboxes' ).not( this ).prop( 'checked', this.checked );
-            }
-            
-        // Check
-        } else {
-
-            // Ensure that we don't uncheck all
-            if ( $( '#submit' ).prop( 'disabled' ) ) {
-                $( '#submit' ).prop( 'disabled', false );
-                $( '#all-unchecked' ).hide();
-            }
-
-            // Auto select all
-            var allChecked = true;
-            $( '.error_constants_checkboxes' ).each( function() {
-                if ( $( this ).attr( 'id' ) !== 'error_constants_e_all' && !$( this ).is( ':checked' ) ) {
-                    allChecked = false;
-                }
-            } );
-            if ( allChecked ) {
-                $( '#error_constants_e_all' ).prop( 'checked', true );
-            }
-            
-            // Select all
-            if ( isEALL ) {
-                $( '.error_constants_checkboxes' ).not( this ).prop( 'checked', this.checked );
-            }
-        }
-    } );
-} )
-</script>
+<br><br>
+<table class="form-table">
+    <tr>
+        <th>Quickly Convert <code class="hl">error_reporting</code> Code to Constants</th>
+        <td><input type="text" id="convert-error-code" data-nonce="<?php echo esc_attr( $nonce ); ?>" value=""></td>
+    </tr>
+</table>
+<div id="error-code-constants"></div>
+<div id="error-code-constants-notice">The codes are also highlighted in the table above.</div>

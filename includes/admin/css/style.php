@@ -321,6 +321,9 @@ if ( $current_screen->id == $options_page ) {
         background-color: red !important;
         color: white !important;
     }
+    .button.hide {
+        display: none;
+    }
 
     /* Checkboxes and Radios */
     input[type="checkbox"],
@@ -777,7 +780,8 @@ if ( $current_screen->id == $options_page ) {
 
     /* Enabled */
     code.enabled,
-    code.disabled { 
+    code.disabled,
+    code.check { 
         padding: 3px 5px 4px 5px !important;
         border-radius: 3px !important;
         color: #DCF3F6 !important;
@@ -787,6 +791,9 @@ if ( $current_screen->id == $options_page ) {
     }
     code.disabled {
         background: red !important;
+    }
+    code.check {
+        background: blue !important;
     }
 
     /* Syntax */

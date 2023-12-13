@@ -40,14 +40,7 @@ class DDTT_GLOBAL_OPTIONS {
         $this->register_group_settings( 'settings', [
             'dev_email',
             'dev_timezone',
-            'color_comments',
-            'color_fx_vars',
-            'color_syntax',
-            'color_text_quotes',
-            'log_viewer',
-            'disable_error_counts',
             'view_sensitive_info',
-            'log_user_url',
             'test_number',
             'centering_tool_cols',
             'stop_heartbeat',
@@ -56,7 +49,11 @@ class DDTT_GLOBAL_OPTIONS {
             'ql_user_id',
             'ql_post_id',
             'ql_gravity_forms',
+            'disable_error_counts',
+            'log_viewer',
+            'log_user_url',
             'wp_mail_failure',
+            'log_files',
             'online_users',
             'online_users_seconds',
             'online_users_show_last',
@@ -73,7 +70,11 @@ class DDTT_GLOBAL_OPTIONS {
             'admin_bar_shortcodes',
             'admin_bar_centering_tool',
             'admin_bar_post_info',
-            'admin_bar_condense'
+            'admin_bar_condense',
+            'color_comments',
+            'color_fx_vars',
+            'color_syntax',
+            'color_text_quotes',
         ] );
 
         // Error Reporting Settings

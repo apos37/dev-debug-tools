@@ -25,6 +25,7 @@ jQuery( $ => {
 
         // Validate
         if ( nonce !== '' && name !== '' && email != '' && msg != '' ) {
+            console.log( feedbackAjax.ajaxurl );
 
             // Set up the args
             var args = {
@@ -38,7 +39,7 @@ jQuery( $ => {
                     email: email,
                     msg: msg
                 },
-                beforeSend: function () {    
+                beforeSend: function () {
                     $( '#feedback-sending' ).css( 'display', 'inline-block' );
                 },
                 success: function( response ) {

@@ -163,6 +163,7 @@ class DDTT_ADMIN_AREA {
             'post-type-switcher',
             'query-monitor',
             'redirection',
+            'string-locator',
             'user-menus',
             'user-role-editor',
             'wp-crontrol',

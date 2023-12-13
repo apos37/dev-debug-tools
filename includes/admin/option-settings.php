@@ -80,13 +80,26 @@
             $instructions = '';
         }
     }
+
+    // Check if cURL timeout is enabled
+    if ( get_option( DDTT_GO_PF.'enable_curl_timeout' ) ) {
+        $display_curl_row = 'table-row';
+    } else {
+        $display_curl_row = 'none';
+    }
     ?>
+
+    <style>
+    #row_ddtt_change_curl_timeout {
+        display: <?php echo esc_html( $display_curl_row ); ?>;
+    }
+    </style>
 
     <form method="post" action="options.php">
         <?php settings_fields( DDTT_PF.'group_settings' ); ?>
         <?php do_settings_sections( DDTT_PF.'group_settings' ); ?>
         <table class="form-table">
-            <?php echo wp_kses( ddtt_options_tr( 'dev_email', 'Developer Account Email Addresses', 'text', $instructions.'<br>Default is the email of the user that activated the plugin. You may use multiple email addresses separated by commas.', [ 'default' => $activated_email, 'pattern' => '^^([\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})(\s*,\s*[\w+-.%]+@[\w.-]+\.[A-Za-z]{2,4})*$' ] ), $allowed_html ); ?>
+            <?php echo wp_kses( ddtt_options_tr( 'dev_email', 'Developer Account Email Addresses', 'text', $instructions.'<br>Default is the email of the user that activated the plugin. You may use multiple email addresses separated by commas.', [ 'default' => $activated_email, 'pattern' => '([a-zA-Z0-9+_.\-]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+)(\s*,\s*([a-zA-Z0-9+_.\-]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+))*' ] ), $allowed_html ); ?>
 
             <?php $timezone_args = [ 
                 'default' => wp_timezone_string(),
@@ -96,6 +109,8 @@
             <?php echo wp_kses( ddtt_options_tr( 'dev_timezone', 'Developer Timezone', 'select', '<br>Changes the timezone on Debug Log viewer and other areas in the plugin. Default is what the site uses.', $timezone_args ), $allowed_html ); ?>
             
         </table>
+
+        <?php submit_button(); ?>
 
         <?php if ( !ddtt_is_dev() ) {
             $readonly = ' style="display: none;"';
@@ -108,20 +123,9 @@
             <br><hr><br></br>
             <h2>Testing Options</h2>
             <table class="form-table">
-                <?php echo wp_kses( ddtt_options_tr( 'disable_error_counts', 'Disable Error Counts', 'checkbox', 'Disabling this will prevent counting and improve page load time. Good to use when you have a lot of errors in your logs.' ), $allowed_html ); ?>
-
+                
                 <?php echo wp_kses( ddtt_options_tr( 'view_sensitive_info', 'View Sensitive Info', 'checkbox', 'Displays redacted database login info, IP addresses, etc.' ), $allowed_html ); ?>
 
-                <?php $log_viewers = [
-                    'options' => [
-                        'Easy Reader',
-                        'Classic'
-                    ]
-                ]; ?>
-                <?php echo wp_kses( ddtt_options_tr( 'log_viewer', 'Log Viewer', 'select', '<br>Change how the <a href="'.ddtt_plugin_options_path( 'logs' ).'">debug log</a> is displayed.', $log_viewers ), $allowed_html ); ?>
-
-                <?php echo wp_kses( ddtt_options_tr( 'log_user_url', 'Also Log User and URL With Errors', 'checkbox', 'Adds an additional line to debug.log errors with the user ID, user display name, and url with query strings when an error is triggered.' ), $allowed_html ); ?>
-                
                 <?php echo wp_kses( ddtt_options_tr( 'test_number', 'Debugging Test Number', 'number', null, [ 'width' => '10rem' ] ), $allowed_html ); ?>
 
                 <?php echo wp_kses( ddtt_options_tr( 'centering_tool_cols', 'Centering Tool Columns (Found on Admin Bar in Front-End)', 'number', null, [ 'width' => '10rem', 'default' => 16 ] ), $allowed_html ); ?>
@@ -140,9 +144,39 @@
                     echo wp_kses( ddtt_options_tr( 'ql_gravity_forms', 'Add Quick Debug Links to Gravity Forms & Entries', 'checkbox' ), $allowed_html ); 
                 } ?>
 
+            </table>
+
+            <?php submit_button(); ?>
+
+            <br><hr><br></br>
+            <h2>Logging</h2>
+            <table class="form-table">
+                <?php echo wp_kses( ddtt_options_tr( 'disable_error_counts', 'Disable Error Counts', 'checkbox', 'Disabling this will prevent counting and improve page load time. Good to use when you have a lot of errors in your logs.' ), $allowed_html ); ?>
+
+                <?php $log_viewers = [
+                    'options' => [
+                        'Easy Reader',
+                        'Classic'
+                    ]
+                ]; ?>
+                <?php echo wp_kses( ddtt_options_tr( 'log_viewer', 'Log Viewer', 'select', '<br>Change how the <a href="'.ddtt_plugin_options_path( 'logs' ).'">debug log</a> is displayed.', $log_viewers ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'log_user_url', 'Also Log User and URL With Errors', 'checkbox', 'Adds an additional line to debug.log errors with the user ID, user display name, and url with query strings when a user error is triggered.' ), $allowed_html ); ?>
+
                 <?php echo wp_kses( ddtt_options_tr( 'wp_mail_failure', 'Capture WP_Mail Failure Details in Debug.log', 'checkbox', 'Must have debug log enabled.' ), $allowed_html ); ?>
 
+                <?php
+                // Theme path
+                $themes_root_uri = str_replace( site_url( '/' ), '', get_theme_root_uri() ).'/';
+                $active_theme = str_replace( '%2F', '/', rawurlencode( get_stylesheet() ) );
+                $active_theme_path = '/'.$themes_root_uri.$active_theme.'/';
+                ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'log_files', 'Log Files to Check', 'text+', 'We automatically check your debug.log, error_log, and admin error_log. If you have additional logs you would like to view on the Logs tab, enter the root paths to the files here (not including the domain).', [ 'placeholder' => $active_theme_path.'your_log_file.log', 'log_files' => 'yes' ] ), $allowed_html ); ?>
+
             </table>
+
+            <?php submit_button(); ?>
 
             <br><hr><br></br>
             <h2>Show Online Users</h2>
@@ -208,6 +242,8 @@
 
             </table>
 
+            <?php submit_button(); ?>
+
             <br><hr><br></br>
             <h2>Remove Items from Admin Bar</h2>
             <table class="form-table">
@@ -243,6 +279,8 @@
                 
             </table>
 
+            <?php submit_button(); ?>
+
             <br><hr><br></br>
             <h2>Colors</h2>
             <p>Accepts any CSS color code. Defaults can be reset by simply leaving the fields blank and saving.</p>
@@ -256,24 +294,8 @@
                 <?php echo wp_kses( ddtt_options_tr( 'color_text_quotes', 'Text with Quotes', 'color', null, [ 'default' => '#ACCCCC' ] ), $allowed_html ); ?>
                 
             </table>
-        </div>
 
-        <?php submit_button(); ?>
+            <?php submit_button(); ?>
+        </div>
     </form>
 <?php } ?>
-
-<script>
-// Display cURL change field
-ddtt_curl_timeout_seconds();
-function ddtt_curl_timeout_seconds() {
-    var enableCURL = document.getElementById( "<?php echo esc_attr( DDTT_GO_PF ); ?>enable_curl_timeout" );
-    enableCURL.addEventListener( "change", function() {
-        var changeCURL = document.getElementById( "row_<?php echo esc_attr( DDTT_GO_PF ); ?>change_curl_timeout" );
-        if ( this.checked ) {
-            changeCURL.style.display = 'table-row';
-        } else {
-            changeCURL.style.display = 'none';
-        }
-    } );
-}
-</script>

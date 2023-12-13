@@ -186,7 +186,12 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
             $rows = 6;
             $cols = 50;
         }
-        $input = '<textarea type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" rows="'.esc_attr( $rows ).'" cols="'.esc_attr( $cols ).'"'.$autocomplete.$required.'>'.esc_html( $value ).'</textarea>';
+        if ( !is_null( $args ) && isset( $args[ 'placeholder' ] ) ) {
+            $placeholder = sanitize_textarea_field( $args[ 'placeholder' ] );
+        } else {
+            $placeholder = '';
+        }
+        $input = '<textarea type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" rows="'.esc_attr( $rows ).'" cols="'.esc_attr( $cols ).'" placeholder="'.esc_html( $placeholder ).'" '.$autocomplete.$required.'>'.esc_html( $value ).'</textarea>';
 
     // Select    
     } elseif ( $type == 'select' ) {
@@ -225,57 +230,44 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
         }
         if ( !is_null( $args ) && isset( $args[ 'pattern' ] ) ) {
             $pattern = ' pattern="'.$args[ 'pattern' ].'"';
-            // $autocomplete = ' autocomplete="off"';
         } else {
             $pattern = '';
-            // $autocomplete = '';
         }
-
         if ( !is_array( $value ) ) {
             $value = [ $value ];
+        }
+        if ( !is_null( $args ) && isset( $args[ 'placeholder' ] ) ) {
+            $placeholder = sanitize_textarea_field( $args[ 'placeholder' ] );
+        } else {
+            $placeholder = '';
+        }
+        if ( !is_null( $args ) && isset( $args[ 'log_files' ] ) && $args[ 'log_files' ] == 'yes' ) {
+            $file = false;
+            if ( $value[0] != '' ) {
+                if ( is_readable( ABSPATH.'/'.$value[0] ) ) {
+                    $file = ABSPATH.''.$value[0];
+                } elseif ( is_readable( dirname( ABSPATH ).'/'.$value[0] ) ) {
+                    $file = dirname( ABSPATH ).'/'.$value[0];
+                } elseif ( is_readable( $value[0] ) ) {
+                    $file = $value[0];
+                }
+            }
+            if ( $file ) {
+                $verified = 'VERIFIED';
+                $verified_class= 'enabled';
+            } else {
+                $verified = 'FILE NOT FOUND';
+                $verified_class= 'disabled';
+            }
+            $log_file_verified = ' <code class="verification '.$verified_class.'">'.$verified.'</code> <button type="button" class="button check hide">CHECK</button>';
+        } else {
+            $log_file_verified = '';
         }
         
         $input = '<div id="text_plus_'.esc_attr( $option_name ).'">
             <a href="#" class="add_form_field">Add New Field +</a>
-            <div><input type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'[]" value="'.esc_attr( $value[0] ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$autocomplete.$required.'/></div>
+            <div><input type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'[]" value="'.esc_attr( $value[0] ).'" style="width: '.esc_attr( $width ).'" placeholder="'.esc_html( $placeholder ).'" '.$pattern.$autocomplete.$required.'/>'.$log_file_verified.'</div>
         </div>';
-
-        // Add jQuery
-        $js_value = json_encode( $value );
-        $input .= '<script>
-        jQuery( document ).ready( function( $ ) {
-            var max_fields = 20;
-            var wrapper = $( "#text_plus_'.esc_attr( $option_name ).'" );
-            var add_link = $( "#text_plus_'.esc_attr( $option_name ).' .add_form_field" );
-            var load_count = parseInt( "'.count( $value ).'" );
-            var value = '.$js_value.';
-            console.log( value );
-
-            if ( load_count > 1 ) {
-                value.slice( 1 ).forEach( function( v ) {
-                    console.log( v );
-                    $( wrapper ).append( &quot;<div><input type=\"text\" id=\"'.esc_attr( $option_name ).'\" name=\"'.esc_attr( $option_name ).'[]\" value=\"&quot; + v + &quot;\"/> <a href=\"#\" class=\"delete\">Delete</a></div>&quot; );
-                } );
-            }
-        
-            var x = 1;
-            $( add_link ).click( function( e ) {
-                e.preventDefault();
-                if ( x < max_fields ) {
-                    x++;
-                    $( wrapper ).append( &quot;<div><input type=\"text\" id=\"'.esc_attr( $option_name ).'\" name=\"'.esc_attr( $option_name ).'[]\" value=\"\"/> <a href=\"#\" class=\"delete\">Delete</a></div>&quot; );
-                } else {
-                    alert( "You reached the limit." )
-                }
-            });
-        
-            $( wrapper ).on( "click", ".delete", function( e ) {
-                e.preventDefault();
-                $( this ).parent( "div" ).remove();
-                x--;
-            })
-        });
-        </script>';
 
     // Otherwise return false
     } else {
@@ -393,6 +385,7 @@ function ddtt_wp_kses_allowed_html() {
             'disabled' => [],
             'size' => [],
             'autocomplete' => [],
+            'placeholder' => [],
         ],
         'textarea' => [
             'type' => [],
@@ -403,6 +396,7 @@ function ddtt_wp_kses_allowed_html() {
             'cols' => [],
             'required' => [],
             'autocomplete' => [],
+            'placeholder' => [],
         ],
         'select' => [
             'id' => [],
@@ -416,8 +410,10 @@ function ddtt_wp_kses_allowed_html() {
             'selected' => [],
         ],
         'button' => [
+            'type' => [],
             'class' => [],
             'selected' => [],
+            'style' => [],
         ],
         'script' => [
             'id' => []
@@ -723,26 +719,20 @@ function ddtt_get_error_reporting_constants( $return_e_all = false ) {
  * Home path is public_html/
  * Include filename in path
  * USAGE: ddtt_view_file_contents( 'wp-config.php' );
- * If log file, include highlight args as follows:
- * ddtt_view_file_contents( $path, true, array(
- *  ['keyword' => 'wp-includes', 'class' => 'theme-functions'],
- *  ['keyword' => 'x-child', 'class' => 'my-functions'],
- *  ['keyword' => 'wp-debug-tools', 'class' => 'my-plugin']
- * ));
  *
  * @param string $path
  * @param boolean $log
- * @param array $highlight_args
- * @param boolean $allow_repeats
  * @return string
  */
-function ddtt_view_file_contents( $path, $log = false, $highlight_args = array(), $allow_repeats = true ){
+function ddtt_view_file_contents( $path, $log = false ) {
     // Define the file
     $file = FALSE;
     if ( is_readable( ABSPATH.'/'.$path ) ) {
         $file = ABSPATH.$path;
     } elseif ( is_readable( dirname( ABSPATH ).'/'.$path ) ) {
         $file = dirname( ABSPATH ).'/'.$path;
+    } elseif ( is_readable( $path ) ) {
+        $file = $path;
     }
 
     // Check if the file exists

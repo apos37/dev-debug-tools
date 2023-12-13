@@ -29,6 +29,9 @@ class DDTT_FEEDBACK {
         add_action( 'wp_ajax_'.DDTT_GO_PF.'send_feedback', [ $this, 'send' ] );
         add_action( 'wp_ajax_nopriv_'.DDTT_GO_PF.'send_feedback', [ $this, 'send' ] );
 
+        // Enqueue scripts
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+
         // On failure
         add_action( 'wp_mail_failed', [ $this, 'mail_error' ], 10, 1 );
 
@@ -109,6 +112,40 @@ class DDTT_FEEDBACK {
         // Stop
         die();
     } // End send()
+
+
+    /**
+     * Enqueue scripts
+     * Reminder to bump version number during testing to avoid caching
+     *
+     * @param string $screen
+     * @return void
+     */
+    public function enqueue_scripts( $screen ) {
+        // Get the options page slug
+        $options_page = 'toplevel_page_'.DDTT_TEXTDOMAIN;
+
+        // Allow for multisite
+        if ( is_network_admin() ) {
+            $options_page .= '-network';
+        }
+
+        // Are we on the options page?
+        if ( $screen != $options_page ) {
+            return;
+        }
+
+        // Handle
+        $handle = DDTT_GO_PF.'feedback_script';
+
+        // Feedback form and error code checker
+        if ( ddtt_get( 'tab', '==', 'about' ) ) {
+            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'feedback.js', [ 'jquery' ], time() );
+            wp_localize_script( $handle, 'feedbackAjax', [ 'ajaxurl' => admin_url( 'admin-ajax.php' ) ] );
+            wp_enqueue_script( $handle );
+            wp_enqueue_script( 'jquery' );
+        }
+    } // End enqueue_scripts()
 
 
     /**

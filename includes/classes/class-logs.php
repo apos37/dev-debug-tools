@@ -17,9 +17,9 @@ class DDTT_LOGS {
     /**
 	 * Constructor
 	 */
-	public function __construct() {
+	// public function __construct() {
 
-	} // End __construct()
+	// } // End __construct()
 
 
     /**
@@ -81,84 +81,6 @@ class DDTT_LOGS {
 
 
     /**
-     * Return error logs from this server
-     *
-     * @param string $plugin_folder
-     * @param string $plugin_admin_page
-     * @return void
-     */
-    public function error_logs() {
-        // Get the debug log location
-        if ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
-            $debug_loc = WP_DEBUG_LOG;
-        } else {
-            $debug_loc =  DDTT_CONTENT_URL.'/debug.log';
-        }
-
-        // Replace the files if query string exists
-        if ( ddtt_get( 'clear_error_log', '==', 'true' ) ) {
-            $this->replace_file( 'error_log', 'error_log', true );
-        }
-        if ( ddtt_get( 'clear_debug_log', '==', 'true' ) ) {
-            $this->replace_file( $debug_loc, 'debug.log', true );
-        }
-        if ( ddtt_get( 'clear_admin_error_log', '==', 'true' ) ) {
-            $this->replace_file( DDTT_ADMIN_URL.'/error_log', 'error_log', true );
-        }
-
-        // Get the different logs
-        $error_log = $this->file_exists_with_content( 'error_log' );
-        $admin_error_log = $this->file_exists_with_content( DDTT_ADMIN_URL.'/error_log' );
-        $debug_log = $this->file_exists_with_content( $debug_loc );
-
-        // Echo the table row if any of them exists
-        if ( $error_log || $debug_log || $admin_error_log ) {
-            
-            if ( $error_log ) {
-                $filesize = filesize( $error_log );
-            }
-            if ( $debug_log ) {
-                $filesize = filesize( $debug_log );
-            }
-            if ( $admin_error_log ) {
-                $filesize = filesize( $admin_error_log );
-            }
-
-            // Allowed HTML
-            $allowed_html = ddtt_wp_kses_allowed_html();
-
-            // Display the debug.log with clear button
-            if ( $debug_log ) {
-
-                // Highlight args
-                $highlight_args = $this->highlight_args();
-
-                // Add the log
-                echo wp_kses( $this->file_contents_with_clear_button( 'clear_debug_log', 'Debug Log', $debug_loc, $filesize, true, $highlight_args, true ), $allowed_html );
-            }
-
-            // Display the error_log with clear button
-            if ( $error_log ) {
-                echo wp_kses( $this->file_contents_with_clear_button( 'clear_error_log', 'Error Log', 'error_log', true, [], false ), $allowed_html );
-            }
-
-            // Display the admin error_log with clear button
-            if ( $admin_error_log ) {
-                echo wp_kses( $this->file_contents_with_clear_button( 'clear_admin_error_log', 'Admin Error Log', DDTT_ADMIN_URL.'/error_log', $filesize, true, [], false ), $allowed_html );
-            }
-
-        // If none found
-        } else {
-            if ( WP_DEBUG ) {
-                echo 'Yay! No errors found!';
-            } else {
-                echo 'Debug mode is disabled...';
-            }
-        }
-    } // End error_logs()
-
-
-    /**
      * Replace a file with another one on the server
      * USAGE: replace_file( 'debug.log', true )
      *
@@ -200,7 +122,7 @@ class DDTT_LOGS {
             $file = $path;
         }
 
-        if ( $file && filesize($file) > 0 ) {
+        if ( $file && filesize( $file ) > 0 ) {
             $result = $file;
         } else {
             $result = false;
@@ -282,7 +204,7 @@ class DDTT_LOGS {
                 if ( $dl_viewer == 'easy' ) {
                     $contents = ddtt_view_file_contents_easy_reader( $path, $log, $highlight_args, $allow_repeats);
                 } else {
-                    $contents = ddtt_view_file_contents( $path, $log, $highlight_args, $allow_repeats);
+                    $contents = ddtt_view_file_contents( $path, $log );
                 }
     
             // Or display warning that log is too big
@@ -294,7 +216,7 @@ class DDTT_LOGS {
 
         // Get the contents
         if ( $dl != 'debug_log' ) {
-            $contents = ddtt_view_file_contents( $path, $log, $highlight_args, $allow_repeats);
+            $contents = ddtt_view_file_contents( $path, $log );
         }
 
         // The current url
@@ -433,70 +355,13 @@ class DDTT_LOGS {
         $filename = ucwords( $filename );
 
         // Return the row
-        return $search_bar.'<tr valign="top">
-            <th scope="row">Current '.$filename.' (View Only)<br><br><em>'.$switch_to.'</em>'.$recent.$highlights.'<br><br>'.$download_button.'<br>'.$clear_button.'</th>
-            <td class="log-cell"><div class="full_width_container"> '.$contents.' </div></td>
-        </tr>';
+        $results = '<table class="form-table">
+            '.$search_bar.'
+            <tr valign="top">
+                <th scope="row">Current '.$filename.' (View Only)<br><br><em>'.$switch_to.'</em>'.$recent.$highlights.'<br><br>'.$download_button.'<br>'.$clear_button.'</th>
+                <td class="log-cell"><div class="full_width_container"> '.$contents.' </div></td>
+            </tr>
+        </table>';
+        return $results;
     } // End file_contents_with_clear_button()
-
-
-    /**
-     * Add or remove the Must Use Plugin
-     * USAGE: add_remove_mu_plugin( 'remove' )
-     *
-     * @param string $file_to_replace
-     * @return boolean
-     */
-    public function add_remove_mu_plugin( $add_or_remove = 'add' ) {
-        // Must-Use-Plugin filename
-        $filename = '000-set-debug-level.php';
-
-        // Check if the file exists
-        $file_path = DDTT_MU_PLUGINS_DIR.$filename;
-        $mu_plugin_exists = file_exists( $file_path );
-
-        // Add
-        if ( $add_or_remove == 'add' ) {
-
-            // Already exists?
-            if ( $mu_plugin_exists ) {
-                return false;
-            }
-
-            // Create the directory if it doesn't exist
-            if ( !file_exists( DDTT_MU_PLUGINS_DIR ) ) {
-                mkdir( DDTT_MU_PLUGINS_DIR );
-            }
-
-            // Path to Must-Use-Plugin file
-            $mu_plugin_file = ABSPATH.DDTT_PLUGIN_FILES_PATH.$filename;
-
-            // Add the file
-            if ( copy( $mu_plugin_file, $file_path ) ) {
-                ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin has been added.' );
-                return true;
-            } else {
-                ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin could not be added.' );
-            }
-
-        // Remove
-        } elseif ( $add_or_remove == 'remove' ) {
-            
-            // Already gone?
-            if ( !$mu_plugin_exists ) {
-                return false;
-            }
-
-            // Remove the file
-            if ( unlink( $file_path ) ) {
-                ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin has been removed.' );
-                return true;
-            } else {
-                ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin could not be deleted. To remove it, please remove the "'.$filename.'" file from "'.DDTT_MU_PLUGINS_DIR.'" via FTP or File Manager.' );
-            }
-        }
-
-        // Did not work out
-        return false;
-    } // End add_remove_mu_plugin()
 }
