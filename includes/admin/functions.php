@@ -144,10 +144,8 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
         }
         if ( !is_null( $args ) && isset( $args[ 'pattern' ] ) ) {
             $pattern = ' pattern="'.$args[ 'pattern' ].'"';
-            // $autocomplete = ' autocomplete="off"';
         } else {
             $pattern = '';
-            // $autocomplete = '';
         }
         
         $input = '<input type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="'.esc_attr( $value ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$autocomplete.$required.'/>';
@@ -932,8 +930,6 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
         $file = dirname( ABSPATH ).'/'.$path;
     }
 
-    // dpr( $highlight_args );
-
     // Start results
     $results = '';
 
@@ -1141,6 +1137,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                             if ( str_starts_with( $rest, ' Array' ) ) {
                                 $err = 'Array';
                                 $warning = 'Array';
+                                $new_actual_line = true;
                                 $start_collecting_array = true;
                             }
 
@@ -1482,9 +1479,19 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                         // Iter the array
                         $array_array = [];
                         foreach ( $array as $a ) {
+                            
+                            // Remove the brackets
+                            if ( $a == '(' || $a == ')' ) {
+                                continue;
+                            }
+
+                            // Explode the line to remove the array items
+                            $split = explode( ' => ', $a );
+                            $a = $split[1];
 
                             // Shorten the paths
                             $a = str_replace( ABSPATH, '/', $a );
+                            
                             
                             // Add a class to the first line
                             if ( str_starts_with( $a, 'Array' ) ) {
@@ -1496,6 +1503,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                             }
                         }
                         $display_array = '<pre>'.print_r( $array_array, true ).'</pre>';
+                        // $display_array = '<pre>'.print_r( $array_array, true ).'</pre>';
                     } else {
                         $display_array = '';
                     }
@@ -2430,6 +2438,147 @@ function ddtt_is_serialized_array( $string ) {
     }
     return false;
 } // End ddtt_is_json()
+
+
+/**
+ * Get the URL of an admin menu item
+ *
+ * @param   string $menu_item_file
+ * @param   boolean $submenu_as_parent
+ * @return  string|null
+ */
+function ddtt_get_admin_menu_item_url( $menu_item_file, $menu = null, $submenu = null, $submenu_as_parent = true ) {
+	if ( is_null( $menu ) && is_null( $submenu ) ) {
+        global $menu, $submenu;
+    }
+
+	$admin_is_parent = false;
+	$item = '';
+	$submenu_item = '';
+	$url = '';
+
+	// Check if top-level menu item
+	foreach( $menu as $key => $menu_item ) {
+		if ( array_keys( $menu_item, $menu_item_file, true ) ) {
+			$item = $menu[ $key ];
+		}
+
+		if ( $submenu_as_parent && ! empty( $submenu_item ) ) {
+			$menu_hook = get_plugin_page_hook( $submenu_item[2], $item[2] );
+			$menu_file = $submenu_item[2];
+
+			if ( false !== ( $pos = strpos( $menu_file, '?' ) ) )
+				$menu_file = substr( $menu_file, 0, $pos );
+			if ( ! empty( $menu_hook ) || ( ( 'index.php' != $submenu_item[2] ) && file_exists( WP_PLUGIN_DIR.'/'.$menu_file ) && ! file_exists( ABSPATH.'/'.DDTT_ADMIN_URL.'/'.$menu_file ) ) ) {
+				$admin_is_parent = true;
+				$url = 'admin.php?page=' . $submenu_item[2];
+			} else {
+				$url = $submenu_item[2];
+			}
+		}
+
+		elseif ( ! empty( $item[2] ) && current_user_can( $item[1] ) ) {
+			$menu_hook = get_plugin_page_hook( $item[2], 'admin.php' );
+			$menu_file = $item[2];
+
+			if ( false !== ( $pos = strpos( $menu_file, '?' ) ) )
+				$menu_file = substr( $menu_file, 0, $pos );
+			if ( ! empty( $menu_hook ) || ( ( 'index.php' != $item[2] ) && file_exists( WP_PLUGIN_DIR.'/'.$menu_file ) && ! file_exists( ABSPATH.'/'.DDTT_ADMIN_URL.'/'.$menu_file ) ) ) {
+				$admin_is_parent = true;
+				$url = 'admin.php?page=' . $item[2];
+			} else {
+				$url = $item[2];
+			}
+		}
+	}
+
+	// Check if sub-level menu item
+	if ( !$item ) {
+		$sub_item = '';
+		foreach( $submenu as $top_file => $submenu_items ) {
+
+			// Reindex $submenu_items
+			$submenu_items = array_values( $submenu_items );
+
+			foreach( $submenu_items as $key => $submenu_item ) {
+				if ( array_keys( $submenu_item, $menu_item_file ) ) {
+					$sub_item = $submenu_items[ $key ];
+					break;
+				}
+			}					
+
+			if ( ! empty( $sub_item ) )
+				break;
+		}
+
+		// Get top-level parent item
+		foreach( $menu as $key => $menu_item ) {
+			if ( array_keys( $menu_item, $top_file, true ) ) {
+				$item = $menu[ $key ];
+				break;
+			}
+		}
+
+		// If the $menu_item_file parameter doesn't match any menu item, return false
+		if ( ! $sub_item )
+			return false;
+
+		// Get URL
+		$menu_file = $item[2];
+
+		if ( false !== ( $pos = strpos( $menu_file, '?' ) ) )
+			$menu_file = substr( $menu_file, 0, $pos );
+
+		// Handle current for post_type=post|page|foo pages, which won't match $self.
+		$menu_hook = get_plugin_page_hook( $sub_item[2], $item[2] );
+
+		$sub_file = $sub_item[2];
+		if ( false !== ( $pos = strpos( $sub_file, '?' ) ) )
+			$sub_file = substr($sub_file, 0, $pos);
+
+		if ( ! empty( $menu_hook ) || ( ( 'index.php' != $sub_item[2] ) && file_exists( WP_PLUGIN_DIR."/$sub_file" ) && ! file_exists( ABSPATH.'/'.DDTT_ADMIN_URL.'/'.$sub_file ) ) ) {
+			// If admin.php is the current page or if the parent exists as a file in the plugins or admin dir
+			if ( ( ! $admin_is_parent && file_exists( WP_PLUGIN_DIR."/$menu_file" ) && ! is_dir( WP_PLUGIN_DIR."/{$item[2]}" ) ) || file_exists( $menu_file ) )
+				$url = add_query_arg( array( 'page' => $sub_item[2] ), $item[2] );
+			else
+				$url = add_query_arg( array( 'page' => $sub_item[2] ), 'admin.php' );
+		} else {
+			$url = $sub_item[2];
+		}
+	}
+
+    // Return the url
+	return esc_url( $url );
+} // End ddtt_get_admin_menu_item_url()
+
+
+/**
+ * Strip html and content from string
+ *
+ * @param string $text
+ * @param string $tags
+ * @param boolean $invert
+ * @return string
+ */
+function ddtt_strip_tags_content( $text, $tags = '', $invert = false ) {
+    // Search
+    preg_match_all('/<(.+?)[\s]*\/?[\s]*>/si', trim( $tags ), $matches );
+    $tags = array_unique( $matches[1] );
+
+    if ( is_array( $tags ) && count( $tags ) > 0 ) {
+
+        if ( $invert == false ) {
+            return preg_replace( '@<(?!(?:'. implode( '|', $tags ) .')\b)(\w+)\b.*?>.*?</\1>@si', '', $text );
+        } else {
+            return preg_replace( '@<('. implode( '|', $tags ) .')\b.*?>.*?</\1>@si', '', $text );
+        }
+
+    } elseif ( $invert == false ) {
+        return preg_replace( '@<(\w+)\b.*?>.*?</\1>@si', '', $text );
+    }
+
+    return $text;
+} // End ddtt_strip_tags_content()
 
 
 /**

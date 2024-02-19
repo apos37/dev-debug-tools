@@ -1473,5 +1473,15 @@ function ddtt_example_shortcode( $atts ) {
 
 
 /**
+ * Logs a comma-separated string or array of functions that have been called to get to the current point in code.
+ *
+ * @return void
+ */
+function ddtt_backtrace( $ignore_class = null, $skip_frames = 0, $pretty = true ) {
+    ddtt_write_log( wp_debug_backtrace_summary( $ignore_class, $skip_frames, $pretty ) );
+} // End ddtt_backtrace()
+
+
+/**
  * THE END
  */

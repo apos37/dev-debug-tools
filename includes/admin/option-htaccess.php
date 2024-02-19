@@ -35,11 +35,10 @@ $pf = 'htaccess_';
 /**
  * Initiate the class
  */
-$GLOBALS['DDTT_HTACCESS'] = new DDTT_HTACCESS();
-global $DDTT_HTACCESS;
+$DDTT_HTACCESS = new DDTT_HTACCESS();
 
 // Get the snippets we use
-$snippets = DDTT_HTACCESS::snippets();
+$snippets = $DDTT_HTACCESS->snippets();
 
 // Read the HTACCESS
 $filename = '.htaccess';

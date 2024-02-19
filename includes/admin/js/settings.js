@@ -110,7 +110,7 @@ jQuery( $ => {
             displayCheck = 'inline-block';
             disableCheck = ' disabled';
         }
-        return '<div><input type="text" name="ddtt_log_files[]" value="' + path + '"/> <code class="verification ' + verifiedClass + '" style="display: ' + displayVerification + '">' + verifiedText + '</code> <button type="button" class="button check" style="display: ' + displayCheck + '"' + disableCheck + '>CHECK</button> <a href="javascript:void(0);" class="delete">Delete</a></div>';
+        return '<div><input type="text" name="ddtt_log_files[]" value="' + path + '" pattern=".*\.txt$"/> <code class="verification ' + verifiedClass + '" style="display: ' + displayVerification + '">' + verifiedText + '</code> <button type="button" class="button check" style="display: ' + displayCheck + '"' + disableCheck + '>CHECK</button> <a href="javascript:void(0);" class="delete">Delete</a></div>';
     }
 
     // Start listening

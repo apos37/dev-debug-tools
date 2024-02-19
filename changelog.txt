@@ -1,4 +1,46 @@
 == changelog.txt ==
+= 1.6.5.1 =
+* Fix: Front-end admin menu links visible to people without permissions
+* Fix: Front-end admin menu links not able to click if list is too long, made scrollable
+* Fix: Separators added to front-end admin menu link if another class is added
+
+= 1.6.5 =
+* Update: Added option to add admin menu links to admin bar on front end
+* Tweak: Changed Remove Admin Bar Items section to Admin Bar
+* Fix: Admin bar post id showing inaccurate info for non-posts/pages
+
+= 1.6.4 =
+* Fix: Page load Discord notifications getting inaccurate page when loading non-posts/pages
+* Fix: Easy reader combining arrays and displaying them inside another array
+* Update: Added new function ddtt_backtrace() that logs wp_debug_backtrace_summary() to debug.log
+* Update: Added snippets in wp-config and htaccess tabs to increase max input vars
+* Fix: Inaccurate error log reporting fatal error to Discord
+* Update: Added field to post meta tab for hiding post meta keys with a prefix
+* Update: Added field to user meta tab for hiding user meta keys with a prefix
+
+= 1.6.3 =
+* Update: Add hook for filtering quick link post types in case some post types are not registered
+* Fix: Quick links not showing up on posts, pages, and custom post types
+
+= 1.6.2 =
+* Tweak: Prevent adding non-txt files to additional logs field
+* Tweak: Clean up some code
+* Fix: Removed unneccesary instantiation of Discord class
+* Tweak: Removed all unneccesary static declarations and usage
+* Fix: is_plugin_active() not found when Gravity Forms is deactivated
+* Tweak: Added Child Theme Configurator to recommended plugins
+* Tweak: Added NS Cloner - Site Copier to recommended plugins
+
+= 1.6.1 =
+* Fix: array_intersect() error on class-online-users.php
+
+= 1.6.0 =
+* Update: Added option in settings for sending fatal errors to a Discord channel
+
+= 1.5.9 =
+* Fix: Custom logs trying to load when saving settings with no custom log defined
+* Tweak: Added a video tutorial for migrating WP in Resources
+
 = 1.5.8.1 =
 * Fix: Developer email field pattern not recognizing dashes or periods in domain
 

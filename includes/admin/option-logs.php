@@ -109,6 +109,11 @@ if ( $user_defined_logs && !empty( $user_defined_logs ) ) {
     // Iter the logs
     foreach ( $user_defined_logs as $user_defined_log ) {
 
+        // Make sure it's not empty
+        if ( !$user_defined_log ) {
+            continue;
+        }
+
         // Add a header regardless
         echo '<br><br><br><br><h2>'.esc_html( $user_defined_log ).'</h2>';
         

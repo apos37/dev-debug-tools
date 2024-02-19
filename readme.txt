@@ -3,9 +3,9 @@ Contributors: apos37
 Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
-Tested up to: 6.4.2
+Tested up to: 6.4.3
 Requires PHP: 7.4
-Stable tag: 1.5.8.1
+Stable tag: 1.6.5.1
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -15,10 +15,12 @@ Lots of debugging and testing tools for developers.
 Developer tools for debugging and testing things as you develop and troubleshoot your WordPress site.
 
 * View debug.log and error logs directly from admin in your timezone, conveniently combining repeats for readability, and with quick links to search Google for suggested solutions.
+* View additional .txt logs with custom URLs.
 * Quickly clear your debug and error logs with a click of a button.
 * View and download backups of wp-config.php file and .htaccess file from the admin area.
 * Add/remove snippets on the wp-config.php file without editing the file directly.
 * Add/remove snippets on the .htaccess file without editing the file directly.
+* Choose which errors to report to the debug.log (if your host allows it).
 * View and download functions.php file.
 * Toggle wp_mail() failure logging.
 * View and edit user meta, including custom meta, for a given user directly from the admin panel.
@@ -49,14 +51,9 @@ Developer tools for debugging and testing things as you develop and troubleshoot
 * Allow posts and pages to be searched by ID in the admin area.
 * Access to a handful of additional functions and hooks that you can use for debugging.
 * A great list of links to helpful resources.
+* Discord notifications of fatal errors, user page loads, and user logins.
 
-NEW in version 1.5.2 (BETA) - Discord webhook notifications!
 ---------------------
-In the middle of making updates and another teammate gets on and starts messing with things? It's good to know so you can put a pause on things. Specify priority roles that you want to get notified for, such as admins, editors, or custom roles. Then get notifications straight to your Discord server for the following activity:
-
-* Login notifications
-* Intermittent logged-in notifications showing if they are still online
-* Page load notifications
 
 == Installation ==
 1. Install the plugin from your website's plugin directory, or upload the plugin to your plugins folder. 
@@ -99,6 +96,48 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.6.5.1 =
+* Fix: Front-end admin menu links visible to people without permissions
+* Fix: Front-end admin menu links not able to click if list is too long, made scrollable
+* Fix: Separators added to front-end admin menu link if another class is added
+
+= 1.6.5 =
+* Update: Added option to add admin menu links to admin bar on front end
+* Tweak: Changed Remove Admin Bar Items section to Admin Bar
+* Fix: Admin bar post id showing inaccurate info for non-posts/pages
+
+= 1.6.4 =
+* Fix: Page load Discord notifications getting inaccurate page when loading non-post/pages
+* Fix: Easy reader combining arrays and displaying them inside another array
+* Update: Added new function ddtt_backtrace() that logs wp_debug_backtrace_summary() to debug.log
+* Update: Added snippets in wp-config and htaccess tabs to increase max input vars
+* Fix: Inaccurate error log reporting fatal error to Discord
+* Update: Added field to post meta tab for hiding post meta keys with a prefix
+* Update: Added field to user meta tab for hiding user meta keys with a prefix
+
+= 1.6.3 =
+* Update: Add hook for filtering quick link post types in case some post types are not registered
+* Fix: Quick links not showing up on posts, pages, and custom post types
+
+= 1.6.2 =
+* Tweak: Prevent adding non-txt files to additional logs field
+* Tweak: Clean up some code
+* Fix: Removed unneccesary instantiation of Discord class
+* Tweak: Removed all unneccesary static declarations and usage
+* Fix: is_plugin_active() not found when Gravity Forms is deactivated
+* Tweak: Added Child Theme Configurator to recommended plugins
+* Tweak: Added NS Cloner - Site Copier to recommended plugins
+
+= 1.6.1 =
+* Fix: array_intersect() error on class-online-users.php
+
+= 1.6.0 =
+* Update: Added option in settings for sending fatal errors to a Discord channel
+
+= 1.5.9 =
+* Fix: Custom logs trying to load when saving settings with no custom log defined
+* Tweak: Added a video tutorial for migrating WP in Resources
+
 = 1.5.8.1 =
 * Fix: Developer email field pattern not recognizing dashes or periods in domain
 

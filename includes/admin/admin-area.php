@@ -25,6 +25,7 @@ class DDTT_ADMIN_AREA {
 	 * Constructor
 	 */
 	public function __construct() {
+        
         // Add a settings link to plugins list page
         add_filter( 'plugin_action_links_'.DDTT_TEXTDOMAIN.'/'.DDTT_TEXTDOMAIN.'.php', [ $this, 'settings_link' ] );
 
@@ -151,6 +152,7 @@ class DDTT_ADMIN_AREA {
             'another-show-hooks',
             'aryo-activity-log',
             'asgaros-forum',
+            'child-theme-configurator',
             'code-snippets',
             'debug-bar',
             'debug-this',
@@ -160,6 +162,7 @@ class DDTT_ADMIN_AREA {
             'go-live-update-urls',
             'heartbeat-control', // WP Dashboard: 60, Frontend: Disable, Post Editor: 30
             'import-users-from-csv-with-meta',
+            'ns-cloner-site-copier',
             'post-type-switcher',
             'query-monitor',
             'redirection',
@@ -178,7 +181,7 @@ class DDTT_ADMIN_AREA {
 
         // Add plugin list which you want to show as feature in dashboard.
         foreach ( $wp_plugins as $wp_p ) {
-            $res = self::add_plugin_favs( $wp_p, $res );
+            $res = $this->add_plugin_favs( $wp_p, $res );
         }
 
         // Return the results

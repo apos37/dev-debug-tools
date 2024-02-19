@@ -74,6 +74,15 @@ if ( $s ) {
     $user = get_user_by( 'id', $user_id );
     $s = $user_id; // To populate default value for search field
 }
+
+// Are we hiding meta keys with a prefix
+$hide_pf = ddtt_get( 'hide_pf' );
+if ( $hide_pf ) {
+    update_option( DDTT_GO_PF.'user_meta_hide_pf', $hide_pf );
+    ddtt_remove_qs_without_refresh( 'hide_pf' );
+} else {
+    $hide_pf = get_option( DDTT_GO_PF.'user_meta_hide_pf' );
+}
 ?>
 
 <?php
@@ -353,6 +362,10 @@ if ( $user ) {
             <th scope="row"><label for="user-search-input">User ID or Email</label></th>
             <td><input type="text" name="user" id="user-search-input" value="<?php echo esc_attr( $s ); ?>" required></td>
         </tr>
+        <tr valign="top">
+            <th scope="row"><label for="hide-meta-keys">Hide Meta Keys with Prefixes</label></th>
+            <td><input type="text" name="hide_pf" id="hide-meta-keys" value="<?php echo esc_attr( $hide_pf ); ?>"></td>
+        </tr>
     </table>
     <?php echo wp_kses( $hidden_path, $hidden_allowed_html ); ?>
     <br><br><input type="submit" value="Search" id="post-search-button" class="button button-primary"/>
@@ -612,6 +625,26 @@ if ( $user ) {
                     $value = $val;
                 }
                 $value = $value[0];
+
+                // Hide prefix
+                $hide_this = false;
+                if ( $hide_pf ) {
+                    if ( strpos( $hide_pf, ',' ) !== false ) {
+                        $pfs = explode( ',', $hide_pf );
+                        foreach ( $pfs as $pf ) {
+                            $pf = trim( $pf );
+                            if ( str_starts_with( $key, $pf ) ) {
+                                $hide_this = true;
+                                break;
+                            }
+                        }
+                    } elseif ( str_starts_with( $key, $hide_pf ) ) {
+                        $hide_this = true;
+                    }
+                }
+                if ( $hide_this ) {
+                    continue;
+                }
 
                 // Are we redacting?
                 if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {

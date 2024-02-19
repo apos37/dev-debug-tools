@@ -53,6 +53,11 @@ $hooks = [
         'hook' => 'ddtt_quick_link_icon', 
         'desc' => 'Change the Quick Debug Link icon when quick links are added to posts and users in admin lists.' 
     ],
+    [ 
+        'type' => 'Filter',
+        'hook' => 'ddtt_quick_link_post_types', 
+        'desc' => 'Add or remove post types that include quick links when enabled.' 
+    ],
     [
         'type' => 'Filter',
         'hook' => 'ddtt_admin_bar_dropdown_links',
@@ -127,7 +132,7 @@ $hooks = [
             // Add the snippet row
             if ( $file ) {
                 ?>
-                <tr>
+                <tr id="<?php echo esc_attr( $hook[ 'hook' ] ); ?>">
                     <td><?php echo wp_kses_post( $hook[ 'desc' ] ); ?></td>
                     <td><code class="hl"><strong><?php echo esc_attr( $hook[ 'hook' ] ); ?></strong></code><br><br><strong>TYPE &#8674;</strong> <?php echo esc_attr( $hook[ 'type' ] ); ?></td>
                     <td class="usage"><?php ddtt_highlight_file2( $file, false ); ?><br><br></td>

@@ -12,8 +12,7 @@ td.usage code {
 <?php include 'header.php'; ?>
 
 <?php 
-$DDTT_RESOURCES = new DDTT_RESOURCES();
-$links = $DDTT_RESOURCES->get_resources();
+$links = (new DDTT_RESOURCES)->get_resources();
 ?>
 
 <div class="full_width_container">

@@ -14,6 +14,11 @@ if ( !defined( 'ABSPATH' ) ) {
  */
 new DDTT_CLASS_NAME;
 
+add_action( 'init', function() {
+    (new DDTT_CLASS_NAME)->init();
+} );
+
+
 
 /**
  * Main plugin class.
@@ -25,21 +30,18 @@ class DDTT_CLASS_NAME {
 	 */
 	public function __construct() {
 
-        // Hooks
-        // add_filter( 'filter_name', [$this, 'function_name' ] );
 
-        // Run functions directly
-        $this->fake_function();
+
 	} // End __construct()
 
 
     /**
-     * Function
-     * 
-     * @return string
-     * @since   1.0.0
+     * Load on init, but not every time the class is called
+     *
+     * @return void
      */
-    public function fake_function() {
-        return false;
-    } // End fake_function()
+    public function init() {
+        
+
+    } // End init()
 }

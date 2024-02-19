@@ -23,7 +23,7 @@ class DDTT_SETTINGS {
     /**
      * Nonce
      */
-    static $nonce = DDTT_GO_PF.'settings';
+    private $nonce = DDTT_GO_PF.'settings';
 
     /**
 	 * Constructor
@@ -45,9 +45,9 @@ class DDTT_SETTINGS {
      *
      * @return void
      */
-    public static function verify_log_files() {
+    public function verify_log_files() {
         // First verify the nonce
-        if ( !wp_verify_nonce( $_REQUEST[ 'nonce' ], self::$nonce ) ) {
+        if ( !wp_verify_nonce( $_REQUEST[ 'nonce' ], $this->nonce ) ) {
             exit( 'No naughty business please' );
         }
 
@@ -115,7 +115,7 @@ class DDTT_SETTINGS {
         if ( ddtt_get( 'tab', '==', 'settings' ) ) {
             wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'settings.js', [ 'jquery' ], time() );
             wp_localize_script( $handle, 'settingsAjax', [
-                'nonce'     => wp_create_nonce( self::$nonce ),
+                'nonce'     => wp_create_nonce( $this->nonce ),
                 'log_files' => get_option( DDTT_GO_PF.'log_files' ),
                 'ajaxurl'   => admin_url( 'admin-ajax.php' ) 
             ] );

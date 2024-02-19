@@ -27,7 +27,7 @@ class DDTT_ADMIN_BAR {
 
         // Customize the admin bar menu
         add_action( 'admin_bar_menu', [ $this, 'admin_bar' ], 99999 );
-        
+
 	} // End __construct()
 
 
@@ -93,8 +93,8 @@ class DDTT_ADMIN_BAR {
         /**
          * Add the post ID and status
          */
-        if ( !get_option( DDTT_GO_PF.'admin_bar_post_info' ) || get_option( DDTT_GO_PF.'admin_bar_post_info' ) == 0 ) {
-            if ( get_the_ID() ) {
+        if ( !is_admin() && ( !get_option( DDTT_GO_PF.'admin_bar_post_info' ) || get_option( DDTT_GO_PF.'admin_bar_post_info' ) == 0 ) ) {
+            if ( is_singular() ) {
                 $post_id = get_the_ID();
                 
             } else {
@@ -117,7 +117,7 @@ class DDTT_ADMIN_BAR {
             }
     
             // If post id exists, continue
-            if ( $post_id ){
+            if ( $post_id ) {
                 
                 // Add Page/Post ID
                 $post_type = get_post_type( $post_id );
@@ -129,25 +129,33 @@ class DDTT_ADMIN_BAR {
                 }
     
                 // Add Page/Post Status 
-                if ( get_post_status( $post_id ) == 'publish' ) {
+                $get_post_status = get_post_status( $post_id );
+                if ( $get_post_status == 'publish' ) {
                     $post_status = 'Published';
-                } elseif ( get_post_status( $post_id ) == 'draft' ) {
+                } elseif ( $get_post_status == 'auto-draft' ) {
+                    $post_status = 'Auto Draft';
+                } elseif ( $get_post_status == 'draft' ) {
                     $post_status = 'Draft';
-                } elseif ( get_post_status( $post_id ) == 'private' ) {
+                } elseif ( $get_post_status == 'private' ) {
                     $post_status = 'Private';
-                } elseif ( get_post_status( $post_id ) == 'archive' ) {
+                } elseif ( $get_post_status == 'archive' ) {
                     $post_status = 'Archived';
                 } else {
-                    $post_status = 'Unknown';
+                    $post_status = $get_post_status;
                 }
-                
-                // Add to bar
-                $wp_admin_bar->add_node( [
-                    'id' => DDTT_GO_PF.'admin-post-id',
-                    'parent' => 'top-secondary',
-                    'title' => sprintf( __( '%1$s %2$s (%3$s)', 'dev-debug-tools' ), $pt_name, $post_id, $post_status ),
-                ] );
+
+                // What to add to the bar
+                $post_info_title = sprintf( __( '%1$s %2$s (%3$s)', 'dev-debug-tools' ), $pt_name, $post_id, $post_status );    
+            } else {
+                $post_info_title = sprintf( __( '%1$s', 'dev-debug-tools' ), 'Not Singular' );
             }
+
+            // Add to bar
+            $wp_admin_bar->add_node( [
+                'id'     => DDTT_GO_PF.'admin-post-id',
+                'parent' => 'top-secondary',
+                'title'  => $post_info_title,
+            ] );
         }
 
         
@@ -188,38 +196,68 @@ class DDTT_ADMIN_BAR {
          */
         if ( !is_admin() ) {
 
-            // Dev Debug Tools
-            if ( ddtt_is_dev() ) {
-                $site_name_links = [ [ 'Dev Debug Tools', ddtt_plugin_options_path() ] ];
+            // Store the custom links here
+            $site_name_links = [];
+
+            // Are we including all menu items?
+            if ( get_option( DDTT_GO_PF.'admin_bar_add_links' ) == 1 && ddtt_is_dev() ) {
+
+                // Get them
+                $admin_menu_links = get_option( DDTT_GO_PF.'admin_menu_links' );
+                if ( !empty( $admin_menu_links ) ) {
+
+                    // Iter them
+                    foreach ( $admin_menu_links as $admin_menu_link ) {
+                        
+                        // Check permissions
+                        if ( !current_user_can( $admin_menu_link[ 'perm' ] ) ) {
+                            continue;
+                        }
+
+                        // Add it
+                        $site_name_links[] = [ 
+                            $admin_menu_link[ 'label' ],
+                            home_url( '/'.DDTT_ADMIN_URL.'/'.$admin_menu_link[ 'url' ] )
+                        ];
+                    }
+                }
+
+            // Otherwise add a few of our own
+            } elseif ( ddtt_is_dev() ) {
+
+                // Dev Debug Tools
+                $site_name_links[] = [ 'Dev Debug Tools', ddtt_plugin_options_path() ];
+
+                // Admin Help Docs
+                if ( is_plugin_active( 'admin-help-docs/admin-help-docs.php' ) ) {
+                    $help_docs_menu_title = get_option( 'helpdocs_menu_title' );
+                    if ( !$help_docs_menu_title ) {
+                        $help_docs_menu_title = 'Help Docs';
+                    }
+                    $site_name_links[] = [ $help_docs_menu_title, helpdocs_plugin_options_path() ];
+                }
+
+                // Merge
+                $site_name_links = array_merge( $site_name_links, [
+                    [ 'Users', '/'.DDTT_ADMIN_URL.'/users.php' ],
+                    [ 'Posts', '/'.DDTT_ADMIN_URL.'/edit.php' ],
+                    [ 'Pages', '/'.DDTT_ADMIN_URL.'/edit.php?post_type=page' ],
+                ] );
+
+                // Gravity Forms
+                if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ){
+                    $site_name_links[] = [ 'Forms', '/'.DDTT_ADMIN_URL.'/admin.php?page=gf_edit_forms' ];
+                }
+
+                // Plugins
+                $site_name_links[] = [ 'Plugins', '/'.DDTT_ADMIN_URL.'/plugins.php' ];
             }
 
-            // Users, posts, and pages
-            $custom_links = [
-                [ 'Users', '/'.DDTT_ADMIN_URL.'/users.php' ],
-                [ 'Posts', '/'.DDTT_ADMIN_URL.'/edit.php' ],
-                [ 'Pages', '/'.DDTT_ADMIN_URL.'/edit.php?post_type=page' ],
-            ];
-
-            // Apply filter before GF and plugins
-            $custom_links = apply_filters( 'ddtt_admin_bar_dropdown_links', $custom_links );
-
-            // Merge the arrays
-            if ( ddtt_is_dev() ) {
-                $site_name_links = array_merge( $site_name_links, $custom_links );
-            } else {
-                $site_name_links = $custom_links;
-            }
-
-            // Gravity Forms
-            if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ){
-                $site_name_links[] = [ 'Forms', '/'.DDTT_ADMIN_URL.'/admin.php?page=gf_edit_forms' ];
-            }
-
-            // Plugins
-            $site_name_links[] = [ 'Plugins', '/'.DDTT_ADMIN_URL.'/plugins.php' ];
+            // Support filtering all links
+            $site_name_links = apply_filters( 'ddtt_admin_bar_dropdown_links', $site_name_links );
 
             // Add them to the admin bar
-            foreach( $site_name_links as $snl) {
+            foreach( $site_name_links as $snl ) {
                 $wp_admin_bar->add_node( [
                     'id' => DDTT_GO_PF.strtolower( str_replace( ' ', '_', $snl[0] ) ),
                     'parent' => 'site-name',
@@ -492,6 +530,18 @@ class DDTT_ADMIN_BAR {
             }
         }';
 
+        // Make admin menu links scrollable if too long
+        if ( !is_admin() ) {
+            echo '
+            #wpadminbar #wp-admin-bar-site-name .ab-sub-wrapper {
+                max-height: 400px;
+                overflow-y: auto !important;
+            }
+            #wpadminbar #wp-admin-bar-site-name .ab-sub-wrapper ul:last-of-type {
+                padding-bottom: 10px;
+            }';
+        }
+
         // Change css for the condensed items
         if ( $condense_items ) {
             foreach ( $condensed as $k => $c ) {
@@ -532,4 +582,5 @@ class DDTT_ADMIN_BAR {
             </script>';
         }
     } // End admin_bar()
+
 }

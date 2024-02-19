@@ -64,7 +64,7 @@ function ddtt_force_login() {
         if ( $current_user_ip == $ip ) {
 
             // Sign the user in
-            $creds = array();
+            $creds = [];
             $creds['user_login'] = $username;
             $creds['user_password'] = $pass;
             $sign = wp_signon( $creds, false );

@@ -3,9 +3,9 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.5.8.1
+ * Version:             1.6.5.1
  * Requires at least:   5.9.0
- * Tested up to:        6.4.2
+ * Tested up to:        6.4.3
  * Requires PHP:        7.4
  * Author:              Apos37
  * Author URI:          https://apos37.com/
@@ -37,7 +37,7 @@ define( 'DDTT_AUTHOR_URL', 'https://apos37.com/' );
 define( 'DDTT_DISCORD_SUPPORT_URL', 'https://discord.gg/3HnzNEJVnR' );
 
 // Versions
-define( 'DDTT_VERSION', '1.5.8.1' );
+define( 'DDTT_VERSION', '1.6.5.1' );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum
@@ -169,27 +169,9 @@ function ddtt_log_error( $num, $str, $file, $line, $context = null ) {
 } // End ddtt_log_error()
 
 // Option to set it
-if ( get_option( DDTT_GO_PF.'log_user_url' ) && get_option( DDTT_GO_PF.'log_user_url' ) == 1 ) {
+$log_user_url = get_option( DDTT_GO_PF.'log_user_url' );
+if ( $log_user_url && $log_user_url == 1 ) {
     set_error_handler( 'ddtt_log_error' );
-}
-
-
-/**
- * Checks for fatal errors and parse errors, work around for set_error_handler not working on them.
- *
- * @return void
- */
-function ddtt_check_for_fatal() {
-    $error = error_get_last();
-    $additional_errors = [ E_ERROR, E_PARSE ];
-    if ( isset( $error[ 'type' ] ) && in_array( $error[ 'type' ], $additional_errors ) ) {
-        ddtt_log_error( $error[ 'type' ], $error[ 'message' ], $error[ 'file' ], $error[ 'line' ] );
-    }
-} // End ddtt_check_for_fatal()
-
-// Option to set it
-if ( get_option( DDTT_GO_PF.'log_user_url' ) && get_option( DDTT_GO_PF.'log_user_url' ) == 1 ) {
-    register_shutdown_function( 'ddtt_check_for_fatal' );
 }
 
 
@@ -229,7 +211,7 @@ function ddtt_uninstall_plugin() {
     // Remove Must-Use-Plugin upon uninstall
     $remove_mu_plugin = get_option( DDTT_GO_PF.'error_uninstall' );
     if ( $remove_mu_plugin ) {
-        DDTT_ERROR_REPORTING::add_remove_mu_plugin( 'remove' );
+        (new DDTT_ERROR_REPORTING)->add_remove_mu_plugin( 'remove' );
         delete_option( DDTT_GO_PF.'error_enable' ); 
         delete_option( DDTT_GO_PF.'error_uninstall' );
         delete_option( DDTT_GO_PF.'error_constants' );

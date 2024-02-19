@@ -35,11 +35,10 @@ $pf = 'wpconfig_';
 /**
  * Initiate the class
  */
-$GLOBALS[ 'DDTT_WPCONFIG' ] = new DDTT_WPCONFIG();
-global $DDTT_WPCONFIG;
+$DDTT_WPCONFIG = new DDTT_WPCONFIG();
 
 // Get the snippets we use
-$snippets = DDTT_WPCONFIG::snippets();
+$snippets = $DDTT_WPCONFIG->snippets();
 
 // Read the WPCONFIG
 $filename = 'wp-config.php';

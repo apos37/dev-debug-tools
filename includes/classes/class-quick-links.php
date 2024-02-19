@@ -48,35 +48,19 @@ class DDTT_QUICK_LINKS {
         $this->gravity_forms_tab = 'gfdebug';
 
         // Add User ID column with a link to debug the user's meta
-        if ( get_option( DDTT_GO_PF.'ql_user_id') == '1' ) {
+        if ( get_option( DDTT_GO_PF.'ql_user_id' ) == '1' ) {
             add_filter( 'manage_users_columns', [ $this, 'user_column' ] );
             add_action( 'admin_head-users.php',  [ $this, 'user_column_style' ] );
             add_action( 'manage_users_custom_column', [ $this, 'user_column_content' ], 999, 3 );
         }
 
         // Add a link to debug the post or page's meta next to the Post ID
-        if ( get_option( DDTT_GO_PF.'ql_post_id') == '1' ) {
-            
-            // Available post types
-            $post_types = get_post_types( 
-                [ 
-                   'public'   => true, 
-                //    '_builtin' => false 
-                ], 
-                'names'
-            );
-
-            // Add to all post types
-            foreach ( $post_types as $post_type ) {
-                
-                add_filter( 'manage_'.$post_type.'_posts_columns', [ $this, 'post_column' ] );
-                add_action( 'manage_'.$post_type.'_posts_custom_column', [ $this, 'post_column_content' ], 10, 2 );
-            }
-            add_action( 'admin_head-edit.php',  [ $this, 'post_column_style' ] );
+        if ( get_option( DDTT_GO_PF.'ql_post_id' ) == '1' ) {
+            add_action( 'init', [ $this, 'admin_columns' ] );
         }
 
         // Add a link to debug the forml, entry or feed's meta
-        if ( get_option( DDTT_GO_PF.'ql_gravity_forms') == '1' && is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
+        if ( get_option( DDTT_GO_PF.'ql_gravity_forms') == '1' ) {
 
             // Add a link to debug the form's meta
             add_action( 'gform_form_actions', [ $this, 'gf_form_quick_link' ], 10, 4 );
@@ -143,6 +127,32 @@ class DDTT_QUICK_LINKS {
 
 
     /**
+     * Add to post columns
+     *
+     * @return void
+     */
+    public function admin_columns() {
+        // Available post types
+        $post_types = get_post_types( 
+            [ 
+               'public'   => true, 
+            //    '_builtin' => false 
+            ], 
+            'names'
+        );
+        $post_types = apply_filters( 'ddtt_quick_link_post_types', $post_types );
+
+        // Add to all post types
+        foreach ( $post_types as $post_type ) {
+            
+            add_filter( 'manage_'.$post_type.'_posts_columns', [ $this, 'post_column' ] );
+            add_action( 'manage_'.$post_type.'_posts_custom_column', [ $this, 'post_column_content' ], 10, 2 );
+        }
+        add_action( 'admin_head-edit.php',  [ $this, 'post_column_style' ] );
+    } // End admin_columns()
+
+
+    /**
      * Add ID column to post/page admin pages
      *
      * @param array $columns
@@ -159,7 +169,7 @@ class DDTT_QUICK_LINKS {
      *
      * @return void
      */
-    public function post_column_style(){
+    public function post_column_style() {
         echo '<style>.column-'.esc_attr( strtolower( DDTT_PF ) ).'post_id{width: 5%}</style>';
     } // user_column_style()
 

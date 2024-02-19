@@ -43,7 +43,7 @@ class DDTT_FEEDBACK {
      *
      * @return void
      */
-    public static function send() {
+    public function send() {
         // First verify the nonce
         if ( !wp_verify_nonce( $_REQUEST[ 'nonce' ], DDTT_GO_PF.'feedback' ) ) {
             exit( 'No naughty business please' );
@@ -140,7 +140,7 @@ class DDTT_FEEDBACK {
 
         // Feedback form and error code checker
         if ( ddtt_get( 'tab', '==', 'about' ) ) {
-            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'feedback.js', [ 'jquery' ], time() );
+            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'feedback.js', [ 'jquery' ] );
             wp_localize_script( $handle, 'feedbackAjax', [ 'ajaxurl' => admin_url( 'admin-ajax.php' ) ] );
             wp_enqueue_script( $handle );
             wp_enqueue_script( 'jquery' );

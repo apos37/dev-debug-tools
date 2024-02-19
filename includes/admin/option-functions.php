@@ -54,12 +54,20 @@ $email = $user->user_email;
             <td><strong><?php echo wp_kses_post( ddtt_highlight_string( htmlentities( 'ddtt_console( \'Test 1\' );' ) ) ); ?></strong></td>
         </tr>
         <tr>
-            <td>Add text, arrays, or objects to debug.log</td>
+            <td>Add text, arrays, or objects to <code class="hl">debug.log</code></td>
             <td><strong><?php echo wp_kses_post( ddtt_get_function_example( "ddtt_write_log" ) ); ?></strong></td>
             <td><strong><?php echo wp_kses_post( ddtt_highlight_string( htmlentities( 'ddtt_write_log( \'Test 1\' );' ) ) ); ?></strong>
             <p class="field-desc break"><span class="highlight-variable">$prefix</span>: if <code>true</code>, adds "DDTT_LOG: " to beginning of line. Yan use your own <code>String</code> as a prefix or <code>false</code> to remove.
             <br><span class="highlight-variable">$backtrace</span>: include file and line number the function is called on.
             <br><span class="highlight-variable">$full_stacktrace</span>: include the full stack trace of where the function is called.</p></td>
+        </tr>
+        <tr>
+            <td>Log a comma-separated string or array of functions that have been called to get to the current point in code. Logs to <code class="hl">debug.log</code>.</td>
+            <td><strong><?php echo wp_kses_post( ddtt_get_function_example( "ddtt_backtrace" ) ); ?></strong></td>
+            <td><strong><?php echo wp_kses_post( ddtt_highlight_string( htmlentities( 'ddtt_backtrace();' ) ) ); ?></strong>
+            <p class="field-desc break"><span class="highlight-variable">$ignore_class</span>: a class to ignore all function calls within – useful when you want to just give info about the callee.
+            <br><span class="highlight-variable">$skip_frames</span>: a number of stack frames to skip – useful for unwinding back to the source of the issue.
+            <br><span class="highlight-variable">$pretty</span>: whether you want a comma separated string instead of the raw array returned.</p></td>
         </tr>
         <tr>
             <td>Debug <code class="hl">$_POST</code> via email</td>

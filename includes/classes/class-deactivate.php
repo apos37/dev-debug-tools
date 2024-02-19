@@ -28,7 +28,7 @@ class DDTT_DEACTIVATE {
      *
      * @var string
      */
-    public static $webhook = 'W43HWlpdBeMa3BuU7mSB5pWHUGpjvUe5AUrBIX0X0r4CKU0OL0o4T2u6cWTswU-ZsdTB';
+    private $webhook = 'W43HWlpdBeMa3BuU7mSB5pWHUGpjvUe5AUrBIX0X0r4CKU0OL0o4T2u6cWTswU-ZsdTB';
 
 
     /**
@@ -37,7 +37,7 @@ class DDTT_DEACTIVATE {
 	public function __construct() {
 
         // Add prefix
-        self::$webhook = base64_decode( 'aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTEyMTE5NzIyNzc0Mjg2MzM2MC8' ).self::$webhook;
+        $this->webhook = base64_decode( 'aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTEyMTE5NzIyNzc0Mjg2MzM2MC8' ).$this->webhook;
 
         // Add javascript to footer of plugin page only
         // Note: this is not added to multisite network plugin page, and doesn't work with bulk deactivations
@@ -163,8 +163,8 @@ class DDTT_DEACTIVATE {
                     [
                         'name'   => 'Versions',
                         'value'  => 'Plugin: '.DDTT_VERSION.'
-                        WP: '.$wp_version.'
-                        PHP: '.phpversion(),
+WP: '.$wp_version.'
+PHP: '.phpversion(),
                         'inline' => false
                     ],
                     [
@@ -176,7 +176,7 @@ class DDTT_DEACTIVATE {
             ];
             
             // First try sending to Discord
-            if ( DDTT_DISCORD::send( self::$webhook, $args ) ) {
+            if ( (new DDTT_DISCORD)->send( $this->webhook, $args ) ) {
                 $result[ 'type' ] = 'success';
 
                 // Method of sending

@@ -11,12 +11,12 @@ $overwrite_notice = true;
 // Listen for $_REQUEST to add Must-Use-Plugin; we will not be adding it by default
 if ( isset( $_REQUEST ) && isset( $_REQUEST[ 'settings-updated' ] ) && $_REQUEST[ 'settings-updated' ] ) {
     if ( $enable_custom_settings ) {
-        if ( DDTT_ERROR_REPORTING::add_remove_mu_plugin( 'add' ) ) {
+        if ( (new DDTT_ERROR_REPORTING)->add_remove_mu_plugin( 'add' ) ) {
             header( 'Refresh:0' );
             $overwrite_notice = false;
         }
     } else {
-        DDTT_ERROR_REPORTING::add_remove_mu_plugin( 'remove' );
+        (new DDTT_ERROR_REPORTING)->add_remove_mu_plugin( 'remove' );
     }
 }
 

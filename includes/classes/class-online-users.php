@@ -25,7 +25,7 @@ class DDTT_ONLINE_USERS {
      *
      * @var integer
      */
-    public static $seconds = 900;
+    public $seconds = 900;
 
 
     /**
@@ -33,7 +33,7 @@ class DDTT_ONLINE_USERS {
      *
      * @var string
      */
-    public static $discord_webhook;
+    public $discord_webhook;
 
 
     /**
@@ -42,7 +42,7 @@ class DDTT_ONLINE_USERS {
 	public function __construct() {
 
         // Update seconds based on setting
-        self::$seconds = get_option( DDTT_GO_PF.'online_users_seconds', 900 );
+        $this->seconds = get_option( DDTT_GO_PF.'online_users_seconds', 900 );
 
         // Update user online status
         add_action( 'init', [ $this, 'users_status_init' ] );
@@ -59,12 +59,12 @@ class DDTT_ONLINE_USERS {
         add_shortcode( 'online_users_count', [ $this, 'shortcode' ] );
 
         // Get discord webhook
-        self::$discord_webhook = get_option( DDTT_GO_PF.'discord_webhook' );
+        $this->discord_webhook = get_option( DDTT_GO_PF.'discord_webhook' );
         $discord_page_loads = get_option( DDTT_GO_PF.'discord_page_loads' );
         $discord_login = get_option( DDTT_GO_PF.'discord_login' );
         
         // Notifify on page load
-        if ( self::$discord_webhook && self::$discord_webhook != '' &&
+        if ( $this->discord_webhook && $this->discord_webhook != '' &&
              $discord_page_loads && $discord_page_loads == 1 ) {
             if ( is_admin() ) {
                 $hook = 'admin_init';
@@ -75,7 +75,7 @@ class DDTT_ONLINE_USERS {
         }
 
         // Discord notifications
-        if ( self::$discord_webhook && self::$discord_webhook != '' &&
+        if ( $this->discord_webhook && $this->discord_webhook != '' &&
              $discord_login && $discord_login == 1 ) {
             add_action( 'wp_login', [ $this, 'login_discord_notification' ], 10, 2 );
         }
@@ -169,7 +169,7 @@ class DDTT_ONLINE_USERS {
         foreach ( $logged_in_users as $user ) {
 
             // If the user has been online in the last # of seconds, add them to the array and increase the online count.
-            if ( !empty( $user[ 'username' ] ) && isset( $user[ 'last' ] ) && $user[ 'last' ] > time() - self::$seconds ) { 
+            if ( !empty( $user[ 'username' ] ) && isset( $user[ 'last' ] ) && $user[ 'last' ] > time() - $this->seconds ) { 
                 $online_users[] = $user;
                 $user_online_count++;
             }
@@ -206,7 +206,7 @@ class DDTT_ONLINE_USERS {
         $user = wp_get_current_user();
 
         // Update the user if they are not on the list, or if they have not been online in the last # of seconds
-        if ( !isset( $logged_in_users[ $user->ID ] ) || !isset( $logged_in_users[ $user->ID ][ 'last' ] ) || $logged_in_users[ $user->ID ][ 'last' ] <= time() - self::$seconds ) {
+        if ( !isset( $logged_in_users[ $user->ID ] ) || !isset( $logged_in_users[ $user->ID ][ 'last' ] ) || $logged_in_users[ $user->ID ][ 'last' ] <= time() - $this->seconds ) {
 
             // Check for discord notifications
             $discord_transient = get_option( DDTT_GO_PF.'discord_transient' );
@@ -238,7 +238,7 @@ class DDTT_ONLINE_USERS {
             }
 
             // Set this transient to expire 15 minutes after it is created
-            set_transient( 'users_status', $logged_in_users, self::$seconds ); 
+            set_transient( 'users_status', $logged_in_users, $this->seconds ); 
         }
     } // End users_status_init()
 
@@ -254,7 +254,7 @@ class DDTT_ONLINE_USERS {
         $logged_in_users = get_transient( 'users_status' ); 
         
         // Return boolean if the user has been online in the last # of seconds
-        return isset( $logged_in_users[ $id ][ 'last' ] ) && $logged_in_users[ $id ][ 'last' ] > time() - self::$seconds; 
+        return isset( $logged_in_users[ $id ][ 'last' ] ) && $logged_in_users[ $id ][ 'last' ] > time() - $this->seconds; 
     } // End is_user_online()
 
 
@@ -323,6 +323,9 @@ class DDTT_ONLINE_USERS {
             }
             $roles = get_editable_roles();
 
+            // Fetch priority roles only once
+            $priority_roles = get_option( DDTT_GO_PF.'online_users_priority_roles' );
+
             // Iter the active users
             foreach ( $active_users as $active_user ) {
 
@@ -330,94 +333,98 @@ class DDTT_ONLINE_USERS {
                 $user_id = $active_user[ 'id' ];
                 $user = get_userdata( $user_id );
 
-                // First and last name
-                if ( $user->first_name && $user->last_name ) {
-                    $display_name = $user->first_name.' '.$user->last_name;
-                } else {
-                    $display_name = $user->display_name;
-                }
+                // Make sure user exists
+                if ( $user ) {
+                
+                    // First and last name
+                    if ( $user->first_name && $user->last_name ) {
+                        $display_name = $user->first_name.' '.$user->last_name;
+                    } else {
+                        $display_name = $user->display_name;
+                    }
 
-                // Are we showing last online?
-                if ( get_option( DDTT_GO_PF.'online_users_show_last' ) && get_option( DDTT_GO_PF.'online_users_show_last' ) == 1 ) {
-                    $last_date = ddtt_convert_timestamp_to_string( $active_user[ 'last' ], true );
-                    $show_last = ' ('.$last_date.')';
-                } else {
-                    $show_last = '';
-                }
+                    // Are we showing last online?
+                    if ( get_option( DDTT_GO_PF.'online_users_show_last' ) && get_option( DDTT_GO_PF.'online_users_show_last' ) == 1 ) {
+                        $last_date = ddtt_convert_timestamp_to_string( $active_user[ 'last' ], true );
+                        $show_last = ' ('.$last_date.')';
+                    } else {
+                        $show_last = '';
+                    }
 
-                // The user roles
-                $user_roles = $user->roles;
+                    // The user roles
+                    $user_roles = $user->roles;
 
-                // Priority roles
-                $priority_roles = get_option( DDTT_GO_PF.'online_users_priority_roles' );
-                if ( $priority_roles && !empty( $priority_roles ) ) {
-                    $priority_roles = array_keys( $priority_roles );
-                    $intersect = array_intersect( $user_roles, $priority_roles );
-                }
-                if ( $priority_roles && !empty( $intersect ) ) {
+                    // Priority roles
+                    $intersect = false;
+                    if ( $user_roles && $priority_roles && !empty( $priority_roles ) ) {
+                        $priority_roles = array_keys( $priority_roles );
+                        $intersect = array_intersect( $user_roles, $priority_roles );
+                    }
+                    if ( $priority_roles && !empty( $intersect ) ) {
 
-                    // Store the role names here
-                    $intersect_names = [];
+                        // Store the role names here
+                        $intersect_names = [];
 
-                    // Iter the roles
-                    foreach ( $roles as $key => $role ) {
+                        // Iter the roles
+                        foreach ( $roles as $key => $role ) {
 
-                        // Iter the user roles that match
-                        foreach ( $intersect as $i ) {
+                            // Iter the user roles that match
+                            foreach ( $intersect as $i ) {
 
-                            // Get the name
-                            if ( $i == $key ) {
-                                if ( $key == 'administrator' || $key == 'super_admin' ) {
-                                    $intersect_names[] = 'Admin';
-                                } else {
-                                    $intersect_names[] = $role[ 'name' ];
+                                // Get the name
+                                if ( $i == $key ) {
+                                    if ( $key == 'administrator' || $key == 'super_admin' ) {
+                                        $intersect_names[] = 'Admin';
+                                    } else {
+                                        $intersect_names[] = $role[ 'name' ];
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    // Sort the slugs
-                    sort( $user_roles );
+                        // Sort the slugs
+                        sort( $user_roles );
 
-                    // Add them
-                    $this_user[ 'name' ] = '<span class="'.implode( ' ', $user_roles ).'">'.$display_name.' <em>- '.implode( ', ', $intersect_names ).'</em>'.$show_last.'</span>'; 
+                        // Add them
+                        $this_user[ 'name' ] = '<span class="'.implode( ' ', $user_roles ).'">'.$display_name.' <em>- '.implode( ', ', $intersect_names ).'</em>'.$show_last.'</span>'; 
 
-                // Otherwise add admin anyway
-                } elseif ( $priority_roles === false && ( in_array( 'administrator', (array) $user_roles ) || in_array( 'super_admin', (array) $user_roles ) ) ) {
-                    $this_user[ 'name' ] = '<span class="admin">'.$display_name.' <em>- Admin</em>'.$show_last.'</span>';
+                    // Otherwise add admin anyway
+                    } elseif ( $priority_roles === false && ( in_array( 'administrator', (array) $user_roles ) || in_array( 'super_admin', (array) $user_roles ) ) ) {
+                        $this_user[ 'name' ] = '<span class="admin">'.$display_name.' <em>- Admin</em>'.$show_last.'</span>';
 
-                // Other users
-                } else {
-
-                    // Check for staff (matching email domains to website domain)
-                    $email_parts = explode( '@', strtolower( $user->user_email ) );
-                    $email_domain = $email_parts[1];
-                    $urlparts = wp_parse_url( home_url() );
-                    $domain = isset( $urlparts[ 'host' ] ) ? $urlparts[ 'host' ] : '';
-                    if ( preg_match( '/(?P<domain>[a-z0-9][a-z0-9\-]{1,63}\.[a-z\.]{2,6})$/i', $domain, $regs ) ) {
-                        $website_domain = $regs[ 'domain' ];
+                    // Other users
                     } else {
-                        $website_domain = $domain;
-                    }
-                    if ( $email_domain == $website_domain ) {
-                        $this_user[ 'name' ] = '<span class="staff">'.$display_name.' <em>- &#x2B50;</em>'.$show_last.'</span>';
-                    } else {
-                        $this_user[ 'name' ] = $display_name.$show_last;
-                    }
-                }
 
-                // Are we linking?
-                if ( $link ) {
-                    if ( strpos( $link, '{user_id}' ) !== false ) {
-                        $this_user[ 'link' ] = str_replace( '{user_id}', $user_id, $link );
+                        // Check for staff (matching email domains to website domain)
+                        $email_parts = explode( '@', strtolower( $user->user_email ) );
+                        $email_domain = $email_parts[1];
+                        $urlparts = wp_parse_url( home_url() );
+                        $domain = isset( $urlparts[ 'host' ] ) ? $urlparts[ 'host' ] : '';
+                        if ( preg_match( '/(?P<domain>[a-z0-9][a-z0-9\-]{1,63}\.[a-z\.]{2,6})$/i', $domain, $regs ) ) {
+                            $website_domain = $regs[ 'domain' ];
+                        } else {
+                            $website_domain = $domain;
+                        }
+                        if ( $email_domain == $website_domain ) {
+                            $this_user[ 'name' ] = '<span class="staff">'.$display_name.' <em>- &#x2B50;</em>'.$show_last.'</span>';
+                        } else {
+                            $this_user[ 'name' ] = $display_name.$show_last;
+                        }
                     }
-                    if ( strpos( $link, '{user_email}' ) !== false ) {
-                        $this_user[ 'link' ] = str_replace( '{user_email}', $user->user_email, $link );
-                    }
-                }
 
-                // Add the user
-                $users[] = $this_user;
+                    // Are we linking?
+                    if ( $link ) {
+                        if ( strpos( $link, '{user_id}' ) !== false ) {
+                            $this_user[ 'link' ] = str_replace( '{user_id}', $user_id, $link );
+                        }
+                        if ( strpos( $link, '{user_email}' ) !== false ) {
+                            $this_user[ 'link' ] = str_replace( '{user_email}', $user->user_email, $link );
+                        }
+                    }
+
+                    // Add the user
+                    $users[] = $this_user;
+                }
             }
         }
 
@@ -589,7 +596,8 @@ class DDTT_ONLINE_USERS {
         }
 
         // The current url
-        if ( $id = get_the_ID() ) {
+        if ( is_singular() ) {
+            $id = get_the_ID();
             $url = get_the_permalink( $id );
             $post_type_object = get_post_type_object( get_post_type( $id ) );
             if ( $post_type_object ) {
@@ -638,7 +646,7 @@ class DDTT_ONLINE_USERS {
      */
     public function validate_and_send_discord_notification( $user, $title, $url = null, $id = null, $post_type = null ) {
         // Check for a webhook url
-        if ( !self::$discord_webhook || self::$discord_webhook == '' ) {
+        if ( !$this->discord_webhook || $this->discord_webhook == '' ) {
             return false;
         }
 
@@ -707,6 +715,7 @@ class DDTT_ONLINE_USERS {
             if ( !is_null( $id ) && $id > 0 ) {
 
                 // Get the title
+                
                 $title = sanitize_text_field( get_the_title( $id ) );
 
             // No id found from url
@@ -724,7 +733,8 @@ class DDTT_ONLINE_USERS {
 
                 // Check if we're editing with cornerstone
                 } elseif ( strpos( $url, '/cornerstone/edit/' ) !== false ) {
-                    $id  = end( explode( '/', trim( $url,'/' ) ) );
+                    $ex = explode( '/', trim( $url,'/' ) );
+                    $id = end( $ex );
                     $title = 'EDITING via CORNERSTONE: '.sanitize_text_field( get_the_title( absint( $id ) ) );
                 }
             }
@@ -732,18 +742,18 @@ class DDTT_ONLINE_USERS {
             // Format the title if we found one
             if ( $title != '' ) {
                 $title = '
-                Title: '.$title;
+Title: '.$title;
 
                 // Add post type if available
                 if ( !is_null( $id ) && $id > 0 ) {
                     $title .= '
-                    ID: '.$id;
+ID: '.$id;
                 }
 
                 // Add post type if available
                 if ( !is_null( $post_type ) && $post_type != '' ) {
                     $title .= '
-                    Post Type: '.$post_type;
+Post Type: '.$post_type;
                 }
             }
 
@@ -762,7 +772,7 @@ class DDTT_ONLINE_USERS {
         }
         
         // First try sending to Discord
-        if ( DDTT_DISCORD::send( self::$discord_webhook, $args ) ) {
+        if ( (new DDTT_DISCORD)->send( $this->discord_webhook, $args ) ) {
             return true;
         } else {
             return false;

@@ -87,6 +87,53 @@
     } else {
         $display_curl_row = 'none';
     }
+
+    // Update admin menu links
+    if ( ddtt_get( 'settings-updated' ) && get_option( DDTT_GO_PF.'admin_bar_add_links' ) ) {
+        global $menu, $submenu;
+
+        // Store the links here
+        $admin_menu_links = [];
+
+        // Iter
+        foreach ( $menu as $item ) {
+            
+            // Skip separators
+            if ( !$item[0] || $item[0] == '' ) {
+                continue;
+            }
+
+            // Get name of menu item
+            $admin_menu_label = $item[0];
+
+            // Skip dashboard
+            if ( $admin_menu_label == 'Dashboard' ) {
+                continue;
+            }
+
+            // Get dashboard item file
+            $admin_menu_file = $item[2];
+
+            // Get URL for item
+            $admin_menu_url = ddtt_get_admin_menu_item_url( $admin_menu_file, $menu, $submenu );
+
+            // Store it
+            $admin_menu_links[] = [
+                'label' => ddtt_strip_tags_content( $admin_menu_label ),
+                'url'   => $admin_menu_url,
+                'perm'  => $item[1]
+            ];
+        }
+
+        // Update option
+        update_option( DDTT_GO_PF.'admin_menu_links', $admin_menu_links );
+
+    // If saving without adding links
+    } elseif ( ddtt_get( 'settings-updated' ) && !get_option( DDTT_GO_PF.'admin_bar_add_links' ) ) {
+
+        // Delete option
+        delete_option( DDTT_GO_PF.'admin_menu_links' );
+    }
     ?>
 
     <style>
@@ -138,7 +185,7 @@
 
                 <?php echo wp_kses( ddtt_options_tr( 'ql_user_id', 'Add User IDs with Quick Debug Links to User Admin List Page', 'checkbox' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'ql_post_id', 'Add Post/Page IDs with Quick Debug Links to Admin List Pages', 'checkbox' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'ql_post_id', 'Add Post/Page IDs with Quick Debug Links to Admin List Pages', 'checkbox', 'Use the <code>ddtt_quick_link_post_types</code> filter from <a href="'.ddtt_plugin_options_path( 'hooks' ).'#ddtt_quick_link_post_types">Hooks</a> tab to customize which post types are included.' ), $allowed_html ); ?>
 
                 <?php if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) { 
                     echo wp_kses( ddtt_options_tr( 'ql_gravity_forms', 'Add Quick Debug Links to Gravity Forms & Entries', 'checkbox' ), $allowed_html ); 
@@ -172,7 +219,11 @@
                 $active_theme_path = '/'.$themes_root_uri.$active_theme.'/';
                 ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'log_files', 'Log Files to Check', 'text+', 'We automatically check your debug.log, error_log, and admin error_log. If you have additional logs you would like to view on the Logs tab, enter the root paths to the files here (not including the domain).', [ 'placeholder' => $active_theme_path.'your_log_file.log', 'log_files' => 'yes' ] ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'log_files', 'Log Files to Check<br>.TXT Files Only', 'text+', 'We automatically check your debug.log, error_log, and admin error_log. If you have additional <strong>.TXT</strong> logs you would like to view on the Logs tab, enter the root paths to the files here (not including the domain).', [ 'placeholder' => $active_theme_path.'your_log_file.txt', 'log_files' => 'yes', 'pattern' => '.*\.txt$' ] ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'fatal_discord_webhook', 'Discord Webhook URL<br>** BETA **', 'text', '<br>Send notifications to a <a href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks" target="_blank">Discord Webhook</a> when a fatal error occurs.<br>Webhook URL should look like this: https://discord.com/api/webhooks/xxx/xxx...', [ 'pattern' => "(https:\/\/discord\.com\/api\/webhooks\/([A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)" ] ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'fatal_discord_enable', 'Send Fatal Errors to Discord Channel (Must have WP_DEBUG enabled)', 'checkbox' ), $allowed_html ); ?>
 
             </table>
 
@@ -245,22 +296,24 @@
             <?php submit_button(); ?>
 
             <br><hr><br></br>
-            <h2>Remove Items from Admin Bar</h2>
+            <h2>Admin Bar</h2>
             <table class="form-table">
 
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_wp_logo', 'WordPress Logo', 'checkbox' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_wp_logo', 'Remove WordPress Logo', 'checkbox' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_resources', 'Resources', 'checkbox' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_resources', 'Remove Resources', 'checkbox' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_centering_tool', 'Centering Tool', 'checkbox' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_centering_tool', 'Remove Centering Tool', 'checkbox' ), $allowed_html ); ?>
 
                 <?php if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
-                    echo wp_kses( ddtt_options_tr( 'admin_bar_gf', 'Gravity Form Finder', 'checkbox' ), $allowed_html );
+                    echo wp_kses( ddtt_options_tr( 'admin_bar_gf', 'Remove Gravity Form Finder', 'checkbox' ), $allowed_html );
                 } ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_shortcodes', 'Shortcode Finder', 'checkbox' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_shortcodes', 'Remove Shortcode Finder', 'checkbox' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_post_info', 'Post Information', 'checkbox' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_post_info', 'Remove Post Information', 'checkbox' ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_add_links', 'Add All Admin Menu Links to Front End', 'checkbox' ), $allowed_html ); ?>
                 
             </table>
 

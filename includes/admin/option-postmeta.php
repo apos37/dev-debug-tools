@@ -344,6 +344,15 @@ if ( $searched && ( !$post_id || $post_id == 0 || !get_post_status( $post_id ) )
         }
     }
 }
+
+// Are we hiding meta keys with a prefix
+$hide_pf = ddtt_get( 'hide_pf' );
+if ( $hide_pf ) {
+    update_option( DDTT_GO_PF.'post_meta_hide_pf', $hide_pf );
+    ddtt_remove_qs_without_refresh( 'hide_pf' );
+} else {
+    $hide_pf = get_option( DDTT_GO_PF.'post_meta_hide_pf' );
+}
 ?>
 
 <form method="get" action="<?php echo esc_url( $current_url ); ?>">
@@ -393,6 +402,10 @@ if ( $searched && ( !$post_id || $post_id == 0 || !get_post_status( $post_id ) )
         <tr valign="top">
             <th scope="row"><label for="post-search-input">Post ID</label></th>
             <td><input type="text" name="post_id" id="post-search-input" value="<?php echo absint( $post_id ); ?>" style="width: 10rem;" required></td>
+        </tr>
+        <tr valign="top">
+            <th scope="row"><label for="hide-meta-keys">Hide Meta Keys with Prefixes</label></th>
+            <td><input type="text" name="hide_pf" id="hide-meta-keys" value="<?php echo esc_attr( $hide_pf ); ?>"></td>
         </tr>
     </table>
     <?php echo wp_kses( $hidden_path, $hidden_allowed_html ); ?>
@@ -602,6 +615,26 @@ if ( $valid_search ) {
                     $value = $value.'<br><code><pre>'.print_r( unserialize( $value ), true ).'</pre></code>';
                 } else {
                     $value = esc_html( $value );
+                }
+
+                // Hide prefix
+                $hide_this = false;
+                if ( $hide_pf ) {
+                    if ( strpos( $hide_pf, ',' ) !== false ) {
+                        $pfs = explode( ',', $hide_pf );
+                        foreach ( $pfs as $pf ) {
+                            $pf = trim( $pf );
+                            if ( str_starts_with( $key, $pf ) ) {
+                                $hide_this = true;
+                                break;
+                            }
+                        }
+                    } elseif ( str_starts_with( $key, $hide_pf ) ) {
+                        $hide_this = true;
+                    }
+                }
+                if ( $hide_this ) {
+                    continue;
                 }
                 ?>
                 <tr>

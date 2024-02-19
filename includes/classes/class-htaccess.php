@@ -15,19 +15,11 @@ if ( !defined( 'ABSPATH' ) ) {
 class DDTT_HTACCESS {
 
     /**
-	 * Constructor
-	 */
-	public function __construct() {
-        
-	} // End __construct()
-
-
-    /**
      * Our snippets
      *
      * @return array
      */
-    public static function snippets() {
+    public function snippets() {
         // Domain & IP
         $domain = ddtt_get_domain();
         $ip_server = sanitize_text_field( $_SERVER['SERVER_ADDR'] );
@@ -191,6 +183,12 @@ class DDTT_HTACCESS {
                     '<ifmodule mod_rewrite.c="">',
                     'RewriteRule ^sucuri-(.*).php$ - [L]',
                     '</ifmodule>',
+                ]
+            ],
+            'max_input_vars' => [
+                'label' => 'Increase Max Vars Limit',
+                'lines' => [
+                    'php_value max_input_vars 3000',
                 ]
             ],
         ] );

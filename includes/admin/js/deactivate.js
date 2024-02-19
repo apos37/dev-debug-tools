@@ -34,7 +34,7 @@ jQuery( $ => {
         } );
 
         // Add comment section
-        var comments = $( '<br><label for="ddtt-deactivate-comments">Additional comments for improving the plugin:</label><br><br><textarea id="ddtt-deactivate-comments" name="comments"></textarea><br><br>' );
+        var comments = $( '<br><label for="ddtt-deactivate-comments">If there is an issue with the plugin, please explain so I can fix it:</label><br><br><textarea id="ddtt-deactivate-comments" name="comments"></textarea><br><br>' );
         modal.find( '#ddtt-dialog-cont' ).append( comments );
 
         // Add please section

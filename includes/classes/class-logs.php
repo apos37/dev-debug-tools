@@ -15,14 +15,6 @@ if ( !defined( 'ABSPATH' ) ) {
 class DDTT_LOGS {
 
     /**
-	 * Constructor
-	 */
-	// public function __construct() {
-
-	// } // End __construct()
-
-
-    /**
      * Set the highlight args to be used by stylesheet, settings and error_logs
      *
      * @return array

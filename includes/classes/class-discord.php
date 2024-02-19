@@ -1,19 +1,13 @@
 <?php
 /**
  * Discord class
- * USAGE: DDTT_DISCORD::send( $args );
+ * USAGE: (new DDTT_DISCORD)->send( $args );
  */
 
 // Exit if accessed directly.
 if ( !defined( 'ABSPATH' ) ) {
 	exit;
 }
-
-
-/**
- * Initiate the class
- */
-new DDTT_DISCORD;
 
 
 /**
@@ -48,7 +42,7 @@ class DDTT_DISCORD {
      * @param string $webhook
      * @return boolean
      */
-    public static function send( $webhook, $args ) {
+    public function send( $webhook, $args ) {
         // Webhook prefix
         $webhook_prefix = 'https://discord.com/api/webhooks/';
 
@@ -61,6 +55,7 @@ class DDTT_DISCORD {
         } else {
             $webhook_url = $webhook;
         }
+        // ddtt_write_log( 'Fatal error reported to Discord...' );
 
         // Timestamp
         $timestamp = date( 'c', strtotime( 'now' ) );

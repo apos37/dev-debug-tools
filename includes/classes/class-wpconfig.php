@@ -15,20 +15,11 @@ if ( !defined( 'ABSPATH' ) ) {
 class DDTT_WPCONFIG {
 
     /**
-	 * Constructor
-	 */
-	public function __construct() {
-        
-        
-	} // End __construct()
-
-
-    /**
      * Our snippets
      *
      * @return array
      */
-    public static function snippets() {
+    public function snippets() {
         // Add the snippets
         $snippets = apply_filters( 'ddtt_wpconfig_snippets', [
             'debug_mode' => [
@@ -218,6 +209,16 @@ class DDTT_WPCONFIG {
                         'variable' => 'DISABLE_WP_CRON',
                         'value' => TRUE
                     ]
+                ]
+            ],
+            'max_input_vars' => [
+                'label' => 'Increase Max Input Vars Limit',
+                'lines' => [
+                    [
+                        'prefix' => '@ini_set',
+                        'variable' => 'max_input_vars',
+                        'value' => '2000'
+                    ],
                 ]
             ],
         ] );

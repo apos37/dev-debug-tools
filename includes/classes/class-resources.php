@@ -108,6 +108,11 @@ class DDTT_RESOURCES {
                 'url'   => 'https://jsfiddle.net/',
                 'desc'  => 'Test your JavaScript, CSS, HTML or CoffeeScript online with JSFiddle code editor.'
             ],
+            [
+                'title' => 'How to MANUALLY Migrate Your WordPress Site (Video)',
+                'url'   => 'https://www.youtube.com/watch?v=wROa37k_RQA',
+                'desc'  => 'A great tutorial to follow if you need to migrate a site, especially if your site is too big to use a plugin.'
+            ],
             // [
             //     'title' => '',
             //     'url'   => '',

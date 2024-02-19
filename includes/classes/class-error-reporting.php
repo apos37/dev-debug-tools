@@ -27,6 +27,12 @@ class DDTT_ERROR_REPORTING {
 	 * Constructor
 	 */
 	public function init() {
+
+        // Are we sending fatal errors to Discord?
+        if ( get_option( DDTT_GO_PF.'fatal_discord_enable' ) && get_option( DDTT_GO_PF.'fatal_discord_enable' ) == 1 && 
+             get_option( DDTT_GO_PF.'fatal_discord_webhook' ) && get_option( DDTT_GO_PF.'fatal_discord_webhook' ) != '' ) {
+            return register_shutdown_function( [ $this, 'send_fatal_errors_to_discord' ] );
+        }
         
         // Ajax
         add_action( 'wp_ajax_'.DDTT_GO_PF.'check_error_code', [ $this, 'check_error_code' ] );
@@ -37,6 +43,82 @@ class DDTT_ERROR_REPORTING {
 
 	} // End init()
 
+    
+    /**
+     * Send fatal errors to Discord
+     *
+     * @return void
+     */
+    public function send_fatal_errors_to_discord() {
+        // Get the last error
+        $error = error_get_last();
+
+        // Errors we are reporting
+        $errors = [ E_ERROR, E_PARSE ];
+
+        // Check if the last error was one of them
+        if ( isset( $error[ 'type' ] ) && in_array( $error[ 'type' ], $errors ) ) {
+
+            // Now get the webhook url
+            $webhook = filter_var( get_option( DDTT_GO_PF.'fatal_discord_webhook' ), FILTER_SANITIZE_URL );
+            if ( $webhook != '' ) {
+
+                // The domain and website
+                $domain = ddtt_get_domain();
+                $website = get_bloginfo( 'name' );
+                if ( !$website || $website == '' ) {
+                    $website = $domain;
+                }
+
+                // The message
+                $message = sanitize_textarea_field( $error[ 'message' ] );
+                $message = str_replace( ABSPATH, '/', $message );
+                if ( strpos( $message, 'Stack trace:' ) !== false ) {
+                    $message = substr( $message, 0, strpos( $message, 'Stack trace:' ) );
+                }
+                $message = mb_strimwidth( $message, 0, 500, '...' );
+
+                // The file
+                $file = sanitize_text_field( $error[ 'file' ] );
+                $file = str_replace( ABSPATH, '/', $file );
+
+                // Discord args
+                $args = [
+                    'embed'          => true,
+                    'title'          => 'New Error on '.$website,
+                    'title_url'      => $domain,
+                    'desc'           => $message,
+                    'disable_footer' => false,
+                    'fields' => [
+                        [
+                            'name'   => '--------------------',
+                            'value'  => ' ',
+                            'inline' => false
+                        ],
+                        [
+                            'name'   => 'File Path',
+                            'value'  => $file,
+                            'inline' => false
+                        ],
+                        [
+                            'name'   => 'Line',
+                            'value'  => absint( $error[ 'line' ] ),
+                            'inline' => false
+                        ],
+                        [
+                            'name'   => 'Type',
+                            'value'  => absint( $error[ 'type' ] ) === 4 ? 'PARSE ERROR' : 'FATAL ERROR',
+                            'inline' => false
+                        ]
+                     ]
+                ];
+
+                // Send the message
+                (new DDTT_DISCORD)->send( $webhook, $args );
+            }
+        }
+    } // End send_fatal_errors_to_discord()
+
 
     /**
      * Add or remove the Must Use Plugin
@@ -45,7 +127,7 @@ class DDTT_ERROR_REPORTING {
      * @param string $file_to_replace
      * @return boolean
      */
-    public static function add_remove_mu_plugin( $add_or_remove = 'add' ) {
+    public function add_remove_mu_plugin( $add_or_remove = 'add' ) {
         // Must-Use-Plugin filename
         $filename = '000-set-debug-level.php';
 
@@ -104,7 +186,7 @@ class DDTT_ERROR_REPORTING {
      *
      * @return void
      */
-    public static function check_error_code() {
+    public function check_error_code() {
         // First verify the nonce
         if ( !wp_verify_nonce( $_REQUEST[ 'nonce' ], DDTT_GO_PF.'check_error_code' ) ) {
             exit( 'No naughty business please' );
