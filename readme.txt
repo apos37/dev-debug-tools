@@ -1,11 +1,11 @@
 === Developer Debug Tools ===
 Contributors: apos37
 Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
-Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
+Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.4.3
 Requires PHP: 7.4
-Stable tag: 1.6.6
+Stable tag: 1.6.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -96,6 +96,10 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.6.7 =
+* Fix: All plugins showing as inactive on sites not on a network
+* Tweak: Reduced tags to max 5
+
 = 1.6.6 =
 * Update: Prepared for live preview
 * Update: Added other plugins to About tab

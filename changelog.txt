@@ -1,4 +1,8 @@
 == changelog.txt ==
+= 1.6.7 =
+* Fix: All plugins showing as inactive on sites not on a network
+* Tweak: Reduced tags to max 5
+
 = 1.6.6 =
 * Update: Prepared for live preview
 * Update: Added other plugins to About tab

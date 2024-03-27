@@ -134,7 +134,7 @@ $current_url = ddtt_plugin_options_path( $tab );
             // Add to sorted array
             $sorted_plugins[ $name ] = [
                 'path' => $key,
-                'p'    => !is_array( $p ) ? [] : $p
+                'p'    => !$p ? [] : ( !is_array( $p ) ? [ $p ] : $p )
             ];
         }
     }
@@ -243,7 +243,7 @@ $current_url = ddtt_plugin_options_path( $tab );
 
             // Get the folder size
             if ( !function_exists( 'get_dirsize' ) ) {
-                require_once ABSPATH . WPINC . '/ms-functions.php';
+                require_once ABSPATH.WPINC.'/ms-functions.php';
             }
 
             // Strip the path to get the folder
@@ -275,6 +275,7 @@ $current_url = ddtt_plugin_options_path( $tab );
 
                 // If plugin is active or on multisite
                 if ( !empty( $p ) ) {
+                    
 
                     // If on multisite
                     if ( is_multisite() ) {
