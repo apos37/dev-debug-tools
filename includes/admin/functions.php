@@ -1487,7 +1487,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
 
                             // Explode the line to remove the array items
                             $split = explode( ' => ', $a );
-                            $a = $split[1];
+                            $a = isset( $split[1] ) ? $split[1] : '';
 
                             // Shorten the paths
                             $a = str_replace( ABSPATH, '/', $a );
@@ -2579,6 +2579,31 @@ function ddtt_strip_tags_content( $text, $tags = '', $invert = false ) {
 
     return $text;
 } // End ddtt_strip_tags_content()
+
+
+/**
+ * Delete auto-drafts
+ *
+ * @param boolean $delete_all
+ * @return void
+ */
+function ddtt_delete_autodrafts( $delete_all = false ) {
+    // Just older than 7 days
+    if ( !$delete_all ) {
+        wp_delete_auto_drafts();
+        
+    // Delete all
+    } else {
+        global $wpdb;
+        $old_posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'auto-draft'" );
+        foreach ( (array) $old_posts as $delete ) {
+            wp_delete_post( $delete, true );
+        }
+    }
+
+    // Fail
+    return false;
+} // End ddtt_delete_autodrafts()
 
 
 /**

@@ -1,4 +1,13 @@
 == changelog.txt ==
+= 1.6.6 =
+* Update: Prepared for live preview
+* Update: Added other plugins to About tab
+* Fix: Deprecation warning for ctype_digit(): Argument of type int will be interpreted as string in the future
+* Fix: Sorting of plugins on Plugins tab was case sensitive, putting lowercase names like bbPress on bottom
+* Fix: Plugins tab not showing all sites on network
+* Update: Temporarily disable deactivation feedback form
+* Update: Added new tab for viewing and clearing Auto-Drafts
+
 = 1.6.5.1 =
 * Fix: Front-end admin menu links visible to people without permissions
 * Fix: Front-end admin menu links not able to click if list is too long, made scrollable

@@ -100,7 +100,7 @@ class DDTT_DEBUG_TOOLS {
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-wpconfig.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-htaccess.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-quick-links.php';
-        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-deactivate.php';
+        // require_once DDTT_PLUGIN_CLASSES_PATH . 'class-deactivate.php'; // Temporarily disable
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-feedback.php';
 
         // Admin menu, also loads options.php

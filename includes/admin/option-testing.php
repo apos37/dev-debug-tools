@@ -84,8 +84,8 @@ if ( $file ) {
         $found_test_material = true;
     }
 
-    // If we did not find test material
-    if ( !$found_test_material ) {
+    // If we did not find test material, or if we're using the wordpress playground for live preview
+    if ( ddtt_get_domain() == 'playground.wordpress.net' || !$found_test_material ) {
 
         // Theme path
         $themes_root_uri = str_replace( site_url( '/' ), '', get_theme_root_uri() ).'/';

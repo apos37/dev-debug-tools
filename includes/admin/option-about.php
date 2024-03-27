@@ -82,24 +82,30 @@ if ( $coffee_filter ) {
 }
 ?>
 
-<br><br><br>
-<h3>How Can We Improve?</h3>
-<div id="feedback-form">
-    <div class="form-group">
-        <label for="message" style="display: block;">If there was one thing you would change about this plugin, what would it be?</label> 
-        <br><textarea id="feedback-message" name="message" class="form-control input-message" rows="6" style="width: 40rem; height: 10rem;" placeholder="Your feedback..."></textarea><br>
+<?php if ( ddtt_get_domain() != 'playground.wordpress.net' ) { ?>
+    <br><br><br>
+    <h3>How Can We Improve?</h3>
+    <div id="feedback-form">
+        <div class="form-group">
+            <label for="message" style="display: block;">If there was one thing you would change about this plugin, what would it be?</label> 
+            <br><textarea id="feedback-message" name="message" class="form-control input-message" rows="6" style="width: 40rem; height: 10rem;" placeholder="Your feedback..."></textarea><br>
+        </div>
+        <?php 
+        $nonce = wp_create_nonce( DDTT_GO_PF.'feedback' );
+        $user = get_userdata( get_current_user_id() ); 
+        $display_name = $user->display_name; 
+        $email = $user->user_email; 
+        ?>
+        <button class="button button-secondary submit" data-nonce="<?php echo esc_attr( $nonce ); ?>" data-name="<?php echo esc_attr( $display_name ); ?>" data-email="<?php echo esc_attr( $email ); ?>" disabled>Send Feedback</button>
+        <div id="feedback-sending">Sending</div>
+        <div id="feedback-result"></div>
     </div>
-    <?php 
-    $nonce = wp_create_nonce( DDTT_GO_PF.'feedback' );
-    $user = get_userdata( get_current_user_id() ); 
-    $display_name = $user->display_name; 
-    $email = $user->user_email; 
-    ?>
-    <button class="button button-secondary submit" data-nonce="<?php echo esc_attr( $nonce ); ?>" data-name="<?php echo esc_attr( $display_name ); ?>" data-email="<?php echo esc_attr( $email ); ?>" disabled>Send Feedback</button>
-    <div id="feedback-sending">Sending</div>
-    <div id="feedback-result"></div>
-</div>
+<?php } ?>
 
-<br><br>
-<h3>Try My Other Plugin</h3>
-<?php echo wp_kses_post( ddtt_plugin_card( 'admin-help-docs' ) ); ?>
+<?php if ( ddtt_get_domain() != 'playground.wordpress.net' ) { ?>
+    <br><br>
+    <h3>Try My Other Plugins</h3>
+    <?php echo wp_kses_post( ddtt_plugin_card( 'admin-help-docs' ) ); ?>
+    <?php echo wp_kses_post( ddtt_plugin_card( 'gf-discord' ) ); ?>
+    <?php echo wp_kses_post( ddtt_plugin_card( 'gf-msteams' ) ); ?>
+<?php } ?>

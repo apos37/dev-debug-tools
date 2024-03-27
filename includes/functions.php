@@ -1394,7 +1394,7 @@ function ddtt_stop_timer( $start, $timeout = true, $milliseconds = false ) {
  */
 function ddtt_convert_timestamp_to_string( $ts, $short = false ) {
     // Make sure the format is correct
-    if( !ctype_digit( $ts ) ) {
+    if( !is_numeric( $ts ) ) {
         $ts = strtotime( $ts );
     }
     

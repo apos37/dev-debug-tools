@@ -5,8 +5,8 @@ Tags: debug, developer, testing, wp-config, htaccess, user meta, post meta
 Requires at least: 5.9.0
 Tested up to: 6.4.3
 Requires PHP: 7.4
-Stable tag: 1.6.5.1
-License: GPL v2 or later
+Stable tag: 1.6.6
+License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 Lots of debugging and testing tools for developers.
@@ -81,7 +81,7 @@ Viewable only on the front-end, there is a link on the admin bar that shows +Off
 You have to enable them on the Developer Debug Tools settings first. Once they are enabled, an "ID" column will be added to the user and/or post admin list pages. Next to the user or post's ID you will see a lightning bolt icon. Clicking on the lightning bolt will redirect you to the User Meta or Post Meta tab on our plugin where you can view and edit all of the meta easily.
 
 = Where can I get further support? =
-Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
+Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 
 == Screenshots ==
 1. Settings page
@@ -96,6 +96,15 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.6.6 =
+* Update: Prepared for live preview
+* Update: Added other plugins to About tab
+* Fix: Deprecation warning for ctype_digit(): Argument of type int will be interpreted as string in the future
+* Fix: Sorting of plugins on Plugins tab was case sensitive, putting lowercase names like bbPress on bottom
+* Fix: Plugins tab not showing all sites on network
+* Update: Temporarily disable deactivation feedback form
+* Update: Added new tab for viewing and clearing Auto-Drafts
+
 = 1.6.5.1 =
 * Fix: Front-end admin menu links visible to people without permissions
 * Fix: Front-end admin menu links not able to click if list is too long, made scrollable

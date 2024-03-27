@@ -37,13 +37,13 @@ $current_url = ddtt_plugin_options_path( $tab );
 
         // Add them to the active array
         foreach ( $network_active as $na_key => $na ) {
-            $plugins[ $na_key ] = 'network';
+            $plugins[ $na_key ][] = 'network';
         }
 
         // Get all the sites
         global $wpdb;
         $subsites = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE archived = '0' AND deleted = '0' AND spam = '0' ORDER BY blog_id" );
-        
+
         // Iter the sites
         if ( $subsites && !empty( $subsites ) ) {
             foreach( $subsites as $subsite ) {
@@ -52,14 +52,10 @@ $current_url = ddtt_plugin_options_path( $tab );
                 $site_active = get_blog_option( $subsite->blog_id, 'active_plugins' );
 
                 // Iter each plugin
-                foreach ( $site_active as $site ) {
+                foreach ( $site_active as $p_path ) {
                     
-                    // Only continue if the plugin hasn't already been added by the network
-                    if ( !isset( $plugins[ $site ] ) ) {
-                        
-                        // Add the site
-                        $plugins[ $site ][] = $subsite->blog_id;
-                    }
+                    // Add the site
+                    $plugins[ $p_path ][] = $subsite->blog_id;
                 }
             }
         }
@@ -138,14 +134,14 @@ $current_url = ddtt_plugin_options_path( $tab );
             // Add to sorted array
             $sorted_plugins[ $name ] = [
                 'path' => $key,
-                'p'    => $p
+                'p'    => !is_array( $p ) ? [] : $p
             ];
         }
     }
 
     // Sort them
     if ( $table ) {
-        ksort( $sorted_plugins );
+        uksort( $sorted_plugins, 'strcasecmp' );
     }
 
     // Get the full info for the plugins
@@ -251,7 +247,7 @@ $current_url = ddtt_plugin_options_path( $tab );
             }
 
             // Strip the path to get the folder
-            $p_parts = explode('/', $key);
+            $p_parts = explode( '/', $key );
             $folder = $p_parts[0];
              
             // Get the path of a directory.
@@ -278,13 +274,13 @@ $current_url = ddtt_plugin_options_path( $tab );
             if ( $table ) {
 
                 // If plugin is active or on multisite
-                if ( $p !== false ) {
+                if ( !empty( $p ) ) {
 
                     // If on multisite
                     if ( is_multisite() ) {
 
                         // If network activated
-                        if ( $p == 'network' ) {
+                        if ( in_array( 'network', $p ) ) {
                             $is_active = 'Network';
                             $active_class = 'active';
 
@@ -311,15 +307,20 @@ $current_url = ddtt_plugin_options_path( $tab );
 
                 // If on multisite network
                 if ( is_network_admin() ) {
-                    $site_names = [];
-                    if ( $p == 'network' ) {
-                        $site_names[] = 'Network Active';
-                    } elseif ( is_array( $p ) ) {
-                        foreach ( $p as $site_id ) {
-                            $site_names[] = get_blog_details( $site_id )->blogname;
+                    if ( !empty( $p ) ) {
+                        $site_names = [];
+                        if ( in_array( 'network', $p ) ) {
+                            $site_names[] = 'Network Active';
+                        } else {
+                            foreach ( $p as $site_id ) {
+                                $site_names[] = 'ID:'.$site_id.' - '.get_blog_details( $site_id )->blogname;
+                            }
                         }
+                        $site_names = implode( '<br>', $site_names );
+                    } else {
+                        $site_names = 'None';
                     }
-                    $site_row = '<td>'.implode( ', ', $site_names ).'</td>';
+                    $site_row = '<td>'.$site_names.'</td>';
                 } else {
                     $site_row = '';
                 }
@@ -354,7 +355,7 @@ $current_url = ddtt_plugin_options_path( $tab );
         ksort( $activated_plugins );
 
         // Or else implode each line as a string
-        $results = '<div id="active-plugin-list">'.implode('<br>', $activated_plugins).'</div>';
+        $results = '<div id="active-plugin-list">'.implode( '<br>', $activated_plugins ).'</div>';
     }
 
     // Return how we want to

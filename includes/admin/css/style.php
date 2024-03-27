@@ -515,6 +515,9 @@ if ( $current_screen->id == $options_page ) {
     .col-plugin {
         width: 40rem !important;
     }
+    .col-site {
+        width: 15rem !important;
+    }
     .col-path {
         width: auto !important;
     }
@@ -532,9 +535,6 @@ if ( $current_screen->id == $options_page ) {
         border-radius: 2px;
         font-weight: 500;
     }
-    /* .active {
-        filter: brightness(150%);
-    } */
     .inactive {
         filter: brightness(50%);
     }

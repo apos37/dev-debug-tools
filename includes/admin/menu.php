@@ -246,6 +246,7 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'globalvars'        => [ __( 'Globals', 'dev-debug-tools' ), 'A list of available global variables that can be called with <code class="hl">global $variable;</code>', true ],
         'usermeta'          => [ __( 'User Meta', 'dev-debug-tools' ), 'A quick view of all the user meta so you don\'t have to log into phpMyAdmin.', true ],
         'postmeta'          => [ __( 'Post Meta', 'dev-debug-tools' ), 'A quick view of all the post meta so you don\'t have to log into phpMyAdmin.', true ],
+        'autodrafts'        => [ __( 'Auto-Drafts', 'dev-debug-tools' ), 'View current auto-drafts.', true ],
         'scfinder'          => [ __( 'Shortcode Finder', 'dev-debug-tools' ), 'Search through posts and pages for a shortcode.' ],
         'regex'             => [ 'Regex', 'Learn and test regex patterns.', true ],
         'testing'           => [ __( 'Testing', 'dev-debug-tools' ), '<h3>Test Number: '.$test_num.'</h3><br>Use this page as a testing ground for PHP - Only developer accounts can see this.', true ],
