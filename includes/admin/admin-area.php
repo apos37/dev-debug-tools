@@ -305,6 +305,10 @@ class DDTT_ADMIN_AREA {
                 // Is not mu
                 $is_mu_plugin = false;
 
+            // Hello Dolly in live preview
+            } elseif ( $plugin_file == 'hello.php' ) {
+                $path = ABSPATH.DDTT_PLUGINS_URL.'/';
+
             // Otherwise, there is no folder, so we must be in mu-plugins
             } else {
 

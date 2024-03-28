@@ -96,8 +96,8 @@ class DDTT_DOWNLOAD_FILES {
      */
     public function download_root_file( $filename, $nonce_action, $content_type = null, $path = null ) {
         // First verify the nonce
-        if ( !isset( $_POST[ '_wpnonce' ] ) || !wp_verify_nonce( $_REQUEST[ '_wpnonce' ], $nonce_action ) ) {
-            exit( 'No naughty business please' );
+        if ( !isset( $_POST[ '_wpnonce' ] ) || !wp_verify_nonce( sanitize_text_field( wp_unslash ( $_REQUEST[ '_wpnonce' ] ) ), $nonce_action ) ) {
+            exit( 'No naughty business please.' );
         }
 
         // File path
@@ -166,8 +166,8 @@ class DDTT_DOWNLOAD_FILES {
      */
     public function download_plugin_file( $filename ) {
         // First verify the nonce
-        if ( !isset( $_POST[ '_wpnonce' ] ) || !wp_verify_nonce( $_REQUEST[ '_wpnonce' ], DDTT_GO_PF.'testing_playground_dl' ) ) {
-            exit( 'No naughty business please' );
+        if ( !isset( $_POST[ '_wpnonce' ] ) || !wp_verify_nonce( sanitize_text_field( wp_unslash ( $_REQUEST[ '_wpnonce' ] ) ), DDTT_GO_PF.'testing_playground_dl' ) ) {
+            exit( 'No naughty business please.' );
         }
 
         // The path

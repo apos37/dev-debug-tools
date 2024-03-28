@@ -188,8 +188,8 @@ class DDTT_ERROR_REPORTING {
      */
     public function check_error_code() {
         // First verify the nonce
-        if ( !wp_verify_nonce( $_REQUEST[ 'nonce' ], DDTT_GO_PF.'check_error_code' ) ) {
-            exit( 'No naughty business please' );
+        if ( !wp_verify_nonce( sanitize_text_field( wp_unslash ( $_REQUEST[ 'nonce' ] ) ), DDTT_GO_PF.'check_error_code' ) ) {
+            exit( 'No naughty business please.' );
         }
 
         // Get the code
@@ -219,11 +219,10 @@ class DDTT_ERROR_REPORTING {
         }
 
         // Pass to ajax
-        if( !empty( $_SERVER[ 'HTTP_X_REQUESTED_WITH' ] ) && strtolower( $_SERVER[ 'HTTP_X_REQUESTED_WITH' ] ) == 'xmlhttprequest' ) {
-            echo json_encode( $result );
+        if ( !empty( $_SERVER[ 'HTTP_X_REQUESTED_WITH' ] ) && strtolower( sanitize_key( $_SERVER[ 'HTTP_X_REQUESTED_WITH' ] ) ) == 'xmlhttprequest' ) {
+            echo wp_json_encode( $result );
         } else {
-            $referer = filter_input( INPUT_SERVER, 'HTTP_REFERER', FILTER_SANITIZE_URL );
-            header( 'Location: '.$referer );
+            header( 'Location: '.filter_var( $_SERVER[ 'HTTP_REFERER' ], FILTER_SANITIZE_URL ) );
         }
 
         // Stop

@@ -1,4 +1,9 @@
 == changelog.txt ==
+= 1.6.8 = // TODO: BETA
+* Tweak: Removed deactivation survey code and files permanently; only one legitimate response - not worth it
+* Tweak: Updated some functions and techniques as recommended by WP Plugin team
+* Fix: Warning in live preview about Hello Dolly path
+
 = 1.6.7 =
 * Fix: All plugins showing as inactive on sites not on a network
 * Tweak: Reduced tags to max 5
