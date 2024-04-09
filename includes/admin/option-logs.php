@@ -35,7 +35,7 @@ if ( ddtt_get( 'clear_admin_error_log', '==', 'true' ) ) {
 /**
  * debug.log
  */
-echo '<h2>/'.esc_attr( DDTT_CONTENT_URL ).'/debug.log</h2>';
+echo '<h2>'.esc_attr( DDTT_CONTENT_URL ).'/debug.log</h2>';
 
 // Contents?
 if ( $debug_log = $DDTT_LOGS->file_exists_with_content( $debug_loc ) ) {
@@ -62,41 +62,62 @@ if ( $debug_log = $DDTT_LOGS->file_exists_with_content( $debug_loc ) ) {
 /**
  * error_log
  */
-echo '<br><br><br><br><h2>error_log</h2>';
+
+// Path
+$error_log_path = get_option( DDTT_GO_PF.'error_log_path' );
+if ( !$error_log_path || $error_log_path == '' ) {
+    $error_log_path = 'error_log';
+}
+
+// Title
+echo '<br><br><br><br><h2>'.esc_html( $error_log_path ).'</h2>';
 
 // Contents?
-if ( $error_log = $DDTT_LOGS->file_exists_with_content( 'error_log' ) ) {
+$error_log = $DDTT_LOGS->file_exists_with_content( $error_log_path );
+if ( $error_log ) {
 
     // Filesize
     $error_log_filesize = filesize( $error_log );
 
     // Show the log
-    echo wp_kses( $DDTT_LOGS->file_contents_with_clear_button( 'clear_error_log', 'Error Log', 'error_log', $error_log_filesize , true, [], false ), $allowed_html );
+    echo wp_kses( $DDTT_LOGS->file_contents_with_clear_button( 'clear_error_log', 'Error Log', $error_log_path, $error_log_filesize , true, [], false ), $allowed_html );
 
 // If none found
+} elseif ( is_null( $error_log ) ) {
+    echo '<em>No file found at the given path: "'.esc_html( $error_log_path ).'". Please update path in <a href="'.esc_html( ddtt_plugin_options_path( 'settings' ) ).'">Settings</a>.</em>';
 } else {
-    echo '<em>No errors found!</em>';
+    echo '<em>File located, but there are no errors found! :)</em>';
 }
 
 
 /**
  * admin error_log
  */
-echo '<br><br><br><br><h2>/'.esc_html( DDTT_ADMIN_URL ).'/error_log</h2>';
+
+// Path
+$admin_error_log_path = get_option( DDTT_GO_PF.'admin_error_log_path' );
+if ( !$admin_error_log_path || $admin_error_log_path == '' ) {
+    $admin_error_log_path = DDTT_ADMIN_URL.'/error_log';
+}
+
+// Title
+echo '<br><br><br><br><h2>'.esc_html( $admin_error_log_path ).'</h2>';
 
 // Contents?
-
-if ( $admin_error_log = $DDTT_LOGS->file_exists_with_content( DDTT_ADMIN_URL.'/error_log' ) ) {
+$admin_error_log = $DDTT_LOGS->file_exists_with_content( $admin_error_log_path );
+if ( $admin_error_log ) {
 
     // Filesize
     $admin_error_log_filesize = filesize( $admin_error_log );
     
     // Show the log
-    echo wp_kses( $DDTT_LOGS->file_contents_with_clear_button( 'clear_admin_error_log', 'Admin Error Log', DDTT_ADMIN_URL.'/error_log', $admin_error_log_filesize, true, [], false ), $allowed_html );
+    echo wp_kses( $DDTT_LOGS->file_contents_with_clear_button( 'clear_admin_error_log', 'Admin Error Log', $admin_error_log_path, $admin_error_log_filesize, true, [], false ), $allowed_html );
 
 // If none found
+} elseif ( is_null( $admin_error_log ) ) {
+    echo '<em>No file found at the given path: "'.esc_html( $admin_error_log_path ).'". Please update path in <a href="'.esc_html( ddtt_plugin_options_path( 'settings' ) ).'">Settings</a>.</em>';
 } else {
-    echo '<em>No errors found!</em>';
+    echo '<em>File located, but there are no errors found! :)</em>';
 }
 
 

@@ -152,6 +152,7 @@ class DDTT_ADMIN_AREA {
             'another-show-hooks',
             'aryo-activity-log',
             'asgaros-forum',
+            'broken-link-notifier',
             'child-theme-configurator',
             'code-snippets',
             'debug-bar',

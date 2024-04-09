@@ -468,7 +468,7 @@ class DDTT_ONLINE_USERS {
         $wp_admin_bar->add_node( [
             'id'     => DDTT_GO_PF.'online-users-li-total',
             'parent' => DDTT_GO_PF.'online-users',
-            'title'  => 'Total Users: '.$user_count[ 'total_users' ],
+            'title'  => 'Total Users: '.number_format( $user_count[ 'total_users' ] ),
             'meta'   => [
                 'class' => DDTT_GO_PF.'online-user-li',
             ],

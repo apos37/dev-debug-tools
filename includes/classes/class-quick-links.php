@@ -25,27 +25,21 @@ class DDTT_QUICK_LINKS {
      * 
      * @var string
      */
-    public $quick_link_icon;
+    public $quick_link_icon = '&#9889';
 
 
     /**
-     * Gravity Forms tab
+     * Debug tab
      *
      * @var string
      */
-    public $gravity_forms_tab;
+    public $debug_tab = 'debug';
 
 
     /**
 	 * Constructor
 	 */
 	public function __construct() {
-
-        // $this->quick_link_icon = '<svg width="20" height="20" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1696 960q0 26-19 45t-45 19h-224q0 171-67 290l208 209q19 19 19 45t-19 45q-18 19-45 19t-45-19l-198-197q-5 5-15 13t-42 28.5-65 36.5-82 29-97 13v-896h-128v896q-51 0-101.5-13.5t-87-33-66-39-43.5-32.5l-15-14-183 207q-20 21-48 21-24 0-43-16-19-18-20.5-44.5t15.5-46.5l202-227q-58-114-58-274h-224q-26 0-45-19t-19-45 19-45 45-19h224v-294l-173-173q-19-19-19-45t19-45 45-19 45 19l173 173h844l173-173q19-19 45-19t45 19 19 45-19 45l-173 173v294h224q26 0 45 19t19 45zm-480-576h-640q0-133 93.5-226.5t226.5-93.5 226.5 93.5 93.5 226.5z"/></svg>';
-        $this->quick_link_icon = '&#9889';
-
-        // Gravity Forms tab
-        $this->gravity_forms_tab = 'gfdebug';
 
         // Add User ID column with a link to debug the user's meta
         if ( get_option( DDTT_GO_PF.'ql_user_id' ) == '1' ) {
@@ -57,6 +51,13 @@ class DDTT_QUICK_LINKS {
         // Add a link to debug the post or page's meta next to the Post ID
         if ( get_option( DDTT_GO_PF.'ql_post_id' ) == '1' ) {
             add_action( 'init', [ $this, 'admin_columns' ] );
+        }
+
+        // Add a link to comments
+        if ( get_option( DDTT_GO_PF.'ql_comment_id' ) == '1' ) {
+            add_filter( 'manage_edit-comments_columns', [ $this, 'comments_column' ] );
+            add_action( 'admin_head-edit-comments.php',  [ $this, 'comments_column_style' ] );
+            add_action( 'manage_comments_custom_column', [ $this, 'comments_column_content' ], 999, 2 );
         }
 
         // Add a link to debug the forml, entry or feed's meta
@@ -92,7 +93,7 @@ class DDTT_QUICK_LINKS {
      *
      * @return void
      */
-    public function user_column_style(){
+    public function user_column_style() {
         echo '<style>.column-'.esc_attr( strtolower( DDTT_PF ) ).'user_id{width: 5%}</style>';
     } // user_column_style()
 
@@ -203,6 +204,72 @@ class DDTT_QUICK_LINKS {
 
 
     /**
+     * Add ID column to user admin page
+     *
+     * @param array $columns
+     * @return array
+     */
+    public function comments_column( $columns ) {
+        $columns[ strtolower( DDTT_PF ).'comment_type' ] = __( 'Type', 'dev-debug-tools' );
+        $columns[ strtolower( DDTT_PF ).'comment_karma' ] = __( 'Karma', 'dev-debug-tools' );
+        $columns[ strtolower( DDTT_PF ).'comment_id' ] = __( 'ID', 'dev-debug-tools' );
+        return $columns;
+    } // End comments_column()
+
+
+    /**
+     * Change width of user column
+     *
+     * @return void
+     */
+    public function comments_column_style() {
+        echo '<style>
+        .column-'.esc_attr( strtolower( DDTT_PF ) ).'comment_type { width: 7% }
+        .column-'.esc_attr( strtolower( DDTT_PF ) ).'comment_karma { width: 5% }
+        .column-'.esc_attr( strtolower( DDTT_PF ) ).'comment_id { width: 5% }
+        </style>';
+    } // comments_column_style()
+
+
+    /**
+     * Add the user column content
+     *
+     * @param string $column_name
+     * @param int $comment_id
+     * @return string
+     */
+    public function comments_column_content( $column_name, $comment_id ) {
+        // Type
+        if ( $column_name == strtolower( DDTT_PF ).'comment_type' ) {
+
+            // The content
+            echo sanitize_key( get_comment_type( $comment_id ) );
+
+        // Karma
+        } elseif ( $column_name == strtolower( DDTT_PF ).'comment_karma' ) {
+
+            // The content
+            $comment = get_comment( $comment_id );
+            echo esc_attr( $comment->comment_karma );
+
+        // ID
+        } elseif ( $column_name == strtolower( DDTT_PF ).'comment_id' ) {
+
+            // Allow icon to be filtered
+            $quick_link_icon = apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon );
+
+            // The content
+            if ( ddtt_is_dev() ) {
+                $link = ddtt_plugin_options_path( $this->debug_tab ).'&debug_comment='.$comment_id;
+                echo absint( $comment_id ).' <a href="'.esc_url( $link ).'" target="_blank">'.$quick_link_icon.'</a>';
+            } else {
+                echo absint( $comment_id );
+            }
+        }
+    } // End comments_column_content()
+
+
+    /**
      * Add quick links to Gravity Forms form list
      *
      * @param array $actions
@@ -219,7 +286,7 @@ class DDTT_QUICK_LINKS {
         $quick_link_icon = apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon );
 
         // Add action
-        $link = ddtt_plugin_options_path( $this->gravity_forms_tab ).'&debug_form='.$form_id;
+        $link = ddtt_plugin_options_path( $this->debug_tab ).'&debug_form='.$form_id;
         $actions = array_merge( $actions, [
             'edit_post_cs' => sprintf( '<a href="%1$s" target="_blank">%2$s</a>',
                 esc_url( $link ),
@@ -249,7 +316,7 @@ class DDTT_QUICK_LINKS {
         $quick_link_icon = apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon );
 
         // Add the link
-        $link = ddtt_plugin_options_path( $this->gravity_forms_tab ).'&debug_entry='.$entry[ 'id' ];
+        $link = ddtt_plugin_options_path( $this->debug_tab ).'&debug_entry='.$entry[ 'id' ];
         echo '| <span>'.sprintf( '<a href="%1$s" target="_blank">%2$s</a>',
             esc_url( $link ), 
             'Debug Entry '.$quick_link_icon
@@ -370,7 +437,7 @@ class DDTT_QUICK_LINKS {
         $quick_link_icon = apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon );
 
         // Add the link
-        $link = ddtt_plugin_options_path( $this->gravity_forms_tab ).'&debug_feed='.$feed[ 'id' ];
+        $link = ddtt_plugin_options_path( $this->debug_tab ).'&debug_feed='.$feed[ 'id' ];
         $actions = array_merge( $actions, [
             'edit_post_cs' => sprintf( '<a href="%1$s" target="_blank">%2$s</a>',
                 esc_url( $link ), 

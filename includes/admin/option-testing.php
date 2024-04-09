@@ -34,10 +34,10 @@ if ( $file ) {
     include $file;
 
     // Get the file
-    $wpconfig = file_get_contents( $file );
+    $contents = file_get_contents( $file );
 
     // Separate each line into an array item
-    $file_lines = explode( PHP_EOL, $wpconfig );
+    $file_lines = explode( PHP_EOL, $contents );
 
     // Test line
     $test_line = 'TEST YOUR PHP BELOW';
@@ -60,21 +60,26 @@ if ( $file ) {
             // Found test line
             $found_test_line = true;
 
+            
+
             // Check if there are any lines that do not start with comments
             if ( ( str_starts_with( $line, '//' ) === false ) && 
                  ( str_starts_with( $line, ' //' ) === false ) && 
+                 ( str_starts_with( $line, '/**' ) === false ) && 
+                 ( str_starts_with( $line, ' * ' ) === false ) && 
+                 ( str_starts_with( $line, ' */' ) === false ) && 
                  strlen( $line ) > 0 &&
                  !ctype_space( $line ) ) {
-                    
+                      
                 // Stop here because we found some test material
                 $found_test_material = true;
                 break;
             }
         }
-    } 
+    }
 
     // If no test line, still check if there are any lines that do not start with comments
-    if ( !$found_test_line &&
+    if ( !$found_test_material && !$found_test_line &&
          ( str_starts_with( $line, '//' ) === false ) && 
          ( str_starts_with( $line, ' //' ) === false ) && 
          strlen( $line ) > 0 &&

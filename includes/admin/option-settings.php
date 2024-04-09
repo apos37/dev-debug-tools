@@ -187,6 +187,8 @@
 
                 <?php echo wp_kses( ddtt_options_tr( 'ql_post_id', 'Add Post/Page IDs with Quick Debug Links to Admin List Pages', 'checkbox', 'Use the <code>ddtt_quick_link_post_types</code> filter from <a href="'.ddtt_plugin_options_path( 'hooks' ).'#ddtt_quick_link_post_types">Hooks</a> tab to customize which post types are included.' ), $allowed_html ); ?>
 
+                <?php echo wp_kses( ddtt_options_tr( 'ql_comment_id', 'Add Debug Columns (Comment ID, Comment Type, and Karma) and Quick Debug Links to Comment Admin List Page', 'checkbox' ), $allowed_html ); ?>
+
                 <?php if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) { 
                     echo wp_kses( ddtt_options_tr( 'ql_gravity_forms', 'Add Quick Debug Links to Gravity Forms & Entries', 'checkbox' ), $allowed_html ); 
                 } ?>
@@ -213,11 +215,15 @@
                 <?php echo wp_kses( ddtt_options_tr( 'wp_mail_failure', 'Capture WP_Mail Failure Details in Debug.log', 'checkbox', 'Must have debug log enabled.' ), $allowed_html ); ?>
 
                 <?php
-                // Theme path
+                // Paths
                 $themes_root_uri = str_replace( site_url( '/' ), '', get_theme_root_uri() ).'/';
                 $active_theme = str_replace( '%2F', '/', rawurlencode( get_stylesheet() ) );
                 $active_theme_path = '/'.$themes_root_uri.$active_theme.'/';
                 ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'error_log_path', 'Path to error_log', 'text', '', [ 'default' => 'error_log', 'log_files' => 'yes' ] ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'admin_error_log_path', 'Path to admin error_log', 'text', '', [ 'default' => DDTT_ADMIN_URL.'/error_log', 'log_files' => 'yes' ] ), $allowed_html ); ?>
 
                 <?php echo wp_kses( ddtt_options_tr( 'log_files', 'Log Files to Check<br>.TXT Files Only', 'text+', 'We automatically check your debug.log, error_log, and admin error_log. If you have additional <strong>.TXT</strong> logs you would like to view on the Logs tab, enter the root paths to the files here (not including the domain).', [ 'placeholder' => $active_theme_path.'your_log_file.txt', 'log_files' => 'yes', 'pattern' => '.*\.txt$' ] ), $allowed_html ); ?>
 

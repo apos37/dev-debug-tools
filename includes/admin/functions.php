@@ -147,8 +147,30 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
         } else {
             $pattern = '';
         }
+        if ( !is_null( $args ) && isset( $args[ 'log_files' ] ) && $args[ 'log_files' ] == 'yes' ) {
+            $file = false;
+            if ( $value != '' ) {
+                if ( is_readable( ABSPATH.'/'.$value ) ) {
+                    $file = ABSPATH.''.$value;
+                } elseif ( is_readable( dirname( ABSPATH ).'/'.$value ) ) {
+                    $file = dirname( ABSPATH ).'/'.$value;
+                } elseif ( is_readable( $value ) ) {
+                    $file = $value;
+                }
+            }
+            if ( $file ) {
+                $verified = 'VERIFIED';
+                $verified_class= 'enabled';
+            } else {
+                $verified = 'FILE NOT FOUND';
+                $verified_class= 'disabled';
+            }
+            $log_file_verified = ' <code class="verification '.$verified_class.'">'.$verified.'</code> <button type="button" class="button check hide">CHECK</button>';
+        } else {
+            $log_file_verified = '';
+        }
         
-        $input = '<input type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="'.esc_attr( $value ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$autocomplete.$required.'/>';
+        $input = '<input type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="'.esc_attr( $value ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$autocomplete.$required.'/>'.$log_file_verified;
 
     // Number Field
     } elseif ( $type == 'number' ) {

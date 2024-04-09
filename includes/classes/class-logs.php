@@ -116,8 +116,10 @@ class DDTT_LOGS {
 
         if ( $file && filesize( $file ) > 0 ) {
             $result = $file;
-        } else {
+        } elseif ( $file && filesize( $file ) == 0 ) {
             $result = false;
+        } else {
+            $result = null;
         }
 
         return $result;
@@ -149,11 +151,11 @@ class DDTT_LOGS {
         }
 
         // Button for downloading
-        if ( strpos( $path, 'debug.log' ) !== false ) {
+        if ( $button_label == 'Debug Log' ) {
             $dl = 'debug_log';
-        } elseif ( strpos( $path, DDTT_ADMIN_URL.'/error_log' ) !== false ) {
+        } elseif ( $button_label == 'Admin Error Log' ) {
             $dl = 'admin_error_log';
-        } elseif ( strpos( $path, 'error_log' ) !== false ) {
+        } elseif ( $button_label == 'Error Log' ) {
             $dl = 'error_log';
         } else {
             $dl = 'null';

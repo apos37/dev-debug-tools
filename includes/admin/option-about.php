@@ -108,4 +108,5 @@ if ( $coffee_filter ) {
     <?php echo wp_kses_post( ddtt_plugin_card( 'admin-help-docs' ) ); ?>
     <?php echo wp_kses_post( ddtt_plugin_card( 'gf-discord' ) ); ?>
     <?php echo wp_kses_post( ddtt_plugin_card( 'gf-msteams' ) ); ?>
+    <?php echo wp_kses_post( ddtt_plugin_card( 'https://healing-hazel.com/update-chart/?form_id=12' ) ); ?>
 <?php } ?>
