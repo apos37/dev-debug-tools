@@ -1,7 +1,9 @@
 == changelog.txt ==
+= 1.6.8.1 =
+* Update: Added new plugin to About tab
+
 = 1.6.8 =
 * Update: Added settings for modifying error log paths (props rawsta)
-* Update: Added new plugin to About tab
 * Fix: Testing playground instructions not showing up by default
 * Update: Added quick links and debug colums to comments 
 * Tweak: Added thousands separator to total users count 

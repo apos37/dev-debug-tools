@@ -5,7 +5,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.6.8
+Stable tag: 1.6.8.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -96,9 +96,11 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.6.8.1 =
+* Update: Added new plugin to About tab
+
 = 1.6.8 =
 * Update: Added settings for modifying error log paths (props rawsta)
-* Update: Added new plugin to About tab
 * Fix: Testing playground instructions not showing up by default
 * Update: Added quick links and debug colums to comments 
 * Tweak: Added thousands separator to total users count 
