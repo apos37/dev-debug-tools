@@ -472,22 +472,22 @@ function ddtt_get_defined_functions_in_file( $file ) {
     $source = file_get_contents( $file );
     $tokens = token_get_all( $source );
 
-    $functions = array();
+    $functions = [];
     $nextStringIsFunc = false;
     $inClass = false;
     $bracesCount = 0;
 
-    foreach($tokens as $token) {
-        switch($token[0]) {
+    foreach( $tokens as $token ) {
+        switch( $token[0] ) {
             case T_CLASS:
                 $inClass = true;
                 break;
             case T_FUNCTION:
-                if(!$inClass) $nextStringIsFunc = true;
+                if ( !$inClass ) $nextStringIsFunc = true;
                 break;
 
             case T_STRING:
-                if($nextStringIsFunc) {
+                if ( $nextStringIsFunc ) {
                     $nextStringIsFunc = false;
                     $functions[] = $token[1];
                 }
@@ -501,11 +501,11 @@ function ddtt_get_defined_functions_in_file( $file ) {
 
             // Exclude Classes
             case '{':
-                if($inClass) $bracesCount++;
+                if ( $inClass ) $bracesCount++;
                 break;
 
             case '}':
-                if($inClass) {
+                if ( $inClass ) {
                     $bracesCount--;
                     if($bracesCount === 0) $inClass = false;
                 }
@@ -523,7 +523,7 @@ function ddtt_get_defined_functions_in_file( $file ) {
  * @param string $function_name
  * @return string
  */
-function ddtt_get_function_example( $function_name ){
+function ddtt_get_function_example( $function_name ) {
     // Check if the function exists
     if( function_exists( $function_name ) ){
 
@@ -534,7 +534,7 @@ function ddtt_get_function_example( $function_name ){
         $fx = new ReflectionFunction( $function_name );
 
         // Get the params
-        foreach ( $fx->getParameters() as $param ){
+        foreach ( $fx->getParameters() as $param ) {
 
             // Check for optional params
             if ( $param->isOptional() ){
@@ -591,7 +591,7 @@ function ddtt_get_form_selections( $id, $selected, $include_inactive = false ) {
     $forms = GFAPI::get_forms( true, false, 'title' );
 
     // Check if there are any pages
-    if (!empty($forms)) {
+    if ( !empty( $forms ) ) {
 
         // Let's start the selection
         $results = '<select id="'.$id.'" name="'.$id.'">
@@ -599,7 +599,7 @@ function ddtt_get_form_selections( $id, $selected, $include_inactive = false ) {
             <option disabled>Active Forms</option>';
 
         // For each page
-        foreach ($forms as $form) {
+        foreach ( $forms as $form ) {
 
             // Get the page name, page id, and status
             $name = $form['title'];
@@ -610,20 +610,20 @@ function ddtt_get_form_selections( $id, $selected, $include_inactive = false ) {
         }
 
         // Get inactive forms
-        if ($include_inactive) {
+        if ( $include_inactive ) {
             $inactive_forms = GFAPI::get_forms( false, false, 'title' );
 
             $results .= '<option disabled>Inactive Forms</option>';
 
             // For each page
-            foreach ($inactive_forms as $inactive_form) {
+            foreach ( $inactive_forms as $inactive_form ) {
 
                 // Get the page name, page id, and status
                 $name = $inactive_form['title'];
                 $page_id = $inactive_form['id'];
 
                 // Return the option
-                $results.= '<option value="'.$page_id.'"'.ddtt_is_qs_selected($page_id, $selected).'>'.$name.'</option>';
+                $results.= '<option value="'.$page_id.'"'.ddtt_is_qs_selected( $page_id, $selected ).'>'.$name.'</option>';
             }
         }
         
@@ -755,8 +755,19 @@ function ddtt_view_file_contents( $path, $log = false ) {
         $file = $path;
     }
 
+    // Abspath
+    if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+
+        // Add redacted div to ABSPATH
+        $public_html = strstr( ABSPATH, '/public_html', true );
+        $abspath = str_replace( $public_html, '<span class="redact">'.$public_html.'</span>', ABSPATH );
+    } else {
+        $abspath = ABSPATH;
+    }
+
     // Check if the file exists
     if ( $file ) {
+        
         // If so, get it
         $string = file_get_contents( $file );
 
@@ -831,16 +842,16 @@ function ddtt_view_file_contents( $path, $log = false ) {
             $line_count = 1;
 
             // For each line...
-            foreach( $lines as $key => $line ) {
+            foreach ( $lines as $key => $line ) {
 
                 // If not, check for comment marks; add a class
-                if (substr( $line, 0, 3 ) === '// ' || 
-                substr( $line, 0, 3 ) === '/**' || 
-                substr( $line, 0, 2 ) === ' *' || 
-                substr( $line, 0, 1 ) === '*' || 
-                substr( $line, 0, 2 ) === '*/' || 
-                substr( $line, 0, 2 ) === '/*' || 
-                substr( $line, 0, 1 ) === '#') {
+                if ( substr( $line, 0, 3 ) === '// ' || 
+                    substr( $line, 0, 3 ) === '/**' || 
+                    substr( $line, 0, 2 ) === ' *' || 
+                    substr( $line, 0, 1 ) === '*' || 
+                    substr( $line, 0, 2 ) === '*/' || 
+                    substr( $line, 0, 2 ) === '/*' || 
+                    substr( $line, 0, 1 ) === '#' ) {
                     $comment_out = ' comment-out';
                 } else {
                     $comment_out = '';
@@ -850,7 +861,7 @@ function ddtt_view_file_contents( $path, $log = false ) {
                 $line = esc_html( $line );
 
                 // Check if we are redacting
-                if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+                if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 && !$editor ) {
 
                     // Redact sensitive info
                     $substrings = [
@@ -908,19 +919,10 @@ function ddtt_view_file_contents( $path, $log = false ) {
         $results .= 'Lines: <strong>'.$total_count.'</strong>'.$incl_showing.' <span class="sep">|</span> Filesize: <strong>'.ddtt_format_bytes( filesize( $file ) ).'</strong> <span class="sep">|</span> Last Modified: <strong>'.$last_modified.'</strong><br><br>';
     }
     
-    // Check if we are redacting
-    if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
-
-        // Add redacted div to ABSPATH
-        $public_html = strstr( ABSPATH, '/public_html', true );
-        $abspath = str_replace( $public_html, '<span class="redact">'.$public_html.'</span>', ABSPATH );
-    } else {
-        $abspath = ABSPATH;
-    }
-
-    // Return the code with the defined path at top
+    // Path
     $results .= '<pre class="code">Installation path: '.$abspath.$path.'<br><br>'.$code.'</pre>';
 
+    // Return
     return $results;
 } // End ddtt_view_file_contents()
 
@@ -1014,12 +1016,13 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                         // Check for a date section
                         $date_section = false;
                         if ( preg_match( '/\[(.*?)\]/s', $line, $get_date_section ) ) {
-                            if ( ddtt_is_date( $get_date_section[1] ) ) {
+                            if ( strpos( $get_date_section[1], 'UTC' ) !== false && ddtt_is_date( $get_date_section[1] ) ) {
                                 $date_section = $get_date_section;
                             }
                         }
         
                         // Check for a date section
+                        // dpr( $get_date_section[1] );
                         if ( $date_section ) {
 
                             // Strip the brackets and timezone
@@ -1122,7 +1125,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                                 }
 
                                 // Have we already added this rest?
-                                if ( $repeat ) {
+                                if ( $repeat && !$start_collecting_array ) {
 
                                     // Don't add this line
                                     $new_actual_line = false;
@@ -1314,7 +1317,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                             }
 
                             // Check if the line # matches
-                            if ( $actual_lines[ count( $actual_lines ) - 1 ][ 'err' ] == 'Array' ) {
+                            if ( $actual_lines[ count( $actual_lines ) - 1 ][ 'err' ] === 'Array' ) {
 
                                 // Then add the line
                                 $actual_lines[ count( $actual_lines ) - 1 ][ 'array' ][] = $line;
@@ -1349,7 +1352,6 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
             }
 
             // Now that we have actual lines, let's add them
-            // dpr( $actual_lines );
             if ( !empty( $actual_lines ) ) {
 
                 // Start the table
@@ -1498,33 +1500,33 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                     if ( isset( $actual_line[ 'array' ] ) ) {
                         $array = $actual_line[ 'array' ];
 
-                        // Iter the array
-                        $array_array = [];
-                        foreach ( $array as $a ) {
+                        // // Iter the array
+                        // $array_array = [];
+                        // foreach ( $array as $a ) {
                             
-                            // Remove the brackets
-                            if ( $a == '(' || $a == ')' ) {
-                                continue;
-                            }
+                        //     // Remove the brackets
+                        //     if ( $a == '(' || $a == ')' ) {
+                        //         continue;
+                        //     }
 
-                            // Explode the line to remove the array items
-                            $split = explode( ' => ', $a );
-                            $a = isset( $split[1] ) ? $split[1] : '';
+                        //     // Explode the line to remove the array items
+                        //     $split = explode( ' => ', $a );
+                        //     $a = isset( $split[1] ) ? $split[1] : '';
 
-                            // Shorten the paths
-                            $a = str_replace( ABSPATH, '/', $a );
+                        //     // Shorten the paths
+                        //     $a = str_replace( ABSPATH, '/', $a );
                             
                             
-                            // Add a class to the first line
-                            if ( str_starts_with( $a, 'Array' ) ) {
-                                $array_array[] = '<span class="array">'.$a.'</span>';
+                        //     // Add a class to the first line
+                        //     if ( str_starts_with( $a, 'Array' ) ) {
+                        //         $array_array[] = '<span class="array">'.$a.'</span>';
 
-                            // Otherwise do nothing
-                            } else {
-                                $array_array[] = $a;
-                            }
-                        }
-                        $display_array = '<pre>'.print_r( $array_array, true ).'</pre>';
+                        //     // Otherwise do nothing
+                        //     } else {
+                        //         $array_array[] = $a;
+                        //     }
+                        // }
+                        $display_array = '<pre>'.print_r( $array, true ).'</pre>';
                         // $display_array = '<pre>'.print_r( $array_array, true ).'</pre>';
                     } else {
                         $display_array = '';
@@ -1637,7 +1639,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                     } else {
                         $final_qty = 1;
                     }
-                    
+                                     
                     // Iter the search engines
                     $help_links = [];
                     foreach ( $search_engines as $se ) {

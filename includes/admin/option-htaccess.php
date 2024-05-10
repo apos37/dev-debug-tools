@@ -19,6 +19,10 @@
 .wp-core-ui .button[disabled] {
     cursor: not-allowed;
 }
+.snippet_container {
+    margin-bottom: 10px;
+    width: fit-content;
+}
 </style>
 
 <?php include 'header.php'; ?>
@@ -53,6 +57,7 @@ if ( is_readable( ABSPATH . $filename ) ) {
 // Confirm first
 if ( ddtt_get( 'confirm', '==', 'true' ) ) {
     $confirm = true;
+    $cancel = false;
     $update_btn_text = 'Confirm and update';
 
 // Cancelled update
@@ -253,6 +258,11 @@ if ( ddtt_get( 'delete_backups', '==', 'true' ) ) {
             
                 // Cycle each snippet
                 foreach ( $snippets as $key => $snippet ) {
+
+                    // If removing, skip it
+                    if ( isset( $snippet[ 'remove' ] ) && $snippet[ 'remove' ] ) {
+                        continue;
+                    }
             
                     // Check if it exists
                     $exists = $DDTT_HTACCESS->snippet_exists( $file_contents, $snippet );

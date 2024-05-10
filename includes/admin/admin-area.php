@@ -38,17 +38,11 @@ class DDTT_ADMIN_AREA {
         // Add plugins to featured plugins list
         add_filter( 'install_plugins_table_api_args_featured', [ $this, 'featured_plugins_tab' ] );
 
-        // Add javascript to footer of plugin install page
-        global $pagenow;
-        if ( $pagenow == 'plugin-install.php' ) {
-            add_action( 'admin_footer', [ $this, 'plugin_featured_tab' ] );
-        }
-
         // Add columns to plugins page
-        add_filter( 'manage_plugins_columns', [ $this, 'plugins_column' ] );
-
-        // Plugins page column content
-        add_action( 'manage_plugins_custom_column', [ $this, 'plugins_column_content' ], 10, 2 );
+        if ( !get_option( DDTT_GO_PF.'plugins_page_data' ) || get_option( DDTT_GO_PF.'plugins_page_data' ) != 1 ) {
+            add_filter( 'manage_plugins_columns', [ $this, 'plugins_column' ] );
+            add_action( 'manage_plugins_custom_column', [ $this, 'plugins_column_content' ], 10, 2 );
+        }
 
         // Allow searching posts/pages by id in admin area
         add_action( 'pre_get_posts', [ $this, 'admin_search_include_ids' ] );
@@ -197,7 +191,9 @@ class DDTT_ADMIN_AREA {
      * @return void
      */
     public function featured_plugins_tab( $args ) {
-        add_filter( 'plugins_api_result', [ $this, 'plugins_api_result' ], 10, 3 );
+        if ( ddtt_get( 'tab', '==', 'featured' ) ) {
+            add_filter( 'plugins_api_result', [ $this, 'plugins_api_result' ], 10, 3 );
+        }
         return $args;
     } // End featured_plugins_tab()
 
@@ -242,19 +238,6 @@ class DDTT_ADMIN_AREA {
 
         return $res;
     } // End add_plugin_favs()
-
-
-    /**
-     * Plugin page > replace the "Featured" link with what we want
-     *
-     * @return void
-     */
-    public function plugin_featured_tab() {
-        echo '<script>
-        var featuredLink = document.querySelector(".plugin-install-featured a");
-        featuredLink.innerHTML = "Recommended by '.esc_html( DDTT_NAME ).'";
-        </script>';
-    } // End featured_tab()
 
 
     /**

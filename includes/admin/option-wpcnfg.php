@@ -19,6 +19,10 @@
 .wp-core-ui .button[disabled] {
     cursor: not-allowed;
 }
+.snippet_container {
+    margin-bottom: 10px;
+    width: fit-content;
+}
 </style>
 
 <?php include 'header.php'; ?>
@@ -244,11 +248,24 @@ if ( ddtt_get( 'delete_backups', '==', 'true' ) ) {
                         'value'     => [],
                         'checked'   => []
                     ],
-                    'br' => []
+                    'br' => [],
+                    'code' => [
+                        'class' => []
+                    ],
+                    'a' => [
+                        'href' => [],
+                        'target' => [],
+                    ],
+                    'strong' => [],
                 ];
             
                 // Cycle each snippet
                 foreach ( $snippets as $key => $snippet ) {
+
+                    // If removing, skip it
+                    if ( isset( $snippet[ 'remove' ] ) && $snippet[ 'remove' ] ) {
+                        continue;
+                    }
 
                     // Check if it exists
                     $exists = $DDTT_WPCONFIG->snippet_exists( $file_contents, $snippet );
@@ -263,7 +280,7 @@ if ( ddtt_get( 'delete_backups', '==', 'true' ) ) {
                     }
 
                     // Add the row to the table
-                    echo wp_kses( $DDTT_WPCONFIG->options_tr( $key, $snippet[ 'label' ], $checked, $exists[ 'strings' ][ 'true' ], $exists[ 'strings' ][ 'false' ] ), $allowed_html );
+                    echo wp_kses( $DDTT_WPCONFIG->options_tr( $key, $snippet[ 'label' ], $checked, $exists[ 'strings' ][ 'true' ], $exists[ 'strings' ][ 'false' ], $snippet[ 'desc' ] ), $allowed_html );
                 }
             }
             ?>

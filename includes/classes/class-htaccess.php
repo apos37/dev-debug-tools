@@ -16,6 +16,7 @@ class DDTT_HTACCESS {
 
     /**
      * Our snippets
+     * NOTE: IF REMOVING A SNIPPET, DO NOT DELETE FROM ARRAY, INSTEAD ADD 'remove' => TRUE (LIKE THE force_ssl OPTION BELOW)
      *
      * @return array
      */
@@ -43,8 +44,12 @@ class DDTT_HTACCESS {
 
         // Add the snippets
         $snippets = apply_filters( 'ddtt_htaccess_snippets', [
-            'prevent_csrf' => [
-                'label' => 'Prevent Cross Site Request Forgery (CSRF)',
+            'restrict_direct_access' => [
+                'old_label' => [
+                    'Prevent Cross Site Request Forgery (CSRF)',
+                    'Restrict Unuathorized Direct Access to Login and Admin'
+                ],
+                'label' => 'Restrict Unauthorized Direct Access to Login and Admin',
                 'lines' => [
                     '<IfModule mod_rewrite.c>',
                     'RewriteEngine on',
@@ -54,37 +59,15 @@ class DDTT_HTACCESS {
                     'RewriteCond %{REQUEST_URI} ^(.*)?'.$admin_path.'$',
                     'RewriteRule ^(.*)$ - [F]',
                     '</IfModule>'
-                ]
+                ],
+                'desc' => 'Restricts direct access to the WordPress login page (wp-login.php) and the admin area (wp-admin) unless the request is a valid POST request coming from your domain. It enhances security by preventing unauthorized access to sensitive parts of your WordPress site.'
             ],
-            'debuglog_private' => [
-                'label' => 'Prevent Debug.log from Being Public',
+            'samesite' => [
+                'label' => 'Set SameSite Attribute for Session Cookies',
                 'lines' => [
-                    '<Files "debug.log">',
-                    'Require all denied',
-                    'Require ip 127.0.0.1',
-                    'Require ip '.$ip_server,
-                    '</Files>',
-                ]
-            ],
-            'redirect_https' => [
-                'label' => 'Redirect http:// to https://',
-                'lines' => [
-                    '<IfModule mod_rewrite.c>',
-                    'RewriteEngine On',
-                    'RewriteCond %{SERVER_PORT} 80 ',
-                    'RewriteRule ^(.*)$ https://'.$domain.'/$1 [R=301,L]',
-                    '</IfModule>',
-                ]
-            ],
-            'force_ssl' => [
-                'label' => 'Force Require SSL to View Site',
-                'lines' => [
-                    '# May cause issues with GoDaddy Security Backups',
-                    'SSLOptions +StrictRequire',
-                    'SSLRequireSSL',
-                    'SSLRequire %{HTTP_HOST} eq "'.$domain.'"',
-                    'ErrorDocument 403 https://'.$domain,
-                ]
+                    'Header always edit Set-Cookie (.*) "$1; SameSite=Lax"'
+                ],
+                'desc' => 'Helps prevent Cross Site Request Forgery (CSRF). A CSRF attack occurs when a malicious website tricks an authenticated user\'s browser into performing unwanted actions on a trusted site. The attacker exploits the user\'s existing session to execute actions without their knowledge. CSRF attacks can lead to unauthorized actions, such as changing passwords, transferring funds, or making purchases.'
             ],
             'protect_imp_files' => [
                 'label' => 'Protect Important WP and Server Files',
@@ -94,27 +77,65 @@ class DDTT_HTACCESS {
                     'Deny from all',
                     '</FilesMatch>',
                     'RedirectMatch 403 \.(htaccess|htpasswd|errordocs|logs)$',
-                ]
+                ],
+                'desc' => 'Restricts access to sensitive files and directories within your WordPress installation. Denies access to the server error log file, critical WordPress configuration file, PHP configuration file, and any file starting with <code>.ht</code> or <code>.htaccess</code>. Any request for these files will result in a 403 Forbidden error. By denying access to critical files and directories, you enhance the security of your WordPress installation. Unauthorized users won\'t be able to view sensitive information or manipulate essential configuration files.'
+            ],
+            'debuglog_private' => [
+                'label' => 'Prevent Debug.log from Being Public',
+                'lines' => [
+                    '<Files "debug.log">',
+                    'Require all denied',
+                    'Require ip 127.0.0.1',
+                    'Require ip '.$ip_server,
+                    '</Files>',
+                ],
+                'desc' => 'Restricts access to the <code>debug.log</code> file within your WordPress installation, enhancing security. This is highly recommended, especially if you have enabled debugging on your <code>wp-config.php</code> file. Only authorized IP addresses (localhost and hosting server) can view the log file. Unauthorized users won\'t be able to access sensitive debugging information.'
+            ],
+            'redirect_https' => [
+                'label' => 'Redirect http:// to https://',
+                'lines' => [
+                    '<IfModule mod_rewrite.c>',
+                    'RewriteEngine On',
+                    'RewriteCond %{SERVER_PORT} 80 ',
+                    'RewriteRule ^(.*)$ https://'.$domain.'/$1 [R=301,L]',
+                    '</IfModule>',
+                ],
+                'desc' => 'Performs a 301 (permanent) redirect from HTTP to HTTPS for your WordPress site. By doing so, you ensure that all traffic to your site is encrypted. The 301 redirect tells search engines that the change is permanent, preserving SEO rankings and avoiding duplicate content issues.'
+            ],
+            'force_ssl' => [
+                'label' => 'Force Require SSL to View Site',
+                'lines' => [
+                    '# May cause issues with GoDaddy Security Backups',
+                    'SSLOptions +StrictRequire',
+                    'SSLRequireSSL',
+                    'SSLRequire %{HTTP_HOST} eq "'.$domain.'"',
+                    'ErrorDocument 403 https://'.$domain,
+                ],
+                'remove' => TRUE
+                // 'desc' => 'Slated for removal'
             ],
             'disable_server_sig' => [
                 'label' => 'Turn Off Server Signature',
                 'lines' => [
                     '# Suppresses the footer line server version number and ServerName of the serving virtual host',
                     'ServerSignature Off',
-                ]
+                ],
+                'desc' => 'Disables the server signature (also known as the server banner or server version) for your WordPress site. The server signature is a piece of information about your web server (e.g., Apache, Nginx) and its version. By default, when an error occurs (such as a 404 page), the server includes this signature in the response headers. The server signature can reveal sensitive information about the software versions running on the web server. Hiding the server signature enhances security by reducing the exposure of server details. It prevents potential attackers from knowing specific server software versions. Disabling the server signature is a recommended security practice.'
             ],
             'disable_index_browsing' => [
                 'label' => 'Disable Index Browsing',
                 'lines' => [
                     '# Options All -Indexes may cause Internal Server Error',
                     'Options -Indexes',
-                ]
+                ],
+                'desc' => 'Prevents the web server from automatically generating a list of files and directories when no specific file (such as an index file) is found in a directory. Without this directive, if someone accesses a directory without an index file (e.g., https://yourdomain.com/some-directory/), the server might display a list of all files and subdirectories within that directory. Disable this behavior makes it more difficult for potential attackers to explore your directory structure.'
             ],
             'dir_force_index' => [
                 'label' => 'Directory Index Force Index.php',
                 'lines' => [
                     'DirectoryIndex index.php index.html /index.php',
-                ]
+                ],
+                'desc' => 'Modifies the default index page behavior for your site. By configuring the order of index files, you control which file is loaded first when someone accesses a directory. In this example, if a user visits a directory without specifying a specific file (e.g., https://yourdomain.com/some-directory/), the server will first look for index.php, then index.html, and finally /index.php. This ensures that the appropriate default page is displayed when accessing directories within your WordPress site.'
             ],
             'script_injections' => [
                 'label' => 'Prevent Script Injections',
@@ -125,7 +146,8 @@ class DDTT_HTACCESS {
                     'RewriteCond %{QUERY_STRING} GLOBALS(=|[|%[0-9A-Z]{0,2}) [OR]',
                     'RewriteCond %{QUERY_STRING} _REQUEST(=|[|%[0-9A-Z]{0,2})',
                     'RewriteRule ^(.*)$ index.php [F,L]',
-                ]
+                ],
+                'desc' => 'Prevent potential attacks that exploit query strings containing suspicious patterns related to scripts or global variables. It enhances security by blocking access to URLs with harmful query strings.'
             ],
             'plugin_theme_access' => [
                 'label' => 'Restrict Direct Access to Plugin and Theme PHP files',
@@ -135,7 +157,8 @@ class DDTT_HTACCESS {
                     'RewriteCond %{REQUEST_URI} !^'.$parent_theme_path,
                     'RewriteCond %{REQUEST_URI} !^'.$active_theme_path,
                     'RewriteRule '.$themes_root_uri.'(.*\.php)$ - [R=404,L]',
-                ]
+                ],
+                'remove' => TRUE
             ],
             'protect_includes' => [
                 'label' => 'Protect WP Includes Directory',
@@ -149,7 +172,8 @@ class DDTT_HTACCESS {
                     'RewriteRule ^'.$includes_path.'js/tinymce/langs/.+\.php - [F,L]',
                     'RewriteRule ^'.$includes_path.'theme-compat/ - [F,L]',
                     '</IfModule>',
-                ]
+                ],
+                'desc' => 'Prevents unauthorized direct access to sensitive PHP files within the "include" directories.'
             ],
             'username_enumeration' => [
                 'label' => 'Prevent Username Enumeration',
@@ -158,7 +182,8 @@ class DDTT_HTACCESS {
                     'RewriteCond %{REQUEST_URI} !^/='.$admin_path.' [NC]',
                     'RewriteCond %{QUERY_STRING} author=\d',
                     'RewriteRule ^ /? [L,R=301]',
-                ]
+                ],
+                'desc' => 'Redirects URLs with an author parameter (e.g., ?author=123) away from the site. This can be useful for security reasons or to prevent exposing user information, including their username.'
             ],
             'redirect_bots' => [
                 'label' => 'Block Bots from WP Admin',
@@ -166,7 +191,8 @@ class DDTT_HTACCESS {
                     'ErrorDocument 401 /404.shtml',
                     'ErrorDocument 403 /404.shtml',
                     'Redirect 301 /author/admin/ /404.shtml',
-                ]
+                ],
+                'desc' => 'Tells the server to display the <code>/404.shtml</code> page whenever a 401 Unauthorized error occurs. This typically happens when a user tries to access a restricted area of the site without the correct credentials. Same with when a 403 Forbidden error occurs, which is usually triggered when a user tries to access a directory or file for which they do not have permission. Furthermore, this snippet blocks access to the <code>/author/admin/</code> page.'
             ],
             'upload_size' => [
                 'label' => 'Increase Upload Size',
@@ -175,7 +201,15 @@ class DDTT_HTACCESS {
                     'php_value post_max_size 256M',
                     'php_value max_execution_time 300',
                     'php_value max_input_time 300',
-                ]
+                ],
+                'desc' => 'Sets the maximum upload file size, which means that users will be able to upload files up to 256MB in size. Sets the maximum size of POST data that PHP will accept to 256MB. Sets the maximum time in seconds a script is allowed to run before it is terminated by the parser. This helps prevent poorly written scripts from tying up the server. Allows a script to run for up to 300 seconds (or 5 minutes). Sets the maximum time in seconds (also 300) that a script is allowed to parse input data, like POST, GET and file uploads.'
+            ],
+            'max_input_vars' => [
+                'label' => 'Increase Max Vars Limit',
+                'lines' => [
+                    'php_value max_input_vars 3000',
+                ],
+                'desc' => 'Increases the maximum number of input variables that PHP will accept. By default, PHP has a limit on the number of input variables it can handle. This limit is set to prevent attacks such as hash collisions. However, in some cases, you might need to increase this limit. For example, if you have a form with a large number of fields or if you\'re using a WordPress theme that requires a higher limit.'
             ],
             'allow_backups' => [
                 'label' => 'Allow Sucuri GoDaddy Backups',
@@ -183,13 +217,8 @@ class DDTT_HTACCESS {
                     '<ifmodule mod_rewrite.c="">',
                     'RewriteRule ^sucuri-(.*).php$ - [L]',
                     '</ifmodule>',
-                ]
-            ],
-            'max_input_vars' => [
-                'label' => 'Increase Max Vars Limit',
-                'lines' => [
-                    'php_value max_input_vars 3000',
-                ]
+                ],
+                'desc' => 'Only useful if you are hosting with GoDaddy and have Website Security feature with backups enabled. This is a recommended snippet by Sucuri that may help resolve issues with redirecting during backups.'
             ],
         ] );
         return $snippets;
@@ -246,7 +275,8 @@ class DDTT_HTACCESS {
         $row = '<tr valign="top">
             <th scope="row">'.$snippet[ 'label' ].'</th>
             <td class="checkbox-cell">'.$input.'</td>
-            <td><div class="snippet_container '.$name.'"> <span class="snippet-exists '.$class.'">'.$lines.'</div></td>
+            <td><div class="snippet_container '.$name.'"> <span class="snippet-exists '.$class.'">'.$lines.'</div>
+                <div class="field-desc">'.$snippet[ 'desc' ].'</div></td>
         </tr>';
         
         // Return the row
@@ -264,7 +294,7 @@ class DDTT_HTACCESS {
     public function snippet_exists( $htaccess, $snippet ) {
         // Add the lines together
         $lines = $this->snippet_to_string( $snippet, ' ' );
-
+        
         // Check the file for the line
         if ( strpos( $htaccess, $lines ) !== false ) {
 
@@ -409,8 +439,37 @@ class DDTT_HTACCESS {
 
                     // Search the file lines
                     foreach( $safe_file_lines as $file_key => $safe_file_line ) {
-                        
-                        // Check the file for the comment line
+
+                        // Does the snippet have an old label?
+                        if ( isset( $snippet[ 'old_label' ] ) ) {
+                            foreach ( $snippet[ 'old_label' ] as $old_label ) {
+                                
+                                // Check the file for the old comment line
+                                if ( strpos( $safe_file_line, $old_label ) !== false ) {
+
+                                    // Check for each line in the snippet
+                                    for ( $sl = 1; $sl <= count( $snippet[ 'lines' ] ); $sl++ ) {
+                                        
+                                        // If the line below it is in the snippet, remove it
+                                        if ( isset( $safe_file_lines[ $file_key + $sl ] ) && strpos( $line_string, $safe_file_lines[ $file_key + $sl ] ) !== false ) {
+                                            unset( $safe_file_lines[ $file_key + $sl ] );
+                                        }
+                                    }
+
+                                    // If there is a space directly below it, remove that too
+                                    $end_of_snippet = $file_key + count( $snippet[ 'lines' ] );
+                                    if ( isset( $safe_file_lines[ $end_of_snippet + 1 ] ) && strlen( $safe_file_lines[ $end_of_snippet + 1 ] ) >= 0 && empty( trim( $safe_file_lines[ $end_of_snippet + 1 ] ) ) ) {
+                                        unset( $safe_file_lines[ $end_of_snippet + 1 ] );
+                                    }
+
+                                    // Lastly, remove the comment line
+                                    unset( $safe_file_lines[ $file_key ] );
+                                }
+                            }
+
+                        }
+
+                        // Check the file for the current comment line
                         if ( strpos( $safe_file_line, $snippet[ 'label' ] ) !== false ) {
 
                             // Check for each line in the snippet

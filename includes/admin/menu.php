@@ -244,6 +244,7 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'crons'             => [ __( 'Cron Jobs', 'dev-debug-tools' ), 'A list of all scheduled cron jobs.', true ],
         'siteoptions'       => [ __( 'Site Options', 'dev-debug-tools' ), 'A quick view of all the site\'s options for reference.', true ],
         'globalvars'        => [ __( 'Globals', 'dev-debug-tools' ), 'A list of available global variables that can be called with <code class="hl">global $variable;</code>', true ],
+        'defines'           => [ __( 'Defines', 'dev-debug-tools' ), ' A full list of all the defined constants and their values. Constants are defined using <code class="hl">define( "CONSTANT", "VALUE" )</code>.', true ],
         'usermeta'          => [ __( 'User Meta', 'dev-debug-tools' ), 'A quick view of all the user meta so you don\'t have to log into phpMyAdmin.', true ],
         'postmeta'          => [ __( 'Post Meta', 'dev-debug-tools' ), 'A quick view of all the post meta so you don\'t have to log into phpMyAdmin.', true ],
         'commentmeta'       => [ __( 'Comment Meta', 'dev-debug-tools' ), 'A quick view of all the comment meta so you don\'t have to log into phpMyAdmin.', true ],

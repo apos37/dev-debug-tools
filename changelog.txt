@@ -1,4 +1,15 @@
 == changelog.txt ==
+= 1.7.0 =
+* Fix: Undefined variable $cancel on htaccess tab
+* Fix: Debug log Easy Reader not displaying arrays properly
+* Update: Added setting option to disable extra plugin info from plugins page as it's causing some drag for those with a lot of plugins
+* Update: Made recommended/featured plugins only load with qs, added button to plugins tab
+* Update: Added descriptions to each snippet
+* Update: Added a new tab for defined constants
+* Update: Added 10 additional wpconfig snippets
+* Update: Made adjustments to snippets in wpconfig and htaccess tabs
+* Update: Added new snippet to add WP_HOME and WP_SITEURL to wpconfig
+
 = 1.6.8.1 =
 * Update: Added new plugin to About tab
 

@@ -3,55 +3,40 @@ Contributors: apos37
 Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
-Tested up to: 6.5
+Tested up to: 6.5.3
 Requires PHP: 7.4
-Stable tag: 1.6.8.1
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 Lots of debugging and testing tools for developers.
 
 == Description ==
-Developer tools for debugging and testing things as you develop and troubleshoot your WordPress site.
+The "Developer Debug Tools" WordPress plugin is a powerhouse for developers and site administrators! It's a comprehensive toolkit that helps you identify, troubleshoot, and resolve issues in your WordPress site, making debugging a breeze.
 
-* View debug.log and error logs directly from admin in your timezone, conveniently combining repeats for readability, and with quick links to search Google for suggested solutions.
-* View additional .txt logs with custom URLs.
-* Quickly clear your debug and error logs with a click of a button.
-* View and download backups of wp-config.php file and .htaccess file from the admin area.
-* Add/remove snippets on the wp-config.php file without editing the file directly.
-* Add/remove snippets on the .htaccess file without editing the file directly.
-* Choose which errors to report to the debug.log (if your host allows it).
-* View and download functions.php file.
-* Toggle wp_mail() failure logging.
-* View and edit user meta, including custom meta, for a given user directly from the admin panel.
-* Add/remove roles for a specific user.
-* View and edit post meta, including custom meta for a given post directly from the admin panel.
-* Clear all taxonomy terms from a given post.
-* View all php.ini values.
-* View detailed information about your PHP's configuration.
-* View cookies.
-* View scheduled cron jobs.
-* View all site options and registered settings.
-* Clear all or expired transients easily.
-* View available WP global variables with ease.
-* View additional details about active plugins, and see warnings about outdated plugins at a glance.
-* Regex playground with cheat sheet.
-* Enable/disable WP heartbeat from settings.
-* Extend cURL timeout errors easily.
-* Shortcode Finder displays all available shortcodes and lets you search posts and pages where they are used.
-* Additional user and post information on admin bar.
-* View online users to avoid working on the site at the same time as other admins and users.
-* Centering tool added to the admin bar that helps you line up elements on a page.
-* See all shortcodes used on any page from the front-end in the admin bar.
-* If Gravity Forms is installed, see form ids in the admin bar.
-* Replaces "Howdy" on admin bar with your user ID.
-* Adds date/time that the page was loaded to admin bar for comparing two windows.
-* Quick links for debugging users, posts, pages, and Gravity Forms forms and entries.
-* Option to remove items from admin bar.
-* Allow posts and pages to be searched by ID in the admin area.
-* Access to a handful of additional functions and hooks that you can use for debugging.
-* A great list of links to helpful resources.
-* Discord notifications of fatal errors, user page loads, and user logins.
+This plugin offers a suite of features to aid in debugging, including, but not limited to:
+
+* Viewing and clearing `debug.log` and other logs
+* Viewing and updating `wp-config.php` and `.htaccess` files
+* Viewing and editing user meta and post meta
+* Quick links for debugging users, posts, pages, comments, and Gravity Forms forms and entries.
+* Clearing all taxonomy terms from a given post
+* Clearing all or expired transients easily
+* Finding where shortcodes are used
+* Seeing whom is online with their roles
+* Discord notifications of fatal errors, user page loads, and user logins
+* Enhancements to the admin bar such as condensing/removing items and seeing user/post info at a glance
+* Viewing helpful information such php.ini values, php configs, scheduled cron jobs, site options, global variables, and more
+* Access to a handful of additional functions and hooks that you can use for debugging
+
+With "Developer Debug Tools", you can:
+
+* Identify and fix errors, bugs, and conflicts
+* Troubleshoot complex issues with ease
+* Update user and post meta straight from the admin area
+* Streamline your development and testing workflow
+
+This plugin is a must-have for any WordPress developer or site administrator who wants to ensure a stable, efficient, and high-performing website. It's like having a trusty sidekick that helps you tackle even the most challenging debugging tasks!
 
 ---------------------
 
@@ -96,6 +81,17 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.7.0 =
+* Fix: Undefined variable $cancel on htaccess tab
+* Fix: Debug log Easy Reader not displaying arrays properly
+* Update: Added setting option to disable extra plugin info from plugins page as it's causing some drag for those with a lot of plugins
+* Update: Made recommended/featured plugins only load with qs, added button to plugins tab
+* Update: Added descriptions to each snippet
+* Update: Added a new tab for defined constants
+* Update: Added 10 additional wpconfig snippets
+* Update: Made adjustments to snippets in wpconfig and htaccess tabs
+* Update: Added new snippet to add WP_HOME and WP_SITEURL to wpconfig
+
 = 1.6.8.1 =
 * Update: Added new plugin to About tab
 

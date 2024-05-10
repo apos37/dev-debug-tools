@@ -4,16 +4,18 @@
 $page = ddtt_plugin_options_short_path();
 $tab = 'plugins';
 $current_url = ddtt_plugin_options_path( $tab );
+$featured_plugins_url = home_url( DDTT_ADMIN_URL.'/plugin-install.php?tab=featured' );
 ?>
 
 <br><br>
 <div class="full_width_container">
     <?php if ( ddtt_get( 'simple_plugin_list', '==', 'true' ) ) { ?>
-        <a href="<?php echo esc_url( $current_url ); ?>">View Table</a>
+        <a class="button button-secondary" href="<?php echo esc_url( $current_url ); ?>">View Table</a>
     <?php } else { ?>
-        <a href="<?php echo esc_url( $current_url ); ?>&simple_plugin_list=true">View Simple List</a>
+        <a class="button button-secondary" href="<?php echo esc_url( $current_url ); ?>&simple_plugin_list=true">View Simple List</a>
     <?php } ?>
-    <br><br>
+    <a class="button button-secondary" href="<?php echo esc_url( $featured_plugins_url ); ?>">Recommended Plugins</a>
+    <br><br><br>
     <?php 
     // Defaults
     $link = true;

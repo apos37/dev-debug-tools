@@ -193,6 +193,8 @@
                     echo wp_kses( ddtt_options_tr( 'ql_gravity_forms', 'Add Quick Debug Links to Gravity Forms & Entries', 'checkbox' ), $allowed_html ); 
                 } ?>
 
+                <?php echo wp_kses( ddtt_options_tr( 'plugins_page_data', 'Disable Extra Data on Plugins Page (Main File Path, File Size, and Last Modified Date)', 'checkbox', 'You can still see all the extra data on our <a href="'.ddtt_plugin_options_path( 'plugins' ).'">Plugins</a> tab.' ), $allowed_html ); ?>
+
             </table>
 
             <?php submit_button(); ?>

@@ -50,6 +50,7 @@ class DDTT_GLOBAL_OPTIONS {
             'ql_post_id',
             'ql_comment_id',
             'ql_gravity_forms',
+            'plugins_page_data',
             'disable_error_counts',
             'log_viewer',
             'log_user_url',
