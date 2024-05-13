@@ -861,7 +861,7 @@ function ddtt_view_file_contents( $path, $log = false ) {
                 $line = esc_html( $line );
 
                 // Check if we are redacting
-                if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 && !$editor ) {
+                if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
 
                     // Redact sensitive info
                     $substrings = [
@@ -1125,7 +1125,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                                 }
 
                                 // Have we already added this rest?
-                                if ( $repeat && !$start_collecting_array ) {
+                                if ( $repeat && ( !$is_array || ( $is_array && !$start_collecting_array ) ) ) {
 
                                     // Don't add this line
                                     $new_actual_line = false;

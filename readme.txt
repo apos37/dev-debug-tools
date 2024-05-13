@@ -5,7 +5,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.5.3
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -81,6 +81,9 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.7.1 =
+* Fix: Debug.log Easy Reader not combining repeated line items
+
 = 1.7.0 =
 * Fix: Undefined variable $cancel on htaccess tab
 * Fix: Debug log Easy Reader not displaying arrays properly

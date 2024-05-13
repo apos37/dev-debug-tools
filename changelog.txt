@@ -1,4 +1,7 @@
 == changelog.txt ==
+= 1.7.1 =
+* Fix: Debug.log Easy Reader not combining repeated line items
+
 = 1.7.0 =
 * Fix: Undefined variable $cancel on htaccess tab
 * Fix: Debug log Easy Reader not displaying arrays properly
