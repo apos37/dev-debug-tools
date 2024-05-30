@@ -462,7 +462,7 @@ class DDTT_WPCONFIG {
             if ( preg_match_all( $regex, $wpconfig, $matches ) ) {
 
                 // Display an error if there are any duplicates found
-                if ( count( $matches[0] ) > 1 ) {                
+                if ( count( $matches[0] ) > 1 ) {
                     ddtt_admin_notice( 'error', 'Duplicate snippet found: '.$matches[0][0] );
                 }
 

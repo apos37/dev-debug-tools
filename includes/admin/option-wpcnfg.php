@@ -279,8 +279,15 @@ if ( ddtt_get( 'delete_backups', '==', 'true' ) ) {
                         $checked = $exists[ 'exists' ];
                     }
 
+                    // Description
+                    if ( isset( $snippet[ 'desc' ] ) ) {
+                        $desc = $snippet[ 'desc' ];
+                    } else {
+                        $desc = '';
+                    }
+
                     // Add the row to the table
-                    echo wp_kses( $DDTT_WPCONFIG->options_tr( $key, $snippet[ 'label' ], $checked, $exists[ 'strings' ][ 'true' ], $exists[ 'strings' ][ 'false' ], $snippet[ 'desc' ] ), $allowed_html );
+                    echo wp_kses( $DDTT_WPCONFIG->options_tr( $key, $snippet[ 'label' ], $checked, $exists[ 'strings' ][ 'true' ], $exists[ 'strings' ][ 'false' ], $desc ), $allowed_html );
                 }
             }
             ?>

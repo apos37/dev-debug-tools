@@ -766,9 +766,13 @@ Post Type: '.$post_type;
         }
 
         // Add a thumbnail if site icon exists
-        $icon = get_site_icon_url();
-        if ( $icon && $icon != '' ) {
-            $args[ 'thumbnail_url' ] = $icon;
+        if ( $avatar_url = get_avatar_url( $user->ID ) ) {
+            $args[ 'thumbnail_url' ] = $avatar_url;
+        } else {
+            $icon = get_site_icon_url();
+            if ( $icon && $icon != '' ) {
+                $args[ 'thumbnail_url' ] = $icon;
+            }
         }
         
         // First try sending to Discord

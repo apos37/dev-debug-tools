@@ -12,7 +12,8 @@ function ddtt_htaccess_snippets_filter( $snippets ) {
         'lines' => [
             'RewriteCond %{REQUEST_URI} /+[^\.]+$',
             'RewriteRule ^(.+[^/])$ %{REQUEST_URI}/ [R=301,L]',
-        ]
+        ],
+        'desc'  => 'Forces a trailing slash at the end of the domain.'
     ];
 
     // Remove a snippet

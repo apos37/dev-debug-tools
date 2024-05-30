@@ -1,11 +1,10 @@
 === Developer Debug Tools ===
 Contributors: apos37
-Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.5.3
 Requires PHP: 7.4
-Stable tag: 1.7.1
+Stable tag: 1.7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -81,8 +80,15 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.7.2 =
+* Fix: Error when no description is found on snippets when using hooks
+* Tweak: Updated hook examples for `ddtt_wpconfig_snippets` and `ddtt_htaccess_snippets` to include a description
+* Tweak: Removed donate option; nobody ever donates
+* Update: Discord user notifications now include user avatar as embed thumbnail if one exists
+* Fix: Some plugins causing a bottom border on active tab and moving 2nd row of tabs over on hover
+
 = 1.7.1 =
-* Fix: Debug.log Easy Reader not combining repeated line items
+* Fix: Debug log Easy Reader not combining repeated line items
 
 = 1.7.0 =
 * Fix: Undefined variable $cancel on htaccess tab

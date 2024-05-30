@@ -16,11 +16,26 @@ function ddtt_wpconfig_snippets_filter( $snippets ) {
                 'variable' => 'WP_POST_REVISIONS',
                 'value' => 3
             ]
-        ]
+        ],
+        'desc'  => 'Changes the number of post revisions to 3.' 
     ];
 
     // Remove a snippet
     unset( $snippets[ 'fs_method' ] );
+
+    // Change memory limit snippet to 512M
+    $snippets[ 'upload_size' ][ 'lines' ] = [
+        [
+            'prefix'   => '@ini_set',
+            'variable' => 'upload_max_size',
+            'value'    => '512M'
+        ],
+        [
+            'prefix'   => '@ini_set',
+            'variable' => 'post_max_size',
+            'value'    => '512M'
+        ]
+    ];
 
     // Return the new snippet array
     return $snippets;
