@@ -1,4 +1,6 @@
 jQuery( $ => {
+    // console.log( 'Feedback JS Loaded...' );
+
     // The send feedback button
     var btn = $( '#feedback-form .submit' );
 

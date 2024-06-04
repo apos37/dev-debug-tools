@@ -1467,7 +1467,7 @@ function ddtt_convert_timestamp_to_string( $ts, $short = false ) {
  */
 add_shortcode( 'example', 'ddtt_example_shortcode' );
 function ddtt_example_shortcode( $atts ) {
-    $atts = shortcode_atts( [ 'to' => 'Michael' ], $atts );
+    $atts = shortcode_atts( [ 'to' => 'Aristocles' ], $atts );
     return 'Hello, '.$atts[ 'to' ];
 } // End ddtt_example_shortcode()
 

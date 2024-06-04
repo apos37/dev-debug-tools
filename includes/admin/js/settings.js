@@ -1,4 +1,6 @@
 jQuery( $ => {
+    // console.log( 'Settings JS Loaded...' );
+
     // Listen for enabling/disabling cURL timeout
     $( '#ddtt_enable_curl_timeout' ).on( 'change', function() {
         if ( $( this ).is( ':checked' ) ) {

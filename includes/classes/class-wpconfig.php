@@ -395,7 +395,7 @@ class DDTT_WPCONFIG {
         foreach ( $line_strings_1 as $line_1 ) {
 
             // Put the snippet together
-            $lines[] = '<span class="line-exists true">'.$line_1.';</span>';
+            $lines[] = '<span class="line-exists true">'.$line_1.'</span>';
         }
         foreach ( $line_strings_0 as $line_0 ) {
 
@@ -426,107 +426,249 @@ class DDTT_WPCONFIG {
      * @param array $snippet
      * @return array
      */
+    // public function snippet_exists( $wpconfig, $snippet ) {
+    //     // Count the number of lines in the snippet
+    //     $count = count( $snippet[ 'lines' ] );
+
+    //     // Count number of items that exist
+    //     $lines_exist = 0;
+
+    //     // Line strings
+    //     $line_strings_1 = [];
+    //     $line_strings_0 = [];
+
+    //     // Line keys
+    //     $lines_1 = [];
+    //     $lines_0 = [];
+
+    //     // Found
+    //     $found = [];
+
+    //     // Partial in-line
+    //     $partial = false;
+
+    //     // Cycle each line
+    //     foreach ( $snippet[ 'lines' ] as $key => $line ) {
+    //         // ddtt_print_r($line);
+
+    //         // Create a line string
+    //         $line_string = $this->snippet_line_to_string( $line );
+
+    //         // Create the regex search pattern from the line
+    //         $regex = $this->snippet_regex( $line );
+    //         // ddtt_print_r($regex);
+
+    //         // Check the file for the line
+    //         if ( preg_match_all( $regex, $wpconfig, $matches ) ) {
+
+    //             // Display an error if there are any duplicates found
+    //             if ( count( $matches[0] ) > 1 ) {
+    //                 ddtt_admin_notice( 'error', 'Duplicate snippet found: '.$matches[0][0] );
+    //             }
+
+    //             // Count this as exists
+    //             $lines_exist++;
+
+    //             // Add line string to the true bucket
+    //             foreach ( $matches[0] as $match ) {
+    //                 $line_strings_1[] = $match;
+    //                 $lines_1[] = $line;
+
+    //                 // Add what we found in snippet form
+    //                 if ( $converted = $this->string_to_snippet_line( $match ) ) {
+    //                     $found[] = $converted;
+
+    //                     // Check if the converted matches the line
+    //                     if ( $line != $converted ) {
+    //                         $partial = true;
+    //                     }
+    //                 }
+    //             }
+                
+    //         } else {
+                
+    //             // Add line string to the false bucket
+    //             $line_strings_0[] = $line_string;
+    //             $lines_0[] = $line;
+    //         }
+    //     }
+
+    //     // Check if all lines exist
+    //     if ( !$partial ) {
+    //         if ( $count == $lines_exist ) {
+    //             $snippet_exists = true;
+    //             $partial = false;
+    
+    //         // If no lines exist
+    //         } elseif ( $lines_exist == 0 ) {
+    //             $snippet_exists = false;
+    //             $partial = false;
+    
+    //         // If only some of the lines exist
+    //         } else {
+    //             $snippet_exists = false;
+    //             $partial = true;
+    //         }
+    //     } else {
+    //         $snippet_exists = false;
+    //     }
+
+    //     // Output
+    //     $output = [
+    //         'exists'    => $snippet_exists,
+    //         'partial'   => $partial,
+    //         'lines'     => [
+    //             'true'  => $lines_1,
+    //             'false' => $lines_0
+    //         ],
+    //         'strings'   => [
+    //             'true'  => $line_strings_1,
+    //             'false' => $line_strings_0
+    //         ],
+    //         'found'     => $found,
+    //     ];
+
+    //     // Return the results
+    //     return $output;
+    // } // End snippet_exists()
+
+
+    /**
+     * Check if a snippet exists
+     *
+     * @param string $wpconfig
+     * @param array $snippet
+     * @return array
+     */
     public function snippet_exists( $wpconfig, $snippet ) {
+        // For testing
+        $testing = false;
+        $include_comments_as_partials = false;
+
+        // Vars
+        $snippet_exists = false;
+        $partial = false;
+        $line_matches = [
+            'true'  => [],
+            'false' => [],
+        ];
+        $string_matches = [
+            'true'  => [],
+            'false' => [],
+        ];
+
         // Count the number of lines in the snippet
-        $count = count( $snippet[ 'lines' ] );
+        $lines_count = count( $snippet[ 'lines' ] );
 
         // Count number of items that exist
         $lines_exist = 0;
 
-        // Line strings
-        $line_strings_1 = [];
-        $line_strings_0 = [];
-
-        // Line keys
-        $lines_1 = [];
-        $lines_0 = [];
-
-        // Found
-        $found = [];
-
-        // Partial in-line
-        $partial = false;
+        // Explode the lines
+        $lines = explode( PHP_EOL, $wpconfig );
 
         // Cycle each line
-        foreach ( $snippet[ 'lines' ] as $key => $line ) {
-            // ddtt_print_r($line);
+        foreach ( $snippet[ 'lines' ] as $snippet_line ) {
 
             // Create a line string
-            $line_string = $this->snippet_line_to_string( $line );
+            $line_string = $this->snippet_line_to_string( $snippet_line );
+            $line_string = trim( $line_string ); if ( $testing ) { dpr( $line_string ); }
+            $found = false;
+            $in_comment = false; // Flag to track if currently within a comment block
 
             // Create the regex search pattern from the line
-            $regex = $this->snippet_regex( $line );
-            // ddtt_print_r($regex);
+            $regex = $this->snippet_regex( $snippet_line );
 
-            // Check the file for the line
-            if ( preg_match_all( $regex, $wpconfig, $matches ) ) {
+            // Look for the snippet line in uncommented lines
+            foreach ( $lines as $line ) {
 
-                // Display an error if there are any duplicates found
-                if ( count( $matches[0] ) > 1 ) {
-                    ddtt_admin_notice( 'error', 'Duplicate snippet found: '.$matches[0][0] );
-                }
-
-                // Count this as exists
-                $lines_exist++;
-
-                // Add line string to the true bucket
-                foreach ( $matches[0] as $match ) {
-                    $line_strings_1[] = $match;
-                    $lines_1[] = $line;
-
-                    // Add what we found in snippet form
-                    if ( $converted = $this->string_to_snippet_line( $match ) ) {
-                        $found[] = $converted;
-
-                        // Check if the converted matches the line
-                        if ( $line != $converted ) {
-                            $partial = true;
-                        }
+                // Trim the line
+                $trimmed_line = trim( $line );
+        
+                // Check if currently within a comment block (multi-line or doc)
+                if ( $in_comment ) {
+                    
+                    // Look for closing comment marker (`*/`)
+                    if ( strpos( $trimmed_line, '*/' ) !== false ) {
+                        $in_comment = false; // Exit comment block
                     }
+
+                    // If the commented out line includes the line string, make it partial
+                    // if ( stripos( $trimmed_line, $line_string ) !== false ) {
+                    if ( $include_comments_as_partials && preg_match_all( $regex, $trimmed_line, $matches ) ) {
+                        $partial = true;
+                    }
+
+                    // Skip lines within comments
+                    continue; 
                 }
-                
-            } else {
-                
-                // Add line string to the false bucket
-                $line_strings_0[] = $line_string;
-                $lines_0[] = $line;
+        
+                // Check for single-line comment and exclude
+                if ( strpos( $trimmed_line, '//' ) === 0 ) {
+
+                    // If the commented out line includes the line string, make it partial
+                    // if ( stripos( $trimmed_line, $line_string ) !== false ) {
+                    if ( $include_comments_as_partials && preg_match_all( $regex, $trimmed_line, $matches ) ) {
+                        $partial = true;
+                    }
+
+                    // Skip line
+                    continue;
+                }
+        
+                // Check for start of multi-line or doc comment
+                if ( strpos( $trimmed_line, '/*' ) === 0 || strpos( $trimmed_line, '/**' ) === 0 ) {
+                    $in_comment = true; // Enter comment block
+
+                    // If the commented out line includes the line string, make it partial
+                    // if ( stripos( $trimmed_line, $line_string ) !== false ) {
+                    if ( $include_comments_as_partials && preg_match_all( $regex, $trimmed_line, $matches ) ) {
+                        $partial = true;
+                    }
+
+                    // Skip comment start line
+                    continue;
+                }
+        
+                // Check for match if not in comment
+                // if ( stripos( $trimmed_line, $line_string ) !== false ) {
+                if ( preg_match_all( $regex, $trimmed_line, $matches ) ) {
+                    $found = true;
+                    $line_matches[ 'true' ][] = $snippet_line;
+                    $string_matches[ 'true' ][] = $line;
+
+                    // Count this as exists for finding partials
+                    $lines_exist++;
+
+                    // Exit loop after finding a match
+                    break; 
+                }
+            }
+
+            // Collect the snippet if not found
+            if ( !$found ) {
+                $line_matches[ 'false' ][] = $snippet_line;
+                $string_matches[ 'false' ][] = $line_string;
             }
         }
 
         // Check if all lines exist
-        if ( !$partial ) {
-            if ( $count == $lines_exist ) {
-                $snippet_exists = true;
-                $partial = false;
-    
-            // If no lines exist
-            } elseif ( $lines_exist == 0 ) {
-                $snippet_exists = false;
-                $partial = false;
-    
-            // If only some of the lines exist
-            } else {
-                $snippet_exists = false;
-                $partial = true;
-            }
-        } else {
-            $snippet_exists = false;
+        // dpr( $lines_count.' == '.$lines_exist );
+        if ( $lines_count == $lines_exist ) {
+            $snippet_exists = true;
+            $partial = false;
+        } elseif ( $lines_exist > 0 ) {
+            $partial = true;
         }
 
-        // Return the results
-        return [
-            'exists'    => $snippet_exists,
-            'partial'   => $partial,
-            'lines'     => [
-                'true'  => $lines_1,
-                'false' => $lines_0
-            ],
-            'strings'   => [
-                'true'  => $line_strings_1,
-                'false' => $line_strings_0
-            ],
-            'found'     => $found
+        // Output
+        $output = [
+            'exists'  => $snippet_exists,
+            'partial' => $partial,
+            'lines'   => $line_matches,
+            'strings' => $string_matches,
         ];
+        if ( $testing ) { dpr( $output ); }
+        return $output;
     } // End snippet_exists()
 
 
@@ -735,7 +877,7 @@ class DDTT_WPCONFIG {
                         $regex = $this->snippet_regex( $snippet_line_1 );
 
                         // Search the file lines
-                        foreach( $safe_file_lines as $file_key => $safe_file_line ) {
+                        foreach ( $safe_file_lines as $file_key => $safe_file_line ) {
 
                             // Sanitize the line
                             $safe_file_line = sanitize_text_field( $safe_file_line );
@@ -765,7 +907,7 @@ class DDTT_WPCONFIG {
                     }
 
                     // If it at least partially exists, then add the snippet to the add bucket 
-                    if ( ( $exists && $is_enabled ) || ( !$exists && $partial && $is_enabled) ) {
+                    if ( ( $exists && $is_enabled ) || ( !$exists && $partial && $is_enabled ) ) {
                         $add[] = $snippet;
                     }
 

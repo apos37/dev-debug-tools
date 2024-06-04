@@ -227,14 +227,17 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         $debugging = 'DISABLED';
     }
 
+    // Rest API root
+    $rest_api_root = rest_url();
+
     // The menu items
     // Set 3rd param to true if the item should only be visible to devs
     // Set 4th param to true if the item should not be added to the menu or tabs, but is a hidden subpage
     $items = [
         'settings'          => [ __( 'Settings', 'dev-debug-tools' ), 'This area is for developers only.' ],
-        'plugins'           => [ __( 'Plugins', 'dev-debug-tools' ), 'We have replaced the default featured plugins with <a href="/'.DDTT_ADMIN_URL.'/plugin-install.php?tab=featured">our own plugin recommendations here</a>.' ],
+        'plugins'           => [ __( 'Plugins', 'dev-debug-tools' ), 'A more in-depth breakdown of all the plugins installed on the site.' ],
         'logs'              => [ __( 'Logs', 'dev-debug-tools' ).$notif, 'All of your log files in one place. You can add more log files in <a href="'.ddtt_plugin_options_path( 'settings' ).'">Settings</a>.'.$multisite, true ],
-        'error'             => [ __( 'Error Reporting', 'dev-debug-tools' ), 'Choose which errors are reported to your <code class="hl">debug.log</code> file. Note that <code class="hl">WP_DEBUG</code> is currently <code class="'.strtolower( $debugging ).'">'.$debugging.'</code> on your <code class="hl">wp-config.php</code> file. It must be enabled for any of the reporting to work.'.$multisite, true ],
+        'error'             => [ __( 'Error Reporting', 'dev-debug-tools' ), 'Choose which errors are reported to your <code class="hl">debug.log</code> file. Note that <code class="hl">WP_DEBUG</code> is currently <code class="'.strtolower( $debugging ).'">'.$debugging.'</code> on your <code class="hl">wp-config.php</code> file. It must be enabled for any of the reporting to work. Please note that not all hosts allow these settings to be changed, but hey it\'s worth a try.'.$multisite, true ],
         'wpcnfg'            => [ 'WP-CONFIG', 'View and update your wp-config.php. Please backup the original before updating.'.$multisite, true ],
         'htaccess'          => [ 'HTACCESS', 'View and update your .htaccess from here. Please backup the original before updating.'.$multisite, true ],
         'fx'                => [ 'Functions.php', 'A simple functions.php viewer.', true ],
@@ -244,11 +247,12 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'crons'             => [ __( 'Cron Jobs', 'dev-debug-tools' ), 'A list of all scheduled cron jobs.', true ],
         'siteoptions'       => [ __( 'Site Options', 'dev-debug-tools' ), 'A quick view of all the site\'s options for reference.', true ],
         'globalvars'        => [ __( 'Globals', 'dev-debug-tools' ), 'A list of available global variables that can be called with <code class="hl">global $variable;</code>', true ],
-        'defines'           => [ __( 'Defines', 'dev-debug-tools' ), ' A full list of all the defined constants and their values. Constants are defined using <code class="hl">define( "CONSTANT", "VALUE" )</code>.', true ],
+        'defines'           => [ __( 'Defines', 'dev-debug-tools' ), 'A full list of all the defined constants and their values. Constants are defined using <code class="hl">define( "CONSTANT", "VALUE" )</code>.', true ],
+        'db'                => [ __( 'DB Tables', 'dev-debug-tools' ), 'A quick reference of the database table structure.', true ],
         'usermeta'          => [ __( 'User Meta', 'dev-debug-tools' ), 'A quick view of all the user meta so you don\'t have to log into phpMyAdmin.', true ],
         'postmeta'          => [ __( 'Post Meta', 'dev-debug-tools' ), 'A quick view of all the post meta so you don\'t have to log into phpMyAdmin.', true ],
-        'commentmeta'       => [ __( 'Comment Meta', 'dev-debug-tools' ), 'A quick view of all the comment meta so you don\'t have to log into phpMyAdmin.', true ],
-        'autodrafts'        => [ __( 'Auto-Drafts', 'dev-debug-tools' ), 'View current auto-drafts.', true ],
+        'autodrafts'        => [ __( 'Auto-Drafts', 'dev-debug-tools' ), 'View current auto-drafts. Auto-drafts are temporary drafts that are typically created when you start a new post and then leave the page without saving it. They can be hidden in the database and not show up in your admin list table with the rest of your drafts. Since these are unnecessary, this page allows you to clear them easily.', true ],
+        'api'               => [ __( 'APIs', 'dev-debug-tools' ), 'A list of the site\'s registered REST APIs. Your REST API root is: <a href="'.$rest_api_root.'" target="_blank">'.$rest_api_root.'</a>', true ],
         'scfinder'          => [ __( 'Shortcode Finder', 'dev-debug-tools' ), 'Search through posts and pages for a shortcode.' ],
         'regex'             => [ 'Regex', 'Learn and test regex patterns.', true ],
         'testing'           => [ __( 'Testing', 'dev-debug-tools' ), '<h3>Test Number: '.$test_num.'</h3><br>Use this page as a testing ground for PHP - Only developer accounts can see this.', true ],

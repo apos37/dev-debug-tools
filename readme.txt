@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.5.3
 Requires PHP: 7.4
-Stable tag: 1.7.2
+Stable tag: 1.7.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -80,6 +80,15 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.7.3 =
+* Fix: Wp-config snippets showing as checked even when they are commented out (props amurashkin)
+* Update: Added an APIs tab to check availability of local REST APIs
+* Update: Added a DB Tables tab for quick reference of the database table structure
+* Tweak: Comment Meta tab removed and debug info moved to hidden debug page, same as GF forms, entries, etc.
+* Fix: JavaScript on Error Reporting tab not loading if Discord fatal error notifications are enabled
+* Fix: Priority roles not showing as priority in admin bar
+* Fix: Wp-config auth keys and salts not redacting if containing spaces
+
 = 1.7.2 =
 * Fix: Error when no description is found on snippets when using hooks
 * Tweak: Updated hook examples for `ddtt_wpconfig_snippets` and `ddtt_htaccess_snippets` to include a description

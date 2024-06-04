@@ -1,4 +1,6 @@
 jQuery( $ => {
+    // console.log( 'Error Reporting JS Loaded...' );
+
     // Listen for constant changes
     $( '.error_constants_checkboxes' ).on( 'change', function() {
 

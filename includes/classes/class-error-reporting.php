@@ -1,6 +1,6 @@
 <?php
 /**
- * Logs class
+ * Error Reporting class
  */
 
 // Exit if accessed directly.
@@ -13,8 +13,7 @@ if ( !defined( 'ABSPATH' ) ) {
  * Initiate the class
  */
 add_action( 'init', function() {
-    $DDTT_ERROR_REPORTING = new DDTT_ERROR_REPORTING;
-    $DDTT_ERROR_REPORTING->init();
+    (new DDTT_ERROR_REPORTING)->init();
 } );
 
 
@@ -28,18 +27,18 @@ class DDTT_ERROR_REPORTING {
 	 */
 	public function init() {
 
-        // Are we sending fatal errors to Discord?
-        if ( get_option( DDTT_GO_PF.'fatal_discord_enable' ) && get_option( DDTT_GO_PF.'fatal_discord_enable' ) == 1 && 
-             get_option( DDTT_GO_PF.'fatal_discord_webhook' ) && get_option( DDTT_GO_PF.'fatal_discord_webhook' ) != '' ) {
-            return register_shutdown_function( [ $this, 'send_fatal_errors_to_discord' ] );
-        }
-        
         // Ajax
         add_action( 'wp_ajax_'.DDTT_GO_PF.'check_error_code', [ $this, 'check_error_code' ] );
         add_action( 'wp_ajax_nopriv_'.DDTT_GO_PF.'check_error_code', [ $this, 'check_error_code' ] );
 
         // Enqueue scripts
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+
+        // Are we sending fatal errors to Discord?
+        if ( get_option( DDTT_GO_PF.'fatal_discord_enable' ) && get_option( DDTT_GO_PF.'fatal_discord_enable' ) == 1 && 
+             get_option( DDTT_GO_PF.'fatal_discord_webhook' ) && get_option( DDTT_GO_PF.'fatal_discord_webhook' ) != '' ) {
+            return register_shutdown_function( [ $this, 'send_fatal_errors_to_discord' ] );
+        }
 
 	} // End init()
 

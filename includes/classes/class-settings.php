@@ -24,6 +24,7 @@ class DDTT_SETTINGS {
      * Nonce
      */
     private $nonce = DDTT_GO_PF.'settings';
+    
 
     /**
 	 * Constructor

@@ -18,6 +18,7 @@ class DDTT_DEBUG_TOOLS {
 	 * Constructor
 	 */
 	public function __construct() {
+        
         // Ensure is_plugin_active() exists for multisite
 		if ( !function_exists( 'is_plugin_active' ) ) {
 			include_once( ABSPATH . DDTT_ADMIN_URL . '/includes/plugin.php' );
@@ -96,6 +97,7 @@ class DDTT_DEBUG_TOOLS {
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-settings.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-logs.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-error-reporting.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-api.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-download-files.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-wpconfig.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-htaccess.php';

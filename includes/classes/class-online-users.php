@@ -325,6 +325,11 @@ class DDTT_ONLINE_USERS {
 
             // Fetch priority roles only once
             $priority_roles = get_option( DDTT_GO_PF.'online_users_priority_roles' );
+            if ( $priority_roles ) {
+                $priority_roles = array_keys( $priority_roles );
+            } else {
+                $priority_roles = [];
+            }
 
             // Iter the active users
             foreach ( $active_users as $active_user ) {
@@ -357,7 +362,6 @@ class DDTT_ONLINE_USERS {
                     // Priority roles
                     $intersect = false;
                     if ( $user_roles && $priority_roles && !empty( $priority_roles ) ) {
-                        $priority_roles = array_keys( $priority_roles );
                         $intersect = array_intersect( $user_roles, $priority_roles );
                     }
                     if ( $priority_roles && !empty( $intersect ) ) {

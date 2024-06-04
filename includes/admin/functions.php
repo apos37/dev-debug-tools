@@ -1980,17 +1980,17 @@ function ddtt_highlight_file2( $filename, $return = false ) {
                 // Strip the tags
                 $stripped = strip_tags( $define_pw[0] );
 
-                // Remove any spaces
-                $despace = str_replace( '&nbsp;', '', $stripped );
+                // Remove the beginning
+                $pw = substr( $stripped, strpos( $stripped, ',') + 1 );
+
+                // Remove any spaces from beginning
+                $despace = ltrim( $pw, ' &nbsp;', );
 
                 // Remove quotes
-                $single = str_replace( [ '"', "'" ], '', $despace );
-
-                // Remove the beginning
-                $pw = substr( $single, strpos( $single, ',') + 1 );
+                $unquoted = str_replace( [ '"', "'" ], '', $despace );
 
                 // Add redact div
-                $string2 = str_replace( $pw, '<div class="redact">'.$define_pw[6].'</div>', $string2 );
+                $string2 = str_replace( $unquoted, '<div class="redact">'.$unquoted.'</div>', $string2 );
             }
         }
     }
