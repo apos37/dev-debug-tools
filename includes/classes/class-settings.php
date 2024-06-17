@@ -33,7 +33,7 @@ class DDTT_SETTINGS {
 
         // Ajax
         add_action( 'wp_ajax_'.DDTT_GO_PF.'verify_logs', [ $this, 'verify_log_files' ] );
-        add_action( 'wp_ajax_nopriv_'.DDTT_GO_PF.'verify_logs', [ $this, 'verify_log_files' ] );
+        add_action( 'wp_ajax_nopriv_'.DDTT_GO_PF.'verify_logs', [ $this, 'must_login' ] );
 
         // Enqueue scripts
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -85,6 +85,16 @@ class DDTT_SETTINGS {
         // Stop
         die();
     } // End verify_log_files()
+
+
+    /**
+     * What to do if they are not logged in
+     *
+     * @return void
+     */
+    public function must_login() {
+        die();
+    } // End must_login()
 
 
     /**

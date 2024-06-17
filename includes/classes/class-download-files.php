@@ -83,7 +83,7 @@ class DDTT_DOWNLOAD_FILES {
             }
         }
 
-    } // End fake_function()
+    } // End post()
 
 
     /**
@@ -123,7 +123,7 @@ class DDTT_DOWNLOAD_FILES {
 
         // No file?
         if ( !$file ) {
-            die( 'Something went wrong. Path: '.ABSPATH . $filename );
+            die( 'Something went wrong. Path: '.$file );
         }
 
         // Copy the file a temp location

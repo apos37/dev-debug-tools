@@ -155,6 +155,10 @@
             ]; ?>
             <?php echo wp_kses( ddtt_options_tr( 'dev_timezone', 'Developer Timezone', 'select', '<br>Changes the timezone on Debug Log viewer and other areas in the plugin. Default is what the site uses.', $timezone_args ), $allowed_html ); ?>
             
+            <?php if ( $is_dev ) {
+                echo wp_kses( ddtt_options_tr( 'hide_plugin', 'Hide Plugin', 'checkbox', 'Hides the plugin from the left admin menu and disguises it on the plugins page as "Developer Notifications." I opted for disguising rather than hiding it altogether since part of debugging often requires disabling all plugins. Makes it difficult for people that have hacked an admin account from finding the plugin area and gaining access to sensitive information. Requires you to access this area directly (I recommend bookmarking this page first).' ), $allowed_html );
+            } ?>
+
         </table>
 
         <?php submit_button(); ?>
@@ -336,7 +340,7 @@
                         'Everyone Excluding Developer'
                     ]
                 ]; ?>
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_condense', 'Consense Admin Bar Items', 'select', '<br>You can also use the <code>ddtt_admin_bar_condensed_items</code> <a href="'.ddtt_plugin_options_path( 'hooks' ).'">hook</a> to customize items.', $condense_options ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_condense', 'Condense Admin Bar Items', 'select', '<br>You can also use the <code>ddtt_admin_bar_condensed_items</code> <a href="'.ddtt_plugin_options_path( 'hooks' ).'">hook</a> to customize items.', $condense_options ), $allowed_html ); ?>
                 
             </table>
 

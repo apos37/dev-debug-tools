@@ -40,6 +40,7 @@ class DDTT_GLOBAL_OPTIONS {
         $this->register_group_settings( 'settings', [
             'dev_email',
             'dev_timezone',
+            'hide_plugin',
             'view_sensitive_info',
             'test_number',
             'centering_tool_cols',

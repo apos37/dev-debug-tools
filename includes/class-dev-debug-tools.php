@@ -21,11 +21,12 @@ class DDTT_DEBUG_TOOLS {
         
         // Ensure is_plugin_active() exists for multisite
 		if ( !function_exists( 'is_plugin_active' ) ) {
-			include_once( ABSPATH . DDTT_ADMIN_URL . '/includes/plugin.php' );
+            if ( file_exists( DDTT_ADMIN_INCLUDES_URL.'plugin.php' ) ) {
+                include_once( DDTT_ADMIN_INCLUDES_URL.'plugin.php' );
+            } else {
+                ddtt_write_log( 'Error: Could not find plugin.php file.' );
+            }
 		}
-
-        // Add "Settings" link to plugins page
-        add_filter( 'plugin_action_links_'.plugin_basename(__FILE__), [ $this, 'settings_link' ] );
 
         // Load dependencies.
         if ( is_admin() ) {
@@ -42,17 +43,6 @@ class DDTT_DEBUG_TOOLS {
         add_filter( 'kses_allowed_protocols', [ $this, 'kses_allowed_protocols' ] );
         
 	} // End __construct()
-
-
-    /**
-     * Add "Settings" link to plugins page
-     * 
-     * @return string
-     */
-    public function settings_link() {
-        $links[] = '<a href="'.ddtt_plugin_options_path().'">'.__('Settings').'</a>';
-        return $links;
-    } // End settings_link()
 
     
     /**
@@ -99,6 +89,7 @@ class DDTT_DEBUG_TOOLS {
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-error-reporting.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-api.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-download-files.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-validate-code.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-wpconfig.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-htaccess.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-quick-links.php';

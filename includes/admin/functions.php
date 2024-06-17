@@ -759,10 +759,10 @@ function ddtt_view_file_contents( $path, $log = false ) {
     if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
 
         // Add redacted div to ABSPATH
-        $public_html = strstr( ABSPATH, '/public_html', true );
-        $abspath = str_replace( $public_html, '<span class="redact">'.$public_html.'</span>', ABSPATH );
+        $public_html = strstr( $file, '/public_html', true );
+        $redacted_path = str_replace( $public_html, '<span class="redact">'.$public_html.'</span>', $file );
     } else {
-        $abspath = ABSPATH;
+        $redacted_path = $file;
     }
 
     // Check if the file exists
@@ -920,7 +920,7 @@ function ddtt_view_file_contents( $path, $log = false ) {
     }
     
     // Path
-    $results .= '<pre class="code">Installation path: '.$abspath.$path.'<br><br>'.$code.'</pre>';
+    $results .= '<pre class="code">Installation path: '.$redacted_path.'<br><br>'.$code.'</pre>';
 
     // Return
     return $results;
@@ -1553,7 +1553,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                         $plugin_path_and_filename = str_replace( DDTT_PLUGINS_URL, '', ltrim( $short_path, '\/' ) );
                         $plugin_path_parts = explode( '/', $plugin_path_and_filename );
                         $plugin_slug = $plugin_path_parts[1];
-                        $plugin_filename = substr( $plugin_path_and_filename, strpos( $plugin_path_and_filename, '/' ) + 1);
+                        $plugin_filename = substr( $plugin_path_and_filename, strpos( $plugin_path_and_filename, '/' ) + 1 );
                     
                         // Now check the active plugins for the file
                         $plugin_folder_and_file = false;
@@ -2628,6 +2628,104 @@ function ddtt_delete_autodrafts( $delete_all = false ) {
     // Fail
     return false;
 } // End ddtt_delete_autodrafts()
+
+
+/**
+ * Get all php filepaths in a directory
+ *
+ * @param string $dir
+ * @return array
+ */
+function ddtt_get_all_php_filepaths( $dir ) {
+    $paths = [];
+    $fileinfos = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator( $dir )
+    );
+    foreach( $fileinfos as $pathname => $fileinfo ) {
+        if ( !$fileinfo->isFile() ) continue;
+        if ( !str_ends_with( $pathname, '.php' ) ) continue;
+        $paths[] = $pathname;
+    }
+    return $paths;
+} // End ddtt_get_all_php_filepaths()
+
+
+/**
+ * Scan a plugin for hooks
+ *
+ * @param string $plugin_dir
+ * @return array
+ */
+function ddtt_scan_plugin_for_hooks( $plugin_dir ) {
+    // Store the hooks here
+    $hooks = [];
+  
+    // Get the files in an array (your own function that works fine)
+    $files = ddtt_get_all_php_filepaths( $plugin_dir );
+    if ( !empty( $files ) ) {
+
+        // Loop through all PHP files in the plugin directory
+        foreach ( $files as $file ) {
+
+            // Get the content of the file as a single string
+            $content = file_get_contents( $file );
+
+            // Patterns
+            $patterns = [
+                'normal' => '/\b(apply_filters|do_action)\s*\(\s*([\'"])([^\'"]+?)\2\s*(?:,|\))/i',
+                'gforms' => '/\bgf_apply_filters\s*\(\s*array\s*\(\s*[\'"]([^\'"]+)[\'"]\s*,\s*(\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)\s*\)\s*,\s*\$form\s*,\s*\$ajax\s*,\s*\$field_values\s*\)/i'
+            ];
+
+            // Iter each pattern
+            foreach ( $patterns as $source => $pattern ) {
+
+                // Search
+                preg_match_all( $pattern, $content, $matches, PREG_SET_ORDER );
+
+                // Iter the matches
+                foreach ( $matches as $match ) {
+
+                    // Gravity Forms
+                    if ( $source == 'gforms' ) {
+                        $hook_type = 'gf_apply_filters';
+                        $hook_name = $match[1].'_{'.$match[2].'}';
+                        // dpr( $match );
+
+                    // Normal
+                    } else {
+                        $hook_type = $match[1];
+                        $hook_name = $match[3];
+                    }
+                    
+                    // Find line number of match
+                    $lineNumber = substr_count( substr( $content, 0, strpos( $content, $match[0] ) ), "\n" ) + 1;
+
+                    // Check if the hook is already in the list
+                    $hookExists = false;
+                    foreach ( $hooks as $existingHook ) {
+                        if ( $existingHook['name'] === $hook_name && $existingHook['file'] === $file && $existingHook['line'] === $lineNumber ) {
+                            $hookExists = true;
+                            break;
+                        }
+                    }
+
+                    // Collect the data
+                    if ( !$hookExists ) {
+                        $hooks[] = [
+                            'type' => $hook_type,
+                            'name' => $hook_name,
+                            'file' => $file,
+                            'line' => $lineNumber,
+                        ];
+                    }
+                }
+            }
+        }
+    }
+  
+    // Return the hooks
+    return $hooks;
+} // End ddtt_scan_plugin_for_hooks()
 
 
 /**

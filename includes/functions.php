@@ -2,7 +2,7 @@
 /**
  * Functions that can be used globally.
  * If you are using these functions outside of the plugin, 
- * please use `if ( is_plugin_active( 'dev-debug-tools/dev-debug-tools.php' ) ) { ... }`
+ * please wrap with `if ( is_plugin_active( 'dev-debug-tools/dev-debug-tools.php' ) ) { ... }`
  */
 
 // Exit if accessed directly.

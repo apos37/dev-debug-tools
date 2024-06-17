@@ -8,11 +8,27 @@ if ( !defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Instantiate
+add_action( 'init', function() {
+    (new DDTT_WPCONFIG)->init();
+} );
+
 
 /**
  * Main plugin class.
  */
 class DDTT_WPCONFIG {
+
+    /**
+     * Run on init
+     */
+    public function init() {
+
+        // Enqueue scripts
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+
+    } // End init()
+    
 
     /**
      * Our snippets
@@ -25,7 +41,8 @@ class DDTT_WPCONFIG {
         $maint_link = home_url( DDTT_ADMIN_URL.'/maint/repair.php' );
 
         // Add the snippets
-        $snippets = apply_filters( 'ddtt_wpconfig_snippets', [
+        $snippets = apply_filters( 
+            'ddtt_wpconfig_snippets', [
             'debug_mode' => [
                 'label' => 'Enable WP_DEBUG Mode',
                 'lines' => [
@@ -380,157 +397,75 @@ class DDTT_WPCONFIG {
      * @param string $description
      * @return string
      */
-    public function options_tr( $name, $label, $snippet_exists, $line_strings_1, $line_strings_0, $description ) {
+    public function options_tr( $name, $label, $snippet_exists, $current, $proposed, $description ) {
+        // Get the lines
+        $current_lines = [];
+        $proposed_lines = [];
+        foreach ( $current as $c ) {
+            $current_lines[] = $c;
+        }
+        foreach ( $proposed as $p ) {
+            $proposed_lines[] = $p;
+        }
+        $current_text = implode( "\n", $current_lines );
+        $proposed_text = implode( "\n", $proposed_lines );
+
         // Check the box if the snippet exists
         if ( $snippet_exists ) {
-            $checkbox_value = true;
+            $detected = 'Yes';
+            $detected_class = ' yes';
+            $disable_add = ' disabled="disabled"';
+            $disable_remove = '';
+            $current_tab = '<a href="#" class="snippet-tab current active">Current</a>';
+            $current_cont = '<div class="snippet_container current active">'.$current_text.'</div>';
+            $proposed_class = '';
         } else {
-            $checkbox_value = false;
+            $detected = 'No';
+            $detected_class = '';
+            $disable_add = '';
+            $disable_remove = ' disabled="disabled"';
+            $current_tab = '';
+            $current_cont = '';
+            $proposed_class = ' active';
         }
 
-        // Stores the snippet lines here
-        $lines = [];
-
-        // Cycle through all of the lines
-        foreach ( $line_strings_1 as $line_1 ) {
-
-            // Put the snippet together
-            $lines[] = '<span class="line-exists true">'.$line_1.'</span>';
+        // Different value
+        if ( $snippet_exists && ( $current_text != $proposed_text ) ) {
+            $diff_class = ' diff';
+            $title = 'Snippet found, but does not match proposed.';
+        } elseif ( !$snippet_exists ) {
+            $diff_class = '';
+            $title = 'Snippet not found.';
+        } else {
+            $diff_class = '';
+            $title = 'Proposed snippet found.';
         }
-        foreach ( $line_strings_0 as $line_0 ) {
-
-            // Put the snippet together
-            $lines[] = '<span class="line-exists false">'.$line_0.'</span>';
-        }
-
-        // The Checkbox
-        $input = '<input type="checkbox" name="l[]" value="'.$name.' " '.checked( 1, $checkbox_value, false ).'/>';
 
         // Build the row
         $row = '<tr valign="top">
-            <th scope="row">'.$label.'</th>
-            <td class="checkbox-cell">'.$input.'</td>
-            <td><div class="snippet_container">'.implode( '<br>', $lines ).'</div>
-                <div class="field-desc">'.$description.'</div></td>
+            <td scope="row" class="option-cell"><div>'.$label.' <a href="#" class="learn-more" data-name="'.$name.'">?</a></div> 
+            <div id="desc-'.$name.'" class="field-desc">'.$description.'</div></td>
+            <td class="checkbox-cell"><div class="detected-indicator'.$detected_class.$diff_class.'" title="'.$title.'">'.$detected.'</div></td>
+            <td class="checkbox-cell"><input type="checkbox" name="a[]" value="'.$name.'"'.$disable_add.'/></td>
+            <td class="checkbox-cell"><input type="checkbox" name="r[]" value="'.$name.'"'.$disable_remove.'/></td>
+            <td class="checkbox-cell"><input type="checkbox" name="u[]" value="'.$name.'"'.$disable_remove.'/></td>
+            <td class="snippet-cell" data-name="'.$name.'">
+                <a href="#" class="snippet-tab proposed'.$proposed_class.'">Proposed</a>
+                '.$current_tab.'
+                <div class="snippet-edit-links">
+                    <a href="#" class="edit">&#x1F589; Edit</a>
+                    <a href="#" class="save">&#x1F4BE; Save</a>
+                    <span class="sep"> | </span>
+                    <a href="#" class="cancel">Cancel</a>
+                </div>
+                <div class="snippet_container proposed'.$proposed_class.'">'.$proposed_text.'</div>
+                '.$current_cont.'
+            </td>
         </tr>';
         
         // Return the row
         return $row;
     } // End options_tr()
-
-
-    /**
-     * Check if a snippet exists
-     *
-     * @param string $wpconfig
-     * @param array $snippet
-     * @return array
-     */
-    // public function snippet_exists( $wpconfig, $snippet ) {
-    //     // Count the number of lines in the snippet
-    //     $count = count( $snippet[ 'lines' ] );
-
-    //     // Count number of items that exist
-    //     $lines_exist = 0;
-
-    //     // Line strings
-    //     $line_strings_1 = [];
-    //     $line_strings_0 = [];
-
-    //     // Line keys
-    //     $lines_1 = [];
-    //     $lines_0 = [];
-
-    //     // Found
-    //     $found = [];
-
-    //     // Partial in-line
-    //     $partial = false;
-
-    //     // Cycle each line
-    //     foreach ( $snippet[ 'lines' ] as $key => $line ) {
-    //         // ddtt_print_r($line);
-
-    //         // Create a line string
-    //         $line_string = $this->snippet_line_to_string( $line );
-
-    //         // Create the regex search pattern from the line
-    //         $regex = $this->snippet_regex( $line );
-    //         // ddtt_print_r($regex);
-
-    //         // Check the file for the line
-    //         if ( preg_match_all( $regex, $wpconfig, $matches ) ) {
-
-    //             // Display an error if there are any duplicates found
-    //             if ( count( $matches[0] ) > 1 ) {
-    //                 ddtt_admin_notice( 'error', 'Duplicate snippet found: '.$matches[0][0] );
-    //             }
-
-    //             // Count this as exists
-    //             $lines_exist++;
-
-    //             // Add line string to the true bucket
-    //             foreach ( $matches[0] as $match ) {
-    //                 $line_strings_1[] = $match;
-    //                 $lines_1[] = $line;
-
-    //                 // Add what we found in snippet form
-    //                 if ( $converted = $this->string_to_snippet_line( $match ) ) {
-    //                     $found[] = $converted;
-
-    //                     // Check if the converted matches the line
-    //                     if ( $line != $converted ) {
-    //                         $partial = true;
-    //                     }
-    //                 }
-    //             }
-                
-    //         } else {
-                
-    //             // Add line string to the false bucket
-    //             $line_strings_0[] = $line_string;
-    //             $lines_0[] = $line;
-    //         }
-    //     }
-
-    //     // Check if all lines exist
-    //     if ( !$partial ) {
-    //         if ( $count == $lines_exist ) {
-    //             $snippet_exists = true;
-    //             $partial = false;
-    
-    //         // If no lines exist
-    //         } elseif ( $lines_exist == 0 ) {
-    //             $snippet_exists = false;
-    //             $partial = false;
-    
-    //         // If only some of the lines exist
-    //         } else {
-    //             $snippet_exists = false;
-    //             $partial = true;
-    //         }
-    //     } else {
-    //         $snippet_exists = false;
-    //     }
-
-    //     // Output
-    //     $output = [
-    //         'exists'    => $snippet_exists,
-    //         'partial'   => $partial,
-    //         'lines'     => [
-    //             'true'  => $lines_1,
-    //             'false' => $lines_0
-    //         ],
-    //         'strings'   => [
-    //             'true'  => $line_strings_1,
-    //             'false' => $line_strings_0
-    //         ],
-    //         'found'     => $found,
-    //     ];
-
-    //     // Return the results
-    //     return $output;
-    // } // End snippet_exists()
 
 
     /**
@@ -553,8 +488,8 @@ class DDTT_WPCONFIG {
             'false' => [],
         ];
         $string_matches = [
-            'true'  => [],
-            'false' => [],
+            'current'  => [],
+            'proposed' => [],
         ];
 
         // Count the number of lines in the snippet
@@ -634,7 +569,7 @@ class DDTT_WPCONFIG {
                 if ( preg_match_all( $regex, $trimmed_line, $matches ) ) {
                     $found = true;
                     $line_matches[ 'true' ][] = $snippet_line;
-                    $string_matches[ 'true' ][] = $line;
+                    $string_matches[ 'current' ][] = $line;
 
                     // Count this as exists for finding partials
                     $lines_exist++;
@@ -647,8 +582,10 @@ class DDTT_WPCONFIG {
             // Collect the snippet if not found
             if ( !$found ) {
                 $line_matches[ 'false' ][] = $snippet_line;
-                $string_matches[ 'false' ][] = $line_string;
             }
+
+            // Add proposed no matter what
+            $string_matches[ 'proposed' ][] = $line_string;
         }
 
         // Check if all lines exist
@@ -839,30 +776,48 @@ class DDTT_WPCONFIG {
                 ddtt_print_r( $safe_file_lines );
             }
 
+            // Let's split up what we need to change
+            $snippets_to_remove = isset( $enabled[ 'remove' ] ) ? $enabled[ 'remove' ] : [];
+            $snippets_to_update = isset( $enabled[ 'update' ] ) ? $enabled[ 'update' ] : [];
+            $new_snippets = isset( $enabled[ 'snippets' ] ) ? $enabled[ 'snippets' ] : [];
+            $all_snippets_to_change = [];
+            foreach ( $enabled as $key => $snippet_keys ) {
+                if ( $key !== 'snippets' ) {
+                    foreach ( $snippet_keys as $snippet_key ) {
+                        $all_snippets_to_change[] = $snippet_key;
+                    }
+                }
+            }
+            // dpr( $new_snippets );
+
             // Cycle each snippet
             foreach ( $snippets as $snippet_key => $snippet ) {
-            
+
                 // Check if the snippet exists in the file
                 $e = $this->snippet_exists( $wpconfig, $snippet );
                 $exists = $e[ 'exists' ];
                 $partial = $e[ 'partial' ];
-                // ddtt_print_r( $e );
                 $snippet_lines_1 = $e[ 'lines' ][ 'true' ];
+                
+                // Keeping already modified
+                $current = $e[ 'strings' ][ 'current' ];
+                $proposed = $e[ 'strings' ][ 'proposed' ];
+                if ( $exists && 
+                     $current !== $proposed && 
+                     !in_array( $snippet_key, array_keys( $new_snippets ) ) &&
+                     !in_array( $snippet_key, $snippets_to_update ) ) {
+                    $new_snippets[ $snippet_key ] = implode( "\n", $current );
+                }
 
                 // Enabled
-                if ( strpos( json_encode( $enabled ), $snippet_key ) !== false ) {
-                    $is_enabled = true;
-                } else {
-                    $is_enabled = false;
-                }
-                // $is_enabled = in_array( $snippet_key, $enabled, true ) ? true : false;
-                // ddtt_print_r( $snippet_key.': '.$is_enabled );
+                $changing = in_array( $snippet_key, $all_snippets_to_change, true ) ? true : false;
+                // ddtt_print_r( $snippet_key.': '.$changing );
 
                 // Does NOT exist
                 // NOT partial
                 // NOT enabled
                 // SKIP, because we're not going to add it anyway
-                if ( !$exists && !$partial && !$is_enabled ) {
+                if ( !$exists && !$partial && !$changing ) {
                     continue;
 
                 // Exists, at least partially
@@ -906,25 +861,34 @@ class DDTT_WPCONFIG {
                         }
                     }
 
+                    // Add the snippet if we are keeping it the way it is
+                    if ( $exists && !in_array( $snippet_key, $all_snippets_to_change ) ) {
+                        $add[ $snippet_key ] = $snippet;
+                    }
+
                     // If it at least partially exists, then add the snippet to the add bucket 
-                    if ( ( $exists && $is_enabled ) || ( !$exists && $partial && $is_enabled ) ) {
-                        $add[] = $snippet;
+                    if ( ( $exists && $changing ) || ( !$exists && $partial && $changing ) ) {
+                        if ( !in_array( $snippet_key, $snippets_to_remove ) ) {
+                            $add[ $snippet_key ] = $snippet;
+                        }
                     }
 
                     // If it's not supposed to be there, just count this as an edit
-                    if ( !$is_enabled || ( !$exists && $partial ) ) {
+                    if ( $changing || ( !$exists && $partial ) ) {
                         $edits++;
                     }
 
                 // Does NOT exist
                 // NOT partial
-                // IS enabled
+                // IS changing
                 // ADD SNIPPET
-                } elseif ( !$exists && !$partial && $is_enabled ) {
+                } elseif ( !$exists && !$partial && $changing ) {
                     // ddtt_print_r( $snippet );
 
                     // Add the snippet to the add bucket
-                    $add[] = $snippet;
+                    if ( !in_array( $snippet_key, $snippets_to_remove ) ) {
+                        $add[ $snippet_key ] = $snippet;
+                    }
 
                     // Count this as an edit
                     $edits++;
@@ -948,7 +912,7 @@ class DDTT_WPCONFIG {
                 $added_by = [];
                 $added_by_id = ' * Added via '.DDTT_NAME;
                 $added_by_lines = [
-                    '<?php',
+                    '',
                     '/**',
                     ' * '.$blogname,
                     ' * '.home_url(),
@@ -963,67 +927,76 @@ class DDTT_WPCONFIG {
                     }
                     $added_by[] = $abl;
                 }
-                
-                // Remove the added_by comments
+
+                // Count how many we are adding
+                $adding = count( $add );
+
+                // Check for previously added section
+                $section_already_added = false;
                 if ( ( false !== $added_by_key = array_search( $added_by_id, $safe_file_lines ) ) ) {
+                    $section_already_added = $added_by_key;
 
-                    // Stopped at
-                    $stopped_at = 0;
+                    // Remove the added_by comments only if we have nothing to add
+                    if ( $adding == 0 ) {
                         
-                    // Count available rows
-                    $add_by_count = count( $added_by );
-
-                    // First remove the id key
-                    unset( $safe_file_lines[ $added_by_key ] );
-
-                    // Check the lines above the id
-                    for ( $la = 1; $la <= $add_by_count; $la++ ) {
-
-                        // Does the line above start mid comment?
-                        if ( isset( $safe_file_lines[ $added_by_key - $la ] ) && str_starts_with( $safe_file_lines[ $added_by_key - $la ], ' * ' ) !== false ) {
-
-                            // Remove it
-                            unset( $safe_file_lines[ $added_by_key - $la ] );
-                        }
-
-                        // Does the line above start the comment?
-                        if ( isset( $safe_file_lines[ $added_by_key - $la ] ) && str_starts_with( $safe_file_lines[ $added_by_key - $la ], '/**' ) !== false ) {
-
-                            // Remove it
-                            unset( $safe_file_lines[ $added_by_key - $la ] );
+                        // Stopped at
+                        $stopped_at = 0;
                             
-                            // Stop here
-                            break;
+                        // Count available rows
+                        $add_by_count = count( $added_by );
+
+                        // First remove the id key
+                        unset( $safe_file_lines[ $added_by_key ] );
+
+                        // Check the lines above the id
+                        for ( $la = 1; $la <= $add_by_count; $la++ ) {
+
+                            // Does the line above start mid comment?
+                            if ( isset( $safe_file_lines[ $added_by_key - $la ] ) && str_starts_with( $safe_file_lines[ $added_by_key - $la ], ' * ' ) !== false ) {
+
+                                // Remove it
+                                unset( $safe_file_lines[ $added_by_key - $la ] );
+                            }
+
+                            // Does the line above start the comment?
+                            if ( isset( $safe_file_lines[ $added_by_key - $la ] ) && str_starts_with( $safe_file_lines[ $added_by_key - $la ], '/**' ) !== false ) {
+
+                                // Remove it
+                                unset( $safe_file_lines[ $added_by_key - $la ] );
+                                
+                                // Stop here
+                                break;
+                            }
                         }
-                    }
 
-                    // Check the lines below the id
-                    for ( $lb = 1; $lb <= $add_by_count; $lb++ ) {
+                        // Check the lines below the id
+                        for ( $lb = 1; $lb <= $add_by_count; $lb++ ) {
 
-                        // Does the line below start mid comment?
-                        if ( isset( $safe_file_lines[ $added_by_key + $lb ] ) && str_starts_with( $safe_file_lines[ $added_by_key + $lb ], ' * ' ) !== false ) {
+                            // Does the line below start mid comment?
+                            if ( isset( $safe_file_lines[ $added_by_key + $lb ] ) && str_starts_with( $safe_file_lines[ $added_by_key + $lb ], ' * ' ) !== false ) {
 
-                            // Remove it
-                            unset( $safe_file_lines[ $added_by_key + $lb ] );
+                                // Remove it
+                                unset( $safe_file_lines[ $added_by_key + $lb ] );
+                            }
+
+                            // Does the line below end the comment?
+                            if ( isset( $safe_file_lines[ $added_by_key + $lb ] ) && str_starts_with( $safe_file_lines[ $added_by_key + $lb ], ' */' ) !== false ) {
+
+                                // Remove it
+                                unset( $safe_file_lines[ $added_by_key + $lb ] );
+
+                                // Save which row we stopped on
+                                $stopped_at = $added_by_key + $lb;
+
+                                // Stop here
+                                break;
+                            }
                         }
 
-                        // Does the line below end the comment?
-                        if ( isset( $safe_file_lines[ $added_by_key + $lb ] ) && str_starts_with( $safe_file_lines[ $added_by_key + $lb ], ' */' ) !== false ) {
-
-                            // Remove it
-                            unset( $safe_file_lines[ $added_by_key + $lb ] );
-
-                            // Save which row we stopped on
-                            $stopped_at = $added_by_key + $lb;
-
-                            // Stop here
-                            break;
+                        // If there is a space directly below it, remove that too
+                        if ( strlen( $safe_file_lines[ $stopped_at + 1 ] ) >= 0 && empty( trim( $safe_file_lines[ $stopped_at + 1 ] ) ) ) {
+                            unset( $safe_file_lines[ $stopped_at + 1 ] );
                         }
-                    }
-
-                    // If there is a space directly below it, remove that too
-                    if( strlen( $safe_file_lines[ $stopped_at + 1 ] ) >= 0 && empty( trim( $safe_file_lines[ $stopped_at + 1 ] ) ) ) {
-                        unset( $safe_file_lines[ $stopped_at + 1 ] );
                     }
                 }
 
@@ -1038,15 +1011,19 @@ class DDTT_WPCONFIG {
                 if ( ( false !== $end_key = array_search( $end_id, $safe_file_lines ) ) ) {
                     // ddtt_print_r( $end_key );
 
-                    // First remove the id key
-                    unset( $safe_file_lines[ $end_key ] );
+                    // Remove the end comments only if we have nothing to add
+                    if ( $adding == 0 ) {
 
-                    // If there are spaces directly below it, remove them too
-                    if( strlen( $safe_file_lines[ $end_key + 1 ] ) >= 0 && empty( trim( $safe_file_lines[ $end_key + 1 ] ) ) ) {
-                        unset( $safe_file_lines[ $end_key + 1 ] );
-                    }
-                    if( strlen( $safe_file_lines[ $end_key + 2 ] ) >= 0 && empty( trim( $safe_file_lines[ $end_key + 2 ] ) ) ) {
-                        unset( $safe_file_lines[ $end_key + 2 ] );
+                        // First remove the id key
+                        unset( $safe_file_lines[ $end_key ] );
+
+                        // If there are spaces directly below it, remove them too
+                        if ( strlen( $safe_file_lines[ $end_key + 1 ] ) >= 0 && empty( trim( $safe_file_lines[ $end_key + 1 ] ) ) ) {
+                            unset( $safe_file_lines[ $end_key + 1 ] );
+                        }
+                        if ( strlen( $safe_file_lines[ $end_key + 2 ] ) >= 0 && empty( trim( $safe_file_lines[ $end_key + 2 ] ) ) ) {
+                            unset( $safe_file_lines[ $end_key + 2 ] );
+                        }
                     }
                 }
 
@@ -1054,14 +1031,26 @@ class DDTT_WPCONFIG {
                 $add_converted = [];
 
                 // Cycle through the snippets we need to add
-                foreach ( $add as $a ) {
+                if ( !empty( $add ) ) {
+                    foreach ( $add as $snippet_key => $a ) {
 
-                    // Convert the snippet
-                    $add_converted[] = htmlentities( '// '.$a[ 'label' ] );
-                    foreach ( $a[ 'lines' ] as $aline ) {
-                        $add_converted[] = htmlentities( $this->snippet_line_to_string( $aline ) );
+                        // Get the label
+                        $add_converted[] = htmlentities( '// '.$a[ 'label' ] );
+    
+                        // Are we using an updated snippet?
+                        if ( isset( $new_snippets[ $snippet_key ] ) ) {
+                            $updated_snippet_lines = $new_snippets[ $snippet_key ];
+                            $updated_snippet_array = preg_split( "/\r\n|\n/", $updated_snippet_lines );
+                            foreach ( $updated_snippet_array as $uline ) {
+                                $add_converted[] = htmlspecialchars_decode( $uline );
+                            }
+                        } else {
+                            foreach ( $a[ 'lines' ] as $aline ) {
+                                $add_converted[] = htmlentities( $this->snippet_line_to_string( $aline ) );
+                            }
+                        }
+                        $add_converted[] = '';
                     }
-                    $add_converted[] = '';
                 }
 
                 // Are we testing?  
@@ -1071,10 +1060,20 @@ class DDTT_WPCONFIG {
 
                 // Add them to the safe file lines
                 if ( !empty( $add ) ) {
-                    $safe_file_lines = array_merge( $added_by, $add_converted, $end, $safe_file_lines );
-                } else {
-                    $safe_file_lines = array_merge( ['<?php'], $safe_file_lines );
+                    if ( $section_already_added ) {
+                        $index_to_add = $section_already_added + 3;
+                        $safe_file_lines = array_merge(
+                            array_slice( $safe_file_lines, 0, $index_to_add ),
+                            $add_converted,
+                            array_slice( $safe_file_lines, $index_to_add )
+                        );
+                    } else {
+                        $safe_file_lines = array_merge( $added_by, $add_converted, $end, $safe_file_lines );
+                    }
                 }
+
+                // Add the <?php no matter what
+                $safe_file_lines = array_merge( [ '<?php' ], $safe_file_lines );
 
                 // Are we testing?                
                 if ( $testing ) {
@@ -1212,4 +1211,41 @@ class DDTT_WPCONFIG {
         // Else return false
         return false;
     } // delete_backups()
+
+
+    /**
+     * Enqueue scripts
+     * Reminder to bump version number during testing to avoid caching
+     *
+     * @param string $screen
+     * @return void
+     */
+    public function enqueue_scripts( $screen ) {
+        // Get the options page slug
+        $options_page = 'toplevel_page_'.DDTT_TEXTDOMAIN;
+
+        // Allow for multisite
+        if ( is_network_admin() ) {
+            $options_page .= '-network';
+        }
+
+        // Are we on the options page?
+        if ( $screen != $options_page ) {
+            return;
+        }
+
+        // Handle
+        $handle = DDTT_GO_PF.'wpconfig_script';
+
+        // Feedback form and error code checker
+        if ( ddtt_get( 'tab', '==', 'wpcnfg' ) ) {
+            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'wpconfig.js', [ 'jquery' ], time() );
+            wp_localize_script( $handle, 'validateAjax', [
+                'nonce'   => wp_create_nonce( DDTT_GO_PF.'validate_code' ),
+                'ajaxurl' => admin_url( 'admin-ajax.php' )
+            ] );
+            wp_enqueue_script( $handle );
+            wp_enqueue_script( 'jquery' );
+        }
+    } // End enqueue_scripts()
 }

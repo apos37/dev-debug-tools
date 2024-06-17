@@ -365,7 +365,7 @@ class DDTT_QUICK_LINKS {
         $entry = $args[ 'entry' ];
     
         // Get the testing url
-        $url = ddtt_plugin_options_path( 'gfdebug' );
+        $url = ddtt_plugin_options_path( 'debug' );
         
         // Start the container
         $results = '<div>';

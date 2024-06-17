@@ -2,9 +2,9 @@
 Contributors: apos37
 Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
-Tested up to: 6.5.3
+Tested up to: 6.5.4
 Requires PHP: 7.4
-Stable tag: 1.7.3
+Stable tag: 1.7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -80,6 +80,15 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.7.4 =
+* Update: Added a way to list available hooks in other plugins on hooks tab
+* Update: Added option to hide plugin
+* Tweak: Reorganized main file
+* Fix: `include_once` path to `plugin.php` showing incorrectly (props amurashkin)
+* Fix: Installation path on error_log showing incorrectly if using different abspath (props amurashkin)
+* Update: Overhalled snippet sections (props amurashkin for suggestions)
+* Fix: Gravity Forms quick links not working, incorrect path
+
 = 1.7.3 =
 * Fix: Wp-config snippets showing as checked even when they are commented out (props amurashkin)
 * Update: Added an APIs tab to check availability of local REST APIs

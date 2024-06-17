@@ -27,7 +27,7 @@ class DDTT_ADMIN_AREA {
 	public function __construct() {
         
         // Add a settings link to plugins list page
-        add_filter( 'plugin_action_links_'.DDTT_TEXTDOMAIN.'/'.DDTT_TEXTDOMAIN.'.php', [ $this, 'settings_link' ] );
+        add_filter( 'plugin_action_links_'.DDTT_TEXTDOMAIN.'/'.DDTT_TEXTDOMAIN.'.php', [ $this, 'settings_link' ],  );
 
         // Add links to the website and discord
         add_filter( 'plugin_row_meta', [ $this, 'plugin_row_meta' ], 10, 2 );
@@ -60,17 +60,23 @@ class DDTT_ADMIN_AREA {
      * @return array
      */
     public function settings_link( $links ) {
-        // Build and escape the URL.
-        $url = esc_url( ddtt_plugin_options_path( 'settings' ) );
-        
-        // Create the link.
-        $settings_link = "<a href='$url'>" . __( 'Settings', 'dev-debug-tools' ) . '</a>';
-        
-        // Adds the link to the end of the array.
-        array_unshift(
-            $links,
-            $settings_link
-        );
+        // Add a Settings link if we are not hiding the plugin
+        if ( !get_option( DDTT_GO_PF.'hide_plugin' ) ) {
+
+            // Build and escape the URL.
+            $url = esc_url( ddtt_plugin_options_path( 'settings' ) );
+            
+            // Create the link.
+            $settings_link = "<a href='$url'>" . __( 'Settings', 'dev-debug-tools' ) . '</a>';
+            
+            // Adds the link to the end of the array.
+            array_unshift(
+                $links,
+                $settings_link
+            );
+        } else {
+            echo '<style>tr[data-slug="'.esc_attr( DDTT_TEXTDOMAIN ).'"] .plugin-title strong {display: none;} tr[data-slug="'.esc_attr( DDTT_TEXTDOMAIN ).'"] .plugin-title .row-actions:before { content: "Developer Notifications"; display: block; margin-bottom: .2em; font-size: 14px; font-weight: 600; color: #000; }</style>';
+        }
 
         // Return the links
         return $links;
@@ -86,13 +92,18 @@ class DDTT_ADMIN_AREA {
     public function plugin_row_meta( $links, $file ) {
         // Only apply to this plugin
         if ( DDTT_TEXTDOMAIN.'/'.DDTT_TEXTDOMAIN.'.php' == $file ) {
-
-            // Add the link
-            $row_meta = [
-                'docs' => '<a href="'.esc_url( DDTT_AUTHOR_URL.'wordpress-developer-debug-tools/' ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Website Link', 'dev-debug-tools' ).'">'.esc_html__( 'Website', 'dev-debug-tools' ).'</a>',
-                'discord' => '<a href="'.esc_url( DDTT_DISCORD_SUPPORT_URL ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Support on Discord', 'dev-debug-tools' ).'">'.esc_html__( 'Discord Support', 'dev-debug-tools' ).'</a>'
-            ];
-            return array_merge( $links, $row_meta );
+            
+            // Add extra links
+            if ( !get_option( DDTT_GO_PF.'hide_plugin' ) ) {
+                $row_meta = [
+                    'docs' => '<a href="'.esc_url( DDTT_AUTHOR_URL.'wordpress-developer-debug-tools/' ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Website Link', 'dev-debug-tools' ).'">'.esc_html__( 'Website', 'dev-debug-tools' ).'</a>',
+                    'discord' => '<a href="'.esc_url( DDTT_DISCORD_SUPPORT_URL ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Support on Discord', 'dev-debug-tools' ).'">'.esc_html__( 'Discord Support', 'dev-debug-tools' ).'</a>'
+                ];
+                return array_merge( $links, $row_meta );
+            } else {
+                $links[1] = 'By Aneg73';
+                $links[2] = '<a href="/'.DDTT_ADMIN_URL.'/plugin-install.php?tab=plugin-information&plugin=dev-notifications&TB_iframe=true&width=772&height=851">View details</a>';
+            }
         }
 
         // Return the links
@@ -451,7 +462,7 @@ class DDTT_ADMIN_AREA {
                     }
 
                 // Gravity Form Debugging
-                } elseif ( $tab == 'gfdebug' ) {
+                } elseif ( $tab == 'debug' ) {
 
                     // Debugs
                     $debugs = [];

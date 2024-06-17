@@ -9,10 +9,27 @@ if ( !defined( 'ABSPATH' ) ) {
 }
 
 
+// Instantiate
+add_action( 'init', function() {
+    (new DDTT_HTACCESS)->init();
+} );
+
+
 /**
  * Main plugin class.
  */
 class DDTT_HTACCESS {
+
+    /**
+     * Run on init
+     */
+    public function init() {
+
+        // Enqueue scripts
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+
+    } // End init()
+
 
     /**
      * Our snippets
@@ -96,7 +113,7 @@ class DDTT_HTACCESS {
                 'lines' => [
                     '<IfModule mod_rewrite.c>',
                     'RewriteEngine On',
-                    'RewriteCond %{SERVER_PORT} 80 ',
+                    'RewriteCond %{SERVER_PORT} 80',
                     'RewriteRule ^(.*)$ https://'.$domain.'/$1 [R=301,L]',
                     '</IfModule>',
                 ],
@@ -226,22 +243,25 @@ class DDTT_HTACCESS {
 
 
     /**
-     * Table row for HTACCESS checkboxes
+     * Table row for snippet checkboxes
      *
-     * @param array $snippet
+     * @param string $name
+     * @param string $label
+     * @param boolean $snippet_exists
+     * @param array $line_strings_1
+     * @param array $line_strings_0
+     * @param string $description
      * @return string
      */
-    public function options_tr( $name, $snippet, $exists ) {
-        // Check the box if the snippet exists
-        if ( $exists ) {
-            $checkbox_value = true;
-            $class = 'true';
+    public function options_tr( $name, $snippet, $is_detected ) {
+        // Description
+        if ( isset( $snippet[ 'desc' ] ) ) {
+            $description = $snippet[ 'desc' ];
         } else {
-            $checkbox_value = false;
-            $class = 'false';
+            $description = '';
         }
-
-        // Convert the snippet to a string
+        
+        // Get the lines
         $lines = $this->snippet_to_string( $snippet, '<br>' );
 
         // Check if we are redacting
@@ -268,15 +288,47 @@ class DDTT_HTACCESS {
             }
         }
 
-        // The Checkbox
-        $input = '<input type="checkbox" name="l[]" value="'.$name.' " '.checked( 1, $checkbox_value, false ).'/>';
+        // Check the box if the snippet exists
+        if ( $is_detected ) {
+            $detected = 'Yes';
+            $detected_class = ' yes';
+            $disable_add = ' disabled="disabled"';
+            $disable_remove = '';
+            $current_tab = '<a href="#" class="snippet-tab current active">Current</a>';
+            $current_cont = '<div class="snippet_container current active">'.$lines.'</div>';
+            $proposed_tab = '';
+            $proposed_cont = '';
+        } else {
+            $detected = 'No';
+            $detected_class = '';
+            $disable_add = '';
+            $disable_remove = ' disabled="disabled"';
+            $current_tab = '';
+            $current_cont = '';
+            $proposed_tab = '<a href="#" class="snippet-tab proposed active">Proposed</a>';
+            $proposed_cont = '<div class="snippet_container proposed active">'.$lines.'</div>';
+        }
+
+        // Different value
+        if ( $is_detected ) {
+            $title = 'Snippet found.';
+        } else {
+            $title = 'Snippet not found.';
+        }
 
         // Build the row
         $row = '<tr valign="top">
-            <th scope="row">'.$snippet[ 'label' ].'</th>
-            <td class="checkbox-cell">'.$input.'</td>
-            <td><div class="snippet_container '.$name.'"> <span class="snippet-exists '.$class.'">'.$lines.'</div>
-                <div class="field-desc">'.$snippet[ 'desc' ].'</div></td>
+            <td scope="row" class="option-cell"><div>'.$snippet[ 'label' ].' <a href="#" class="learn-more" data-name="'.$name.'">?</a></div> 
+            <div id="desc-'.$name.'" class="field-desc">'.$description.'</div></td>
+            <td class="checkbox-cell"><div class="detected-indicator'.$detected_class.'" title="'.$title.'">'.$detected.'</div></td>
+            <td class="checkbox-cell"><input type="checkbox" name="a[]" value="'.$name.'"'.$disable_add.'/></td>
+            <td class="checkbox-cell"><input type="checkbox" name="r[]" value="'.$name.'"'.$disable_remove.'/></td>
+            <td class="snippet-cell" data-name="'.$name.'">
+                '.$proposed_tab.'
+                '.$current_tab.'
+                '.$proposed_cont.'
+                '.$current_cont.'
+            </td>
         </tr>';
         
         // Return the row
@@ -289,7 +341,7 @@ class DDTT_HTACCESS {
      *
      * @param string $htaccess
      * @param array $snippet
-     * @return array
+     * @return boolean
      */
     public function snippet_exists( $htaccess, $snippet ) {
         // Add the lines together
@@ -343,7 +395,7 @@ class DDTT_HTACCESS {
         foreach ( $snippet[ 'lines' ] as $line ) {
 
             // Put the snippet together
-            $lines[] = htmlspecialchars( $line );
+            $lines[] = trim( htmlspecialchars( $line ) );
         }
 
         // Return it as one string
@@ -382,7 +434,7 @@ class DDTT_HTACCESS {
             $file_contents = strtr( $file_contents, chr(10), chr(32) );
 
             // Separate each line into an array item
-            $file_lines = explode(PHP_EOL, $htaccess );
+            $file_lines = explode( PHP_EOL, $htaccess );
 
             // Make it html safe
             $safe_file_lines = [];
@@ -405,29 +457,32 @@ class DDTT_HTACCESS {
                 ddtt_print_r( $safe_file_lines );
             }
 
+            // Let's split up what we need to change
+            $snippets_to_remove = isset( $enabled[ 'remove' ] ) ? $enabled[ 'remove' ] : [];
+            $all_snippets_to_change = [];
+            foreach ( $enabled as $snippet_keys ) {
+                foreach ( $snippet_keys as $snippet_key ) {
+                    $all_snippets_to_change[] = $snippet_key;
+                }
+            }
+
             // Cycle each snippet
             foreach ( $snippets as $snippet_key => $snippet ) {
             
                 // Check if the snippet exists in the file
                 $exists = $this->snippet_exists( $file_contents, $snippet );
-
                 // if ( $exists ) {
                 //     ddtt_print_r( $this->snippet_to_string( $snippet, '<br>' ) );
                 // }
 
                 // Enabled
-                if ( strpos( json_encode( $enabled ), $snippet_key ) !== false ) {
-                    $is_enabled = true;
-                } else {
-                    $is_enabled = false;
-                }
-                // $is_enabled = in_array( $snippet_key, $enabled ) ? true : false;
-                // ddtt_print_r( $snippet_key.': '.$is_enabled );
+                $changing = in_array( $snippet_key, $all_snippets_to_change ) ? true : false;
+                // ddtt_print_r( $snippet_key.': '.$changing );
 
                 // Does NOT exist
                 // NOT enabled
                 // SKIP, because we're not going to add it anyway
-                if ( !$exists && !$is_enabled ) {
+                if ( !$exists && !$changing ) {
                     continue;
 
                 // Exists
@@ -492,24 +547,33 @@ class DDTT_HTACCESS {
                         }
                     }
 
+                    // Add the snippet if we are keeping it the way it is
+                    if ( $exists && !in_array( $snippet_key, $all_snippets_to_change ) ) {
+                        $add[ $snippet_key ] = $snippet;
+                    }
+
                     // Add it if it is enabled
-                    if ( $is_enabled ) {
-                        $add[] = $snippet;
+                    if ( $changing ) {
+                        if ( !in_array( $snippet_key, $snippets_to_remove ) ) {
+                            $add[ $snippet_key ] = $snippet;
+                        }
                     }
 
                     // If it's not supposed to be there, just count this as an edit
-                    if ( !$is_enabled ) {
+                    if ( !$changing ) {
                         $edits++;
                     }
 
                 // Does NOT exist
                 // IS enabled
                 // ADD SNIPPET
-                } elseif ( !$exists && $is_enabled ) {
+                } elseif ( !$exists && $changing ) {
                     // ddtt_print_r( $snippet );
 
                     // Add the snippet to the add bucket
-                    $add[] = $snippet;
+                    if ( !in_array( $snippet_key, $snippets_to_remove ) ) {
+                        $add[ $snippet_key ] = $snippet;
+                    }
 
                     // Count this as an edit
                     $edits++;
@@ -536,39 +600,47 @@ class DDTT_HTACCESS {
                     }
                     $added_by[] = $abl;
                 }
-                
-                // Remove the added_by comments
+
+                // Count how many we are adding
+                $adding = count( $add );
+
+                // Check for previously added section
+                $section_already_added = false;
                 if ( ( false !== $added_by_key = array_search( $added_by_id, $safe_file_lines ) ) ) {
-                    // ddtt_print_r( $added_by_key );
+                    $section_already_added = $added_by_key;
+    
+                    // Remove the added_by comments only if we have nothing to add
+                    if ( $adding == 0 ) {
                         
-                    // Count available rows
-                    $add_by_count = count( $added_by );
+                        // Count available rows
+                        $add_by_count = count( $added_by );
 
-                    // Check the lines above the id for space
-                    for ( $la = 1; $la <= 20; $la++ ) {
+                        // Check the lines above the id for space
+                        for ( $la = 1; $la <= 20; $la++ ) {
 
-                        // If there is space directly above it, remove them
-                        if( isset( $safe_file_lines[ $added_by_key - $la ] ) && strlen( $safe_file_lines[ $added_by_key - $la ] ) >= 0 && empty( trim( $safe_file_lines[ $added_by_key - $la ] ) ) ) {
-                            unset( $safe_file_lines[ $added_by_key - $la ] );
+                            // If there is space directly above it, remove them
+                            if( isset( $safe_file_lines[ $added_by_key - $la ] ) && strlen( $safe_file_lines[ $added_by_key - $la ] ) >= 0 && empty( trim( $safe_file_lines[ $added_by_key - $la ] ) ) ) {
+                                unset( $safe_file_lines[ $added_by_key - $la ] );
 
-                        } else {
-                            break;
+                            } else {
+                                break;
+                            }
                         }
-                    }
 
-                    // Check the lines below the id
-                    for ( $lb = 1; $lb <= $add_by_count; $lb++ ) {
+                        // Check the lines below the id
+                        for ( $lb = 1; $lb <= $add_by_count; $lb++ ) {
 
-                        // If the key below it exists
-                        if ( isset( $safe_file_lines[ $added_by_key + $lb ] ) ) {
-                            
-                            // Remove it
-                            unset( $safe_file_lines[ $added_by_key + $lb ] );
+                            // If the key below it exists
+                            if ( isset( $safe_file_lines[ $added_by_key + $lb ] ) ) {
+                                
+                                // Remove it
+                                unset( $safe_file_lines[ $added_by_key + $lb ] );
+                            }
                         }
-                    }
 
-                    // Remove the id key
-                    unset( $safe_file_lines[ $added_by_key ] );
+                        // Remove the id key
+                        unset( $safe_file_lines[ $added_by_key ] );
+                    }
                 }
 
                 // Info at bottom
@@ -580,22 +652,30 @@ class DDTT_HTACCESS {
                 if ( ( false !== $end_key = array_search( $end_id, $safe_file_lines ) ) ) {
                     // ddtt_print_r( $end_key );
 
-                    // First remove the id key
-                    unset( $safe_file_lines[ $end_key ] );
+                    // Remove the end comments only if we have nothing to add
+                    if ( $adding == 0 ) {
+
+                        // First remove the id key
+                        unset( $safe_file_lines[ $end_key ] );
+                    }
                 }
 
                 // Store converted snippets here
                 $add_converted = [];
 
                 // Cycle through the snippets we need to add
-                foreach ( $add as $a ) {
+                if ( !empty( $add ) ) {
+                    foreach ( $add as $a ) {
 
-                    // Convert the snippet
-                    $add_converted[] = htmlentities( '# '.$a[ 'label' ] );
-                    foreach ( $a[ 'lines' ] as $aline ) {
-                        $add_converted[] = htmlentities( $aline );
+                        // Get the label
+                        $add_converted[] = htmlentities( '# '.$a[ 'label' ] );
+
+                        // Convert the snippet
+                        foreach ( $a[ 'lines' ] as $aline ) {
+                            $add_converted[] = htmlentities( $aline );
+                        }
+                        $add_converted[] = '';
                     }
-                    $add_converted[] = '';
                 }
                 // ddtt_print_r( $add_converted );
 
@@ -613,7 +693,16 @@ class DDTT_HTACCESS {
 
                 // Add everything together
                 if ( !empty( $add ) ) {
-                    $safe_file_lines = array_merge( $safe_file_lines, $added_by, $add_converted, $end );
+                    if ( $section_already_added ) {
+                        $index_to_add = $section_already_added + 3;
+                        $safe_file_lines = array_merge(
+                            array_slice( $safe_file_lines, 0, $index_to_add ),
+                            $add_converted,
+                            array_slice( $safe_file_lines, $index_to_add )
+                        );
+                    } else {
+                        $safe_file_lines = array_merge( $safe_file_lines, $added_by, $add_converted, $end );
+                    }
                 }
 
                 // Are we testing?
@@ -751,4 +840,37 @@ class DDTT_HTACCESS {
         // Else return false
         return false;
     } // delete_backups()
+
+
+    /**
+     * Enqueue scripts
+     * Reminder to bump version number during testing to avoid caching
+     *
+     * @param string $screen
+     * @return void
+     */
+    public function enqueue_scripts( $screen ) {
+        // Get the options page slug
+        $options_page = 'toplevel_page_'.DDTT_TEXTDOMAIN;
+
+        // Allow for multisite
+        if ( is_network_admin() ) {
+            $options_page .= '-network';
+        }
+
+        // Are we on the options page?
+        if ( $screen != $options_page ) {
+            return;
+        }
+
+        // Handle
+        $handle = DDTT_GO_PF.'htaccess_script';
+
+        // Feedback form and error code checker
+        if ( ddtt_get( 'tab', '==', 'htaccess' ) ) {
+            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'htaccess.js', [ 'jquery' ], time() );
+            wp_enqueue_script( $handle );
+            wp_enqueue_script( 'jquery' );
+        }
+    } // End enqueue_scripts()
 }

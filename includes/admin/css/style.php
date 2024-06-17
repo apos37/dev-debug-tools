@@ -497,7 +497,6 @@ if ( $current_screen->id == $options_page ) {
     .nav-tab-active {
         background: <?php echo esc_attr( $bg_accent ); ?> !important;
         color: <?php echo esc_attr( $text_accent ); ?> !important;
-        border-bottom: 1px solid <?php echo esc_attr( $text_accent ); ?>;
     }
     .nav-tab-active:hover {
         background: <?php echo esc_attr( $bg_accent ); ?> !important;
