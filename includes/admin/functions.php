@@ -735,6 +735,18 @@ function ddtt_get_error_reporting_constants( $return_e_all = false ) {
 
 
 /**
+ * Get the max log filesize
+ *
+ * @return int|float
+ */
+function ddtt_get_max_log_filesize() {
+    $megabytes = get_option( DDTT_GO_PF.'max_log_size', 2 );
+    $bytes = $megabytes * 1024 * 1024;
+    return apply_filters( 'ddtt_debug_log_max_filesize', $bytes );
+} // End ddtt_get_max_log_filesize()
+
+
+/**
  * Return a log file from this server line by line, numbered, with colors
  * Home path is public_html/
  * Include filename in path
@@ -767,9 +779,16 @@ function ddtt_view_file_contents( $path, $log = false ) {
 
     // Check if the file exists
     if ( $file ) {
-        
-        // If so, get it
-        $string = file_get_contents( $file );
+
+        // Get the file size
+        $file_size = filesize( $file );
+
+        // Max file size
+        $max_filesize = ddtt_get_max_log_filesize();
+        $offset = $file_size <= $max_filesize ? 0 : $max_filesize;
+
+        // Get the file
+        $string = file_get_contents( $file, false, null, $offset );
 
         // Separate each line into an array item
         $lines = explode( PHP_EOL, $string );
@@ -962,12 +981,19 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
 
     // Check if the file exists
     if ( $file ) {
-        // If so, get it
-        $string = file_get_contents( $file );
+
+        // Get the file size
+        $file_size = filesize( $file );
+
+        // Max file size
+        $max_filesize = ddtt_get_max_log_filesize();
+        $offset = $file_size <= $max_filesize ? 0 : $max_filesize;
+
+        // Get the file
+        $string = file_get_contents( $file, false, null, $offset );
 
         // Separate each line in the file into an array item
         $lines = explode( PHP_EOL, $string );
-        // dpr( $lines );
 
         // Store the rests here for checking repeats
         $rests = [];
@@ -1197,6 +1223,10 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                                 $class = '';
                             }
                         }
+
+                        // Count actual lines
+                        $actual_line_count = count( $actual_lines );
+                        $actual_line_count = $actual_line_count > 0 ? $actual_line_count - 1 : 0;
                             
                         // Are we creating a new line?
                         if ( $new_actual_line ) {
@@ -1295,8 +1325,8 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                         } elseif ( $is_stack ) {
 
                             // Get the current stack lines
-                            if ( isset( $actual_lines[ count( $actual_lines ) - 1 ][ 'stack' ] ) ) {
-                                $stack_lines = $actual_lines[ count( $actual_lines ) - 1 ][ 'stack' ];
+                            if ( isset( $actual_lines[ $actual_line_count ][ 'stack' ] ) ) {
+                                $stack_lines = $actual_lines[ $actual_line_count ][ 'stack' ];
                             } else {
                                 $stack_lines = [];
                             }
@@ -1305,7 +1335,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                             if ( !in_array( $line, $stack_lines ) ) {
 
                                 // Then add the line
-                                $actual_lines[ count( $actual_lines ) - 1 ][ 'stack' ][] = $line;
+                                $actual_lines[ $actual_line_count ][ 'stack' ][] = $line;
                             }
 
                         // Or add the array
@@ -1317,10 +1347,10 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                             }
 
                             // Check if the line # matches
-                            if ( $actual_lines[ count( $actual_lines ) - 1 ][ 'err' ] === 'Array' ) {
+                            if ( isset( $actual_lines[ $actual_line_count ][ 'err' ] ) && $actual_lines[ $actual_line_count ][ 'err' ] === 'Array' ) {
 
                                 // Then add the line
-                                $actual_lines[ count( $actual_lines ) - 1 ][ 'array' ][] = $line;
+                                $actual_lines[ $actual_line_count ][ 'array' ][] = $line;
                             }
                         }
                     }
@@ -1934,15 +1964,16 @@ function ddtt_highlight_file2( $filename, $return = false ) {
     $string = highlight_file( $filename, true );
 
     // Find each of the spans
-    $pattern = "/\<span style=\"color: #([\d|A-F]{6})\"\>(.*?)\<\/span\>/";
+    $pattern = "/\<span style=\"color: #([\d|A-F]{6})\"\>(.*?)\<\/span\>/s";
     preg_match_all( $pattern, $string, $match );
     $m = array_unique( $match[1] );
+    // dpr( $match );
 
     // Replace them with anchors and our own color classes
     $rpl = [ "</a>" ];
     $mtc = [ "</span>" ];
     $i = 0;
-    foreach( $m as $clr ) {
+    foreach ( $m as $key => $clr ) {
         $rpl[] = "<a class=\"c".$i++."\">";
         $mtc[] = "<span style=\"color: #".$clr."\">";
     }
@@ -1971,7 +2002,7 @@ function ddtt_highlight_file2( $filename, $return = false ) {
         foreach ( $globals as $global ) {
 
             // The pattern we're searching for
-            $pattern = '/\<a class=\"c0\"\>define\<\/a\><a class=\"c2\"\>\((&nbsp;)*\<\/a\>\<a class=\"c3\"\>(\'|\")'.$global.'(\'|\")\<\/a\>\<a class=\"c2\"\>,(&nbsp;)*\<\/a\>\<a class=\"c3\"\>(\'|\")(.+?)(\'|\")/';
+            $pattern = '/\<a class=\"c2\"\>define\<\/a\><a class=\"c3\"\>\((&nbsp;)*\<\/a\>\<a class=\"c4\"\>(\'|\")'.$global.'(\'|\")\<\/a\>\<a class=\"c3\"\>,(&nbsp;)*\<\/a\>\<a class=\"c4\"\>(\'|\")(.+?)(\'|\")/';
 
             // Attempt to find it
             if ( preg_match( $pattern, $string2, $define_pw ) ) {

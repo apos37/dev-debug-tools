@@ -183,32 +183,25 @@ class DDTT_LOGS {
         if ( $dl == 'debug_log' ) {
 
             // Set the max filesize
-            // 1MB = 1048576 bytes, 2MB = 2097152 bytes
-            $megabytes = get_option( DDTT_GO_PF.'max_log_size', 2 );
-            $bytes = $megabytes * 1024 * 1024;
-            $dl_max_filesize = apply_filters( 'ddtt_debug_log_max_filesize', $bytes );
+            $dl_max_filesize = ddtt_get_max_log_filesize();
 
             // Include issues notice
             if ( $filesize > 10485760 ) {
                 ddtt_admin_notice( 'warning', 'Uh oh! Your debug log is '.ddtt_format_bytes( $filesize ).'! That is far too big, and may cause issues for your site. It is recommended that you download your log to see what\'s going on, and then clear it. If your log does not download from the button below, try logging into your File Manager on your host or downloading via FTP.' );
             }
 
-            // Check if we are under
-            if ( $filesize < absint( $dl_max_filesize ) ) {
+            // // Check if we are under
+            if ( $filesize >= absint( $dl_max_filesize ) ) {
+                ddtt_admin_notice( 'warning', 'Your debug log is larger than the max viewable log size (currently '.esc_html( ddtt_format_bytes( $filesize ) ).', max is '.esc_html( ddtt_format_bytes( absint( $dl_max_filesize ) ) ).'), and can cause issues if we try to load the whole thing on this page. Therefore, we have only included the last portion of your log. If you want to increase the max size regardless, you can do so in Settings.' );
+            }
 
-                // Get the contents
-                if ( $dl_viewer == 'easy' ) {
-                    $contents = ddtt_view_file_contents_easy_reader( $path, $log, $highlight_args, $allow_repeats);
-                } else {
-                    $contents = ddtt_view_file_contents( $path, $log );
-                }
-    
-            // Or display warning that log is too big
+            // Get the contents
+            if ( $dl_viewer == 'easy' ) {
+                $contents = ddtt_view_file_contents_easy_reader( $path, $log, $highlight_args, $allow_repeats);
             } else {
-                $contents = 'Sorry, your debug log is too big ('.esc_html( ddtt_format_bytes( $filesize ) ).'), and may cause issues if we try to load it on this page. Only '.esc_html( ddtt_format_bytes( absint( $dl_max_filesize ) ) ).' is allowed to be viewable here. It is recommended that you download your log to see what\'s going on, and then clear it. A log that is too large can cause issues on your site.';
+                $contents = ddtt_view_file_contents( $path, $log );
             }
         }
-
 
         // Get the contents
         if ( $dl != 'debug_log' ) {
@@ -220,7 +213,7 @@ class DDTT_LOGS {
 
         // Add viewer links
         $switch_to = '';
-        if ( $dl == 'debug_log' && $filesize < absint( $dl_max_filesize ) ) {
+        if ( $dl == 'debug_log' ) {
             if ( $dl_viewer == 'easy' ) {
                 $switch_to = '<a href="'.$current_url.'&viewer=classic">Switch to Classic View</a>';
             } else {
@@ -236,7 +229,7 @@ class DDTT_LOGS {
         }
 
         // Add color panel
-        if ( $dl == 'debug_log' && $dl_viewer == 'easy' && $filesize < absint( $dl_max_filesize ) && !empty( $highlight_args ) ) {
+        if ( $dl == 'debug_log' && $dl_viewer == 'easy' && !empty( $highlight_args ) ) {
 
             // Outer container
             $highlights = '<br><br><div id="color-identifiers">';

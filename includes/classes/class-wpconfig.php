@@ -654,7 +654,7 @@ class DDTT_WPCONFIG {
         }
 
         // Put the regex together
-        $regex = '/'.$pf.'\s*\('.$incl_var.'\s*'.$value_quotes_str.$value.$value_quotes_end.'\s*\)/i';
+        $regex = '/'.$pf.'\s*\('.$incl_var.'\s*'.$value_quotes_str.$value.$value_quotes_end.'\s*\)/is';
         // ddtt_print_r( $regex );
 
         return $regex;

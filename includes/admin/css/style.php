@@ -42,10 +42,10 @@ if ( $current_screen->id == $options_page ) {
 
     // Syntax
     $comment_out            = ddtt_get_syntax_color( 'color_comments', '#5E9955' );      // Comments
-    $c0                     = ddtt_get_syntax_color( 'color_fx_vars', '#DCDCAA' );       // Functions and variables
+    $c2                     = ddtt_get_syntax_color( 'color_fx_vars', '#DCDCAA' );       // Functions and variables
     $c1                     = ddtt_get_syntax_color( 'color_comments', '#5E9955' );      // Comments
-    $c2                     = ddtt_get_syntax_color( 'color_syntax', '#569CD6' );        // Syntax
-    $c3                     = ddtt_get_syntax_color( 'color_text_quotes', '#ACCCCC' );   // Text with quotes
+    $c3                     = ddtt_get_syntax_color( 'color_syntax', '#569CD6' );        // Syntax
+    $c4                     = ddtt_get_syntax_color( 'color_text_quotes', '#ACCCCC' );   // Text with quotes
     
     // Get the debug log colors
     $DDTT_LOGS = new DDTT_LOGS();
@@ -806,10 +806,11 @@ if ( $current_screen->id == $options_page ) {
         color: #DCF3F6 !important;
     }
     .comment-out { color: <?php echo esc_attr( $comment_out ); ?>; } 
-    .wrap a.c0, .highlight-variable { color: <?php echo esc_attr( $c0 ); ?> !important; } /* Functions and variables */
+    .wrap a.c0 { display: none !important; } /* First line */
+    .wrap a.c2, .highlight-variable { color: <?php echo esc_attr( $c2 ); ?> !important; } /* Functions and variables */
     .wrap a.c1 { color: <?php echo esc_attr( $c1 ); ?> !important; } /* Comments */
-    .wrap a.c2 { color: <?php echo esc_attr( $c2 ); ?> !important; } /* Syntax */
-    .wrap a.c3 { color: <?php echo esc_attr( $c3 ); ?> !important; } /* Text with quotes */
+    .wrap a.c3 { color: <?php echo esc_attr( $c3 ); ?> !important; } /* Syntax */
+    .wrap a.c4 { color: <?php echo esc_attr( $c4 ); ?> !important; } /* Text with quotes */
     </style>
 
 <?php }
