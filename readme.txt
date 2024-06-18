@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.5.4
 Requires PHP: 7.4
-Stable tag: 1.7.4
+Stable tag: 1.7.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -64,6 +64,9 @@ Viewable only on the front-end, there is a link on the admin bar that shows +Off
 = Where are the quick debug links? =
 You have to enable them on the Developer Debug Tools settings first. Once they are enabled, an "ID" column will be added to the user and/or post admin list pages. Next to the user or post's ID you will see a lightning bolt icon. Clicking on the lightning bolt will redirect you to the User Meta or Post Meta tab on our plugin where you can view and edit all of the meta easily.
 
+= I hid the plugin, now I can't find it! =
+You can get there directly by going to `https://yourdomain.com/wp-admin/admin.php?page=dev-debug-tools`. Be sure to bookmark it next time like the instructions say to do!
+
 = Where can I get further support? =
 Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 
@@ -80,6 +83,12 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.7.4.1 =
+* Tweak: Added WP_ENVIRONMENT_TYPE snippet to WP-CONFIG tab
+* Fix: Detected snippets being moved to DDT section if no snippets have been added yet (props amurashkin)
+* Tweak: Added WP_CACHE_KEY_SALT to list of defines to be redacted
+* Update: Added option for updating max debug log size (props amurashkin for suggestion)
+
 = 1.7.4 =
 * Update: Added a way to list available hooks in other plugins on hooks tab
 * Update: Added option to hide plugin

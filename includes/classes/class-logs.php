@@ -184,7 +184,9 @@ class DDTT_LOGS {
 
             // Set the max filesize
             // 1MB = 1048576 bytes, 2MB = 2097152 bytes
-            $dl_max_filesize = apply_filters( 'ddtt_debug_log_max_filesize', 2097152 );
+            $megabytes = get_option( DDTT_GO_PF.'max_log_size', 2 );
+            $bytes = $megabytes * 1024 * 1024;
+            $dl_max_filesize = apply_filters( 'ddtt_debug_log_max_filesize', $bytes );
 
             // Include issues notice
             if ( $filesize > 10485760 ) {

@@ -381,6 +381,7 @@ if ( ddtt_get( 'delete_backups', '==', 'true' ) ) {
             <ul>
                 <li>Select actions (add, remove, update) using checkboxes.</li>
                 <li>"Proposed" code is used for adding/updating, not "Current" code. If a snippet is detected and you want to keep the "Current" code, no action is necessary.</li>
+                <li>Edited snippets will be moved to DDT section if detected elsewhere.</li>
                 <li>Detected indicator shows with a blue border if the snippet is found, but does not match the proposed code.</li>
                 <li>Plugin checks for errors when saving edited snippets (not foolproof, double-check).</li>
                 <li>Saving an edited snippet doesn't modify the file yet. Preview changes before confirming or cancelling.</li>

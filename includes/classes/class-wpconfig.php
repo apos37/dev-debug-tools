@@ -381,6 +381,17 @@ class DDTT_WPCONFIG {
                 ],
                 'desc'  => 'WordPress comes with a built-in feature to automatically optimize and repair your WordPress database. To use it, enable this option then visit the following URL: <a href="'.$maint_link.'" target="_blank">'.$maint_link.'</a>. You will see a simple page with the options to "repair" or "repair and optimize" the database. You don\'t need to be logged in to access this page. <strong>Don\'t forget to disable this option immediately after repairing the database!</strong>'
             ],
+            'environment' => [
+                'label' => 'Set Environment Type',
+                'lines' => [
+                    [
+                        'prefix'   => 'define',
+                        'variable' => 'WP_ENVIRONMENT_TYPE',
+                        'value'    => 'production'
+                    ]
+                ],
+                'desc'  => 'This constant allows you to specify whether your site is running in a <code class="hl">development</code>, <code class="hl">staging</code>, or <code class="hl">production</code> environment. Some developers and setups might also use <code class="hl">local</code> as an alternative value to <code class="hl">development</code>. This helps plugins, themes, and developers to adjust their behavior or settings based on the environment.'
+            ],
         ] );
         return $snippets;
     } // End snippets()
@@ -616,6 +627,13 @@ class DDTT_WPCONFIG {
      * @return string
      */
     public function snippet_regex( $line ) {
+        // Prefix
+        if ( $line[ 'prefix' ] == 'define' ) {
+            $pf = '\bdefine';
+        } else {
+            $pf = $line[ 'prefix' ];
+        }
+
         // Include variable?
         if ( isset( $line[ 'variable' ] ) ) {
             $incl_var = '\s*([\'"])'.$line[ 'variable' ].'\1\s*,';
@@ -624,11 +642,10 @@ class DDTT_WPCONFIG {
         }
         
         // Convert value
-        $value = '.*?';
+        $value = '(.*?)';
         
         // Adding quotes around value
         if ( is_numeric( $line[ 'value' ] ) || is_bool( $line[ 'value' ] ) ) {
-            // ddtt_print_r($line_string);
             $value_quotes_str = '';
             $value_quotes_end = '';
         } else {
@@ -637,8 +654,8 @@ class DDTT_WPCONFIG {
         }
 
         // Put the regex together
-        $regex = '/'.$line[ 'prefix' ].'\s*\('.$incl_var.'\s*'.$value_quotes_str.$value.$value_quotes_end.'\s*\)/i';
-        // ddtt_print_r($regex);
+        $regex = '/'.$pf.'\s*\('.$incl_var.'\s*'.$value_quotes_str.$value.$value_quotes_end.'\s*\)/i';
+        // ddtt_print_r( $regex );
 
         return $regex;
     } // End snippet_regex()
@@ -767,6 +784,42 @@ class DDTT_WPCONFIG {
             // Store what we need to add here
             $add = [];
 
+            // Domain & IP
+            $blogname = get_option( 'blogname' );
+
+            // Our info at top
+            $added_by = [];
+            $added_by_id = ' * Added via '.DDTT_NAME;
+            $added_by_lines = [
+                '',
+                '/**',
+                ' * '.$blogname,
+                ' * '.home_url(),
+                $added_by_id,
+                ' * Last updated: '.date( 'F j, Y g:i A'),
+                ' */',
+                ''
+            ];
+            foreach ( $added_by_lines as $abl ) {
+                if ( $abl != '' ) {
+                    $abl = htmlentities( $abl );
+                }
+                $added_by[] = $abl;
+            }
+
+            // Get the added by key before making updates
+            $pre_added_by_key = array_search( $added_by_id, $safe_file_lines ) ?? 0;
+            
+            // Our info at bottom
+            $end = [];
+            $end_id = '/* End of snippets added via '.DDTT_NAME.' */';
+            $end[] = htmlentities( $end_id );
+            $end[] = '';
+            $end[] = '';
+
+            // Get the end key before making updates
+            $pre_end_key = array_search( $end_id, $safe_file_lines ) ?? 0;
+
             // Are we testing?                
             if ( $testing ) {
                 ddtt_print_r( '$enabled: ' );
@@ -821,11 +874,14 @@ class DDTT_WPCONFIG {
                     continue;
 
                 // Exists, at least partially
-                // REMOVE SNIPPETS REGARDLESS, because we're going to rewrite it all
+                // REMOVE SNIPPETS REGARDLESS, because we're going to rewrite it all, but only if it exists within our comments
                 } elseif ( $exists || ( !$exists && $partial ) ) {
 
+                    // Store snippets that we are ignoring
+                    $ignore = [];
+
                     // For each snippet line
-                    foreach( $snippet_lines_1 as $snippet_line_1 ) {
+                    foreach ( $snippet_lines_1 as $snippet_line_1 ) {
                         // ddtt_print_r( $snippet_line_1 );
 
                         // Regex
@@ -839,6 +895,12 @@ class DDTT_WPCONFIG {
                             
                             // Check the file for the line
                             if ( preg_match_all( $regex, $safe_file_line, $matches ) ) {
+
+                                // If we're not changing it and it's outside of our comments, leave it alone
+                                if ( !$changing && ( $file_key < $pre_added_by_key || $file_key > $pre_end_key ) ) {
+                                    $ignore[] = $snippet_key;
+                                    continue 2;
+                                }
 
                                 // Remove all instances of the line from the list
                                 foreach ( $matches[0] as $match ) {
@@ -861,20 +923,23 @@ class DDTT_WPCONFIG {
                         }
                     }
 
+                    // Ignoring
+                    $ignoring = in_array( $snippet_key, $ignore );
+
                     // Add the snippet if we are keeping it the way it is
-                    if ( $exists && !in_array( $snippet_key, $all_snippets_to_change ) ) {
+                    if ( $exists && !$changing && !$ignoring ) {
                         $add[ $snippet_key ] = $snippet;
                     }
 
                     // If it at least partially exists, then add the snippet to the add bucket 
-                    if ( ( $exists && $changing ) || ( !$exists && $partial && $changing ) ) {
+                    if ( ( $exists && $changing && !$ignoring ) || ( !$exists && $partial && $changing ) ) {
                         if ( !in_array( $snippet_key, $snippets_to_remove ) ) {
                             $add[ $snippet_key ] = $snippet;
                         }
                     }
 
-                    // If it's not supposed to be there, just count this as an edit
-                    if ( $changing || ( !$exists && $partial ) ) {
+                    // Count how many edits we need to make
+                    if ( ( $changing && !$ignoring ) || ( !$exists && $partial ) ) {
                         $edits++;
                     }
 
@@ -903,29 +968,6 @@ class DDTT_WPCONFIG {
                 // Remove the <?php
                 if ( strpos( $safe_file_lines[0], htmlentities( '<?php' ) ) !== false ) {
                     unset( $safe_file_lines[0] );
-                }
-
-                // Domain & IP
-                $blogname = get_option( 'blogname' );
-
-                // Info at top
-                $added_by = [];
-                $added_by_id = ' * Added via '.DDTT_NAME;
-                $added_by_lines = [
-                    '',
-                    '/**',
-                    ' * '.$blogname,
-                    ' * '.home_url(),
-                    $added_by_id,
-                    ' * Last updated: '.date( 'F j, Y g:i A'),
-                    ' */',
-                    ''
-                ];
-                foreach ( $added_by_lines as $abl ) {
-                    if ( $abl != '' ) {
-                        $abl = htmlentities( $abl );
-                    }
-                    $added_by[] = $abl;
                 }
 
                 // Count how many we are adding
@@ -999,13 +1041,6 @@ class DDTT_WPCONFIG {
                         }
                     }
                 }
-
-                // Info at bottom
-                $end = [];
-                $end_id = '/* End of snippets added via '.DDTT_NAME.' */';
-                $end[] = htmlentities( $end_id );
-                $end[] = '';
-                $end[] = '';
 
                 // Remove the end comment
                 if ( ( false !== $end_key = array_search( $end_id, $safe_file_lines ) ) ) {

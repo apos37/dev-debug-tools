@@ -54,6 +54,7 @@ class DDTT_GLOBAL_OPTIONS {
             'plugins_page_data',
             'disable_error_counts',
             'log_viewer',
+            'max_log_size',
             'log_user_url',
             'wp_mail_failure',
             'error_log_path',

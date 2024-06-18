@@ -1934,20 +1934,18 @@ function ddtt_highlight_file2( $filename, $return = false ) {
     $string = highlight_file( $filename, true );
 
     // Find each of the spans
-    preg_match_all( "/\<span style=\"color: #([\d|A|B|C|D|E|F]{6})\"\>.*?\<\/span\>/", $string, $match );
+    $pattern = "/\<span style=\"color: #([\d|A-F]{6})\"\>(.*?)\<\/span\>/";
+    preg_match_all( $pattern, $string, $match );
     $m = array_unique( $match[1] );
 
     // Replace them with anchors and our own color classes
-    $cls = '<style type="text/css">'."\n";
     $rpl = [ "</a>" ];
     $mtc = [ "</span>" ];
     $i = 0;
     foreach( $m as $clr ) {
-        $cls .= "a.c".$i."{color: #".$clr.";}\n";
         $rpl[] = "<a class=\"c".$i++."\">";
         $mtc[] = "<span style=\"color: #".$clr."\">";
     }
-    $cls .= "</style>";
     $string2 = str_replace( $mtc, $rpl, $string );
 
     // Check if we are redacting
@@ -1965,7 +1963,8 @@ function ddtt_highlight_file2( $filename, $return = false ) {
             'AUTH_SALT',
             'SECURE_AUTH_SALT',
             'LOGGED_IN_SALT',
-            'NONCE_SALT'
+            'NONCE_SALT',
+            'WP_CACHE_KEY_SALT'
         ];
 
         // Iter the globals
