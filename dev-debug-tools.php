@@ -26,6 +26,7 @@ if ( !defined( 'ABSPATH' ) ) {
 
 // Versions
 define( 'DDTT_VERSION', '1.7.4.3' );
+define( 'DDTT_BETA', true );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum

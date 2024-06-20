@@ -22,6 +22,13 @@ $sfx = ddtt_multisite_suffix();
 // Updates url
 $updates_url = ddtt_admin_url( 'update-core.php' );
 
+// Beta
+if ( defined( 'DDTT_BETA' ) && DDTT_BETA ) {
+    $is_beta = ' (BETA)';
+} else {
+    $is_beta = '';
+}
+
 // Check if we have the latest plugin version
 $plugin_warning = '';
 $latest_plugin = ddtt_get_latest_plugin_version();
@@ -82,7 +89,7 @@ if ( floatval( $php_version ) < floatval( $latest_php ) ) {
         <img src="<?php echo esc_url( DDTT_PLUGIN_IMG_PATH ); ?>logo.png" width="32" height="32" alt="Developer Debug Tools Logo">
         <h1><?php echo esc_attr( DDTT_NAME ); ?><?php echo wp_kses_post( $sfx ); ?></h1>
     </div>
-    <div>Plugin <?php echo esc_attr( DDTT_VERSION ).' '.wp_kses_post( $plugin_warning ); ?> <span class="sep"><?php echo esc_attr( $sep ); ?></span> WP <?php echo esc_attr( $wp_version ).' '.wp_kses_post( $wp_warning ); ?> <span class="sep"><?php echo esc_attr( $sep ); ?></span> PHP <?php echo esc_attr( $php_version ).' '.wp_kses_post( $php_warning ); ?> <span class="sep"><?php echo esc_attr( $sep ); ?></span> <span id="jquery_ver">jQuery </span> <span class="sep"><?php echo esc_attr( $sep ); ?></span> <span id="jquery_mver">jQuery Migrate </span></div>
+    <div>Plugin <?php echo esc_attr( DDTT_VERSION ).$is_beta.' '.wp_kses_post( $plugin_warning ); ?> <span class="sep"><?php echo esc_attr( $sep ); ?></span> WP <?php echo esc_attr( $wp_version ).' '.wp_kses_post( $wp_warning ); ?> <span class="sep"><?php echo esc_attr( $sep ); ?></span> PHP <?php echo esc_attr( $php_version ).' '.wp_kses_post( $php_warning ); ?> <span class="sep"><?php echo esc_attr( $sep ); ?></span> <span id="jquery_ver">jQuery </span> <span class="sep"><?php echo esc_attr( $sep ); ?></span> <span id="jquery_mver">jQuery Migrate </span></div>
 
     <?php if ( ddtt_get( 'settings-updated' ) ) { ?>
         <div id="message" class="updated">
