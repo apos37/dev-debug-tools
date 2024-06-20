@@ -1960,24 +1960,37 @@ function ddtt_delete_unused_mk_tab( $post_type, $keyword, $dumk ) {
  * @return void|bool
  */
 function ddtt_highlight_file2( $filename, $return = false ) {
+    // Change the colors
+    $comments = ddtt_get_syntax_color( 'color_comments', '#5E9955' );
+    $fx_vars = ddtt_get_syntax_color( 'color_fx_vars', '#DCDCAA' );
+    $text_quotes = ddtt_get_syntax_color( 'color_text_quotes', '#ACCCCC' );
+    $syntax = ddtt_get_syntax_color( 'color_syntax', '#569CD6' );
+    ini_set( 'highlight.comment', $comments );
+    ini_set( 'highlight.default', $fx_vars );
+    ini_set( 'highlight.html', $text_quotes );
+    ini_set( 'highlight.keyword', $syntax );
+    ini_set( 'highlight.string', $text_quotes );
+
+    $string2 = highlight_file( $filename, true );
+
     // Highlight the file
-    $string = highlight_file( $filename, true );
+    // $string = highlight_file( $filename, true );
 
-    // Find each of the spans
-    $pattern = "/\<span style=\"color: #([\d|A-F]{6})\"\>(.*?)\<\/span\>/s";
-    preg_match_all( $pattern, $string, $match );
-    $m = array_unique( $match[1] );
-    // dpr( $match );
+    // // Find each of the spans
+    // $pattern = "/\<span style=\"color: #([\d|A-F]{6})\"\>(.*?)\<\/span\>/s";
+    // preg_match_all( $pattern, $string, $match );
+    // $m = array_unique( $match[1] );
+    // // dpr( $match );
 
-    // Replace them with anchors and our own color classes
-    $rpl = [ "</a>" ];
-    $mtc = [ "</span>" ];
-    $i = 0;
-    foreach ( $m as $key => $clr ) {
-        $rpl[] = "<a class=\"c".$i++."\">";
-        $mtc[] = "<span style=\"color: #".$clr."\">";
-    }
-    $string2 = str_replace( $mtc, $rpl, $string );
+    // // Replace them with anchors and our own color classes
+    // $rpl = [ "</a>" ];
+    // $mtc = [ "</span>" ];
+    // $i = 0;
+    // foreach ( $m as $clr ) {
+    //     $rpl[] = "<a class=\"c".$i++."\">";
+    //     $mtc[] = "<span style=\"color: #".$clr."\">";
+    // }
+    // $string2 = str_replace( $mtc, $rpl, $string );
 
     // Check if we are redacting
     if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
@@ -2002,7 +2015,8 @@ function ddtt_highlight_file2( $filename, $return = false ) {
         foreach ( $globals as $global ) {
 
             // The pattern we're searching for
-            $pattern = '/\<a class=\"c2\"\>define\<\/a\><a class=\"c3\"\>\((&nbsp;)*\<\/a\>\<a class=\"c4\"\>(\'|\")'.$global.'(\'|\")\<\/a\>\<a class=\"c3\"\>,(&nbsp;)*\<\/a\>\<a class=\"c4\"\>(\'|\")(.+?)(\'|\")/';
+            // $pattern = '/\<a class=\"c2\"\>define\<\/a\><a class=\"c3\"\>\((&nbsp;)*\<\/a\>\<a class=\"c4\"\>(\'|\")'.$global.'(\'|\")\<\/a\>\<a class=\"c3\"\>,(&nbsp;)*\<\/a\>\<a class=\"c4\"\>(\'|\")(.+?)(\'|\")/';
+            $pattern = '/define\<\/span\>\<span style=\"color: '.$syntax.'\"\>\((&nbsp;)*\<\/span\>(\'|\")'.$global.'(\'|\")\<span style=\"color: '.$syntax.'\"\>,(&nbsp;)*\<\/span\>(\'|\")(.+?)(\'|\")/';
 
             // Attempt to find it
             if ( preg_match( $pattern, $string2, $define_pw ) ) {
@@ -2756,6 +2770,23 @@ function ddtt_scan_plugin_for_hooks( $plugin_dir ) {
     // Return the hooks
     return $hooks;
 } // End ddtt_scan_plugin_for_hooks()
+
+
+/**
+ * Convert PHP_EOL type to string
+ *
+ * @param string $value
+ * @return string
+ */
+function ddtt_convert_php_eol_to_string( $value = PHP_EOL ) {
+    $eol = [
+        '0a'   => '\n',
+        '0d'   => '\r',
+        '0d0a' => '\r\n'
+    ];
+    $hex = bin2hex( $value );
+    return isset( $eol[ $hex ] ) ? $eol[ $hex ] : $value;
+} // End ddtt_convert_php_eol_to_string()
 
 
 /**

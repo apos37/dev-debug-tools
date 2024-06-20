@@ -418,8 +418,9 @@ class DDTT_WPCONFIG {
         foreach ( $proposed as $p ) {
             $proposed_lines[] = $p;
         }
-        $current_text = implode( "\n", $current_lines );
-        $proposed_text = implode( "\n", $proposed_lines );
+        $eol = $this->get_php_eol();
+        $current_text = implode( $eol, $current_lines );
+        $proposed_text = implode( $eol, $proposed_lines );
 
         // Check the box if the snippet exists
         if ( $snippet_exists ) {
@@ -510,7 +511,9 @@ class DDTT_WPCONFIG {
         $lines_exist = 0;
 
         // Explode the lines
-        $lines = explode( PHP_EOL, $wpconfig );
+        // $eol = get_option( DDTT_GO_PF.'php_eol', PHP_EOL );
+        // $lines = explode( $eol, $wpconfig );
+        $lines = preg_split( '/\r\n|\r|\n/', $wpconfig );
 
         // Cycle each line
         foreach ( $snippet[ 'lines' ] as $snippet_line ) {
@@ -654,7 +657,7 @@ class DDTT_WPCONFIG {
         }
 
         // Put the regex together
-        $regex = '/'.$pf.'\s*\('.$incl_var.'\s*'.$value_quotes_str.$value.$value_quotes_end.'\s*\)/is';
+        $regex = '/'.$pf.'\s*\('.$incl_var.'\s*'.$value_quotes_str.$value.$value_quotes_end.'\s*\)/i';
         // ddtt_print_r( $regex );
 
         return $regex;
@@ -769,8 +772,12 @@ class DDTT_WPCONFIG {
             // Get the file
             $wpconfig = file_get_contents( $file );
 
+            // Set eol type
+            $eol = $this->get_php_eol();
+
             // Separate each line into an array item
-            $file_lines = explode( PHP_EOL, $wpconfig );
+            // $file_lines = explode( PHP_EOL, $wpconfig );
+            $file_lines = preg_split( '/\r\n|\r|\n/', $wpconfig );
 
             // Make it html safe
             $safe_file_lines = [];
@@ -859,7 +866,8 @@ class DDTT_WPCONFIG {
                      $current !== $proposed && 
                      !in_array( $snippet_key, array_keys( $new_snippets ) ) &&
                      !in_array( $snippet_key, $snippets_to_update ) ) {
-                    $new_snippets[ $snippet_key ] = implode( "\n", $current );
+                    // $new_snippets[ $snippet_key ] = implode( "\n", $current );
+                    $new_snippets[ $snippet_key ] = implode( $eol, $current );
                 }
 
                 // Enabled
@@ -1075,7 +1083,8 @@ class DDTT_WPCONFIG {
                         // Are we using an updated snippet?
                         if ( isset( $new_snippets[ $snippet_key ] ) ) {
                             $updated_snippet_lines = $new_snippets[ $snippet_key ];
-                            $updated_snippet_array = preg_split( "/\r\n|\n/", $updated_snippet_lines );
+                            $updated_snippet_array = preg_split( '/\r\n|\r|\n/', $updated_snippet_lines );
+                            // $updated_snippet_array = explode( $eol, $updated_snippet_lines );
                             foreach ( $updated_snippet_array as $uline ) {
                                 $add_converted[] = htmlspecialchars_decode( $uline );
                             }
@@ -1125,7 +1134,8 @@ class DDTT_WPCONFIG {
                         if ( $k === array_key_last( $safe_file_lines ) ) {
                             $separate_safe_lines[] = html_entity_decode( $sfl );
                         } else {
-                            $separate_safe_lines[] = html_entity_decode( $sfl ).PHP_EOL;
+                            $separate_safe_lines[] = html_entity_decode( $sfl ).$eol;
+                            // $separate_safe_lines[] = html_entity_decode( $sfl );
                         }
                     }
 
@@ -1185,6 +1195,27 @@ class DDTT_WPCONFIG {
             return;
         }
     } // End rewrite()
+
+
+    /**
+     * Get the php_eol type we are using for the wp-config
+     *
+     * @param string $value
+     * @return string
+     */
+    public function get_php_eol() {
+        if ( $eol = get_option( DDTT_GO_PF.'php_eol' ) ) {
+            $eol_types = [
+                '\n'   => "\n",
+                '\r'   => "\r",
+                '\r\n' => "\r\n"
+            ];
+            if ( isset( $eol_types[ $eol ] ) ) {
+                return $eol_types[ $eol ];
+            }
+        }
+        return PHP_EOL;
+    } // End ddtt_get_php_eol()
 
 
     /**

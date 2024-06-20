@@ -806,7 +806,7 @@ if ( $current_screen->id == $options_page ) {
         color: #DCF3F6 !important;
     }
     .comment-out { color: <?php echo esc_attr( $comment_out ); ?>; } 
-    .wrap a.c0 { display: none !important; } /* First line */
+    .wrap a.c0 { color: <?php echo esc_attr( $c3 ); ?> !important; } /* First line */
     .wrap a.c2, .highlight-variable { color: <?php echo esc_attr( $c2 ); ?> !important; } /* Functions and variables */
     .wrap a.c1 { color: <?php echo esc_attr( $c1 ); ?> !important; } /* Comments */
     .wrap a.c3 { color: <?php echo esc_attr( $c3 ); ?> !important; } /* Syntax */

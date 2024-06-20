@@ -42,6 +42,7 @@ class DDTT_GLOBAL_OPTIONS {
             'dev_timezone',
             'hide_plugin',
             'view_sensitive_info',
+            'php_eol',
             'test_number',
             'centering_tool_cols',
             'stop_heartbeat',

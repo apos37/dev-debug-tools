@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.5.4
 Requires PHP: 7.4
-Stable tag: 1.7.4.2
+Stable tag: 1.7.4.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -83,8 +83,11 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
-= 1.7.4.2 =
+= 1.7.4.3 =
 * Fix: Some config files showing incorrect comment color (props amurashkin)
+* Fix: WP-CONFIG tab not working for some platforms (props amurashkin)
+
+= 1.7.4.2 =
 * Update: Allowed viewing of last portion of debug log only if above limit (props amurashkin)
 
 = 1.7.4.1 =

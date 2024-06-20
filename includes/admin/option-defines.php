@@ -22,6 +22,9 @@ echo '<div class="full_width_container">
 
             // Cycle through the constants
             foreach ( $constants as $constant => $value ) {
+                if ( $constant == 'PHP_EOL' ) {
+                    $value = ddtt_convert_php_eol_to_string();
+                }
     
                 // Add it
                 echo '<tr>
