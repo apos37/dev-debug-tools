@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.5.4
 Requires PHP: 7.4
-Stable tag: 1.7.4.3
+Stable tag: 1.7.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -83,17 +83,20 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
-= 1.7.4.3 =
-* Fix: Some config files showing incorrect comment color (props amurashkin)
+= 1.7.5.1 = // TODO: Currently Working on
+* Fix: Detected HTACCESS snippets being ignored if DDT section does not exist // TODO: Coming Soon
+
+= 1.7.5 =
+* Update: Added all site options to Site Options tab, not just registered ones
+* Update: Added clear buttons to each Cookie in the Cookies tab, and added a button to add a test cookie
+* Update: Added table column names to DB Tables tab
+* Update: Added checks for end-of-line delimiters, option to change on WP-CONFIG and HTACCESS tabs (props amurashkin)
 * Fix: WP-CONFIG tab not working for some platforms (props amurashkin)
-
-= 1.7.4.2 =
-* Update: Allowed viewing of last portion of debug log only if above limit (props amurashkin)
-
-= 1.7.4.1 =
+* Fix: Some WP-CONFIG files showing incorrect comment color (props amurashkin)
 * Tweak: Added WP_ENVIRONMENT_TYPE snippet to WP-CONFIG tab
-* Fix: Detected snippets being moved to DDT section if no snippets have been added yet (props amurashkin)
+* Fix: Detected WP-CONFIG snippets being moved to DDT section if no snippets have been added yet (props amurashkin)
 * Tweak: Added WP_CACHE_KEY_SALT to list of defines to be redacted
+* Update: Allowed viewing of last portion of debug log only if above limit (props amurashkin)
 * Update: Added option for updating max debug log size (props amurashkin for suggestion)
 
 = 1.7.4 =

@@ -223,10 +223,16 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
             } else {
                 $blank = '';
             }
+
+            if ( !is_null( $args ) && isset( $args[ 'width' ] ) ) {
+                $width = $args[ 'width' ];
+            } else {
+                $width = '43.75rem';
+            }
         } else {
             return false;
         }
-        $input = '<select id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'"'.$required.'>'.$blank;
+        $input = '<select id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'"'.$required.' style="width: '.esc_attr( $width ).'">'.$blank;
 
         foreach ( $options as $option ) {
             if ( isset( $option[ 'value' ] ) && isset( $option[ 'label' ] ) ) {
@@ -336,7 +342,8 @@ function ddtt_wp_kses_allowed_html() {
     $allowed_html = [
         'div' => [
             'id' => [],
-            'class' => []
+            'class' => [],
+            'title' => [],
         ],
         'p' => [
             'id' => [],
@@ -358,7 +365,8 @@ function ddtt_wp_kses_allowed_html() {
             'class' => [],
             'style' => [],
             'target' => [],
-            'rel' => []
+            'rel' => [],
+            'data-name' => []
         ],
         'img' => [
             'border' => [],
@@ -381,7 +389,9 @@ function ddtt_wp_kses_allowed_html() {
             'class' => []
         ],
         'td' => [
-            'class' => []
+            'colspan' => [],
+            'class' => [],
+            'data-name' => []
         ],
         'br' => [],
         'form' => [
@@ -424,6 +434,7 @@ function ddtt_wp_kses_allowed_html() {
             'name' => [],
             'required' => [],
             'autocomplete' => [],
+            'style' => []
         ],
         'option' => [
             'value' => [],
@@ -1971,26 +1982,8 @@ function ddtt_highlight_file2( $filename, $return = false ) {
     ini_set( 'highlight.keyword', $syntax );
     ini_set( 'highlight.string', $text_quotes );
 
+    // Stock highlight
     $string2 = highlight_file( $filename, true );
-
-    // Highlight the file
-    // $string = highlight_file( $filename, true );
-
-    // // Find each of the spans
-    // $pattern = "/\<span style=\"color: #([\d|A-F]{6})\"\>(.*?)\<\/span\>/s";
-    // preg_match_all( $pattern, $string, $match );
-    // $m = array_unique( $match[1] );
-    // // dpr( $match );
-
-    // // Replace them with anchors and our own color classes
-    // $rpl = [ "</a>" ];
-    // $mtc = [ "</span>" ];
-    // $i = 0;
-    // foreach ( $m as $clr ) {
-    //     $rpl[] = "<a class=\"c".$i++."\">";
-    //     $mtc[] = "<span style=\"color: #".$clr."\">";
-    // }
-    // $string2 = str_replace( $mtc, $rpl, $string );
 
     // Check if we are redacting
     if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
@@ -2015,8 +2008,7 @@ function ddtt_highlight_file2( $filename, $return = false ) {
         foreach ( $globals as $global ) {
 
             // The pattern we're searching for
-            // $pattern = '/\<a class=\"c2\"\>define\<\/a\><a class=\"c3\"\>\((&nbsp;)*\<\/a\>\<a class=\"c4\"\>(\'|\")'.$global.'(\'|\")\<\/a\>\<a class=\"c3\"\>,(&nbsp;)*\<\/a\>\<a class=\"c4\"\>(\'|\")(.+?)(\'|\")/';
-            $pattern = '/define\<\/span\>\<span style=\"color: '.$syntax.'\"\>\((&nbsp;)*\<\/span\>(\'|\")'.$global.'(\'|\")\<span style=\"color: '.$syntax.'\"\>,(&nbsp;)*\<\/span\>(\'|\")(.+?)(\'|\")/';
+            $pattern = '/define\<\/span\>\<span style=\"color: '.$syntax.'\"\>\((&nbsp;)*\<\/span\>(\'|\")'.$global.'(\'|\")\<span style=\"color: '.$syntax.'\"\>,(&nbsp;)*\<\/span\>(\'|\")(.+?)(\'|\")/i';
 
             // Attempt to find it
             if ( preg_match( $pattern, $string2, $define_pw ) ) {
@@ -2787,6 +2779,50 @@ function ddtt_convert_php_eol_to_string( $value = PHP_EOL ) {
     $hex = bin2hex( $value );
     return isset( $eol[ $hex ] ) ? $eol[ $hex ] : $value;
 } // End ddtt_convert_php_eol_to_string()
+
+
+/**
+ * Get the php_eol type we are using for the file
+ *
+ * @param string $file
+ * @return string
+ */
+function ddtt_get_eol( $tab ) {
+    $eol_types = [
+        '\n'   => "\n",
+        '\r'   => "\r",
+        '\r\n' => "\r\n"
+    ];
+    if ( $eol = get_option( DDTT_GO_PF.'eol_'.$tab ) ) {
+        if ( isset( $eol_types[ $eol ] ) ) {
+            return $eol_types[ $eol ];
+        }
+    }
+    return PHP_EOL;
+} // End ddtt_get_php_eol()
+
+
+/**
+ * Get the eol type(s) being used by a file
+ *
+ * @param string $file
+ * @return array
+ */
+function ddtt_get_file_eol( $file_contents ) {
+    $types = [
+        "\n"   => '\n',
+        "\r"   => '\r',
+        "\r\n" => '\r\n'
+    ];
+    $found = [];
+    foreach ( $types as $char => $type ) {
+        $pattern = preg_quote( $char, '/' );
+        if ( preg_match( '/'.$pattern.'/', $file_contents ) ) {
+            $found[] = '<code class="hl">'.$type.'</code>';
+        }
+    }
+    return $found;
+} // End ddtt_get_php_eol()
 
 
 /**

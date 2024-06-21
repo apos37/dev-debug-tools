@@ -418,7 +418,7 @@ class DDTT_WPCONFIG {
         foreach ( $proposed as $p ) {
             $proposed_lines[] = $p;
         }
-        $eol = $this->get_php_eol();
+        $eol = ddtt_get_eol( 'wpcnfg' );
         $current_text = implode( $eol, $current_lines );
         $proposed_text = implode( $eol, $proposed_lines );
 
@@ -773,10 +773,9 @@ class DDTT_WPCONFIG {
             $wpconfig = file_get_contents( $file );
 
             // Set eol type
-            $eol = $this->get_php_eol();
+            $eol = ddtt_get_eol( 'wpcnfg' );
 
             // Separate each line into an array item
-            // $file_lines = explode( PHP_EOL, $wpconfig );
             $file_lines = preg_split( '/\r\n|\r|\n/', $wpconfig );
 
             // Make it html safe
@@ -1132,10 +1131,16 @@ class DDTT_WPCONFIG {
                     $separate_safe_lines = [];
                     foreach( $safe_file_lines as $k => $sfl ) {
                         if ( $k === array_key_last( $safe_file_lines ) ) {
-                            $separate_safe_lines[] = html_entity_decode( $sfl );
+                            $last_char = substr( $wpconfig, -1 );
+                            $eol_chars = [ "\n", "\r", "\r\n" ];
+                            if ( in_array( $last_char, $eol_chars ) ) {
+                                $incl_eol = $eol;
+                            } else {
+                                $incl_eol = '';
+                            }
+                            $separate_safe_lines[] = html_entity_decode( $sfl ).$incl_eol;
                         } else {
                             $separate_safe_lines[] = html_entity_decode( $sfl ).$eol;
-                            // $separate_safe_lines[] = html_entity_decode( $sfl );
                         }
                     }
 
@@ -1166,13 +1171,11 @@ class DDTT_WPCONFIG {
                         }
 
                         // Back up the original
-                        if ( !get_option( 'ddtt_wpconfig_og' ) ) {
-                            update_option( 'ddtt_wpconfig_og', $wpconfig );
+                        if ( !get_option( 'ddtt_wpconfig_og_replaced_date' ) ) {
                             update_option( 'ddtt_wpconfig_og_replaced_date', $now );
                         }
 
                         // Back up the previous file string to site option
-                        update_option( 'ddtt_wpconfig_last', $wpconfig );
                         update_option( 'ddtt_wpconfig_last_updated', $now );
 
                         // Update the file
@@ -1195,27 +1198,6 @@ class DDTT_WPCONFIG {
             return;
         }
     } // End rewrite()
-
-
-    /**
-     * Get the php_eol type we are using for the wp-config
-     *
-     * @param string $value
-     * @return string
-     */
-    public function get_php_eol() {
-        if ( $eol = get_option( DDTT_GO_PF.'php_eol' ) ) {
-            $eol_types = [
-                '\n'   => "\n",
-                '\r'   => "\r",
-                '\r\n' => "\r\n"
-            ];
-            if ( isset( $eol_types[ $eol ] ) ) {
-                return $eol_types[ $eol ];
-            }
-        }
-        return PHP_EOL;
-    } // End ddtt_get_php_eol()
 
 
     /**

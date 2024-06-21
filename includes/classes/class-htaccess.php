@@ -434,7 +434,7 @@ class DDTT_HTACCESS {
             $file_contents = strtr( $file_contents, chr(10), chr(32) );
 
             // Separate each line into an array item
-            $file_lines = explode( PHP_EOL, $htaccess );
+            $file_lines = preg_split( '/\r\n|\r|\n/', $htaccess );
 
             // Make it html safe
             $safe_file_lines = [];
@@ -750,13 +750,11 @@ class DDTT_HTACCESS {
                         }
 
                         // Back up the original
-                        if ( !get_option( 'ddtt_htaccess_og' ) ) {
-                            update_option( 'ddtt_htaccess_og', $htaccess );
+                        if ( !get_option( 'ddtt_htaccess_og_replaced_date' ) ) {
                             update_option( 'ddtt_htaccess_og_replaced_date', date( 'Y-m-d-H-i-s' ) );
                         }
 
                         // Back up the previous file string to site option
-                        update_option( 'ddtt_htaccess_last', $htaccess );
                         update_option( 'ddtt_htaccess_last_updated', date( 'Y-m-d-H-i-s' ) );
 
                         // Turn the new lines into a string

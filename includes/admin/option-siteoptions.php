@@ -91,31 +91,56 @@ if ( ddtt_get( 'lookup' ) ) {
 <br><br>
 <?php
 // Get the options
-$all_options = get_registered_settings();
+$all_options = wp_load_alloptions();
+$reg_options = get_registered_settings();
 
-// Return the table
-echo '<div class="full_width_container">
+// Let's add any missing registered options to the all options array
+foreach ( $reg_options as $key => $r ) {
+    if ( !array_key_exists( $key, $all_options ) ) {
+        $all_options[ $key ] = get_option( $key );
+    }
+}
+
+// Sort them
+uksort( $all_options, function( $a, $b ) {
+    return strcasecmp( $a, $b );
+} );
+?>
+
+<div class="full_width_container">
     <table class="admin-large-table">
         <tr>
-            <th>Registered Setting/Option</th>
-            <th>Setting Group</th>
+            <th style="width: 300px;">Registered Setting/Option</th>
+            <th style="width: 300px;">Setting Group</th>
             <th>Value</th>
-        </tr>';
-
+        </tr>
+        <?php
         // Cycle through the options
-        foreach( $all_options as $option => $value ) {
-            $get_option = get_option( $option );
-            if ( !is_array( $get_option ) ) {
-                $display_value = $get_option;
-            } else {
-                $display_value = '<pre>'.print_r( $get_option, true ).'</pre>';
-            }
-            echo '<tr>
-                <td><span class="highlight-variable">'.esc_attr( $option ).'</span></td>
-                <td>'.esc_attr( $value['group'] ).'</td>
-                <td>'.wp_kses_post( $display_value ).'</td>
-            </tr>';
-        }
+        foreach ( $all_options as $option => $value ) {
 
-echo '</table>
-</div>';
+            // Get the group
+            if ( in_array( $option, array_keys( $reg_options ) ) ) {
+                $group = $reg_options[ $option ][ 'group' ];
+            } else {
+                $group = '';
+            }
+
+            // Get the value and print properly if an array
+            if ( is_array( $value ) ) {
+                $display_value = '<pre>'.print_r( $get_option, true ).'</pre>';
+            } elseif ( ddtt_is_serialized_array( $value ) && !empty( unserialize( $value ) ) ) {
+                $display_value = $value.'<br><code><pre>'.print_r( unserialize( $value ), true ).'</pre></code>';
+            } else {
+                $display_value = $value;
+            }
+            ?>
+            <tr>
+                <td><span class="highlight-variable"><?php echo esc_attr( $option ); ?></span></td>
+                <td><?php echo esc_attr( $group ); ?></td>
+                <td><?php echo wp_kses( $display_value, [ 'pre' => [] ] ); ?></td>
+            </tr>
+            <?php
+        }
+        ?>
+    </table>
+</div>

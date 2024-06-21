@@ -177,16 +177,6 @@
                 
                 <?php echo wp_kses( ddtt_options_tr( 'view_sensitive_info', 'View Sensitive Info', 'checkbox', 'Displays redacted database login info, authentication keys and salts, IP addresses, etc.' ), $allowed_html ); ?>
 
-                <?php $php_eol_types = [
-                    'options' => [
-                        '\n',
-                        '\r',
-                        '\r\n',
-                    ],
-                    'default' => ddtt_convert_php_eol_to_string()
-                ]; ?>
-                <?php echo wp_kses( ddtt_options_tr( 'php_eol', 'End-Of-Line Type to Use for <code class="hl">wp-config.php</code> File', 'select', '<br>If you are having issues with how the <a href="'.ddtt_plugin_options_path( 'wpcnfg' ).'">WP-CONFIG</a> tab is displaying, you can try changing which end of line character(s) to use. It is based on PHP_EOL by default, which is <code class="hl">'.ddtt_convert_php_eol_to_string().'</code>', $php_eol_types ), $allowed_html ); ?>
-
                 <?php echo wp_kses( ddtt_options_tr( 'test_number', 'Debugging Test Number', 'number', null, [ 'width' => '10rem' ] ), $allowed_html ); ?>
 
                 <?php echo wp_kses( ddtt_options_tr( 'centering_tool_cols', 'Centering Tool Columns (Found on Admin Bar in Front-End)', 'number', null, [ 'width' => '10rem', 'default' => 16 ] ), $allowed_html ); ?>
