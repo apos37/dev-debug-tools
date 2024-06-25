@@ -2031,6 +2031,8 @@ function ddtt_highlight_file2( $filename, $return = false ) {
         }
     }
 
+
+
     // Return it
     if ( $return ) return $string2;
     else echo wp_kses_post( $string2 );
@@ -2772,9 +2774,10 @@ function ddtt_scan_plugin_for_hooks( $plugin_dir ) {
  */
 function ddtt_convert_php_eol_to_string( $value = PHP_EOL ) {
     $eol = [
+        '0d0a' => '\r\n',
         '0a'   => '\n',
-        '0d'   => '\r',
-        '0d0a' => '\r\n'
+        '0a0d' => '\n\r',
+        '0d'   => '\r'
     ];
     $hex = bin2hex( $value );
     return isset( $eol[ $hex ] ) ? $eol[ $hex ] : $value;
@@ -2787,16 +2790,15 @@ function ddtt_convert_php_eol_to_string( $value = PHP_EOL ) {
  * @param string $file
  * @return string
  */
-function ddtt_get_eol( $tab ) {
+function ddtt_get_eol_char( $eol ) {
     $eol_types = [
+        '\r\n' => "\r\n",
+        '\n\r' => "\n\r",
         '\n'   => "\n",
-        '\r'   => "\r",
-        '\r\n' => "\r\n"
+        '\r'   => "\r"
     ];
-    if ( $eol = get_option( DDTT_GO_PF.'eol_'.$tab ) ) {
-        if ( isset( $eol_types[ $eol ] ) ) {
-            return $eol_types[ $eol ];
-        }
+    if ( isset( $eol_types[ $eol ] ) ) {
+        return $eol_types[ $eol ];
     }
     return PHP_EOL;
 } // End ddtt_get_php_eol()
@@ -2808,17 +2810,17 @@ function ddtt_get_eol( $tab ) {
  * @param string $file
  * @return array
  */
-function ddtt_get_file_eol( $file_contents ) {
+function ddtt_get_file_eol( $file_contents, $incl_code = true ) {
     $types = [
-        "\n"   => '\n',
-        "\r"   => '\r',
-        "\r\n" => '\r\n'
+        '\r\n' => "/(?<!\n)\r\n(?!\r)/",
+        '\n\r' => "/(?<!\r)\n\r(?!\n)/",
+        '\n'   => "/(?<!\r)\n/",
+        '\r'   => "/\r(?!\n)/"
     ];
     $found = [];
-    foreach ( $types as $char => $type ) {
-        $pattern = preg_quote( $char, '/' );
-        if ( preg_match( '/'.$pattern.'/', $file_contents ) ) {
-            $found[] = '<code class="hl">'.$type.'</code>';
+    foreach ( $types as $type => $regex ) {
+        if ( preg_match( $regex, $file_contents ) ) {
+            $found[] = ( $incl_code ) ? '<code class="hl">'.$type.'</code>' : $type;
         }
     }
     return $found;

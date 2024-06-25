@@ -197,15 +197,28 @@ if ( is_readable( ABSPATH . $filename ) ) {
 } else {
     $file = false;
 }
+
+// Validate
 if ( $file ) {
     $file_contents = file_get_contents( $file );
     $file_contents = htmlspecialchars( $file_contents );
+
+    // Get what eol delimiter is used in the file
+    $eols_used = ddtt_get_file_eol( $file_contents, false );
+
+    // Count them
+    $eol_count = count( $eols_used );
+
+// We can't do anything if no file is found
+} else {
+    return 'No file found.';
 }
 
 // Defaults
 $confirm = false;
 $cancel = false;
 $update = false;
+$pass_eol = false;
 
 // Check for $_POST
 $safePost = filter_input_array( INPUT_POST );
@@ -214,12 +227,26 @@ $this_nonce = DDTT_GO_PF.'htaccess_cf';
 // Check and rewrite
 $testing = false;
 $enabled = [];
-if ( $safePost ) {
+if ( $safePost && $file ) {
     // dpr( $safePost );
 
     // Safety first
     if ( !wp_verify_nonce( sanitize_text_field( wp_unslash ( $safePost[ '_wpnonce' ] ) ), $this_nonce ) ) {
         exit( 'No naughty business please.' );
+    }
+
+    // Get the eol type to use
+    if ( isset( $safePost[ DDTT_GO_PF.'eol_'.$tab ] ) ) {
+        $eol_to_use = $safePost[ DDTT_GO_PF.'eol_'.$tab ];
+        $pass_eol = $eol_to_use;
+
+    // Or default if canceling
+    } else {
+        if ( $eol_count > 1 ) {
+            $eol_to_use = ddtt_convert_php_eol_to_string();
+        } else {
+            $eol_to_use = $eols_used[0];
+        }
     }
 
     // Confirmation
@@ -242,8 +269,82 @@ if ( $safePost ) {
             $enabled[ 'remove' ] = $safePost[ 'r' ];
         }
         // dpr( $enabled );
-        $DDTT_HTACCESS->rewrite( $filename, $snippets, $enabled, $testing, $confirm );
+        $DDTT_HTACCESS->rewrite( $filename, $snippets, $enabled, $eol_to_use, $testing, $confirm );
+
+        // Reset get file contents so we check new file for existing snippets, etc.
+        if ( !$confirm ) {
+            $file_contents = file_get_contents( $file );
+            $file_contents = htmlspecialchars( $file_contents );
+            $eols_used = ddtt_get_file_eol( $file_contents, false );
+            $eol_count = count( $eols_used );
+        }
     }
+
+    // Delete the option after we are done
+    if ( $cancel ) {
+        $eol_to_use = $eols_used[0];
+    }
+
+// No post
+} else {
+
+    // Default eol
+    if ( $eol_count > 1 ) {
+        $eol_to_use = ddtt_convert_php_eol_to_string();
+    } else {
+        $eol_to_use = $eols_used[0];
+    }
+}
+
+// If more than one eol type is used
+if ( $confirm && !$cancel ) {
+    $cancel_eol_msg = ', please cancel the update and change it at the bottom of the page.';
+} else {
+    $cancel_eol_msg = ' when updating snippets, please change it at the bottom of the page before continuing.';
+    $eols_used = [ $eol_to_use ];
+    $eol_count = 1;
+}
+if ( $eol_count > 1 ) {
+    $occur = ( $eol_count == 2 ) ? 'both' : 'all';
+    foreach ( $eols_used as &$eol_used ) {
+        $eol_used = '<code class="hl">'.$eol_used.'</code>';
+    }
+    ?>
+    <div class="notice notice-success is-dismissible">
+    <p><?php echo sprintf(
+        __(
+            'The <code class="hl">%s</code> end-of-line delimiters are mixed (%s %s occur). The line delimiter you have set (%s) will be used. If you wish to change the one to be used%s',
+            'dev-debug-tools'
+        ),
+        esc_attr( $filename ),
+        wp_kses( implode( ', ', $eols_used ), $allow_code_tag ),
+        esc_attr( $occur ),
+        wp_kses( '<code class="hl">'.$eol_to_use.'</code>', $allow_code_tag ),
+        wp_kses( $cancel_eol_msg, $allow_code_tag )
+    ); ?></p>
+    </div>
+    <?php
+    $default_eol = ddtt_convert_php_eol_to_string();
+
+// Only one type amd different
+} elseif ( !in_array( $eol_to_use, $eols_used ) ) {
+    ?>
+    <div class="notice notice-success is-dismissible">
+    <p><?php echo sprintf(
+        __(
+            'The <code class="hl">%s</code> end-of-line delimiters are different than the one you currently have set. The file uses %s, but you are currently set to use %s. If you wish to change the one to be used%s',
+            'dev-debug-tools'
+        ),
+        esc_attr( $filename ),
+        wp_kses( '<code class="hl">'.$eols_used[0].'</code>', $allow_code_tag ),
+        wp_kses( '<code class="hl">'.$eol_to_use.'</code>', $allow_code_tag ),
+        wp_kses( $cancel_eol_msg, $allow_code_tag )
+    ); ?></p>
+    </div>
+    <?php
+    $default_eol = $eols_used[0];
+} else {
+    $default_eol = $eols_used[0];
 }
 
 // Are we deleting backups?
@@ -272,66 +373,6 @@ $allow_code_tag = [
     ]
 ];
 ?>
-
-<form method="post" action="options.php">
-    <?php settings_fields( DDTT_PF.'group_htaccess' ); ?>
-    <?php do_settings_sections( DDTT_PF.'group_htaccess' ); ?>
-    <table class="form-table">
-        <?php
-        if ( $file ) {
-            $eols_used = ddtt_get_file_eol( $file_contents );
-            $eol_count = count( $eols_used );
-            $eol_to_use = '<code class="hl">'.ddtt_convert_php_eol_to_string( ddtt_get_eol( $tab ) ).'</code>';
-            if ( $eol_count > 1 ) {
-                $occur = ( $eol_count == 2 ) ? 'both' : 'all';
-                ?>
-                <div class="notice notice-success is-dismissible">
-                <p><?php echo sprintf(
-                    __(
-                        'The <code class="hl">%s</code> end-of-line delimiters are mixed (%s %s occur). The line delimiter you have set (%s) will be used. If you wish to change the one to be used, please do so below.',
-                        'dev-debug-tools'
-                    ),
-                    esc_attr( $filename ),
-                    wp_kses( implode( ', ', $eols_used ), $allow_code_tag ),
-                    esc_attr( $occur ),
-                    wp_kses( $eol_to_use, $allow_code_tag )
-                ); ?></p>
-                </div>
-                <?php
-            } elseif ( !in_array( $eol_to_use, $eols_used ) ) {
-                ?>
-                <div class="notice notice-success is-dismissible">
-                <p><?php echo sprintf(
-                    __(
-                        'The <code class="hl">%s</code> end-of-line delimiters are different than the one you currently have set. The file uses %s, but you are currently set to use %s. If you wish to change the one to be used, please do so below.',
-                        'dev-debug-tools'
-                    ),
-                    esc_attr( $filename ),
-                    wp_kses( $eols_used[0], $allow_code_tag ),
-                    wp_kses( $eol_to_use, $allow_code_tag )
-                ); ?></p>
-                </div>
-                <?php
-            }
-            $incl_used = ' The file is currently using '.implode( ', ', $eols_used ).'.';
-        } else {
-            $incl_used = '';
-        }
-        $eol_types = [
-            'options' => [
-                '\n',
-                '\r',
-                '\r\n',
-            ],
-            'default' => ddtt_convert_php_eol_to_string(),
-            'width'   => '200px'
-        ]; ?>
-
-        <?php echo wp_kses( ddtt_options_tr( 'eol_'.$tab, 'End-Of-Line Delimiter to Use', 'select', '<br>If you are having issues with how your file is displaying, you can try changing which end-of-line delimiter to use here.'.$incl_used, $eol_types ), $allowed_html ); ?>
-    </table>
-    <?php submit_button(); ?>
-</form>
-<br><br>
 
 <form id="file-update-form" method="post" action="<?php echo esc_url( $current_url ); ?>">
     <?php wp_nonce_field( $this_nonce, '_wpnonce' ); ?>
@@ -502,7 +543,35 @@ $allow_code_tag = [
                     <a href="#" class="yes button button-secondary" data-name="">Yes</a>
                 </div>
             </div>
-        <?php } ?>
+
+            <table class="form-table">
+                <?php
+                // Display what is used
+                foreach ( $eols_used as &$eol_used ) {
+                    $eol_used = '<code class="hl">'.$eol_used.'</code>';
+                }
+                $incl_used = ' The file is currently using '.implode( ', ', $eols_used ).'.';
+
+                // Options for select field
+                $eol_types = [
+                    'options' => [
+                        [ 'label' => '\n — Unix/Linux (LF - Line Feed)', 'value' => '\n' ],
+                        [ 'label' => '\r\n — MS Windows (CRLF - Carriage Return Line Feed)', 'value' => '\r\n' ],
+                        [ 'label' => '\r — Old Macintosh (CR - Carriage Return)', 'value' => '\r' ],
+                        [ 'label' => '\n\r — Acorn BBC (LFCR - Line Feed Carriage Return)', 'value' => '\n\r' ],
+                    ],
+                    'default' => $default_eol,
+                ]; ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'eol_'.$tab, 'End-Of-Line Delimiter to Use', 'select', '<br>You can change which end-of-line delimiter to use. The file is currently using '.implode( ', ', $eols_used ).', and your <code class="hl">PHP_EOL</code> constant is set to <code class="hl">'.ddtt_convert_php_eol_to_string().'</code>. If you don\'t know what this means, leave it alone.', $eol_types ), $allowed_html ); ?>
+            </table>
+        <?php } else {
+            if ( $pass_eol ) {
+                ?>
+                <input type="hidden" name="<?php echo esc_attr( DDTT_GO_PF ); ?>eol_<?php echo esc_attr( $tab ); ?>" value="<?php echo esc_attr( $pass_eol ); ?>">
+                <?php
+            }
+        } ?>
 
         <!-- WARNING TO BACK UP -->
         <?php if ( !get_option( 'ddtt_htaccess_og_replaced_date' ) ) { ?>

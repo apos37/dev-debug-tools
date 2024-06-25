@@ -408,7 +408,7 @@ class DDTT_WPCONFIG {
      * @param string $description
      * @return string
      */
-    public function options_tr( $name, $label, $snippet_exists, $current, $proposed, $description ) {
+    public function options_tr( $name, $label, $snippet_exists, $current, $proposed, $description, $eol ) {
         // Get the lines
         $current_lines = [];
         $proposed_lines = [];
@@ -418,7 +418,7 @@ class DDTT_WPCONFIG {
         foreach ( $proposed as $p ) {
             $proposed_lines[] = $p;
         }
-        $eol = ddtt_get_eol( 'wpcnfg' );
+        $eol = ddtt_get_eol_char( $eol );
         $current_text = implode( $eol, $current_lines );
         $proposed_text = implode( $eol, $proposed_lines );
 
@@ -511,9 +511,7 @@ class DDTT_WPCONFIG {
         $lines_exist = 0;
 
         // Explode the lines
-        // $eol = get_option( DDTT_GO_PF.'php_eol', PHP_EOL );
-        // $lines = explode( $eol, $wpconfig );
-        $lines = preg_split( '/\r\n|\r|\n/', $wpconfig );
+        $lines = preg_split( '/\r\n|\n|\n\r|\r/', $wpconfig );
 
         // Cycle each line
         foreach ( $snippet[ 'lines' ] as $snippet_line ) {
@@ -756,7 +754,7 @@ class DDTT_WPCONFIG {
      * @param array $enabled
      * @return void
      */
-    public function rewrite( $filename, $snippets, $enabled, $testing = false, $confirm = false ) {
+    public function rewrite( $filename, $snippets, $enabled, $eol, $testing = false, $confirm = false ) {
         // Get the file path
         if ( is_readable( ABSPATH . $filename ) ) {
             $file = ABSPATH . $filename;
@@ -772,11 +770,11 @@ class DDTT_WPCONFIG {
             // Get the file
             $wpconfig = file_get_contents( $file );
 
-            // Set eol type
-            $eol = ddtt_get_eol( 'wpcnfg' );
+            // Convert eol
+            $eol = ddtt_get_eol_char( $eol );
 
             // Separate each line into an array item
-            $file_lines = preg_split( '/\r\n|\r|\n/', $wpconfig );
+            $file_lines = preg_split( '/\r\n|\n|\n\r|\r/', $wpconfig );
 
             // Make it html safe
             $safe_file_lines = [];
@@ -790,6 +788,9 @@ class DDTT_WPCONFIG {
             // Store what we need to add here
             $add = [];
 
+            // Updated datetime
+            $updated = ddtt_convert_timezone( null, 'F j, Y g:i A', get_option( 'ddtt_dev_timezone', wp_timezone_string() ) );
+
             // Domain & IP
             $blogname = get_option( 'blogname' );
 
@@ -802,7 +803,7 @@ class DDTT_WPCONFIG {
                 ' * '.$blogname,
                 ' * '.home_url(),
                 $added_by_id,
-                ' * Last updated: '.date( 'F j, Y g:i A'),
+                ' * Last updated: '.$updated,
                 ' */',
                 ''
             ];
@@ -1046,6 +1047,11 @@ class DDTT_WPCONFIG {
                         if ( strlen( $safe_file_lines[ $stopped_at + 1 ] ) >= 0 && empty( trim( $safe_file_lines[ $stopped_at + 1 ] ) ) ) {
                             unset( $safe_file_lines[ $stopped_at + 1 ] );
                         }
+
+                    } else {
+
+                        // Just update the date
+                        $safe_file_lines[ $added_by_key + 1 ] = ' * Last updated: '.$updated;
                     }
                 }
 
@@ -1082,7 +1088,7 @@ class DDTT_WPCONFIG {
                         // Are we using an updated snippet?
                         if ( isset( $new_snippets[ $snippet_key ] ) ) {
                             $updated_snippet_lines = $new_snippets[ $snippet_key ];
-                            $updated_snippet_array = preg_split( '/\r\n|\r|\n/', $updated_snippet_lines );
+                            $updated_snippet_array = preg_split( '/\r\n|\n|\n\r|\r/', $updated_snippet_lines );
                             // $updated_snippet_array = explode( $eol, $updated_snippet_lines );
                             foreach ( $updated_snippet_array as $uline ) {
                                 $add_converted[] = htmlspecialchars_decode( $uline );
@@ -1127,13 +1133,17 @@ class DDTT_WPCONFIG {
                 // Otherwise continue with production
                 } else {
 
+                    // Eol characters
+                    $eol_chars = [ "\r\n", "\n", "\n\r", "\r" ];
+
+                    // The last character of the original file
+                    $last_char = substr( $wpconfig, -1 );
+
                     // Separate into lines and make html characters work again
                     $separate_safe_lines = [];
                     foreach( $safe_file_lines as $k => $sfl ) {
                         if ( $k === array_key_last( $safe_file_lines ) ) {
-                            $last_char = substr( $wpconfig, -1 );
-                            $eol_chars = [ "\n", "\r", "\r\n" ];
-                            if ( in_array( $last_char, $eol_chars ) ) {
+                            if ( in_array( $last_char, $eol_chars ) && strpos( $sfl, $eol ) === false ) {
                                 $incl_eol = $eol;
                             } else {
                                 $incl_eol = '';
@@ -1143,6 +1153,18 @@ class DDTT_WPCONFIG {
                             $separate_safe_lines[] = html_entity_decode( $sfl ).$eol;
                         }
                     }
+
+                    // Remove empty items from the end
+                    $separate_safe_lines = array_reverse( $separate_safe_lines );
+                    foreach ( $separate_safe_lines as $key => $separate_safe_line ) {
+                        $trimmed_line = trim( $separate_safe_line );
+                        if ( in_array( $trimmed_line, $eol_chars ) || $trimmed_line === "" ) {
+                            unset( $separate_safe_lines[ $key ] );
+                        } else {
+                            break;
+                        }
+                    }
+                    $separate_safe_lines = array_reverse( $separate_safe_lines );
 
                     // Filenames
                     $now = ddtt_convert_timezone( date( 'Y-m-d H:i:s' ), 'Y-m-d-H-i-s', get_option( 'ddtt_dev_timezone', wp_timezone_string() ) );

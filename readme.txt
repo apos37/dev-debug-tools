@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.5.4
 Requires PHP: 7.4
-Stable tag: 1.7.5
+Stable tag: 1.7.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -84,32 +84,32 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 
 == Changelog ==
 = 1.7.5.1 = // TODO: Currently Working on
-* Fix: Detected HTACCESS snippets being ignored if DDT section does not exist // TODO: Coming Soon
+* Fix: Detected HTACCESS snippets being ignored if DDT section does not exist
 
 = 1.7.5 =
 * Update: Added all site options to Site Options tab, not just registered ones
 * Update: Added clear buttons to each Cookie in the Cookies tab, and added a button to add a test cookie
 * Update: Added table column names to DB Tables tab
-* Update: Added checks for end-of-line delimiters, option to change on WP-CONFIG and HTACCESS tabs (props amurashkin)
-* Fix: WP-CONFIG tab not working for some platforms (props amurashkin)
-* Fix: Some WP-CONFIG files showing incorrect comment color (props amurashkin)
+* Update: Added checks for end-of-line delimiters, option to change on WP-CONFIG and HTACCESS tabs (props amurashkin17)
+* Fix: WP-CONFIG tab not working for some platforms (props amurashkin17)
+* Fix: Some WP-CONFIG files showing incorrect comment color (props amurashkin17)
 * Tweak: Added WP_ENVIRONMENT_TYPE snippet to WP-CONFIG tab
-* Fix: Detected WP-CONFIG snippets being moved to DDT section if no snippets have been added yet (props amurashkin)
+* Fix: Detected WP-CONFIG snippets being moved to DDT section if no snippets have been added yet (props amurashkin17)
 * Tweak: Added WP_CACHE_KEY_SALT to list of defines to be redacted
-* Update: Allowed viewing of last portion of debug log only if above limit (props amurashkin)
-* Update: Added option for updating max debug log size (props amurashkin for suggestion)
+* Update: Allowed viewing of last portion of debug log only if above limit (props amurashkin17)
+* Update: Added option for updating max debug log size (props amurashkin17 for suggestion)
 
 = 1.7.4 =
 * Update: Added a way to list available hooks in other plugins on hooks tab
 * Update: Added option to hide plugin
 * Tweak: Reorganized main file
-* Fix: `include_once` path to `plugin.php` showing incorrectly (props amurashkin)
-* Fix: Installation path on error_log showing incorrectly if using different abspath (props amurashkin)
-* Update: Overhalled snippet sections (props amurashkin for suggestions)
+* Fix: `include_once` path to `plugin.php` showing incorrectly (props amurashkin17)
+* Fix: Installation path on error_log showing incorrectly if using different abspath (props amurashkin17)
+* Update: Overhalled snippet sections (props amurashkin17 for suggestions)
 * Fix: Gravity Forms quick links not working, incorrect path
 
 = 1.7.3 =
-* Fix: Wp-config snippets showing as checked even when they are commented out (props amurashkin)
+* Fix: Wp-config snippets showing as checked even when they are commented out (props amurashkin17)
 * Update: Added an APIs tab to check availability of local REST APIs
 * Update: Added a DB Tables tab for quick reference of the database table structure
 * Tweak: Comment Meta tab removed and debug info moved to hidden debug page, same as GF forms, entries, etc.

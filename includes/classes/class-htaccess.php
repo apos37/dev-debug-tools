@@ -345,8 +345,8 @@ class DDTT_HTACCESS {
      */
     public function snippet_exists( $htaccess, $snippet ) {
         // Add the lines together
-        $lines = $this->snippet_to_string( $snippet, ' ' );
-        
+        $lines = $this->snippet_to_string( $snippet, ' ', true, true );
+
         // Check the file for the line
         if ( strpos( $htaccess, $lines ) !== false ) {
 
@@ -385,21 +385,30 @@ class DDTT_HTACCESS {
      * Convert a snippet to a string
      *
      * @param array $snippet
-     * @return string
+     * @return string|array
      */
-    public function snippet_to_string( $snippet, $br = ' ' ) {
+    public function snippet_to_string( $snippet, $br = ' ', $implode = true, $ignore_comments = false ) {
         // Store the new array here
         $lines = [];
 
         // Add htmlspecialchars
         foreach ( $snippet[ 'lines' ] as $line ) {
 
+            // Trim and stuff
+            $new_line = trim( htmlspecialchars( $line ) );
+
             // Put the snippet together
-            $lines[] = trim( htmlspecialchars( $line ) );
+            if ( !$ignore_comments || ( $ignore_comments && !str_starts_with( $new_line, '#' ) ) ) {
+                $lines[] = $new_line;
+            }
         }
 
         // Return it as one string
-        return implode( $br, $lines );
+        if ( $implode ) {
+            return implode( $br, $lines );
+        } else {
+            return $lines;
+        }
     } // End snippet_line_to_string()
 
 
@@ -411,7 +420,7 @@ class DDTT_HTACCESS {
      * @param array $enabled
      * @return void
      */
-    public function rewrite( $filename, $snippets, $enabled, $testing = false, $confirm = false ) {
+    public function rewrite( $filename, $snippets, $enabled, $eol, $testing = false, $confirm = false ) {
         // Get the file path
         if ( is_readable( ABSPATH . $filename ) ) {
             $file = ABSPATH . $filename;
@@ -430,11 +439,18 @@ class DDTT_HTACCESS {
             // Display html tags
             $file_contents = htmlspecialchars( $htaccess );
 
+            // Eol characters
+            $eol_chars = [ "\r\n", "\n", "\n\r", "\r" ];
+
             // Replace line breaks
-            $file_contents = strtr( $file_contents, chr(10), chr(32) );
+            // $file_contents = strtr( $file_contents, chr(10), chr(32) );
+            $file_contents = str_replace( $eol_chars, chr(32), $file_contents );
+
+            // Convert eol
+            $eol = ddtt_get_eol_char( $eol );
 
             // Separate each line into an array item
-            $file_lines = preg_split( '/\r\n|\r|\n/', $htaccess );
+            $file_lines = preg_split( '/\r\n|\n|\n\r|\r/', $htaccess );
 
             // Make it html safe
             $safe_file_lines = [];
@@ -447,6 +463,38 @@ class DDTT_HTACCESS {
 
             // Store what we need to add here
             $add = [];
+
+            // Updated datetime
+            $updated = ddtt_convert_timezone( null, 'F j, Y g:i A', get_option( 'ddtt_dev_timezone', wp_timezone_string() ) );
+
+            // Info at top
+            $added_by = [];
+            $added_by_id = '################ ADDED VIA '.strtoupper( DDTT_NAME ).' ################';
+            $added_by_lines = [
+                '',
+                '',
+                $added_by_id,
+                '# Last updated: '.$updated,
+                '',
+                ''
+            ];
+            foreach ( $added_by_lines as $abl ) {
+                if ( $abl != '' ) {
+                    $abl = htmlentities( $abl );
+                }
+                $added_by[] = $abl;
+            }
+
+            // Get the added by key before making updates
+            $pre_added_by_key = array_search( $added_by_id, $safe_file_lines ) ?? 0;
+
+            // Info at bottom
+            $end = [];
+            $end_id = '################# END OF '.strtoupper( DDTT_NAME ).' ##################';
+            $end[] = htmlentities( $end_id );
+
+            // Get the end key before making updates
+            $pre_end_key = array_search( $end_id, $safe_file_lines ) ?? 0;
 
             // Are we testing?
             if ( $testing ) {
@@ -472,7 +520,7 @@ class DDTT_HTACCESS {
                 // Check if the snippet exists in the file
                 $exists = $this->snippet_exists( $file_contents, $snippet );
                 // if ( $exists ) {
-                //     ddtt_print_r( $this->snippet_to_string( $snippet, '<br>' ) );
+                //     ddtt_print_r( $this->snippet_to_string( $snippet, null, false, true ) );
                 // }
 
                 // Enabled
@@ -490,77 +538,134 @@ class DDTT_HTACCESS {
                 } elseif ( $exists ) {
 
                     // Get a string version
-                    $line_string = $this->snippet_to_string( $snippet );
+                    $line_strings = $this->snippet_to_string( $snippet, null, false, true );
+                    // dpr( $line_strings );
 
-                    // Search the file lines
-                    foreach( $safe_file_lines as $file_key => $safe_file_line ) {
+                    // Store snippets that we are ignoring
+                    $ignore = [];
 
-                        // Does the snippet have an old label?
-                        if ( isset( $snippet[ 'old_label' ] ) ) {
-                            foreach ( $snippet[ 'old_label' ] as $old_label ) {
-                                
-                                // Check the file for the old comment line
-                                if ( strpos( $safe_file_line, $old_label ) !== false ) {
+                    // If we are not changing it and we have no section yet, ignore it
+                    if ( !$changing && !$pre_added_by_key && !$pre_end_key ) {
+                        $ignore[] = $snippet_key;
+                        continue;
+                    }
 
-                                    // Check for each line in the snippet
-                                    for ( $sl = 1; $sl <= count( $snippet[ 'lines' ] ); $sl++ ) {
-                                        
-                                        // If the line below it is in the snippet, remove it
-                                        if ( isset( $safe_file_lines[ $file_key + $sl ] ) && strpos( $line_string, $safe_file_lines[ $file_key + $sl ] ) !== false ) {
-                                            unset( $safe_file_lines[ $file_key + $sl ] );
-                                        }
-                                    }
+                    // Vars
+                    $line_strings_count = count( $line_strings );
+                    $indexes_to_remove = [];
 
-                                    // If there is a space directly below it, remove that too
-                                    $end_of_snippet = $file_key + count( $snippet[ 'lines' ] );
-                                    if ( isset( $safe_file_lines[ $end_of_snippet + 1 ] ) && strlen( $safe_file_lines[ $end_of_snippet + 1 ] ) >= 0 && empty( trim( $safe_file_lines[ $end_of_snippet + 1 ] ) ) ) {
-                                        unset( $safe_file_lines[ $end_of_snippet + 1 ] );
-                                    }
+                    // Iter the lines
+                    foreach ( $safe_file_lines as $file_key => $safe_file_line ) {
 
-                                    // Lastly, remove the comment line
-                                    unset( $safe_file_lines[ $file_key ] );
+                        // Check if the current line matches the start of $line_strings
+                        if ( trim( $safe_file_line ) === $line_strings[0] ) {
+                            
+                            // Check if subsequent lines match $line_strings consecutively
+                            $match = true;
+                            for ( $i = 1; $i < $line_strings_count; $i++ ) {
+                                if ( !isset( $safe_file_lines[ $file_key + $i] ) || trim( $safe_file_lines[ $file_key + $i ] ) !== $line_strings[ $i ] ) {
+                                    $match = false;
+                                    break;
                                 }
                             }
 
-                        }
-
-                        // Check the file for the current comment line
-                        if ( strpos( $safe_file_line, $snippet[ 'label' ] ) !== false ) {
-
-                            // Check for each line in the snippet
-                            for ( $sl = 1; $sl <= count( $snippet[ 'lines' ] ); $sl++ ) {
-                                
-                                // If the line below it is in the snippet, remove it
-                                if ( isset( $safe_file_lines[ $file_key + $sl ] ) && strpos( $line_string, $safe_file_lines[ $file_key + $sl ] ) !== false ) {
-                                    unset( $safe_file_lines[ $file_key + $sl ] );
+                            // If all lines match consecutively, add their indexes to $indexes_to_remove
+                            if ( $match ) {
+                                for ( $i = 0; $i < $line_strings_count; $i++ ) {
+                                    $indexes_to_remove[] = $file_key + $i;
                                 }
                             }
-
-                            // If there is a space directly below it, remove that too
-                            $end_of_snippet = $file_key + count( $snippet[ 'lines' ] );
-                            if ( isset( $safe_file_lines[ $end_of_snippet + 1 ] ) && strlen( $safe_file_lines[ $end_of_snippet + 1 ] ) >= 0 && empty( trim( $safe_file_lines[ $end_of_snippet + 1 ] ) ) ) {
-                                unset( $safe_file_lines[ $end_of_snippet + 1 ] );
-                            }
-
-                            // Lastly, remove the comment line
-                            unset( $safe_file_lines[ $file_key ] );
                         }
                     }
 
+                    // Validate that we found it
+                    if ( !empty( $indexes_to_remove ) ) {
+
+                        // If we are not changing it and we not inside the section, ignore it
+                        if ( !$changing && ( $indexes_to_remove[0] < $pre_added_by_key || $indexes_to_remove[0] > $pre_end_key ) ) {
+                            $ignore[] = $snippet_key;
+                            continue;
+                        }
+
+                        // Let's find corresponding comments
+                        $comments_to_remove = [];
+                        $prev_line_index = $indexes_to_remove[0] - 1;
+                        if ( isset( $safe_file_lines[ $prev_line_index ] ) ) {
+                            if ( str_starts_with( trim( $safe_file_lines[ $prev_line_index ] ), '#' ) ) {
+                                $collect_comments = true;
+                                $comment_index = $prev_line_index;
+                                do {
+                                    if ( str_starts_with( trim( $safe_file_lines[ $comment_index ] ), '#' ) ) {
+                                        $comments_to_remove[] = $comment_index;
+                                        $comment_index--;
+                                    } else {
+                                        $collect_comments = false;
+                                    }
+                                } while ( $collect_comments );
+                            }
+                        }
+
+                        // And lastly, any empty lines following the snippet
+                        $empty_lines_to_remove = [];
+                        $next_line_index = count( $indexes_to_remove ) + $indexes_to_remove[0];
+                        // dpr( $next_line_index );
+                        if ( isset( $safe_file_lines[ $next_line_index ] ) ) {
+                            if ( trim( $safe_file_lines[ $next_line_index ] ) == '' ) {
+                                $collect_blanks = true;
+                                $blanks_index = $next_line_index;
+                                do {
+                                    if ( trim( $safe_file_lines[ $blanks_index ] ) == '' ) {
+                                        $empty_lines_to_remove[] = $blanks_index;
+                                        $blanks_index++;
+                                    } else {
+                                        $collect_blanks = false;
+                                    }
+                                } while ( $collect_blanks );
+                            }
+                        }
+
+                        // Remove the lines found at the indexes
+                        // dpr( $indexes_to_remove );
+                        if ( !empty( $indexes_to_remove ) ) {
+                            foreach ( $indexes_to_remove as $index ) {
+                                unset( $safe_file_lines[ $index ] );
+                            }
+                        }
+
+                        // Remove the comments
+                        // dpr( $comments_to_remove );
+                        if ( !empty( $comments_to_remove ) ) {
+                            foreach ( $comments_to_remove as $comment ) {
+                                unset( $safe_file_lines[ $comment ] );
+                            }
+                        }
+
+                        // Remove the comments
+                        // dpr( $empty_lines_to_remove );
+                        if ( !empty( $empty_lines_to_remove ) ) {
+                            foreach ( $empty_lines_to_remove as $empty_line ) {
+                                unset( $safe_file_lines[ $empty_line ] );
+                            }
+                        }
+                    }
+
+                    // Ignoring
+                    $ignoring = in_array( $snippet_key, $ignore );
+
                     // Add the snippet if we are keeping it the way it is
-                    if ( $exists && !in_array( $snippet_key, $all_snippets_to_change ) ) {
+                    if ( $exists && !$changing && !$ignoring ) {
                         $add[ $snippet_key ] = $snippet;
                     }
 
                     // Add it if it is enabled
-                    if ( $changing ) {
+                    if ( $exists && $changing && !$ignoring ) {
                         if ( !in_array( $snippet_key, $snippets_to_remove ) ) {
                             $add[ $snippet_key ] = $snippet;
                         }
                     }
 
                     // If it's not supposed to be there, just count this as an edit
-                    if ( !$changing ) {
+                    if ( $changing && !$ignoring ) {
                         $edits++;
                     }
 
@@ -580,26 +685,10 @@ class DDTT_HTACCESS {
                 }
             }
 
+            // dpr( $safe_file_lines );
+
             // Check if we need to add anything and make edits
             if ( $edits > 0 ) {
-
-                // Info at top
-                $added_by = [];
-                $added_by_id = '################ ADDED VIA '.strtoupper(DDTT_NAME).' ################';
-                $added_by_lines = [
-                    '',
-                    '',
-                    $added_by_id,
-                    '# Last updated: '.date( 'F j, Y g:i A'),
-                    '',
-                    ''
-                ];
-                foreach ( $added_by_lines as $abl ) {
-                    if ( $abl != '' ) {
-                        $abl = htmlentities( $abl );
-                    }
-                    $added_by[] = $abl;
-                }
 
                 // Count how many we are adding
                 $adding = count( $add );
@@ -611,7 +700,7 @@ class DDTT_HTACCESS {
     
                     // Remove the added_by comments only if we have nothing to add
                     if ( $adding == 0 ) {
-                        
+
                         // Count available rows
                         $add_by_count = count( $added_by );
 
@@ -640,13 +729,13 @@ class DDTT_HTACCESS {
 
                         // Remove the id key
                         unset( $safe_file_lines[ $added_by_key ] );
+
+                    } else {
+
+                        // Just update the date
+                        $safe_file_lines[ $added_by_key + 1 ] = '# Last updated: '.$updated;
                     }
                 }
-
-                // Info at bottom
-                $end = [];
-                $end_id = '################# END OF '.strtoupper(DDTT_NAME).' ##################';
-                $end[] = htmlentities( $end_id );
 
                 // Remove the end comment
                 if ( ( false !== $end_key = array_search( $end_id, $safe_file_lines ) ) ) {
@@ -714,18 +803,39 @@ class DDTT_HTACCESS {
                 // Otherwise continue with production
                 } else {
 
+                    // The last character of the original file
+                    $last_char = substr( $htaccess, -1 );
+
                     // Separate into lines and make html characters work again
                     $separate_safe_lines = [];
                     foreach( $safe_file_lines as $k => $sfl ) {
                         if ( $k === array_key_last( $safe_file_lines ) ) {
-                            $separate_safe_lines[] = html_entity_decode( $sfl );
+                            if ( in_array( $last_char, $eol_chars ) && strpos( $sfl, $eol ) === false ) {
+                                $incl_eol = $eol;
+                            } else {
+                                $incl_eol = '';
+                            }
+                            $separate_safe_lines[] = html_entity_decode( $sfl).$incl_eol;
                         } else {
-                            $separate_safe_lines[] = html_entity_decode( $sfl ).PHP_EOL;
+                            $separate_safe_lines[] = html_entity_decode( $sfl ).$eol;
                         }
                     }
 
-                    // File names
-                    $old_file = str_replace( '.htaccess', '.htaccess-'.date( 'Y-m-d-H-i-s' ), $file );
+                    // Remove empty items from the end
+                    $separate_safe_lines = array_reverse( $separate_safe_lines );
+                    foreach ( $separate_safe_lines as $key => $separate_safe_line ) {
+                        $trimmed_line = trim( $separate_safe_line );
+                        if ( in_array( $trimmed_line, $eol_chars ) || $trimmed_line === "" ) {
+                            unset( $separate_safe_lines[ $key ] );
+                        } else {
+                            break;
+                        }
+                    }
+                    $separate_safe_lines = array_reverse( $separate_safe_lines );
+
+                    // Filenames
+                    $now = ddtt_convert_timezone( date( 'Y-m-d H:i:s' ), 'Y-m-d-H-i-s', get_option( 'ddtt_dev_timezone', wp_timezone_string() ) );
+                    $old_file = str_replace( '.htaccess', '.htaccess-'.$now, $file );
                     $temp_file = str_replace( '.htaccess', '.htaccess-'.DDTT_GO_PF.'temp', $file );
 
                     // Are we confirming?
@@ -751,11 +861,11 @@ class DDTT_HTACCESS {
 
                         // Back up the original
                         if ( !get_option( 'ddtt_htaccess_og_replaced_date' ) ) {
-                            update_option( 'ddtt_htaccess_og_replaced_date', date( 'Y-m-d-H-i-s' ) );
+                            update_option( 'ddtt_htaccess_og_replaced_date', $now );
                         }
 
                         // Back up the previous file string to site option
-                        update_option( 'ddtt_htaccess_last_updated', date( 'Y-m-d-H-i-s' ) );
+                        update_option( 'ddtt_htaccess_last_updated', $now );
 
                         // Turn the new lines into a string
                         if ( file_put_contents( $file, $separate_safe_lines ) ) {
