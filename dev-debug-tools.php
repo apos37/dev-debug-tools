@@ -3,7 +3,7 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.7.5.1
+ * Version:             1.7.5.2
  * Requires at least:   5.9.0
  * Tested up to:        6.5.4
  * Requires PHP:        7.4
@@ -25,7 +25,7 @@ if ( !defined( 'ABSPATH' ) ) {
  */
 
 // Versions
-define( 'DDTT_VERSION', '1.7.5.1' );
+define( 'DDTT_VERSION', '1.7.5.2' );
 define( 'DDTT_BETA', true );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
@@ -63,20 +63,11 @@ define( 'DDTT_AUTHOR_EMAIL', 'apos37@pm.me' );
 define( 'DDTT_AUTHOR_URL', 'https://apos37.com/' );
 define( 'DDTT_DISCORD_SUPPORT_URL', 'https://discord.gg/3HnzNEJVnR' );
 
-// Get admin URL (handles multisite)
-function ddtt_admin_url( $path = '', $scheme = 'admin' ) {
-    if ( is_network_admin() ) {
-        $admin_url = network_admin_url( $path, $scheme );
-    } else {
-        $admin_url = admin_url( $path, $scheme );
-    }
-    return $admin_url;
-} // End ddtt_admin_url()
-
 // Fetch site url only once
 $site_url = site_url( '/' );
 
 // Define core WordPress URLs relative to site URL
+define( 'DDTT_ABSPATH', ddtt_canonical_pathname( ABSPATH ) );
 define( 'DDTT_ADMIN_URL', str_replace( $site_url, '', rtrim( ddtt_admin_url(), '/' ) ) );                                       //: wp-admin || wp-admin/network
 define( 'DDTT_CONTENT_URL', str_replace( $site_url, '', content_url() ) );                                                      //: wp-content
 define( 'DDTT_INCLUDES_URL', str_replace( $site_url, '', rtrim( includes_url(), '/' ) ) );                                      //: wp-includes
@@ -100,6 +91,49 @@ define( 'DDTT_PLUGIN_CSS_PATH', DDTT_PLUGIN_SHORT_DIR.'includes/admin/css/' );  
 define( 'DDTT_PLUGIN_JS_PATH', DDTT_PLUGIN_SHORT_DIR.'includes/admin/js/' );                                                    //: /wp-content/plugins/dev-debug-tools/includes/admin/js/
 define( 'DDTT_PLUGIN_FILES_PATH', DDTT_PLUGIN_SHORT_DIR.'includes/files/' );                                                    //: /wp-content/plugins/dev-debug-tools/includes/files/
 
+
+/**
+ * Get admin URL (handles multisite)
+ *
+ * @param string $path
+ * @param string $scheme
+ * @return string
+ */
+function ddtt_admin_url( $path = '', $scheme = 'admin' ) {
+    if ( is_network_admin() ) {
+        $admin_url = network_admin_url( $path, $scheme );
+    } else {
+        $admin_url = admin_url( $path, $scheme );
+    }
+    return $admin_url;
+} // End ddtt_admin_url()
+
+
+/**
+ * Canonical pathname
+ *
+ * @param string $pathname
+ * @return string
+ */
+function ddtt_canonical_pathname( $pathname ) {
+    return str_replace( DIRECTORY_SEPARATOR, '/', $pathname );
+} // End ddtt_canonical_pathname()
+
+
+/**
+ * Relative pathname
+ *
+ * @param string $pathname
+ * @return string
+ */
+function ddtt_relative_pathname( $pathname ) {
+    $pathname = ddtt_canonical_pathname( $pathname );
+    if ( !str_starts_with( $pathname, DDTT_ABSPATH ) ) {
+        return $pathname;
+    } else {
+        return substr( $pathname, strlen( DDTT_ABSPATH ) );
+    }
+} // End ddtt_relative_pathname()
  
 /**
  * Get a path to one of our options pages

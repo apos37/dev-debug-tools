@@ -190,7 +190,7 @@ class DDTT_LOGS {
                 ddtt_admin_notice( 'warning', 'Uh oh! Your debug log is '.ddtt_format_bytes( $filesize ).'! That is far too big, and may cause issues for your site. It is recommended that you download your log to see what\'s going on, and then clear it. If your log does not download from the button below, try logging into your File Manager on your host or downloading via FTP.' );
             }
 
-            // // Check if we are under
+            // Check if we are under
             if ( $filesize >= absint( $dl_max_filesize ) ) {
                 ddtt_admin_notice( 'warning', 'Your debug log is larger than the max viewable log size (currently '.esc_html( ddtt_format_bytes( $filesize ) ).', max is '.esc_html( ddtt_format_bytes( absint( $dl_max_filesize ) ) ).'), and can cause issues if we try to load the whole thing on this page. Therefore, we have only included the last portion of your log. If you want to increase the max size regardless, you can do so in Settings.' );
             }

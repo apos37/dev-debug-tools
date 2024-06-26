@@ -339,8 +339,7 @@ if ( $shortcode != '' && !empty( $results ) ) {
                 $include = '';
                 
                 // Get the function details
-                $file_path = $fx->getFileName();
-                $file_path = str_replace( ABSPATH, '', $file_path );
+                $file_path = ddtt_relative_pathname( $fx->getFileName() ); ddtt_write_log( [ 'pathmap' => 1, 'pathmap_server_prefix' => 'example...' ] );
 
                 // Get the admin url
                 if ( is_multisite() ) {

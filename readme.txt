@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.5.4
 Requires PHP: 7.4
-Stable tag: 1.7.5.1
+Stable tag: 1.7.5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -83,8 +83,8 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
-= 1.7.5.2 = // TODO: BETA
-
+= 1.7.5.2 =
+* Fix: Convert directory separator to forward slash when using ABSPATH (props amurashkin17)
 
 = 1.7.5.1 =
 * Fix: Redacting not working for some people
