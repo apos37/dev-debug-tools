@@ -2008,7 +2008,7 @@ function ddtt_highlight_file2( $filename, $return = false ) {
         foreach ( $globals as $global ) {
 
             // The pattern we're searching for
-            $pattern = '/define\<\/span\>\<span style=\"color: '.$syntax.'\"\>\((&nbsp;)*\<\/span\>(\'|\")'.$global.'(\'|\")\<span style=\"color: '.$syntax.'\"\>,(&nbsp;)*\<\/span\>(\'|\")(.+?)(\'|\")/i';
+            $pattern = '/define\s*\<\/span\>\s*\<span[^>]*>\s*\(\s*(&nbsp;)*\<\/span\>\s*(\'|\")'.$global.'(\'|\")\s*\<span[^>]*>\s*,\s*(&nbsp;)*\<\/span\>\s*(\'|\")(.*?)(\'|\")/i';
 
             // Attempt to find it
             if ( preg_match( $pattern, $string2, $define_pw ) ) {
@@ -2030,8 +2030,6 @@ function ddtt_highlight_file2( $filename, $return = false ) {
             }
         }
     }
-
-
 
     // Return it
     if ( $return ) return $string2;
@@ -2058,12 +2056,12 @@ function ddtt_highlight_string( $text ) {
     $text = trim( $text );
     $text = highlight_string( "<?php " . $text, true );  // highlight_string() requires opening PHP tag or otherwise it will not colorize the text
     $text = trim( $text );
-    $text = preg_replace( "|^\\<code\\>\\<span style\\=\"color\\: #[a-fA-F0-9]{0,6}\"\\>|", "", $text, 1);
+    $text = preg_replace( "|^\\<code\\>\\<span style\\=\"color\\: #[a-fA-F0-9]{0,6}\"\\>|", "", $text, 1 );
     $text = preg_replace( "|\\</code\\>\$|", "", $text, 1 );
     $text = trim( $text );
     $text = preg_replace( "|\\</span\\>\$|", "", $text, 1 );
     $text = trim( $text );
-    $text = preg_replace( "|^(\\<span style\\=\"color\\: #[a-fA-F0-9]{0,6}\"\\>)(&lt;\\?php&nbsp;)(.*?)(\\</span\\>)|", "\$1\$3\$4", $text);  // remove custom added "<?php "
+    $text = preg_replace( "|^(\\<span style\\=\"color\\: #[a-fA-F0-9]{0,6}\"\\>)(&lt;\\?php&nbsp;)(.*?)(\\</span\\>)|", "\$1\$3\$4", $text );  // remove custom added "<?php "
 
     // Return it
     return $text;

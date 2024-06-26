@@ -83,7 +83,12 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
-= 1.7.5.1 = // TODO: Currently Working on
+= 1.7.5.2 = // TODO: BETA
+
+
+= 1.7.5.1 =
+* Fix: Redacting not working for some people
+* Tweak: Reimagine EOL option behavior (props amurashkin17)
 * Fix: Detected HTACCESS snippets being ignored if DDT section does not exist
 
 = 1.7.5 =
