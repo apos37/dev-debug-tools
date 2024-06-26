@@ -2,9 +2,9 @@
 Contributors: apos37
 Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
-Tested up to: 6.5.4
+Tested up to: 6.5.5
 Requires PHP: 7.4
-Stable tag: 1.7.5.2
+Stable tag: 1.7.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -83,10 +83,8 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
-= 1.7.5.2 =
+= 1.7.6 =
 * Fix: Convert directory separator to forward slash when using ABSPATH (props amurashkin17)
-
-= 1.7.5.1 =
 * Fix: Redacting not working for some people
 * Tweak: Reimagine EOL option behavior (props amurashkin17)
 * Fix: Detected HTACCESS snippets being ignored if DDT section does not exist
