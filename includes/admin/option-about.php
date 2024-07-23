@@ -95,8 +95,8 @@ body #wpbody-content .plugin-card .plugin-action-buttons a.button.install-now[ar
 <?php if ( ddtt_get_domain() != 'playground.wordpress.net' ) { ?>
     <br><br>
     <h3>Try My Other Plugins</h3>
-    <?php echo wp_kses_post( ddtt_plugin_card( 'admin-help-docs' ) ); ?>
-    <?php echo wp_kses_post( ddtt_plugin_card( 'gf-discord' ) ); ?>
-    <?php echo wp_kses_post( ddtt_plugin_card( 'gf-msteams' ) ); ?>
-    <?php echo wp_kses_post( ddtt_plugin_card( 'broken-link-notifier' ) ); ?>
+    <?php ddtt_plugin_card( 'admin-help-docs' ); ?>
+    <?php ddtt_plugin_card( 'gf-discord' ); ?>
+    <?php ddtt_plugin_card( 'gf-msteams' ); ?>
+    <?php ddtt_plugin_card( 'broken-link-notifier' ); ?>
 <?php } ?>

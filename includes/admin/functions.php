@@ -536,7 +536,7 @@ function ddtt_get_defined_functions_in_file( $file ) {
  */
 function ddtt_get_function_example( $function_name ) {
     // Check if the function exists
-    if( function_exists( $function_name ) ){
+    if ( function_exists( $function_name ) ) {
 
         // Store the attributes here
         $attribute_names = [];
@@ -548,7 +548,7 @@ function ddtt_get_function_example( $function_name ) {
         foreach ( $fx->getParameters() as $param ) {
 
             // Check for optional params
-            if ( $param->isOptional() ){
+            if ( $param->isOptional() ) {
 
                 // Get the default
                 if ( is_null( $param->getDefaultValue() ) ) {
@@ -647,69 +647,68 @@ function ddtt_get_form_selections( $id, $selected, $include_inactive = false ) {
 
 /**
  * Return error counts
- * ///TODO: Add actual error.log counts to total errors
  *
  * @return int
  */
 function ddtt_error_count() {
     // Check if disabled
     if ( get_option( DDTT_GO_PF.'disable_error_counts' ) ) {
-        return false;
+        return 0;
     }
 
-    // Check for error_log
-    $error_log = FALSE;
-    if ( is_readable( ABSPATH.'error_log' ) ) {
-        $error_log = ABSPATH.'error_log';
-    } elseif ( is_readable( dirname( ABSPATH ).'/error_log' ) ) {
-        $error_log = dirname( ABSPATH ).'/error_log';
-    }
+    // New instance of logs class
+    $DDTT_LOGS = new DDTT_LOGS();
     
     // Check for debug.log
     if ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
         $debug_loc = WP_DEBUG_LOG;
     } else {
-        $debug_loc =  DDTT_CONTENT_URL.'/debug.log';
+        $debug_loc =  DDTT_CONTENT_URL . '/debug.log';
     }
-    $debug_log = FALSE;
-    if ( is_readable( ABSPATH.$debug_loc ) ) {
-        $debug_log = ABSPATH.$debug_loc;
-    } elseif ( is_readable( dirname( ABSPATH ).'/'.$debug_loc ) ) {
-        $debug_log = dirname( ABSPATH ).'/'.$debug_loc;
-    } elseif ( is_readable( $debug_loc ) ) {
-        $debug_log = $debug_loc;
-    }
+    $debug_log = $DDTT_LOGS->file_exists_with_content( $debug_loc );
 
+    // Check for wp-admin error_log
+    $error_log_path = get_option( DDTT_GO_PF.'error_log_path' );
+    if ( !$error_log_path || $error_log_path == '' ) {
+        $error_log_path = 'error_log';
+    }
+    $error_log = $DDTT_LOGS->file_exists_with_content( $error_log_path );
+
+    // Check for wp-admin error_log
+    $admin_error_log_path = get_option( DDTT_GO_PF.'admin_error_log_path' );
+    if ( !$admin_error_log_path || $admin_error_log_path == '' ) {
+        $admin_error_log_path = DDTT_ADMIN_URL.'/error_log';
+    }
+    $admin_error_log = $DDTT_LOGS->file_exists_with_content( $admin_error_log_path );
+    
     // Count debug log lines
-    $line_count = 0;
+    $debug_log_count = 0;
     if ( $debug_log ) {
         $string = file_get_contents( $debug_log );
         $lines = explode( PHP_EOL, $string );
-        
-        foreach( $lines as $line ){
-            if ( $line != '' ){
-                $line_count ++; 
-            }
-        }
+        $debug_log_count = count( array_filter( $lines ) );
     }
 
-    // Check for wp-admin error_log
-    $admin_error_log = FALSE;
-    if ( is_readable( ABSPATH.DDTT_ADMIN_URL.'/error_log' ) ) {
-        $admin_error_log = ABSPATH.DDTT_ADMIN_URL.'/error_log';
-    } elseif ( is_readable( dirname( ABSPATH ).'/'.DDTT_ADMIN_URL.'/error_log' ) ) {
-        $admin_error_log = dirname( ABSPATH ).'/'.DDTT_ADMIN_URL.'/error_log';
+    // Count error log lines
+    $error_log_count = 0;
+    if ( $error_log ) {
+        $string = file_get_contents( $error_log );
+        $lines = explode( PHP_EOL, $string );
+        $error_log_count = count( array_filter( $lines ) );
+    }
+
+    // Count admin error log lines
+    $admin_error_log_count = 0;
+    if ( $admin_error_log ) {
+        $string = file_get_contents( $admin_error_log );
+        $lines = explode( PHP_EOL, $string );
+        $admin_error_log_count = count( array_filter( $lines ) );
     }
     
-    // Return count
-    if ( $debug_log && filesize($debug_log) > 0 ) {
-        return $line_count;
-    } elseif ( ( $error_log && filesize( $error_log ) > 0 ) || 
-              ( $admin_error_log && filesize( $admin_error_log ) > 0 ) ) {
-        return 1;
-    } else {
-        return 0;
-    }
+    // Return total count
+    $total_count = $debug_log_count + $error_log_count + $admin_error_log_count;
+    
+    return $total_count;
 } // End ddtt_error_count()
 
 
@@ -2052,16 +2051,21 @@ function ddtt_highlight_string( $text ) {
     ini_set( 'highlight.keyword', ddtt_get_syntax_color( 'color_comments', '#5E9955' )."; font-weight: bold" );
     ini_set( 'highlight.string', ddtt_get_syntax_color( 'color_syntax', '#569CD6' ) );
 
-    // Work some magic
+    // Trim
     $text = trim( $text );
-    $text = highlight_string( "<?php " . $text, true );  // highlight_string() requires opening PHP tag or otherwise it will not colorize the text
-    $text = trim( $text );
-    $text = preg_replace( "|^\\<code\\>\\<span style\\=\"color\\: #[a-fA-F0-9]{0,6}\"\\>|", "", $text, 1 );
-    $text = preg_replace( "|\\</code\\>\$|", "", $text, 1 );
-    $text = trim( $text );
-    $text = preg_replace( "|\\</span\\>\$|", "", $text, 1 );
-    $text = trim( $text );
-    $text = preg_replace( "|^(\\<span style\\=\"color\\: #[a-fA-F0-9]{0,6}\"\\>)(&lt;\\?php&nbsp;)(.*?)(\\</span\\>)|", "\$1\$3\$4", $text );  // remove custom added "<?php "
+
+    // highlight_string() requires opening PHP tag or otherwise it will not colorize the text
+    $text = highlight_string( '<?php ' . $text, true );
+
+    // Add a class to the code tag
+    $text = preg_replace( '/<code[^>]*>/', '<code class="function">', $text, 1 );
+
+    // Now remove the opening PHP tag
+    $pf = "&lt;?php ";
+    $pos = strpos( $text, $pf );
+    if ( $pos !== false ) {
+        $text = substr_replace( $text, '', $pos, strlen( $pf ) );
+    }
 
     // Return it
     return $text;
@@ -2106,10 +2110,12 @@ function ddtt_time_elapsed_string( $datetime, $full = false ) {
     $ago = new DateTime( $datetime );
     $diff = $now->diff( $ago );
 
-    $diff->w = floor( $diff->d / 7);
-    $diff->d -= $diff->w * 7;
+    // Calculate total days and weeks
+    $days = $diff->days;
+    $weeks = floor( $days / 7 );
+    $remainingDays = $days % 7;
 
-    $string = array(
+    $string = [
         'y' => 'year',
         'm' => 'month',
         'w' => 'week',
@@ -2117,16 +2123,25 @@ function ddtt_time_elapsed_string( $datetime, $full = false ) {
         'h' => 'hour',
         'i' => 'minute',
         's' => 'second',
-    );
+    ];
+
+    if ( $weeks > 0 ) {
+        $string[ 'w' ] = $weeks . ' ' . ( $weeks > 1 ? 'weeks' : 'week' );
+        $diff->d = $remainingDays;
+    }
+
     foreach ( $string as $k => &$v ) {
-        if ( $diff->$k ) {
+        if ( isset( $diff->$k ) && $diff->$k ) {
             $v = $diff->$k . ' ' . $v . ( $diff->$k > 1 ? 's' : '' );
         } else {
-            unset( $string[$k] );
+            unset( $string[ $k ] );
         }
     }
 
-    if ( !$full ) $string = array_slice( $string, 0, 1 );
+    if ( !$full ) {
+        $string = array_slice( $string, 0, 1 );
+    }
+
     return $string ? implode( ', ', $string ) . ' ago' : 'just now';
 } // End ddtt_time_elapsed_string()
 

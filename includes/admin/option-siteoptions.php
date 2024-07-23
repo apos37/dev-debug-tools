@@ -127,7 +127,7 @@ uksort( $all_options, function( $a, $b ) {
 
             // Get the value and print properly if an array
             if ( is_array( $value ) ) {
-                $display_value = '<pre>'.print_r( $get_option, true ).'</pre>';
+                $display_value = '<pre>'.print_r( $option, true ).'</pre>';
             } elseif ( ddtt_is_serialized_array( $value ) && !empty( unserialize( $value ) ) ) {
                 $display_value = $value.'<br><code><pre>'.print_r( unserialize( $value ), true ).'</pre></code>';
             } else {

@@ -40,7 +40,6 @@ class DDTT_HTACCESS {
     public function snippets() {
         // Domain & IP
         $domain = ddtt_get_domain();
-        $ip_server = sanitize_text_field( $_SERVER['SERVER_ADDR'] );
 
         // Plugin path
         $plugin_path = DDTT_PLUGIN_SHORT_DIR;
@@ -103,7 +102,7 @@ class DDTT_HTACCESS {
                     '<Files "debug.log">',
                     'Require all denied',
                     'Require ip 127.0.0.1',
-                    'Require ip '.$ip_server,
+                    'Require ip '.DDTT_SERVER_IP,
                     '</Files>',
                 ],
                 'desc' => 'Restricts access to the <code>debug.log</code> file within your WordPress installation, enhancing security. This is highly recommended, especially if you have enabled debugging on your <code>wp-config.php</code> file. Only authorized IP addresses (localhost and hosting server) can view the log file. Unauthorized users won\'t be able to access sensitive debugging information.'
@@ -595,7 +594,7 @@ class DDTT_HTACCESS {
                                 $collect_comments = true;
                                 $comment_index = $prev_line_index;
                                 do {
-                                    if ( str_starts_with( trim( $safe_file_lines[ $comment_index ] ), '#' ) ) {
+                                    if ( isset( $safe_file_lines[ $comment_index ] ) && str_starts_with( trim( $safe_file_lines[ $comment_index ] ), '#' ) ) {
                                         $comments_to_remove[] = $comment_index;
                                         $comment_index--;
                                     } else {

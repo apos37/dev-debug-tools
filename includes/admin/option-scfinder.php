@@ -323,116 +323,159 @@ if ( $shortcode != '' && !empty( $results ) ) {
                 <th>Source</th>
             </tr>
             <?php
-            foreach( $shortcode_tags as $sc => $callback ) {
+            // Get the admin url
+            if ( is_multisite() ) {
+                $admin_url = str_replace( site_url( '/' ), '', rtrim( network_admin_url(), '/' ) );
+            } else {
+                $admin_url = DDTT_ADMIN_URL;
+            }
 
-                // Avoid callbacks that are arrays
-                if ( is_array( $callback ) ) {
-                    $fx = new ReflectionMethod( $callback[0], $callback[1] );
-                } else {
-                    $fx = new ReflectionFunction( $callback );
-                }
+            // Iter the tags
+            foreach ( $shortcode_tags as $sc => $callback ) {
 
-                // Default short file path
-                $short_file_path = '<em>Object</em>';
+                // Log errors
+                $errors = [];
+                $source = '';
 
-                // Include var
-                $include = '';
-                
-                // Get the function details
-                $file_path = ddtt_relative_pathname( $fx->getFileName() ); ddtt_write_log( [ 'pathmap' => 1, 'pathmap_server_prefix' => 'example...' ] );
-
-                // Get the admin url
-                if ( is_multisite() ) {
-                    $admin_url = str_replace( site_url( '/' ), '', rtrim( network_admin_url(), '/' ) );
-                } else {
-                    $admin_url = DDTT_ADMIN_URL;
-                }
-
-                // Check if it's a plugin
-                if ( strpos( $file_path, DDTT_PLUGINS_URL ) !== false ) {
-
-                    // If so, get the plugin slug
-                    $plugin_path_and_filename = str_replace( DDTT_PLUGINS_URL, '', $file_path );
-                    $plugin_path_parts = explode( '/', $plugin_path_and_filename );
-                    $plugin_slug = $plugin_path_parts[1];
-                    $plugin_filename = substr( $plugin_path_and_filename, strpos( $plugin_path_and_filename, '/' ) + 1);
-
-                    // Now check the active plugins for the file
-                    $plugin_folder_and_file = false;
-                    foreach( $active_plugins as $ap ) {
-                        if ( str_starts_with( $ap, $plugin_slug ) ) {
-                            $plugin_folder_and_file = $ap;
+                // Attempt to process each shortcode callback
+                try {
+                    // Initialize $fx variable
+                    $fx = null;
+            
+                    // Avoid callbacks that are arrays
+                    if ( is_array( $callback ) ) {
+                        if ( count( $callback ) >= 2 ) {
+                            $class_or_object = $callback[0];
+                            $method_name = $callback[1];
+            
+                            // Check if $class_or_object is a valid class name or object instance
+                            if ( is_string( $class_or_object ) && class_exists( $class_or_object ) ||
+                                 ( is_object( $class_or_object ) && is_callable( [$class_or_object, $method_name] ) ) ) {
+            
+                                // Check if method exists in class or object
+                                if ( method_exists( $class_or_object, $method_name ) ) {
+                                    $fx = new ReflectionMethod( $class_or_object, $method_name );
+                                }
+                            }
                         }
+            
+                    } elseif ( is_string( $callback ) && function_exists( $callback ) ) {
+
+                        // If $callback is a string and represents a function
+                        $fx = new ReflectionFunction( $callback );
                     }
+            
+                    // Proceed if $fx is successfully initialized
+                    if ( $fx ) {
 
-                    // Make sure we found the file
-                    if ( $plugin_folder_and_file ) {
+                        // Get the file path of the callback function/method
+                        $file_path = ddtt_relative_pathname( $fx->getFileName() );
 
-                        // Require the get_plugin_data function
-                        if( !function_exists( 'get_plugin_data' ) ){
-                            require_once( ABSPATH.DDTT_ADMIN_URL.'/includes/plugin.php' );
-                        }
+                        // Check if it's a plugin
+                        if ( strpos( $file_path, DDTT_PLUGINS_URL ) !== false ) {
 
-                        // Get the file
-                        $plugin_file = ABSPATH.DDTT_PLUGINS_URL.'/'.$plugin_folder_and_file;
+                            // If so, get the plugin slug
+                            $plugin_path_and_filename = str_replace( DDTT_PLUGINS_URL, '', $file_path );
+                            $plugin_path_parts = explode( '/', $plugin_path_and_filename );
+                            $plugin_slug = $plugin_path_parts[1];
+                            $plugin_filename = substr( $plugin_path_and_filename, strpos( $plugin_path_and_filename, '/' ) + 1 );
 
-                        // Get the plugin data
-                        $plugin_data = get_plugin_data( $plugin_file );
+                            // Now check the active plugins for the file
+                            $plugin_folder_and_file = false;
+                            foreach( $active_plugins as $ap ) {
+                                if ( str_starts_with( $ap, $plugin_slug ) ) {
+                                    $plugin_folder_and_file = $ap;
+                                }
+                            }
 
-                        // This is what we will display
-                        $include = '<strong>Plugin:</strong> '.$plugin_data[ 'Name' ].'<br>';
+                            // Make sure we found the file
+                            if ( $plugin_folder_and_file ) {
 
-                        // Make sure editors are not disabled
-                        if ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) {
+                                // Require the get_plugin_data function
+                                if ( !function_exists( 'get_plugin_data' ) ) {
+                                    require_once( ABSPATH.DDTT_ADMIN_URL.'/includes/plugin.php' );
+                                }
+
+                                // Get the file
+                                $plugin_file = ABSPATH.DDTT_PLUGINS_URL.'/'.$plugin_folder_and_file;
+
+                                // Get the plugin data
+                                $plugin_data = get_plugin_data( $plugin_file );
+
+                                // This is what we will display
+                                $include = '<strong>Plugin:</strong> '.$plugin_data[ 'Name' ].'<br>';
+
+                                // Make sure editors are not disabled
+                                if ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) {
+                                        
+                                    // Update short file path link
+                                    $file_path = esc_attr( $file_path );
+
+                                } else {
+                                    
+                                    // Update short file path link
+                                    $file_path = '<a href="/'.esc_attr( $admin_url ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $file_path ).'</a>';
+                                }
+                            }
+
+                        // Check if it's a theme file
+                        } elseif ( strpos( $file_path, DDTT_CONTENT_URL.'/themes/' ) !== false ) {
+
+                            // Theme parts
+                            $theme_parts = explode( '/', $file_path );
+                            $theme_filename = $theme_parts[3];
+                            $theme_slug = $theme_parts[2];
+
+                            // Check if the themes exists in the array
+                            $theme_name = 'Unknown';
+                            foreach ( $themes as $k => $t ) {
+                                if ( $k == $theme_slug ) {
+                                    $theme_name = $t->get( 'Name' );
+                                }
+                            }
+
+                            // This is what we will display
+                            $include = '<strong>Theme:</strong> '.$theme_name.'<br>';
+
+                            // Make sure editors are not disabled
+                            if ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) {
+                                    
+                                // Update short file path link
+                                $file_path = esc_attr( $file_path );
+
+                            } else {
                                 
-                            // Update short file path link
-                            $file_path = esc_attr( $file_path );
-
-                        } else {
-                            
-                            // Update short file path link
-                            $file_path = '<a href="/'.esc_attr( $admin_url ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $file_path ).'</a>';
+                                // Update short file path link
+                                $file_path = '<a href="/'.esc_attr( $admin_url ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $file_path ).'</a>';
+                            }
                         }
-                    }
 
-                // Check if it's a theme file
-                } elseif ( strpos( $file_path, DDTT_CONTENT_URL.'/themes/' ) !== false ) {
+                        // Add the line number
+                        $short_file_path = $file_path.'<br><strong>Line:</strong> '.$fx->getStartLine();
 
-                    // Theme parts
-                    $theme_parts = explode( '/', $file_path );
-                    $theme_filename = $theme_parts[3];
-                    $theme_slug = $theme_parts[2];
-
-                    // Check if the themes exists in the array
-                    $theme_name = 'Unknown';
-                    foreach ( $themes as $k => $t ) {
-                        if ( $k == $theme_slug ) {
-                            $theme_name = $t->get( 'Name' );
-                        }
-                    }
-
-                    // This is what we will display
-                    $include = '<strong>Theme:</strong> '.$theme_name.'<br>';
-
-                    // Make sure editors are not disabled
-                    if ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) {
-                            
-                        // Update short file path link
-                        $file_path = esc_attr( $file_path );
+                        // Source
+                        $source = $include.'<strong>Path: </strong>/'.$short_file_path;
 
                     } else {
-                        
-                        // Update short file path link
-                        $file_path = '<a href="/'.esc_attr( $admin_url ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $file_path ).'</a>';
+                        // Handle cases where $fx couldn't be initialized
+                        $errors[] = "Invalid format or non-existent function/method.";
                     }
+            
+                } catch ( Exception $e ) {
+                    // Log or handle any exceptions (if necessary)
+                    $errors[] = "Error processing shortcode callback: " . $e->getMessage();
                 }
 
-                // Add the line number
-                $short_file_path = $file_path.'<br><strong>Line:</strong> '.$fx->getStartLine();
+                // Errors
+                if ( !empty( $errors ) ) {
+                    $source = implode( '<br>', $errors );
+                }
+
+                // Return the row
                 ?>
                 <tr>
                     <td><a href="<?php echo esc_url( $current_url ) ?>&shortcode=<?php echo esc_attr( $sc ); ?>">[<?php echo esc_attr( $sc ); ?>]</a></td>
-                    <td><?php echo wp_kses_post( $include.'<strong>Path: </strong>/'.$short_file_path ); ?><br></td>
+                    <td><?php echo wp_kses_post( $source ); ?><br></td>
                 </tr>
                 <?php
             }

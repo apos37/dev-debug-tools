@@ -141,7 +141,7 @@ if ( $crons ) {
                     }
 
                     // Add the callback name
-                    $actions[] = '<code>'.ddtt_highlight_string( $hook_callback[ 'callback' ][ 'name' ] ).'</code>';
+                    $actions[] = ddtt_highlight_string( $hook_callback[ 'callback' ][ 'name' ] );
                 }
             }
 
@@ -157,7 +157,6 @@ if ( $crons ) {
         }
     }
 }
-// dpr( $my_crons );
 
 // Check if wp cron is disabled
 if ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) {
@@ -166,7 +165,7 @@ if ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) {
 
 // Return the table
 echo '<div class="full_width_container">
-    <table class="admin-large-table">
+    <table class="admin-large-table crons-table">
         <tr>
             <th>Hook</th>
             <th>Arguments</th>

@@ -494,6 +494,9 @@ if ( $current_screen->id == $options_page ) {
         background: <?php echo esc_attr( $bg_secondary_hover ); ?> !important;
         color: <?php echo esc_attr( $text_accent_hover ); ?> !important;
     }
+    .ddtt.nav-tab-wrapper .nav-tab-active {
+        margin-bottom: 0px !important;
+    }
     .nav-tab-active {
         background: <?php echo esc_attr( $bg_accent ); ?> !important;
         color: <?php echo esc_attr( $text_accent ); ?> !important;
@@ -804,6 +807,14 @@ if ( $current_screen->id == $options_page ) {
         background: #2f3136 !important;
         border-radius: 3px !important;
         color: #DCF3F6 !important;
+    }
+    code.function {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .functions-table pre,
+    .crons-table pre {
+        margin: 0;
     }
     .comment-out { color: <?php echo esc_attr( $comment_out ); ?>; } 
     .wrap a.c0 { color: <?php echo esc_attr( $c3 ); ?> !important; } /* First line */

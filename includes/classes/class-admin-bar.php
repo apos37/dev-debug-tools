@@ -214,6 +214,11 @@ class DDTT_ADMIN_BAR {
                             continue;
                         }
 
+                        // LearnDash fix
+                        if ( $admin_menu_link[ 'label' ] == 'LearnDash LMS' ) {
+                            $admin_menu_link[ 'url' ] = 'admin.php?page=learndash_lms_overview';
+                        }
+
                         // Add it
                         $site_name_links[] = [ 
                             $admin_menu_link[ 'label' ],

@@ -99,7 +99,7 @@ if ( floatval( $php_version ) < floatval( $latest_php ) ) {
 
     <br><br>
     <div class="tabs-wrapper">
-        <nav class="nav-tab-wrapper">
+        <nav class="ddtt nav-tab-wrapper">
             <?php
             // Skip if multisite
             $multisite_skip = [

@@ -3,9 +3,9 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.7.6
+ * Version:             1.7.8
  * Requires at least:   5.9.0
- * Tested up to:        6.5.5
+ * Tested up to:        6.6.1
  * Requires PHP:        7.4
  * Author:              Apos37
  * Author URI:          https://apos37.com/
@@ -25,8 +25,8 @@ if ( !defined( 'ABSPATH' ) ) {
  */
 
 // Versions
-define( 'DDTT_VERSION', '1.7.6' );
-define( 'DDTT_BETA', true );
+define( 'DDTT_VERSION', '1.7.8' );
+define( 'DDTT_BETA', false );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum
@@ -74,6 +74,7 @@ define( 'DDTT_INCLUDES_URL', str_replace( $site_url, '', rtrim( includes_url(), 
 define( 'DDTT_ADMIN_INCLUDES_URL', trailingslashit( ABSPATH.str_replace( $site_url, '', ddtt_admin_url( 'includes/' ) ) ) );    //: /abspath/.../public_html/wp-admin/includes/
 define( 'DDTT_PLUGINS_URL', str_replace( $site_url, '', plugins_url() ) );                                                      //: wp-content/plugins
 define( 'DDTT_MU_PLUGINS_DIR', ABSPATH.DDTT_CONTENT_URL.'/mu-plugins/' );                                                       //: /abspath/.../public_html/wp-content/mu-plugins/
+define( 'DDTT_SERVER_IP', filter_var( $_SERVER[ 'SERVER_ADDR' ], FILTER_VALIDATE_IP ) );                                        //: 0.0.0.0
 
 // Define plugin specific paths
 define( 'DDTT_PLUGIN_ABSOLUTE', __FILE__ );                                                                                     //: /abspath/.../public_html/wp-content/plugins/dev-debug-tools/dev-debug-tools.php)

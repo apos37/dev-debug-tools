@@ -2,9 +2,9 @@
 Contributors: apos37
 Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
-Tested up to: 6.5.5
+Tested up to: 6.6.1
 Requires PHP: 7.4
-Stable tag: 1.7.6
+Stable tag: 1.7.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -83,6 +83,20 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.7.8 =
+* Fix: Formatting on Available Functions tab
+
+= 1.7.7 =
+* Fix: Formatting on Cron Jobs tab
+* Fix: Shortcode Finder tab fatal error if a method does not exist
+* Fix: Test example array still logging on Shortcode Finder tab
+* Fix: Site Options values not displaying
+* Fix: Error log path not using option if changed in total error count
+* Fix: Error logs only showing 1 error if any are found, now counts all line items
+* Fix: PHP 8.3 deprecation notices
+* Update: Added server ip address to top of HTACCESS tab for easy reference
+* Fix: LearnDash LMS link in admin bar dropdown broken
+
 = 1.7.6 =
 * Fix: Convert directory separator to forward slash when using ABSPATH (props amurashkin17)
 * Fix: Redacting not working for some people

@@ -215,6 +215,13 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         $debugging = 'DISABLED';
     }
 
+    // Server ip
+    if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+        $server_ip = '<span class="redact">'.DDTT_SERVER_IP.'</span>';
+    } else {
+        $server_ip = DDTT_SERVER_IP;
+    }
+
     // Rest API root
     $rest_api_root = rest_url();
 
@@ -227,7 +234,7 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'logs'              => [ __( 'Logs', 'dev-debug-tools' ).$notif, 'All of your log files in one place. You can add more log files in <a href="'.ddtt_plugin_options_path( 'settings' ).'">Settings</a>.'.$multisite, true ],
         'error'             => [ __( 'Error Reporting', 'dev-debug-tools' ), 'Choose which errors are reported to your <code class="hl">debug.log</code> file. Note that <code class="hl">WP_DEBUG</code> is currently <code class="'.strtolower( $debugging ).'">'.$debugging.'</code> on your <code class="hl">wp-config.php</code> file. It must be enabled for any of the reporting to work. Please note that not all hosts allow these settings to be changed, but hey it\'s worth a try.'.$multisite, true ],
         'wpcnfg'            => [ 'WP-CONFIG', 'View and update your wp-config.php. Please backup the original before updating.'.$multisite, true ],
-        'htaccess'          => [ 'HTACCESS', 'View and update your .htaccess from here. Please backup the original before updating.'.$multisite, true ],
+        'htaccess'          => [ 'HTACCESS', 'View and update your .htaccess from here. Please backup the original before updating. Your server\'s IP Address is '.$server_ip.'.'.$multisite, true ],
         'fx'                => [ 'Functions.php', 'A simple functions.php viewer.', true ],
         'phpini'            => [ 'PHP.INI', 'All registered configuration options from your php.ini', true ],
         'phpinfo'           => [ 'PHP Info', ' Information about your PHP\'s configuration', true ],

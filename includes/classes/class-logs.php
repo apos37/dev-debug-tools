@@ -106,8 +106,8 @@ class DDTT_LOGS {
      */
     public function file_exists_with_content( $path ) {
         $file = FALSE;
-        if ( is_readable( ABSPATH.'/'.$path ) ) {
-            $file = ABSPATH.''.$path;
+        if ( is_readable( ABSPATH.$path ) ) {
+            $file = ABSPATH.$path;
         } elseif ( is_readable( dirname( ABSPATH ).'/'.$path ) ) {
             $file = dirname( ABSPATH ).'/'.$path;
         } elseif ( is_readable( $path ) ) {
