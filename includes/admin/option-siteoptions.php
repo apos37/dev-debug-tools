@@ -2,6 +2,9 @@
 $page = ddtt_plugin_options_short_path();
 $tab = 'siteoptions';
 $current_url = ddtt_plugin_options_path( $tab );
+
+// Define the character limit
+$char_limit = 1000;
 ?>
 
 <style>
@@ -97,9 +100,6 @@ uksort( $all_options, function( $a, $b ) {
             ]
         ];
 
-        // Define the character limit
-        $char_limit = 1000;
-
         // Cycle through the options
         foreach ( $all_options as $option => $value ) {
 
@@ -115,9 +115,9 @@ uksort( $all_options, function( $a, $b ) {
                 $display_value = '<pre>'.print_r( $value, true ).'</pre>';
 
             // Check if the value is serialized
-            } elseif ( ddtt_is_serialized_array( $value ) ) {
+            } elseif ( ddtt_is_serialized_array( $value ) || ddtt_is_serialized_object( $value ) ) {
                 $unserialized_value = @unserialize( $value );
-                if ( is_string( $unserialized_value ) && ddtt_is_serialized_array( $unserialized_value ) ) {
+                if ( is_string( $unserialized_value ) && ( ddtt_is_serialized_array( $unserialized_value ) || ddtt_is_serialized_object( $unserialized_value ) ) ) {
                     $unserialized_value = @unserialize( $unserialized_value );
                 }
                 $display_value = $value.'<br><code><pre>'.print_r( $unserialized_value, true ).'</pre></code>';

@@ -41,6 +41,9 @@ if ( ddtt_get( 'transients', '==', 'Delete All', 'clear_transients' ) ) {
 $page = ddtt_plugin_options_short_path();
 $tab = 'siteoptions';
 $current_url = ddtt_plugin_options_path( $tab );
+
+// Define the character limit
+$char_limit = 1000;
 ?>
 
 <style>
@@ -63,6 +66,15 @@ $current_url = ddtt_plugin_options_path( $tab );
 <p><strong>What are transients?</strong> Transients in WordPress are a way to cache data temporarily with an expiration time. They help improve performance by storing frequently accessed or expensive-to-generate data in the database, which reduces the need for repeated processing or queries.</p>
 <br>
 
+<?php
+// Get the transients
+$all_transients = ddtt_get_all_transients();
+if ( empty( $all_transients ) ) {
+    echo '<h3>You do not have any transients.</h3>';
+    return;
+}
+?>
+
 <form method="get" action="<?php echo esc_url( $current_url ); ?>">
     <?php wp_nonce_field( 'clear_transients', '_wpnonce', false ); ?>
     <input type="hidden" name="page" value="<?php echo esc_attr( $page ); ?>">
@@ -72,12 +84,6 @@ $current_url = ddtt_plugin_options_path( $tab );
 </form>
 
 <br>
-
-<?php
-// Get the transients
-$all_transients = ddtt_get_all_transients();
-?>
-
 <div class="full_width_container">
     <table class="admin-large-table">
         <tr>
@@ -100,9 +106,6 @@ $all_transients = ddtt_get_all_transients();
                 'style' => [] 
             ]
         ];
-
-        // Define the character limit
-        $char_limit = 1000;
 
         // Cycle through them
         foreach ( $all_transients as $name => $data ) {
@@ -137,9 +140,9 @@ $all_transients = ddtt_get_all_transients();
                 $display_value = '<pre>'.print_r( $value, true ).'</pre>';
 
             // Check if the value is serialized
-            } elseif ( ddtt_is_serialized_array( $value ) ) {
+            } elseif ( ddtt_is_serialized_array( $value ) || ddtt_is_serialized_object( $value ) ) {
                 $unserialized_value = @unserialize( $value );
-                if ( is_string( $unserialized_value ) && ddtt_is_serialized_array( $unserialized_value ) ) {
+                if ( is_string( $unserialized_value ) && ( ddtt_is_serialized_array( $value ) || ddtt_is_serialized_object( $value ) ) ) {
                     $unserialized_value = @unserialize( $unserialized_value );
                 }
                 $display_value = $value.'<br><code><pre>'.print_r( $unserialized_value, true ).'</pre></code>';

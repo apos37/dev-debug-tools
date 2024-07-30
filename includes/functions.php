@@ -318,15 +318,7 @@ function ddtt_convert_timezone( $date = null, $format = 'F j, Y g:i A', $timezon
  * @param string|null $nonce_value
  * @return string|false
  */
-function ddtt_get( $qs_param, $comparison = '!=', $equal_to = '', $nonce_action = null, $nonce_value = '_wpnonce' ) {
-    // Check nonce if action and value are provided
-    if ( $nonce_action && $nonce_value ) {
-        if ( !isset( $_GET[ $nonce_value ] ) || !wp_verify_nonce( $_GET[ $nonce_value ], $nonce_action ) ) {
-            error_log( 'Nonce verification failed on ddtt_get()' );
-            return false;
-        }
-    }
-    
+function ddtt_get( $qs_param, $comparison = '!=', $equal_to = '', $nonce_action = null, $nonce_value = '_wpnonce' ) {   
     // Get if the query string exists at all
     if ( isset( $_GET[ $qs_param ] ) ) {
         $fitered_get = filter_input_array( INPUT_GET, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -334,15 +326,37 @@ function ddtt_get( $qs_param, $comparison = '!=', $equal_to = '', $nonce_action 
 
         // How are we comparing?
         if ( $comparison == '!=' ) {
-            return ( $get != $equal_to ) ? $get : false;
+
+            // Compare
+            if ( $get != $equal_to ) {
+
+                // Check nonce if action and value are provided
+                if ( $nonce_action && $nonce_value ) {
+                    if ( !isset( $_GET[ $nonce_value ] ) || !wp_verify_nonce( $_GET[ $nonce_value ], $nonce_action ) ) {
+                        // error_log( 'Nonce verification failed on ddtt_get()' );
+                        return false;
+                    }
+                }
+                return $get;
+            }
+
         } elseif ( $comparison == '==' ) {
-            return ( $get == $equal_to ) ? $get : false;
-        } else {
-            return false;
+
+            // Compare
+            if ( $get == $equal_to ) {
+
+                // Check nonce if action and value are provided
+                if ( $nonce_action && $nonce_value ) {
+                    if ( !isset( $_GET[ $nonce_value ] ) || !wp_verify_nonce( $_GET[ $nonce_value ], $nonce_action ) ) {
+                        // error_log( 'Nonce verification failed on ddtt_get()' );
+                        return false;
+                    }
+                }
+                return $get;
+            }
         }
-    } else {
-        return false;
     }
+    return false;
 } // End ddtt_get()
 
 

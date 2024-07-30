@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.6.1
 Requires PHP: 7.4
-Stable tag: 1.8.0
+Stable tag: 1.8.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -83,6 +83,11 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.8.1 =
+* Fix: JS not loading on Post Meta tab for most recent post
+* Tweak: Hide purge transient buttons if there are no transients
+* Fix: Nonce verification failed on ddtt_get()
+
 = 1.8.0 =
 * Fix: Undefined variable $is_mu_plugin (props venutius)
 * Fix: GF finder not finding forms

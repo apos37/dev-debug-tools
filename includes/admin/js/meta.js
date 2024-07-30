@@ -1,5 +1,5 @@
 jQuery( $ => {
-    console.log( 'Meta JS Loaded...' );
+    // console.log( 'Meta JS Loaded...' );
 
     // Tab
     const tab = metaAjax.tab;

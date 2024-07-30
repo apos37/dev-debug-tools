@@ -406,7 +406,7 @@ if ( $hide_pf ) {
             $recent_posts = wp_get_recent_posts( [ 
                 'numberposts' => '1',
                 'post_status' => 'publish',
-                'post_type' => 'post'
+                'post_type'   => 'post'
             ] );
             if ( !empty( $recent_posts ) ) {
                 $most_recent_post = $recent_posts[0];

@@ -191,6 +191,18 @@ class DDTT_META_TABS {
             } elseif ( isset( $_POST[ 'post_id' ] ) && $_POST[ 'post_id' ] != '' ) {
                 $id = filter_var( $_POST['post_id'], FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 1 ] ] );
             }
+            if ( !$id ) {
+                // Get most recent post
+                $recent_posts = wp_get_recent_posts( [ 
+                    'numberposts' => '1',
+                    'post_status' => 'publish',
+                    'post_type'   => 'post'
+                ] );
+                if ( !empty( $recent_posts ) ) {
+                    $most_recent_post = $recent_posts[0];
+                    $id = $most_recent_post[ 'ID' ];
+                }
+            }
         }
 
         // Handle it

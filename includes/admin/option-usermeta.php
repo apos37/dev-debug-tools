@@ -704,9 +704,9 @@ if ( $user ) {
 
                 // Check if the value exceeds the character limit
                 if ( strlen( $value ) > $char_limit ) {
-                    $short_value = substr( esc_html( $value ), 0, $char_limit ) . '... ';
+                    $short_value = substr( $value, 0, $char_limit ) . '... ';
                     $view_more_link = '<a href="#" class="view-more">View More</a>';
-                    $full_value = '<span class="full-value">'.esc_html( $value ).'</span>';
+                    $full_value = '<span class="full-value">'.$value.'</span>';
                     $value = $short_value.$full_value.$view_more_link;
                 }
                 ?>
