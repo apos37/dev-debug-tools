@@ -327,7 +327,9 @@
 
                 <?php echo wp_kses( ddtt_options_tr( 'admin_bar_post_info', 'Remove Post Information', 'checkbox' ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_add_links', 'Add All Admin Menu Links to Front End', 'checkbox' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_my_account', 'Disable "My Account" Enhancements', 'checkbox' ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'admin_bar_add_links', 'Add All Admin Menu Links to Front End', 'checkbox', 'If enabled, resave this page at any time to update links.' ), $allowed_html ); ?>
                 
             </table>
 

@@ -40,7 +40,7 @@ if ( $crons ) {
             $the_args = $hook[ array_key_first( $hook ) ][ 'args' ];
 
             // Get the time
-            $utc_time = date( 'Y-m-d H:i:s', $timestamp );
+            $utc_time = gmdate( 'Y-m-d H:i:s', $timestamp );
             $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
             $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
 
@@ -107,10 +107,8 @@ if ( $crons ) {
                         if ( !is_callable( $callback['function'] ) ) {
 
                             // Set an error
-                            $callback[ 'error' ] = new WP_Error(
-                                'not_callable',
-                                sprintf( __( 'Function %s does not exist', 'dev-debug-tools' ), $callback[ 'name' ] )
-                            );
+                            /* Translators: 1: function name */
+                            $callback[ 'error' ] = new WP_Error( 'not_callable', sprintf( __( 'Function %s does not exist', 'dev-debug-tools' ), $callback[ 'name' ] ) );
                         }
 
                         // Add the callbacks array

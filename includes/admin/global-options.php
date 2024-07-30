@@ -79,6 +79,7 @@ class DDTT_GLOBAL_OPTIONS {
             'admin_bar_shortcodes',
             'admin_bar_centering_tool',
             'admin_bar_post_info',
+            'admin_bar_my_account',
             'admin_bar_add_links',
             'admin_bar_condense',
             'color_comments',

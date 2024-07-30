@@ -28,8 +28,8 @@ class DDTT_ERROR_REPORTING {
 	public function init() {
 
         // Ajax
-        add_action( 'wp_ajax_'.DDTT_GO_PF.'check_error_code', [ $this, 'check_error_code' ] );
-        add_action( 'wp_ajax_nopriv_'.DDTT_GO_PF.'check_error_code', [ $this, 'check_error_code' ] );
+        add_action( 'wp_ajax_'.DDTT_GO_PF.'check_error_code', [ $this, 'ajax' ] );
+        add_action( 'wp_ajax_nopriv_'.DDTT_GO_PF.'check_error_code', [ $this, 'must_login' ] );
 
         // Enqueue scripts
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -63,6 +63,9 @@ class DDTT_ERROR_REPORTING {
             if ( $webhook != '' ) {
 
                 // The domain and website
+                if ( !function_exists( 'ddtt_get_domain' ) ) {
+                    return error_log( 'Could not find ddtt_get_domain() in send_fatal_errors_to_discord().' );
+                }
                 $domain = ddtt_get_domain();
                 $website = get_bloginfo( 'name' );
                 if ( !$website || $website == '' ) {
@@ -130,9 +133,19 @@ class DDTT_ERROR_REPORTING {
         // Must-Use-Plugin filename
         $filename = '000-set-debug-level.php';
 
+        // Get the file
+        if ( !function_exists( 'WP_Filesystem' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+        global $wp_filesystem;
+        if ( !WP_Filesystem() ) {
+            ddtt_write_log( 'Failed to initialize WP_Filesystem' );
+            return false;
+        }
+
         // Check if the file exists
         $file_path = DDTT_MU_PLUGINS_DIR.$filename;
-        $mu_plugin_exists = file_exists( $file_path );
+        $mu_plugin_exists = $wp_filesystem->exists( $file_path );
 
         // Add
         if ( $add_or_remove == 'add' ) {
@@ -143,15 +156,15 @@ class DDTT_ERROR_REPORTING {
             }
 
             // Create the directory if it doesn't exist
-            if ( !file_exists( DDTT_MU_PLUGINS_DIR ) ) {
-                mkdir( DDTT_MU_PLUGINS_DIR );
+            if ( !$wp_filesystem->is_dir( DDTT_MU_PLUGINS_DIR ) ) {
+                $wp_filesystem->mkdir( DDTT_MU_PLUGINS_DIR );
             }
 
             // Path to Must-Use-Plugin file
             $mu_plugin_file = ABSPATH.DDTT_PLUGIN_FILES_PATH.$filename;
 
             // Add the file
-            if ( copy( $mu_plugin_file, $file_path ) ) {
+            if ( $wp_filesystem->copy( $mu_plugin_file, $file_path, true ) ) {
                 ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin has been added.' );
                 return true;
             } else {
@@ -167,7 +180,7 @@ class DDTT_ERROR_REPORTING {
             }
 
             // Remove the file
-            if ( unlink( $file_path ) ) {
+            if ( $wp_filesystem->delete( $file_path ) ) {
                 ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin has been removed.' );
                 return true;
             } else {
@@ -185,7 +198,7 @@ class DDTT_ERROR_REPORTING {
      *
      * @return void
      */
-    public function check_error_code() {
+    public function ajax() {
         // First verify the nonce
         if ( !wp_verify_nonce( sanitize_text_field( wp_unslash ( $_REQUEST[ 'nonce' ] ) ), DDTT_GO_PF.'check_error_code' ) ) {
             exit( 'No naughty business please.' );
@@ -226,7 +239,17 @@ class DDTT_ERROR_REPORTING {
 
         // Stop
         die();
-    } // End check_error_code()
+    } // End ajax()
+
+
+    /**
+     * What to do if they are not logged in
+     *
+     * @return void
+     */
+    public function must_login() {
+        die();
+    } // End must_login()
 
 
     /**
@@ -255,7 +278,7 @@ class DDTT_ERROR_REPORTING {
 
         // Feedback form and error code checker
         if ( ddtt_get( 'tab', '==', 'error' ) ) {
-            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'error-reporting.js', [ 'jquery' ], time() );
+            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'error-reporting.js', [ 'jquery' ], DDTT_VERSION );
             wp_localize_script( $handle, 'errorAjax', [ 
                 'E_ALL'   => E_ALL,
                 'ajaxurl' => admin_url( 'admin-ajax.php' ) 

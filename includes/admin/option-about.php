@@ -62,15 +62,20 @@ body #wpbody-content .plugin-card .plugin-action-buttons a.button.install-now[ar
 <h3>Plugin Support</h3>
 <br><img class="admin_helpbox_title" src="<?php echo esc_url( DDTT_PLUGIN_IMG_PATH ); ?>discord.png" width="auto" height="100">
 <p>If you need assistance with this plugin or have suggestions for improving it, please join the Discord server below.</p>
-<?php echo sprintf( __( '<a class="button button-primary" href="%s" target="_blank">Join Our Support Server »</a><br>', 'dev-debug-tools' ), DDTT_DISCORD_SUPPORT_URL ); ?>
+<?php /* translators: 1: Text for the button (default: Join Our Support Server) */
+echo '<a class="button button-primary" href="'.esc_url( DDTT_DISCORD_SUPPORT_URL ).'" target="_blank">'.esc_html( __( 'Join Our Support Server', 'dev-debug-tools' ) ).' »</a><br>'; ?>
+
 <br>
 <p>Or if you would rather get support on WordPress.org, you can do so here:</p>
-<?php echo sprintf( __( '<a class="button button-primary" href="%s" target="_blank">WordPress.org Plugin Support Page »</a><br>', 'dev-debug-tools' ), 'https://wordpress.org/support/plugin/dev-debug-tools/' ); ?>
+<?php /* translators: 1: Text for the button (default: WordPress.org Plugin Support Page) */
+echo '<a class="button button-primary" href="https://wordpress.org/support/plugin/dev-debug-tools/" target="_blank">'.esc_html( __( 'WordPress.org Plugin Support Page', 'dev-debug-tools' ) ).' »</a><br>'; ?>
 
 <br><br><br>
 <h3>Like This Plugin?</h3>
 <p>Please rate and review this plugin if you find it helpful. If you would give it fewer than 5 stars, please let me know how I can improve it.</p>
-<?php echo sprintf( __( '<a class="button button-primary" href="%s" target="_blank">Rate and Review on WordPress.org »</a><br>', 'dev-debug-tools' ), 'https://wordpress.org/support/plugin/dev-debug-tools/reviews/' ); ?>
+<?php /* translators: 1: Text for the button (default: Rate and Review on WordPress.org) */
+echo '<a class="button button-primary" href="https://wordpress.org/support/plugin/dev-debug-tools/reviews/" target="_blank">'.esc_html( __( 'Rate and Review on WordPress.org', 'dev-debug-tools' ) ).' »</a><br>'; ?>
+
 
 <?php if ( ddtt_get_domain() != 'playground.wordpress.net' ) { ?>
     <br><br><br>

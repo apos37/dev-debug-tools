@@ -192,6 +192,9 @@ class DDTT_ONLINE_USERS {
         }
 
         // The current url
+        if ( !function_exists( 'ddtt_get_current_url' ) ) {
+            return;
+        }
         $current_url = ddtt_get_current_url();
 
         // Skip if just loading ajax, otherwise it loads twice
@@ -719,14 +722,13 @@ class DDTT_ONLINE_USERS {
             if ( !is_null( $id ) && $id > 0 ) {
 
                 // Get the title
-                
                 $title = sanitize_text_field( get_the_title( $id ) );
 
             // No id found from url
             } else {
 
                 // Check for post id in query string
-                $qs = parse_url( $url );
+                $qs = wp_parse_url( $url );
                 if ( isset( $qs[ 'query' ] ) ) {
                     parse_str( $qs[ 'query' ], $params );
 

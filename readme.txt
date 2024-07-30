@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.6.1
 Requires PHP: 7.4
-Stable tag: 1.7.8
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -83,6 +83,18 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.8.0 =
+* Fix: Undefined variable $is_mu_plugin (props venutius)
+* Fix: GF finder not finding forms
+* Update: Added ability to add/update arrays and objects on User Meta and Post Meta tabs
+* Tweak: Added horizontal lines to centering tool
+* Fix: Centering tool not opening on first click
+* Update: Added option to disable admin bar "My Account" enhancements (props venutius)
+* Fix: Undefined array key "SERVER_ADDR" (props venutius)
+* Fix: ddtt_get_latest_plugin_version() calling api without https:// (props venutius)
+* Update: Added Transients tab and moved the Delete Transients buttons to this tab 
+* Fix: Warnings from Plugin Checker
+
 = 1.7.8 =
 * Fix: Formatting on Available Functions tab
 
@@ -98,7 +110,7 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 * Fix: LearnDash LMS link in admin bar dropdown broken
 
 = 1.7.6 =
-* Fix: Convert directory separator to forward slash when using ABSPATH (props amurashkin17)
+* Fix: Converted directory separator to forward slash when using ABSPATH (props amurashkin17)
 * Fix: Redacting not working for some people
 * Tweak: Reimagine EOL option behavior (props amurashkin17)
 * Fix: Detected HTACCESS snippets being ignored if DDT section does not exist

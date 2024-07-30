@@ -1,47 +1,24 @@
 <?php 
-// Check for deleting transients
-if ( ddtt_get( 'transients', '==', 'Delete All' ) ) {
-    // Add a notice
-    ?>
-    <div class="notice notice-success">
-        <p><?php _e( 'All transients have been deleted from wp-options.', 'dev-debug-tools' ); ?></p>
-    </div><br><br>
-    <?php
-
-    // Delete them
-    ddtt_delete_all_transients();
-} elseif ( ddtt_get( 'transients', '==', 'Purge Expired' ) ) {
-    // Add a notice
-    ?>
-    <div class="notice notice-success">
-        <p><?php _e( 'All expired transients have been deleted from wp-options.', 'dev-debug-tools' ); ?></p>
-    </div><br><br>
-    <?php
-
-    // Delete them
-    ddtt_purge_expired_transients();
-}
-
 $page = ddtt_plugin_options_short_path();
 $tab = 'siteoptions';
 $current_url = ddtt_plugin_options_path( $tab );
-
-// Hidden inputs
-$hidden_allowed_html = [
-    'input' => [
-        'type'      => [],
-        'name'      => [],
-        'value'     => []
-    ],
-];
-$hidden_path = '<input type="hidden" name="page" value="'.$page.'">
-<input type="hidden" name="tab" value="'.$tab.'">';
 ?>
+
+<style>
+.full-value {
+    display: none;
+}
+.view-more {
+    display: block;
+    margin-top: 1rem;
+    width: fit-content;
+}
+</style>
 
 <?php include 'header.php'; ?>
 
 <?php
-// Check for deleting transients
+// Lookup
 if ( ddtt_get( 'lookup' ) ) {
 
     // Sanitize it
@@ -68,20 +45,10 @@ if ( ddtt_get( 'lookup' ) ) {
         <th scope="row"><label for="option-search-input">Search Option by Keyword</label></th>
         <td><div class="search-options">
             <form method="get" action="<?php echo esc_url( $current_url ); ?>">
-                <?php echo wp_kses( $hidden_path, $hidden_allowed_html ); ?>
-                <input type="text" name="lookup" id="option-search-input" value="" required>
-                <input type="submit" value="Search" id="post-search-button" class="button button-primary"/>
-            </form>
-        </div></td>
-    </tr>
-    <tr valign="top">
-        <th scope="row">Clean Transients</th>
-        <td><div class="delete-transients">
-            <form method="get" action="<?php echo esc_url( $current_url ); ?>">
                 <input type="hidden" name="page" value="<?php echo esc_attr( $page ); ?>">
                 <input type="hidden" name="tab" value="<?php echo esc_attr( $tab ); ?>">
-                <input type="submit" name="transients" value="Delete All" id="delete-all-transients" class="button button-primary"/>
-                <input type="submit" name="transients" value="Purge Expired" id="delete-exp-transients" class="button button-primary"/>
+                <input type="text" name="lookup" id="option-search-input" value="" required>
+                <input type="submit" value="Search" id="post-search-button" class="button button-primary"/>
             </form>
         </div></td>
     </tr>
@@ -115,6 +82,24 @@ uksort( $all_options, function( $a, $b ) {
             <th>Value</th>
         </tr>
         <?php
+        // Allowed kses
+        $allowed_html = [ 
+            'pre'  => [], 
+            'br'   => [], 
+            'code' => [], 
+            'a'    => [ 
+                'href'  => [], 
+                'class' => [] 
+            ], 
+            'span' => [ 
+                'class' => [], 
+                'style' => [] 
+            ]
+        ];
+
+        // Define the character limit
+        $char_limit = 1000;
+
         // Cycle through the options
         foreach ( $all_options as $option => $value ) {
 
@@ -125,22 +110,63 @@ uksort( $all_options, function( $a, $b ) {
                 $group = '';
             }
 
-            // Get the value and print properly if an array
+            // Check if the value is an array
             if ( is_array( $value ) ) {
-                $display_value = '<pre>'.print_r( $option, true ).'</pre>';
-            } elseif ( ddtt_is_serialized_array( $value ) && !empty( unserialize( $value ) ) ) {
-                $display_value = $value.'<br><code><pre>'.print_r( unserialize( $value ), true ).'</pre></code>';
+                $display_value = '<pre>'.print_r( $value, true ).'</pre>';
+
+            // Check if the value is serialized
+            } elseif ( ddtt_is_serialized_array( $value ) ) {
+                $unserialized_value = @unserialize( $value );
+                if ( is_string( $unserialized_value ) && ddtt_is_serialized_array( $unserialized_value ) ) {
+                    $unserialized_value = @unserialize( $unserialized_value );
+                }
+                $display_value = $value.'<br><code><pre>'.print_r( $unserialized_value, true ).'</pre></code>';
+
+            // Check if the value is JSON
+            } elseif ( is_string( $value ) ) {
+                $json_value = json_decode( $value, true );
+                if ( json_last_error() === JSON_ERROR_NONE && ( is_array( $json_value ) || is_object( $json_value ) ) ) {
+                    $display_value = $value.'<br><code><pre>'.print_r( $json_value, true ).'</pre></code>';
+                } else {
+                    $display_value = $value;
+                }
+
+            // Default case
             } else {
                 $display_value = $value;
+            }
+
+            // Check if the value exceeds the character limit
+            if ( strlen( $display_value ) > $char_limit ) {
+                $short_value = substr( $display_value, 0, $char_limit ) . '... ';
+                $view_more_link = '<a href="#" class="view-more">View More</a>';
+                $full_value = '<span class="full-value">'.$display_value.'</span>';
+                $display_value = $short_value.$full_value.$view_more_link;
             }
             ?>
             <tr>
                 <td><span class="highlight-variable"><?php echo esc_attr( $option ); ?></span></td>
                 <td><?php echo esc_attr( $group ); ?></td>
-                <td><?php echo wp_kses( $display_value, [ 'pre' => [] ] ); ?></td>
+                <td><?php echo wp_kses( $display_value, $allowed_html ); ?></td>
             </tr>
             <?php
         }
         ?>
     </table>
 </div>
+
+<script>
+jQuery( document ).ready( function( $ ) {
+    $( '.view-more' ).on( 'click', function( e ) {
+        e.preventDefault();
+        var fullValue = $( this ).siblings( '.full-value' );
+        if ( fullValue.is( ':hidden' ) ) {
+            fullValue.show();
+            $( this ).text( 'View Less' );
+        } else {
+            fullValue.hide();
+            $( this ).text( 'View More' );
+        }
+    } );
+} );
+</script>

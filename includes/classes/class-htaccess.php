@@ -58,6 +58,12 @@ class DDTT_HTACCESS {
         $admin_path = DDTT_ADMIN_URL;
         $includes_path = DDTT_INCLUDES_URL.'/';
 
+        // Server ip
+        $server_ip = ddtt_get_server_ip();
+        if ( !$server_ip ) {
+            $server_ip = '127.0.0.1';
+        }
+
         // Add the snippets
         $snippets = apply_filters( 'ddtt_htaccess_snippets', [
             'restrict_direct_access' => [
@@ -102,7 +108,7 @@ class DDTT_HTACCESS {
                     '<Files "debug.log">',
                     'Require all denied',
                     'Require ip 127.0.0.1',
-                    'Require ip '.DDTT_SERVER_IP,
+                    'Require ip '.$server_ip,
                     '</Files>',
                 ],
                 'desc' => 'Restricts access to the <code>debug.log</code> file within your WordPress installation, enhancing security. This is highly recommended, especially if you have enabled debugging on your <code>wp-config.php</code> file. Only authorized IP addresses (localhost and hosting server) can view the log file. Unauthorized users won\'t be able to access sensitive debugging information.'
@@ -433,7 +439,15 @@ class DDTT_HTACCESS {
         if ( $file ) {
 
             // Get the file
-            $htaccess = file_get_contents( $file );
+            if ( !function_exists( 'WP_Filesystem' ) ) {
+                require_once ABSPATH . 'wp-admin/includes/file.php';
+            }
+            global $wp_filesystem;
+            if ( !WP_Filesystem() ) {
+                ddtt_write_log( 'Attempt to rewrite htaccess file failed. Could not fetch '.$file );
+                return false;
+            }
+            $htaccess = $wp_filesystem->get_contents( $file );
 
             // Display html tags
             $file_contents = htmlspecialchars( $htaccess );
@@ -831,9 +845,10 @@ class DDTT_HTACCESS {
                         }
                     }
                     $separate_safe_lines = array_reverse( $separate_safe_lines );
+                    $separate_safe_lines = implode( '', $separate_safe_lines );
 
                     // Filenames
-                    $now = ddtt_convert_timezone( date( 'Y-m-d H:i:s' ), 'Y-m-d-H-i-s', get_option( 'ddtt_dev_timezone', wp_timezone_string() ) );
+                    $now = ddtt_convert_timezone( gmdate( 'Y-m-d H:i:s' ), 'Y-m-d-H-i-s', get_option( 'ddtt_dev_timezone', wp_timezone_string() ) );
                     $old_file = str_replace( '.htaccess', '.htaccess-'.$now, $file );
                     $temp_file = str_replace( '.htaccess', '.htaccess-'.DDTT_GO_PF.'temp', $file );
 
@@ -841,7 +856,7 @@ class DDTT_HTACCESS {
                     if ( $confirm ) {
 
                         // Make human readable
-                        if ( file_put_contents( $temp_file, $separate_safe_lines ) ) {
+                        if ( $wp_filesystem->put_contents( $temp_file, $separate_safe_lines, FS_CHMOD_FILE ) ) {
                             ddtt_admin_notice( 'error', '&#9888; CAUTION! You are about to replace your '.$filename.' file, which may result in your site breaking. Please confirm below that the new file looks as you expect it to. Once confirmed, a copy of your old '.$filename.' file will be copied here:<br>"'.$old_file.'"<br>Please make note of this location so you can restore it if needed. To restore this file you will need to access your file manager from your host or through FTP, then simply delete the current '.$filename.' file and rename the copied version as '.$filename.'.' );
                         }
 
@@ -867,7 +882,7 @@ class DDTT_HTACCESS {
                         update_option( 'ddtt_htaccess_last_updated', $now );
 
                         // Turn the new lines into a string
-                        if ( file_put_contents( $file, $separate_safe_lines ) ) {
+                        if ( $wp_filesystem->put_contents( $file, $separate_safe_lines, FS_CHMOD_FILE ) ) {
                             ddtt_admin_notice( 'success', 'Your '.$filename.' file has been updated successfully!' );
                         } else {
                             ddtt_admin_notice( 'error', 'There was a problem updating your '.$filename.' file.' );
@@ -920,11 +935,6 @@ class DDTT_HTACCESS {
                 $pattern = '/.htaccess\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}/';
                 if ( preg_match( $pattern, $short ) ) {
 
-                    // Get the date from the filename
-                    // $date_string = str_replace( [ 'wp-config-', '.php' ], '', $short );
-                    // $d = explode( '-', $date_string );
-                    // $date = date( 'Y-m-d H:i:s', strtotime( $d[0].'-'.$d[1].'-'.$d[2].' '.$d[3].':'.$d[4].':'.$d[5] ) );
-                    
                     // Skip the first one as it will always be the most recent
                     $delete++;
                     if ( $delete == 1 ) {
@@ -932,7 +942,7 @@ class DDTT_HTACCESS {
                     }
 
                     // Otherwise delete it
-                    if ( file_exists( $backup ) && unlink( $backup ) ) {
+                    if ( file_exists( $backup ) && wp_delete_file( $backup ) ) {
                         $deleted[] = $short;
                     }
                 }

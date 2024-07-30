@@ -5,23 +5,6 @@
 .no-choice {
     display: none;
 }
-#value-warning {
-    background: yellow;
-    width: fit-content;
-    color: black;
-    font-weight: bold;
-    padding: 5px;
-    border-radius: 4px;
-    display: none;
-}
-.full-value {
-    display: none;
-}
-.view-more {
-    display: block;
-    margin-top: 1rem;
-    width: fit-content;
-}
 </style>
 
 <?php include 'header.php'; ?>
@@ -31,9 +14,6 @@
 $page = ddtt_plugin_options_short_path();
 $tab = 'postmeta';
 $current_url = ddtt_plugin_options_path( $tab );
-
-// Define the character limit
-$char_limit = 1000;
 
 // Hidden inputs
 $hidden_allowed_html = [
@@ -94,33 +74,23 @@ if ( $searched && ( !$post_id || $post_id == 0 || !get_post_status( $post_id ) )
         // Verify and sanitize
         $upd = sanitize_key( $_POST[ 'update' ] );
         $mk = sanitize_key( $_POST[ 'mk' ] );
+
+        // Verify and sanitize
+        $upd = sanitize_key( $_POST[ 'update' ] );
+        $mk = sanitize_key( $_POST[ 'mk' ] );
+
+        $val = isset( $_POST[ 'val' ] ) ? wp_kses_post( $_POST[ 'val' ] ) : false;
+        $val = trim( $val );
+        $val = stripslashes( $val );
+        $val = preg_replace( '/,(\s*[\]}])/', '$1', $val );
+        $decoded_val = json_decode( $val, true );
+        if ( json_last_error() === JSON_ERROR_NONE ) {
+            $val = $decoded_val;
+        }
+
         $type = isset( $_POST[ 'type' ] ) && $_POST[ 'type' ] !== '' ? sanitize_text_field( $_POST[ 'type' ] ) : false;
         $dels = isset( $_POST[ 'dels' ] ) && $_POST[ 'dels' ] !== '' ? sanitize_text_field( $_POST[ 'dels' ] ) : false;
-        $format = isset( $_POST[ 'format' ] ) && $_POST[ 'format' ] !== '' ? sanitize_key( $_POST[ 'format' ] ) : false;
-        $val = isset( $_POST[ 'val' ] ) ? wp_kses_post( $_POST[ 'val' ] ) : false;
 
-        // Format value if array or object
-        if ( $format == 'array' || $format == 'object' ) {
-            $val = trim( $val );
-            $val = stripslashes( $val );
-            $val = preg_replace( '/,(\s*[\]}])/', '$1', $val );
-            $assoc = $format == 'array';
-            $decoded_val = json_decode( $val, $assoc );
-            if ( json_last_error() === JSON_ERROR_NONE ) {
-                $val = $decoded_val;
-            } 
-
-        // String format
-        } else {
-            
-            // Check if it's a serialized array
-            $test_val = trim( $val );
-            $test_val = stripslashes( $test_val );
-            if ( ddtt_is_serialized_array( $test_val ) || ddtt_is_serialized_object( $test_val ) ) {
-                $val = unserialize( $test_val );
-            }
-        }
-        
         // Success notice
         $success = '';
 
@@ -457,10 +427,10 @@ if ( $valid_search ) {
 
     // Which choices do we have for updating?
     $update_choices = [
-        [ 'add', 'Add' ],
-        [ 'upd', 'Update' ],
-        [ 'del', 'Delete (Custom Meta Keys Only)' ],
-        [ 'dels', 'Delete Custom Meta Keys Starting with Keyword' ],
+        ['add', 'Add'],
+        ['upd', 'Update'],
+        ['del', 'Delete (Custom Meta Keys Only)'],
+        ['dels', 'Delete Custom Meta Keys Starting with Keyword'],
     ];
 
     // Hidden Post ID
@@ -470,7 +440,7 @@ if ( $valid_search ) {
     <br><hr><br></br>
     <h2>Update Meta Key</h2>
     <br><div class="post-update-form">
-    <form id="update-meta-form" method="post" action="<?php echo esc_url( $current_url.'&post_id='.absint( $post_id ) ); ?>">
+    <form method="post" action="<?php echo esc_url( $current_url.'&post_id='.absint( $post_id ) ); ?>">
         <table class="form-table">
             <tr valign="top">
                 <th scope="row">What do you want to do?</th>
@@ -479,7 +449,7 @@ if ( $valid_search ) {
                 foreach ( $update_choices as $update_choice ) {
                     ?>
                     <div class="update_choice">
-                        <input class="update_choice_input" name="update" type="radio" value="<?php echo esc_attr( $update_choice[0] ); ?>" id="update_choice_<?php echo esc_attr( $update_choice[0] ); ?>"> <label for="update_choice_<?php echo esc_attr( $update_choice[0] ); ?>"><?php echo esc_html( $update_choice[1] ); ?></label>
+                        <input class="update_choice_input" name="update" type="radio" value="<?php echo esc_attr( $update_choice[0] ); ?>" id="update_choice_<?php echo esc_attr( $update_choice[0] ); ?>"<?php echo esc_attr( ddtt_is_qs_checked( $upd, $update_choice[0] ) ); ?>> <label for="update_choice_<?php echo esc_attr( $update_choice[0] ); ?>"><?php echo esc_html( $update_choice[1] ); ?></label>
                     </div>
                     <?php
                 }
@@ -489,23 +459,35 @@ if ( $valid_search ) {
             
             <tr valign="top" class="metakey-tr" id="metakey-text">
                 <th scope="row"><label for="update_meta_key_text"><strong><span id="metakey-text-label">Meta Key</span></strong> <span class="required-text">(Required)</span></label></th>
-                <td><input type="text" name="" id="update_meta_key_text" value="<?php echo esc_attr( $mk ); ?>" size="50"  style="text-transform: lowercase"></td>
+                <td><input type="text" name="" id="update_meta_key_text" value="<?php echo esc_attr( $mk ); ?>" size="50"  style="text-transform: lowercase" required></td>
             </tr>
 
             <tr valign="top" class="metakey-tr" id="metakey-type">
-                <th scope="row"><label for="update_meta_key_type"><strong>Type</strong> <span class="required-text">(Required)</span>: </label></th>
-                <td><select name="type" id="update_meta_key_type">
-                    <option value="">-- Select One -- </option>
+                <th scope="row"><label for="update_meta_key_type"><strong>Meta Key Type</strong> <span class="required-text">(Required)</span>: </label></th>
+                <td><select name="type" id="update_meta_key_type" required>
+                    <option value="">-- Select One-- </option>
                     <option value="object">WP_POST OBJECT</option>
                     <option value="custom">POST CUSTOM METADATA</option>
                 </select>
-                <span class="field-desc break">Meta keys not listed are not available to edit due to safety vulnerabilities or the key is deprecated.</span></td>
+                <span class="object_keys_notice"><br>// Meta keys not listed are not available to edit due to safety vulnerabilities or the key is deprecated.</span></td>
+            </tr>
+
+            <tr valign="top" class="metakey-tr" id="metaval-type">
+                <th scope="row"><label for="update_meta_val_type"><strong>Value Type</strong> <span class="required-text">(Required)</span>: </label></th>
+                <td><select name="val-type" id="update_meta_val_type" required>
+                    <option value="">-- Select One-- </option>
+                    <option value="string">String</option>
+                    <option value="boolean">Boolean</option>
+                    <option value="array">Array</option>
+                    <option value="object">Object</option>
+                </select>
+                <span class="object_keys_notice"><br>// The type of value you are entering below.</span></td>
             </tr>
 
             <tr valign="top" class="metakey-tr metakey-type-selects" id="metakey-object-select">
                 <th scope="row"><label for="update_meta_key_object_select"><strong>Meta Key</strong> <span class="required-text">(Required)</span></label></th>
                 <td><select name="" id="update_meta_key_object_select">
-                    <option value="">-- Select a Meta Key -- </option>
+                    <option value="">-- Select a Meta Key-- </option>
                     <?php
                     foreach( $post as $key => $value ) {
                         if ( $key == 'ID' || $key == 'guid' ) {
@@ -522,7 +504,7 @@ if ( $valid_search ) {
             <tr valign="top" class="metakey-tr metakey-type-selects" id="metakey-custom-select">
                 <th scope="row"><label for="update_meta_key_custom_select"><strong>Meta Key</strong> <span class="required-text">(Required)</span></label></th>
                 <td><select name="" id="update_meta_key_custom_select">
-                    <option value="">-- Select a Custom Meta Key -- </option>
+                    <option value="">-- Select a Custom Meta Key-- </option>
                     <?php
                     foreach( $post_meta as $key => $value ) {
                         ?>
@@ -542,26 +524,16 @@ if ( $valid_search ) {
                 </select></td>
             </tr>
 
-            <tr valign="top" class="metakey-tr" id="metakey-format">
-                <th scope="row"><label for="update_meta_key_format"><strong>Format</strong> <span class="required-text">(Required)</span>: </label></th>
-                <td><select name="format" id="update_meta_key_format">
-                    <option value="string">String</option>
-                    <option value="array">Array - Enter Value as JSON String w/ Double Quotes</option>
-                    <option value="object">Object - Enter Value as JSON String w/ Double Quotes</option>
-                </select></td>
-            </tr>
-
-            <tr valign="top" class="metakey-tr" id="metakey-value">
-                <th scope="row"><label for="update_meta_key_value"><strong>Value</strong><br><br><em>(IMPORTANT: Please be careful updating array and object values. Test adding and updating one first before updating something critical. It's also a good idea to copy the serialized data just in case. You can enter a serialized array or object as a string. THIS DOES NOT WORK WELL WITH COMBINED ARRAY OF OBJECTS OR ARRAYS IN OBJECTS, SO DON'T TRY IT!)</em></label></th>
-                <td><textarea name="val" id="update_meta_key_value"></textarea>
-                <div id="value-warning"></div></td>
+            <tr valign="top" class="metakey-tr" id="metaval-type">
+                <th scope="row"><label for="update_meta_key_value"><strong>New Value</strong><br><em>(Please be careful updating values - if they appear different here then it will likely update the same way. Array values can be used, but must be in JSON format with double quotes.)</em></label></th>
+                <td><textarea name="val" id="update_meta_key_value"><?php echo wp_kses_post( $val ) ?? ''; ?></textarea></td>
             </tr>
         </table>
 
         <?php echo wp_kses( $hidden_path, $hidden_allowed_html ); ?>
         <?php echo wp_kses( $hidden_pid, $hidden_allowed_html ); ?>
         <?php wp_nonce_field( 'update_post_meta' ); ?>
-        <div class="no-choice meta-update-button"><br><br><input type="submit" value="Update" id="meta-update-button" class="button button-primary"/></div>
+        <div class="no-choice post-update-button"><br><br><input type="submit" value="Update" id="post-update-button" class="button button-primary"/></div>
     </form>
     </div>
     <br><br>
@@ -628,20 +600,10 @@ if ( $valid_search ) {
             </tr>
             <?php
             foreach( $post as $key => $value ) {
-                // Check if the value exceeds the character limit
-                if ( strlen( $value ) > $char_limit ) {
-                    if ( $key == 'post_content' ) {
-                        $value = esc_html( $value );
-                    } 
-                    $short_value = substr( $value, 0, $char_limit ) . '... ';
-                    $view_more_link = '<a href="#" class="view-more">View More</a>';
-                    $full_value = '<span class="full-value">'.$value.'</span>';
-                    $value = $short_value.$full_value.$view_more_link;
-                }
                 ?>
                 <tr>
                     <td><span class="highlight-variable"><?php echo esc_attr( $key ); ?></span></td>
-                    <td><?php echo wp_kses_post( $value ); ?></td>
+                    <td><?php echo esc_html( $value ); ?></td>
                 </tr>
                 <?php
             }
@@ -660,6 +622,13 @@ if ( $valid_search ) {
             </tr>
             <?php
             foreach( $post_meta as $key => $value ) {
+                $value = $value[0];
+                if ( ddtt_is_serialized_array( $value ) && !empty( unserialize( $value ) ) ) {
+                    $value = $value.'<br><code><pre>'.print_r( unserialize( $value ), true ).'</pre></code>';
+                } else {
+                    $value = esc_html( $value );
+                }
+
                 // Hide prefix
                 $hide_this = false;
                 if ( $hide_pf ) {
@@ -678,22 +647,6 @@ if ( $valid_search ) {
                 }
                 if ( $hide_this ) {
                     continue;
-                }
-
-                // Get the value
-                $value = $value[0];
-                if ( ( ddtt_is_serialized_array( $value ) || ddtt_is_serialized_object( $value ) ) && !empty( unserialize( $value ) ) ) {
-                    $value = $value.'<br><code><pre>'.print_r( unserialize( $value ), true ).'</pre></code>';
-                } else {
-                    $value = esc_html( $value );
-                }
-
-                // Check if the value exceeds the character limit
-                if ( strlen( $value ) > $char_limit ) {
-                    $short_value = substr( $value, 0, $char_limit ) . '... ';
-                    $view_more_link = '<a href="#" class="view-more">View More</a>';
-                    $full_value = '<span class="full-value">'.$value.'</span>';
-                    $value = $short_value.$full_value.$view_more_link;
                 }
                 ?>
                 <tr>
@@ -755,5 +708,198 @@ if ( $valid_search ) {
             ?>
         </table>
     </div>
+
+    <script>
+    // Radio buttons
+    const selectUpdates = document.querySelectorAll( ".update_choice_input" );
+    for( const selectUpdate of selectUpdates ) {
+
+        // Unselect items on load
+        selectUpdate.checked = false;
+
+        // Show submit button for update form
+        selectUpdate.onclick = function() {
+            ddtt_show_hide_element( ".update_choice_input", ".post-update-button" );
+        }
+    }
+
+    // Update Form
+    const mkText = document.getElementById( "metakey-text" );
+    const mkTextLabel = document.getElementById( "metakey-text-label" );
+    const mkTextInput = document.getElementById( "update_meta_key_text" );
+    const mkType = document.getElementById( "metakey-type" );
+    const mkTypeSelect = document.getElementById( "update_meta_key_type" );
+    const mkDelsChoice = document.getElementById( "metakey-dels-choice" );
+    const mkDelsChoiceSelect = document.getElementById( "update_meta_key_dels_choice" );
+    const mkValue = document.getElementById( "metakey-value" );
+    const mkObjectSelect = document.getElementById( "metakey-object-select" );
+    const mkObjectSelectInput = document.getElementById( "update_meta_key_object_select" );
+    const mkCustomSelect = document.getElementById( "metakey-custom-select" );
+    const mkCustomSelectInput = document.getElementById( "update_meta_key_custom_select" );
+    
+    // Prevent spaces in new meta keys
+    jQuery( "#update_meta_key_text" ).keyup( function () {
+        this.value = this.value.replace(/ /g, "_");
+    } );
+
+    // Conditional Logic
+    <?php
+    foreach ( $update_choices as $update_choice ) {
+        ?>
+        const update_<?php echo esc_attr( $update_choice[0] ); ?> = document.getElementById( "update_choice_<?php echo esc_attr( $update_choice[0] ); ?>" );
+        update_<?php echo esc_attr( $update_choice[0] ); ?>.addEventListener( "change", function() {
+
+            // Add
+            if ( "<?php echo esc_attr( $update_choice[0] ); ?>" == 'add' ) {
+                if ( update_<?php echo esc_attr( $update_choice[0] ); ?>.checked ) {
+                    mkText.style.display = "revert";
+                    mkType.style.display = "none";
+                    mkValue.style.display = "revert";
+                    mkObjectSelect.style.display = "none";
+                    mkCustomSelect.style.display = "none";
+                    mkDelsChoice.style.display = "none";
+
+                    mkTextLabel.innerText = 'Meta Keys';
+                    
+                    mkTypeSelect.value = '';
+
+                    mkTextInput.setAttribute( "name", "mk" );
+                    mkObjectSelectInput.setAttribute( "name", "" );
+                    mkCustomSelectInput.setAttribute( "name", "" );
+
+                    mkTextInput.required = true;
+                    mkTypeSelect.required = false;
+                    mkObjectSelectInput.required = false;
+                    mkCustomSelectInput.required = false;
+                    mkDelsChoiceSelect.required = false;
+                }
+            }
+
+            // Update
+            if ( "<?php echo esc_attr( $update_choice[0] ); ?>" == 'upd' ) {
+                if ( update_<?php echo esc_attr( $update_choice[0] ); ?>.checked ) {
+                    mkText.style.display = "none";
+                    mkType.style.display = "revert";
+                    mkValue.style.display = "revert";
+                    mkObjectSelect.style.display = "none";
+                    mkCustomSelect.style.display = "none";
+                    mkDelsChoice.style.display = "none";
+
+                    mkTextInput.setAttribute( "name", "" );
+                    mkObjectSelectInput.setAttribute( "name", "" );
+                    mkCustomSelectInput.setAttribute( "name", "" );
+
+                    mkTextInput.required = false;
+                    mkTypeSelect.required = true;
+                    mkDelsChoiceSelect.required = false;
+                }
+            }
+
+            // Delete
+            if ( "<?php echo esc_attr( $update_choice[0] ); ?>" == 'del' ) {
+                if ( update_<?php echo esc_attr( $update_choice[0] ); ?>.checked ) {
+                    mkText.style.display = "none";
+                    mkType.style.display = "none";
+                    mkValue.style.display = "none";
+                    mkObjectSelect.style.display = "none";
+                    mkCustomSelect.style.display = "revert";
+                    mkDelsChoice.style.display = "none";
+
+                    mkTypeSelect.value = '';
+
+                    mkTextInput.setAttribute( "name", "" );
+                    mkObjectSelectInput.setAttribute( "name", "" );
+                    mkCustomSelectInput.setAttribute( "name", "mk" );
+
+                    mkTextInput.required = false;
+                    mkTypeSelect.required = false;
+                    mkObjectSelectInput.required = false;
+                    mkCustomSelectInput.required = true;
+                    mkDelsChoiceSelect.required = false;
+                }
+            }
+
+            // Delete Starting With
+            if ( "<?php echo esc_attr( $update_choice[0] ); ?>" == 'dels' ) {
+                if ( update_<?php echo esc_attr( $update_choice[0] ); ?>.checked ) {
+                    mkText.style.display = "revert";
+                    mkType.style.display = "none";
+                    mkValue.style.display = "none";
+                    mkObjectSelect.style.display = "none";
+                    mkCustomSelect.style.display = "none";
+                    mkDelsChoice.style.display = "revert";
+
+                    mkTextLabel.innerText = 'All Custom Meta Keys Starting With';
+
+                    mkTypeSelect.value = '';
+
+                    mkTextInput.setAttribute( "name", "mk" );
+                    mkObjectSelectInput.setAttribute( "name", "" );
+                    mkCustomSelectInput.setAttribute( "name", "" );
+
+                    mkTextInput.required = true;
+                    mkTypeSelect.required = false;
+                    mkObjectSelectInput.required = false;
+                    mkCustomSelectInput.required = false;
+                    mkDelsChoiceSelect.required = true;
+                }
+            }
+        } );
+        <?php
+    }
+    ?>
+
+    // Show hide other select fields
+    mkTypeSelect.addEventListener( "change", function() {
+        if ( mkTypeSelect.value == 'object' ) {
+            mkObjectSelect.style.display = "revert";
+            mkCustomSelect.style.display = "none";
+
+            mkObjectSelectInput.setAttribute( "name", "mk" );
+            mkCustomSelectInput.setAttribute( "name", "" );
+
+            mkObjectSelectInput.required = true;
+            mkCustomSelectInput.required = false;
+
+        } else if ( mkTypeSelect.value == 'custom' ) {
+            mkObjectSelect.style.display = "none";
+            mkCustomSelect.style.display = "revert";
+
+            mkObjectSelectInput.setAttribute( "name", "" );
+            mkCustomSelectInput.setAttribute( "name", "mk" );
+
+            mkObjectSelectInput.required = false;
+            mkCustomSelectInput.required = true;
+
+        } else {
+            mkObjectSelect.style.display = "none";
+            mkCustomSelect.style.display = "none";
+
+            mkObjectSelectInput.setAttribute( "name", "" );
+            mkCustomSelectInput.setAttribute( "name", "" );
+
+            mkObjectSelectInput.required = false;
+            mkCustomSelectInput.required = false;
+        }
+    } );
+
+    // Show submit button for clear tax terms
+    const selectTax = document.getElementById( "clear-terms-field" );
+    selectTax.addEventListener( "change", function() {
+        ddtt_show_hide_element( "#clear-terms-field", ".clear-taxonomies-button" );
+    } );
+
+    // Toggle function
+    function ddtt_show_hide_element( $select_element, $element_to_toggle ) {
+        const select = document.querySelector( $select_element );
+        const element = document.querySelector( $element_to_toggle );
+        if ( select.value && select.value != "" ) {
+            element.style.display = "revert";
+        } else {
+            element.style.display = "none";
+        }
+    }
+    </script>
+
     <?php
 }

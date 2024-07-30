@@ -3,7 +3,7 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.7.8
+ * Version:             1.8.0
  * Requires at least:   5.9.0
  * Tested up to:        6.6.1
  * Requires PHP:        7.4
@@ -25,29 +25,23 @@ if ( !defined( 'ABSPATH' ) ) {
  */
 
 // Versions
-define( 'DDTT_VERSION', '1.7.8' );
+define( 'DDTT_VERSION', '1.8.0' );
 define( 'DDTT_BETA', false );
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
 // Prevent loading the plugin if PHP version is not minimum
 if ( version_compare( PHP_VERSION, DDTT_MIN_PHP_VERSION, '<=' ) ) {
-    add_action(
-        'admin_init',
-        static function() {
-            deactivate_plugins( plugin_basename( __FILE__ ) );
-        }
-    );
-    add_action(
-        'admin_notices',
-        static function() {
-            echo wp_kses_post(
-            sprintf(
-                '<div class="notice notice-error"><p>%s</p></div>',
-                __( '"'.DDTT_NAME.'" requires PHP '.DDTT_MIN_PHP_VERSION.' or newer.', 'dev-debug-tools' )
-            )
-            );
-        }
-    );
+    add_action( 'admin_init', static function() {
+        deactivate_plugins( plugin_basename( __FILE__ ) );
+    } );
+    add_action( 'admin_notices', static function() {
+        /* translators: 1: Plugin name, 2: Minimum PHP version */
+        $message = sprintf( __( '"%1$s" requires PHP %2$s or newer.', 'dev-debug-tools' ),
+            DDTT_NAME,
+            DDTT_MIN_PHP_VERSION
+        );
+        echo '<div class="notice notice-error"><p>'.esc_html( $message ).'</p></div>';
+    } );
     return;
 }
 
@@ -65,6 +59,7 @@ define( 'DDTT_DISCORD_SUPPORT_URL', 'https://discord.gg/3HnzNEJVnR' );
 
 // Fetch site url only once
 $site_url = site_url( '/' );
+$ip = isset( $_SERVER[ 'SERVER_ADDR' ] ) ? filter_var( $_SERVER[ 'SERVER_ADDR' ], FILTER_VALIDATE_IP ) : '0.0.0.0';
 
 // Define core WordPress URLs relative to site URL
 define( 'DDTT_ABSPATH', ddtt_canonical_pathname( ABSPATH ) );
@@ -74,7 +69,6 @@ define( 'DDTT_INCLUDES_URL', str_replace( $site_url, '', rtrim( includes_url(), 
 define( 'DDTT_ADMIN_INCLUDES_URL', trailingslashit( ABSPATH.str_replace( $site_url, '', ddtt_admin_url( 'includes/' ) ) ) );    //: /abspath/.../public_html/wp-admin/includes/
 define( 'DDTT_PLUGINS_URL', str_replace( $site_url, '', plugins_url() ) );                                                      //: wp-content/plugins
 define( 'DDTT_MU_PLUGINS_DIR', ABSPATH.DDTT_CONTENT_URL.'/mu-plugins/' );                                                       //: /abspath/.../public_html/wp-content/mu-plugins/
-define( 'DDTT_SERVER_IP', filter_var( $_SERVER[ 'SERVER_ADDR' ], FILTER_VALIDATE_IP ) );                                        //: 0.0.0.0
 
 // Define plugin specific paths
 define( 'DDTT_PLUGIN_ABSOLUTE', __FILE__ );                                                                                     //: /abspath/.../public_html/wp-content/plugins/dev-debug-tools/dev-debug-tools.php)
@@ -159,9 +153,9 @@ function ddtt_plugin_options_path( $tab = null ) {
  * @return string
  */
 function ddtt_plugin_options_short_path( $tab = null ) {
-    $incl_tab = !is_null($tab) ? '&tab='.sanitize_html_class( $tab ) : '';
+    $incl_tab = !is_null( $tab ) ? '&tab='.sanitize_html_class( $tab ) : '';
     return DDTT_TEXTDOMAIN.$incl_tab;
-} // End ddtt_plugin_options_path()
+} // End ddtt_plugin_options_short_path()
 
 
 /**
@@ -171,11 +165,11 @@ function ddtt_plugin_options_short_path( $tab = null ) {
  */
 function ddtt_multisite_suffix() {
     if ( is_network_admin() ) {
-        $sfx = __( ' <em>- Network</em>', 'dev-debug-tools' );
+        $sfx = ' <em>' . __( '- Network', 'dev-debug-tools' ) . '</em>';
     } elseif ( is_multisite() && is_main_site() ) {
-        $sfx = __( ' <em>- Primary</em>', 'dev-debug-tools' );
+        $sfx = ' <em>' . __( '- Primary', 'dev-debug-tools' ) . '</em>';
     } elseif ( is_multisite() && !is_main_site() ) {
-        $sfx = __( ' <em>- Subsite</em>', 'dev-debug-tools' );
+        $sfx = ' <em>' . __( '- Subsite', 'dev-debug-tools' ) . '</em>';
     } else {
         $sfx = '';
     }

@@ -2,6 +2,16 @@
 // Page header
 include 'header.php';
 
+// Get the file
+if ( !function_exists( 'WP_Filesystem' ) ) {
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+}
+global $wp_filesystem;
+if ( !WP_Filesystem() ) {
+    ddtt_write_log( 'Failed to initialize WP_Filesystem' );
+    return false;
+}
+
 // Filename of the testing playground
 $filename = 'TESTING_PLAYGROUND.php';
 
@@ -11,15 +21,15 @@ $local_file_path2 = ABSPATH.str_replace( site_url( '/' ), '', content_url() ).'/
 $plugin_file_path = DDTT_PLUGIN_INCLUDES_PATH.$filename;
 
 // Check if there is a local playground in theme folder
-if ( is_readable( $local_file_path ) ) {
+if ( $wp_filesystem->exists( $local_file_path ) ) {
     $file = $local_file_path;
 
 // Check if there is a local playground in /wp-content/
-} elseif ( is_readable( $local_file_path2 ) ) {
+} elseif ( $wp_filesystem->exists( $local_file_path2 ) ) {
     $file = $local_file_path2;
 
 // Otherwise make sure the plugin's playground is available
-} elseif ( is_readable( $plugin_file_path ) ) {
+} elseif ( $wp_filesystem->exists( $plugin_file_path ) ) {
     $file = $plugin_file_path;
 
 // Else we failed
@@ -34,7 +44,7 @@ if ( $file ) {
     include $file;
 
     // Get the file
-    $contents = file_get_contents( $file );
+    $contents = $wp_filesystem->get_contents( $file );
 
     // Separate each line into an array item
     $file_lines = explode( PHP_EOL, $contents );
@@ -97,28 +107,39 @@ if ( $file ) {
         $active_theme = str_replace( '%2F', '/', rawurlencode( get_stylesheet() ) );
         $active_theme_path = '/'.$themes_root_uri.$active_theme.'/';
 
+        // Url
+        $plugin_editor_path = add_query_arg( 'file', DDTT_TEXTDOMAIN.'%2Fincludes%2FTESTING_PLAYGROUND.php&plugin='.DDTT_TEXTDOMAIN.'%2F'.DDTT_TEXTDOMAIN.'.php', '/'.DDTT_ADMIN_URL.'/plugin-editor.php' );
+
         // Add instructions
         echo '<div class="snippet_container">
             <h3>How to use this page as a PHP playground:</h3>
             <br>
             <h4>Method 1</h4>
-            <br>1. Go to the <a href="/'.esc_attr( DDTT_ADMIN_URL ).'/plugin-editor.php?file='.esc_attr( DDTT_TEXTDOMAIN ).'%2Fincludes%2FTESTING_PLAYGROUND.php&plugin='.esc_attr( DDTT_TEXTDOMAIN ).'%2F'.esc_attr( DDTT_TEXTDOMAIN ).'.php" target="_blank">Plugin File Editor</a>, or use FTP to access the plugin root folder:
-            <br><strong><code class="hl">/'.esc_attr( DDTT_PLUGINS_URL ).'/'. esc_attr( DDTT_TEXTDOMAIN ) .'/</code></strong>
-            <br><br>2. Open the <strong><code class="hl">"'.esc_attr( $filename ).'"</code></strong> file
-            <br><br>3. Edit the file by adding your test code <strong>AFTER</strong> where it says:
+            
+            <p>1. Use FTP or your host\'s File Manager to access the plugin root folder:<br>
+            <strong><code class="hl">/'.esc_attr( DDTT_PLUGINS_URL ).'/'. esc_attr( DDTT_TEXTDOMAIN ) .'/</code></strong></p>
+            
+            <p>2. Open the <strong><code class="hl">"'.esc_attr( $filename ).'"</code></strong></p>
+            
+            <p>3. Edit the file by adding your test code <strong>AFTER</strong> where it says:
             <span class="comment-out">
             <br>//////////////  '.esc_html( $test_line ).'  //////////////
-            </span>
-            <br><br><em>Note: These instructions will disappear if you have any non-commented out code below this line.</em>
-            <br><br>4. Save the file and refresh this page.
+            </span></p>
+
+            <p><em>Note: These instructions will disappear if you have any non-commented out code below this line.</em></p>
+            
+            <p>4. Save the file and refresh this page.</p><br><br>
+
+            <p><strong>Here is what the file looks like (not recommended to edit directly, though): <a href="'.esc_url( $plugin_editor_path ).'" target="_blank">Plugin File Editor</a></strong></p>
 
             <br><br><hr>
             <h4>Method 2</h4>
-            Do the same thing as Method 1, but download the file below and upload it to your current theme\'s root folder (<strong><code class="hl">'.esc_attr( $active_theme_path ).'</code></strong>) instead.<br>The benefit of doing it this way is that it won\'t reset when the plugin is updated.
-            <br><br>
-            <form method="post">
-                '.wp_nonce_field( DDTT_GO_PF.'testing_playground_dl', '_wpnonce' ).'
-                <input type="submit" value="Download '.esc_attr( $filename ).'" name="ddtt_download_testing_pg" class="button button-primary"/>
+            
+            <p>Do the same thing as Method 1, but download the file below and upload it to your current theme\'s root folder (<strong><code class="hl">'.esc_attr( $active_theme_path ).'</code></strong>) instead.<br>The benefit of doing it this way is that it won\'t reset when the plugin is updated.</p><br>
+            
+            <form method="post">';
+                wp_nonce_field( DDTT_GO_PF.'testing_playground_dl' );
+                echo '<input type="submit" value="Download '.esc_attr( $filename ).'" name="ddtt_download_testing_pg" class="button button-primary"/>
             </form>
         </div>';
     }
@@ -127,4 +148,3 @@ if ( $file ) {
 } else {
     echo 'Uh oh! The '.esc_attr( $filename ).' file is missing.';
 }
-?>

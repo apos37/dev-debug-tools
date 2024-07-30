@@ -20,28 +20,32 @@ $hidden_path = '<input type="hidden" name="page" value="'.$page.'">
 if ( $clear = ddtt_get( 'clear-autodrafts' ) ) {
     if ( $clear == 'all' ) {
         ddtt_delete_autodrafts( true );
-        $clear_notice = 'All auto-drafts, including changesets, have been deleted.';
+        $clear_notice = __( 'All auto-drafts, including changesets, have been deleted.', 'dev-debug-tools' );
     } elseif ( $clear == 'seven' ) {
         ddtt_delete_autodrafts( false );
-        $clear_notice = 'Any auto-drafts older than 7 days, including changesets, have been .';
+        $clear_notice = __( 'Any auto-drafts older than 7 days, including changesets, have been .', 'dev-debug-tools' );
     }
     ddtt_remove_qs_without_refresh( 'clear-autodrafts' );
     ?>
     <div class="notice notice-success is-dismissible">
-    <p><?php _e( $clear_notice, 'dev-debug-tools' ); ?></p>
+    <p><?php echo esc_html( $clear_notice ); ?></p>
     </div>
     <?php
 } elseif ( $delete_post_id = ddtt_get( 'clear-autodraft' ) ) {
     if ( wp_delete_post( $delete_post_id, true ) ) {
         ?>
         <div class="notice notice-success is-dismissible">
-        <p><?php _e( 'Auto-Draft Post ID <strong>'.$delete_post_id.'</strong> has been deleted.', 'dev-debug-tools' ); ?></p>
+        <p><?php 
+        /* Translators: 1: Post ID */
+        echo esc_html( sprintf( __( 'Auto-Draft Post ID <strong>%s</strong> has been deleted.', 'dev-debug-tools' ) ), $delete_post_id ); ?></p>
         </div>
         <?php
     } else {
         ?>
         <div class="notice notice-error is-dismissible">
-        <p><?php _e( 'Auto-Draft Post ID <strong>'.$delete_post_id.'</strong> cannot be deleted.', 'dev-debug-tools' ); ?></p>
+        <p><?php 
+        /* Translators: 1: Post ID */
+        echo esc_html( sprintf( __( 'Auto-Draft Post ID <strong>%s</strong> cannot be deleted.', 'dev-debug-tools' ) ), $delete_post_id ); ?></p>
         </div>
         <?php
     }
@@ -130,7 +134,7 @@ if ( !empty( $post_ids ) ) {
                 <td><a href="<?php echo esc_url( ddtt_plugin_options_path( 'postmeta' ) ); ?>&post_id=<?php echo absint( $post_id ); ?>"><?php echo absint( $post_id ); ?></a></td>
                 <td><?php echo esc_html( $title ); ?></td>
                 <td><span class="highlight-variable"><?php echo esc_html( $post_type ); ?></span></td>
-                <td><?php echo esc_html( date( 'n/j/Y', strtotime( $post->post_date ) ) ); ?></td>
+                <td><?php echo esc_html( gmdate( 'n/j/Y', strtotime( $post->post_date ) ) ); ?></td>
                 <td><?php echo esc_html( $author_name ); ?></td>
                 <td><a href="<?php echo esc_url( $current_url ); ?>&clear-autodraft=<?php echo absint( $post_id ); ?>" class="button button-primary clear-buttons">Delete Post</a></td>
             </tr>

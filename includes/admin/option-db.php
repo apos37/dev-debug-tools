@@ -1,6 +1,6 @@
 <?php include 'header.php'; 
 
-// Build the current url
+// Build the current URL
 $page = ddtt_plugin_options_short_path();
 $tab = 'db';
 $current_url = ddtt_plugin_options_path( $tab );
@@ -22,7 +22,7 @@ $db_info = [
     ],
 ];
 
-// Return the table
+// Output the table info
 echo '<div class="full_width_container">
 <table class="admin-large-table">
     <tr>
@@ -30,35 +30,21 @@ echo '<div class="full_width_container">
         <th>Value</th>
     </tr>';
 
-    // Cycle through the constants
-    foreach ( $db_info as $info ) {
-    
-        // Add it
-        echo '<tr>
-            <td><span class="highlight-variable">'.esc_attr( $info[ 'label' ] ).'</span></td>
-            <td>'.wp_kses( $info[ 'value' ], [ 'span' => [ 'class' => [] ] ] ).'</td>
-        </tr>';
-    }
+foreach ( $db_info as $info ) {
+    echo '<tr>
+        <td><span class="highlight-variable">'.esc_attr( $info[ 'label' ] ).'</span></td>
+        <td>'.wp_kses( $info[ 'value' ], [ 'span' => [ 'class' => [] ] ] ).'</td>
+    </tr>';
+}
 
 echo '</table>
 </div><br><br>';
 
-// Create connection
-$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+// Get table names using $wpdb
+$tables = $wpdb->get_col( "SHOW TABLES LIKE '{$wpdb->prefix}%'" );
 
-// Check connection
-if ( $conn->connect_error ) {
-  die( "Connection failed: " . $conn->connect_error );
-}
-
-// Get table names
-$sql = "SHOW TABLES LIKE '{$wpdb->prefix}%'";
-$result = $conn->query( $sql );
-
-// If we found any
-if ( $result->num_rows > 0 ) {
-
-    // Start the table
+// If we found any tables
+if ( ! empty( $tables ) ) {
     echo '<div class="full_width_container">
         <table class="admin-large-table">
             <tr>
@@ -66,34 +52,27 @@ if ( $result->num_rows > 0 ) {
                 <th>Columns</th>
             </tr>';
 
-            // Loop through each table
-            while( $row = $result->fetch_row() ) {
-                $table_name = $row[0];
-        
-                // Query to get columns of the current table
-                $sql_columns = "SHOW COLUMNS FROM `$table_name`";
-                $result_columns = $conn->query( $sql_columns );
+    // Loop through each table
+    foreach ( $tables as $table_name ) {
+        // Query to get columns of the current table
+        $columns = $wpdb->get_results( "SHOW COLUMNS FROM `{$table_name}`", ARRAY_A );
 
-                // Validate
-                if ( $result_columns->num_rows > 0 ) {
-                    
-                    // Fetch each column name
-                    $table_columns = [];
-                    while ( $col_row = $result_columns->fetch_assoc() ) {
-                        $table_columns[] = $col_row[ 'Field' ];
-                    }
-
-                    // Output table name and columns
-                    echo '<tr>
-                        <td><span class="highlight-variable">'.esc_attr( $table_name ).'</span></td>
-                        <td>'.wp_kses( implode( '<br>', $table_columns ), [ 'br' => [] ] ).'</td>
-                    </tr>';
-                }
+        // Validate
+        if ( ! empty( $columns ) ) {
+            // Fetch each column name
+            $table_columns = [];
+            foreach ( $columns as $col ) {
+                $table_columns[] = $col[ 'Field' ];
             }
+
+            // Output table name and columns
+            echo '<tr>
+                <td><span class="highlight-variable">'.esc_attr( $table_name ).'</span></td>
+                <td>'.wp_kses( implode( '<br>', $table_columns ), [ 'br' => [] ] ).'</td>
+            </tr>';
+        }
+    }
 
     echo '</table>
     </div>';
 }
-
-// Close the connection
-$conn->close();

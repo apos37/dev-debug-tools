@@ -111,8 +111,8 @@ $examples = [
 
             // Print it
             echo '<tr>
-                <td>'.htmlentities( $string ).'</td>
-                <td>'.htmlentities( $regex ).'</td>
+                <td>'.esc_html( htmlentities( $string ) ).'</td>
+                <td>'.esc_html( htmlentities( $regex ) ).'</td>
                 <td><code style="padding: 0;">Array
                     <br>(
                     <br>'.wp_kses_post( implode( '<br>', $print ) ).'

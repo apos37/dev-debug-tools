@@ -24,8 +24,26 @@ if ( $activated_date = get_option( 'ddtt_plugin_activated' ) ) {
 // Add CSS for just this page
 echo '<style>h3 { margin-bottom: 0; }</style>';
 
-// Fetch the changelog
-$file = file_get_contents( DDTT_PLUGIN_ROOT . 'readme.txt' ); 
+// Initialize the filesystem
+global $wp_filesystem;
+if ( empty( $wp_filesystem ) ) {
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+    WP_Filesystem();
+}
+if ( ! $wp_filesystem ) {
+    echo '<p>' . esc_html__( 'Unable to initialize the filesystem.', 'admin-help-docs' ) . '</p>';
+    return;
+}
+
+// Get the file content
+$file_path = DDTT_PLUGIN_ROOT.'readme.txt';
+$file = $wp_filesystem->get_contents( $file_path );
+
+if ( false === $file ) {
+    echo '<p>' . esc_html__( 'Unable to fetch the changelog at this time.', 'admin-help-docs' ) . '</p>';
+    return;
+}
+// Extract the changelog
 $changelog = strstr( $file, '= '. DDTT_VERSION .' =' );
 
 // Replace the versions and bullets
@@ -33,4 +51,4 @@ $changelog = str_replace( '= ', '<h3>', $changelog );
 $changelog = str_replace( ' =', '</h3>', $changelog );
 
 // Add the content
-echo '<br><br><br>'.wp_kses_post( nl2br($changelog) );
+echo '<br><br><br>' . wp_kses_post( nl2br( $changelog ) );

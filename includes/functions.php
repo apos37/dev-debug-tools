@@ -37,9 +37,9 @@ function ddtt_alert( $msg, $user_id = null ) {
  */
 function ddtt_console( $msg ) {
     if ( is_array( $msg ) ) {
-        $msg = json_encode( $msg );
+        $msg = wp_json_encode( $msg );
     } elseif ( is_object( $msg ) ) {
-        $msg = json_encode( $msg );
+        $msg = wp_json_encode( $msg );
     }
     echo '<script type="text/javascript">console.log("'.wp_kses_post( str_replace( '"', '\"', $msg ) ).'");</script>';
 } // End ddtt_console()
@@ -274,16 +274,16 @@ function ddtt_remove_qs_without_refresh( $qs = null, $is_admin = true ) {
 function ddtt_convert_timezone( $date = null, $format = 'F j, Y g:i A', $timezone = null ) {
     // Get today as default
     if ( is_null( $date ) || !$date ) {
-        $date = date( 'Y-m-d H:i:s' );
+        $date = gmdate( 'Y-m-d H:i:s' );
 
     // Or else format it properly for converting purposes
     } else {
 
         // Check if the date is a timestamp
         if ( is_numeric( $date ) && (int)$date == $date ) {
-            $date = date( 'Y-m-d H:i:s', $date );
+            $date = gmdate( 'Y-m-d H:i:s', $date );
         } else {
-            $date = date( 'Y-m-d H:i:s', strtotime( $date ) );
+            $date = gmdate( 'Y-m-d H:i:s', strtotime( $date ) );
         }
     }
 
@@ -314,27 +314,29 @@ function ddtt_convert_timezone( $date = null, $format = 'F j, Y g:i A', $timezon
  * @param string $qs_param
  * @param string $comparison
  * @param string $equal_to
+ * @param string|null $nonce_action
+ * @param string|null $nonce_value
  * @return string|false
  */
-function ddtt_get( $qs_param, $comparison = '!=', $equal_to = '' ) {
+function ddtt_get( $qs_param, $comparison = '!=', $equal_to = '', $nonce_action = null, $nonce_value = '_wpnonce' ) {
+    // Check nonce if action and value are provided
+    if ( $nonce_action && $nonce_value ) {
+        if ( !isset( $_GET[ $nonce_value ] ) || !wp_verify_nonce( $_GET[ $nonce_value ], $nonce_action ) ) {
+            error_log( 'Nonce verification failed on ddtt_get()' );
+            return false;
+        }
+    }
+    
     // Get if the query string exists at all
     if ( isset( $_GET[ $qs_param ] ) ) {
-        $_GET = filter_input_array( INPUT_GET, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-        $get = $_GET[ $qs_param ];
+        $fitered_get = filter_input_array( INPUT_GET, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+        $get = $fitered_get[ $qs_param ];
 
         // How are we comparing?
         if ( $comparison == '!=' ) {
-            if ( $get != $equal_to ) {
-                return $get;
-            } else {
-                return false;
-            }
+            return ( $get != $equal_to ) ? $get : false;
         } elseif ( $comparison == '==' ) {
-            if ( $get == $equal_to ) {
-                return $get;
-            } else {
-                return false;
-            }
+            return ( $get == $equal_to ) ? $get : false;
         } else {
             return false;
         }
@@ -841,7 +843,7 @@ function ddtt_get_files( $keyword, $exclude = [], $path = false ) {
  * @param string $subject
  * @return void
  */
-function ddtt_debug_form_post( $email, $test_number = 1, $subject = 'Test Form $_POST ' ){
+function ddtt_debug_form_post( $email, $test_number = 1, $subject = 'Test Form ' ) {
     // First check if $_POST exists
     if ( $_POST ) {
         $_POST = filter_input_array( INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -1288,41 +1290,22 @@ function ddtt_get_form_ids_on_page( $post_id = null ) {
     }
 
     // Method 2
-    if ( empty( $findings ) ) {
+    $content = apply_filters( 'the_content', $content );
+    // $content = htmlspecialchars( $content );
 
-        // Try to get the content another way
-        $content = apply_filters( 'the_content', $content );
-        $content = htmlspecialchars( $content );
+    // Regex for the html
+    $regex = '/id=[\'"]gform_wrapper_(\d+)[\'"]/';
+    if ( preg_match_all( $regex, $content, $matches ) ) {
 
-        // Regex for the html
-        $regex = '/id=("|\'|"([^"]*)\s)gform_wrapper_[0-9]*("|\'|\s([^"]*)"|\')/';
-        if ( preg_match_all( $regex, $content, $matches ) ) {
+        // Cycle through the matches and find the id
+        foreach ( $matches[1] as $form_id ) {
 
-            // Cycle through the shortcodes and find the id
-            foreach ( $matches[0] as $match ) {
-
-                // Check if the id attribute exists
-                if ( strpos( $match, 'id=' ) !== false ) {
-
-                    // Return id="#" in an array
-                    if ( preg_match('/".*?"|\'.*?\'/', $match, $attr ) ) {
-
-                        // Rename the var
-                        $attribute = trim( $attr[0], '\'"');
-
-                        // If so, let's get the value
-                        if ( preg_match( '/\d{1,}+/', $attribute, $form_id_array ) ) {
-                            $form_id = $form_id_array[0];
-
-                            // Add to array
-                            $findings[] = $form_id;
-                        }
-                    }
-                }
+            // Add to array
+            if ( !in_array( $form_id, $findings ) ) {
+                $findings[] = $form_id;
             }
         }
     }
-
     // Return the array
     return $findings;
 } // End ddtt_get_form_ids_on_page()
@@ -1436,7 +1419,7 @@ function ddtt_convert_timestamp_to_string( $ts, $short = false ) {
         if ( $day_diff < 7 ) return $day_diff.$days;
         if ( $day_diff < 31 ) return ceil( $day_diff / 7 ).$weeks;
         if ( $day_diff < 60 ) return 'Last month';
-        return date( 'F Y', $ts );
+        return gmdate( 'F Y', $ts );
 
     // Or if it's the future
     } else {
@@ -1449,11 +1432,11 @@ function ddtt_convert_timestamp_to_string( $ts, $short = false ) {
             if ( $diff < 86400 ) return 'In ' . floor( $diff / 3600 ) . ' hours';
         }
         if ( $day_diff == 1 ) return 'Tomorrow';
-        if ( $day_diff < 4 ) return date( 'l', $ts );
-        if ( $day_diff < 7 + ( 7 - date( 'w' ) ) ) return 'Next week';
+        if ( $day_diff < 4 ) return gmdate( 'l', $ts );
+        if ( $day_diff < 7 + ( 7 - gmdate( 'w' ) ) ) return 'Next week';
         if ( ceil( $day_diff / 7 ) < 4 ) return 'In ' . ceil( $day_diff / 7 ) . ' weeks';
-        if ( date( 'n', $ts ) == date( 'n' ) + 1 ) return 'Next month';
-        return date( 'F Y', $ts );
+        if ( gmdate( 'n', $ts ) == gmdate( 'n' ) + 1 ) return 'Next month';
+        return gmdate( 'F Y', $ts );
     }
 } // End ddtt_convert_timestamp_to_string()
 
@@ -1480,6 +1463,38 @@ function ddtt_example_shortcode( $atts ) {
 function ddtt_backtrace( $ignore_class = null, $skip_frames = 0, $pretty = true ) {
     ddtt_write_log( wp_debug_backtrace_summary( $ignore_class, $skip_frames, $pretty ) );
 } // End ddtt_backtrace()
+
+
+/**
+ * Get the server's ip address
+ *
+ * @return string
+ */
+function ddtt_get_server_ip() {
+    // Check if SERVER_ADDR is set
+    if ( isset( $_SERVER[ 'SERVER_ADDR' ] ) ) {
+        return filter_var( $_SERVER[ 'SERVER_ADDR' ], FILTER_VALIDATE_IP );
+    }
+
+    // Check if HTTP_HOST is available
+    if ( isset( $_SERVER[ 'HTTP_HOST' ] ) ) {
+        $hostname = filter_var( $_SERVER[ 'HTTP_HOST' ], FILTER_SANITIZE_SPECIAL_CHARS );
+        $ip = gethostbyname( $hostname );
+        if ( $validated_ip = filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+            return $validated_ip;
+        }
+    }
+    
+    // Try using a system command
+    $ip = trim( shell_exec( "hostname -I" ) );
+    if ( $validated_ip = filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+        return $validated_ip;
+    }
+    
+    // Return null if no valid IP address is found
+    return null;
+} // End ddtt_get_server_ip()
+
 
 
 /**

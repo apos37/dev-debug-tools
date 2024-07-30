@@ -1,9 +1,34 @@
-<?php include 'header.php'; ?>
+<?php
+// Are we clearing cookies
+if ( $clear_all = ddtt_get( 'clear', '==', 'true' ) ) {
+    ddtt_remove_qs_without_refresh( 'clear' );
+    ?>
+    <div class="notice notice-success is-dismissible">
+        <p><?php esc_html_e( 'Cookies have been cleared from your browser. Note that some cookies are renewed upon page load, so it might seem like they were not cleared if only those ones were set to begin with.', 'dev-debug-tools' ); ?></p>
+    </div>
+    <?php
+} elseif ( $clear_single = ddtt_get( 'clear_single' ) ) {
+    ddtt_remove_qs_without_refresh( 'clear_single' );
+    ?>
+    <div class="notice notice-success is-dismissible">
+        <p><?php 
+        /* Translators: 1: cookie name */
+        echo esc_html( sprintf( __( 'The cookie "%s" has been cleared from your browser. Note that some cookies are renewed upon page load, so it might seem like it was not cleared.', 'dev-debug-tools' ), $clear_single ) ); ?></p>
+    </div>
+    <?php
+} elseif ( ddtt_get( 'give', '==', 'cookie' ) ) {
+    ?>
+    <div class="notice notice-success is-dismissible">
+    <p><?php esc_html_e( 'You have been given a Chocolate Chip cookie. Yumm!!', 'dev-debug-tools' ); ?></p>
+    </div>
+    <?php
+}
 
-<?php 
 // The current url
 $current_url = ddtt_plugin_options_path( 'cookies' );
 ?>
+
+<?php include 'header.php'; ?>
 
 <p><strong>What are cookies?</strong> Cookies are small pieces of text sent to your browser by a website you visit. They help that website remember information about your visit, which can both make it easier to visit the site again and make the site more useful to you. You can also see your cookies in your developer console under Application > Store > Cookies > <?php echo esc_url( home_url() ); ?>.</p>
 <br>
@@ -15,32 +40,8 @@ $current_url = ddtt_plugin_options_path( 'cookies' );
 <a class="button secondary-button" onclick="ddttClearBrowserStorage(); return false;">Clear all my browser local storage!</a>
 
 <br><br>
+
 <?php
-
-
-// Are we clearing cookies
-if ( $clear_all = ddtt_get( 'clear', '==', 'true' ) ) {
-    ddtt_remove_qs_without_refresh( 'clear' );
-    ?>
-    <div class="notice notice-success is-dismissible">
-    <p><?php _e( 'Cookies have been cleared from your browser. Note that some cookies are renewed upon page load, so it might seem like they were not cleared if only those ones were set to begin with.', 'dev-debug-tools' ); ?></p>
-    </div>
-    <?php
-} elseif ( $clear_single = ddtt_get( 'clear_single' ) ) {
-    ddtt_remove_qs_without_refresh( 'clear_single' );
-    ?>
-    <div class="notice notice-success is-dismissible">
-    <p><?php _e( 'The cookie "'.esc_attr( $clear_single ).'" has been cleared from your browser. Note that some cookies are renewed upon page load, so it might seem like it was not cleared.', 'dev-debug-tools' ); ?></p>
-    </div>
-    <?php
-} elseif ( ddtt_get( 'give', '==', 'cookie' ) ) {
-    ?>
-    <div class="notice notice-success is-dismissible">
-    <p><?php _e( 'You have been given a Chocolate Chip cookie. Yumm!!', 'dev-debug-tools' ); ?></p>
-    </div>
-    <?php
-}
-
 // Get the cookies and sort them
 $cookies = $_COOKIE;
 ksort( $cookies );

@@ -281,6 +281,9 @@ class DDTT_ADMIN_AREA {
             }
         }
 
+        // Is not mu by default
+        $is_mu_plugin = false;
+
         // File Size and Last Modified
         $folder = false;
         if ( 'file_size' === $column_name || 'modified' === $column_name ) {
@@ -296,9 +299,6 @@ class DDTT_ADMIN_AREA {
                 
                 // Get the path of a directory.
                 $path = ABSPATH.DDTT_PLUGINS_URL.'/'.$folder.'/';
-
-                // Is not mu
-                $is_mu_plugin = false;
 
             // Hello Dolly in live preview
             } elseif ( $plugin_file == 'hello.php' ) {
@@ -349,7 +349,7 @@ class DDTT_ADMIN_AREA {
         if ( 'modified' === $column_name && $folder != 'hello.php' ) {
 
             // Convert the time
-            $utc_time = date( 'Y-m-d H:i:s', filemtime( $path ) );
+            $utc_time = gmdate( 'Y-m-d H:i:s', filemtime( $path ) );
             $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
             $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
             $last_modified = $dt->format( 'F j, Y g:i A T' );
@@ -509,7 +509,7 @@ class DDTT_ADMIN_AREA {
 
                 // Are we on a network page?
                 $sfx = ddtt_multisite_suffix();
-                $sfx = strip_tags( $sfx );
+                $sfx = wp_strip_all_tags( $sfx );
                 
                 // Get the title of the tab
                 $title = $add.$tab_title.' | DDT'.$sfx;

@@ -32,7 +32,7 @@ class DDTT_SETTINGS {
 	public function __construct() {
 
         // Ajax
-        add_action( 'wp_ajax_'.DDTT_GO_PF.'verify_logs', [ $this, 'verify_log_files' ] );
+        add_action( 'wp_ajax_'.DDTT_GO_PF.'verify_logs', [ $this, 'ajax' ] );
         add_action( 'wp_ajax_nopriv_'.DDTT_GO_PF.'verify_logs', [ $this, 'must_login' ] );
 
         // Enqueue scripts
@@ -46,7 +46,7 @@ class DDTT_SETTINGS {
      *
      * @return void
      */
-    public function verify_log_files() {
+    public function ajax() {
         // First verify the nonce
         if ( !wp_verify_nonce( sanitize_text_field( wp_unslash ( $_REQUEST[ 'nonce' ] ) ), $this->nonce ) ) {
             exit( 'No naughty business please.' );
@@ -84,7 +84,7 @@ class DDTT_SETTINGS {
 
         // Stop
         die();
-    } // End verify_log_files()
+    } // End ajax()
 
 
     /**
@@ -123,7 +123,7 @@ class DDTT_SETTINGS {
 
         // Feedback form and error code checker
         if ( ddtt_get( 'tab', '==', 'settings' ) ) {
-            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'settings.js', [ 'jquery' ], time() );
+            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'settings.js', [ 'jquery' ], DDTT_VERSION );
             wp_localize_script( $handle, 'settingsAjax', [
                 'nonce'     => wp_create_nonce( $this->nonce ),
                 'log_files' => get_option( DDTT_GO_PF.'log_files' ),

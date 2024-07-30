@@ -191,30 +191,32 @@ $DDTT_WPCONFIG = new DDTT_WPCONFIG();
 // Get the snippets we use
 $snippets = $DDTT_WPCONFIG->snippets();
 
-// Read the WPCONFIG
-$filename = 'wp-config.php';
-if ( is_readable( ABSPATH . $filename ) ) {
-    $file = ABSPATH . $filename;
-} elseif ( is_readable( dirname( ABSPATH ) . '/' . $filename ) ) {
-    $file = dirname( ABSPATH ) . '/' . $filename;
-} else {
-    $file = false;
+// Get the file
+if ( !function_exists( 'WP_Filesystem' ) ) {
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+}
+global $wp_filesystem;
+if ( !WP_Filesystem() ) {
+    ddtt_write_log( 'Failed to initialize WP_Filesystem' );
+    return false;
 }
 
-// Validate
-if ( $file ) {
-    $file_contents = file_get_contents( $file );
-
-    // Get what eol delimiter is used in the file
-    $eols_used = ddtt_get_file_eol( $file_contents, false );
-
-    // Count them
-    $eol_count = count( $eols_used );
-
-// We can't do anything if no file is found
+// Read the file
+$filename = 'wp-config.php';
+if ( $wp_filesystem->is_readable( ABSPATH . $filename ) ) {
+    $file = ABSPATH . $filename;
+} elseif ( $wp_filesystem->is_readable( dirname( ABSPATH ) . '/' . $filename ) ) {
+    $file = dirname( ABSPATH ) . '/' . $filename;
 } else {
     return 'No file found.';
 }
+$file_contents = $wp_filesystem->get_contents( $file );
+
+// Get what eol delimiter is used in the file
+$eols_used = ddtt_get_file_eol( $file_contents, false );
+
+// Count them
+$eol_count = count( $eols_used );
 
 // Defaults
 $confirm = false;
@@ -281,7 +283,7 @@ if ( $safePost && $file ) {
 
         // Reset get file contents so we check new file for existing snippets, etc.
         if ( !$confirm ) {
-            $file_contents = file_get_contents( $file );
+            $file_contents = $wp_filesystem->get_contents( $file );
             $eols_used = ddtt_get_file_eol( $file_contents, false );
             $eol_count = count( $eols_used );
         }
@@ -318,11 +320,12 @@ if ( $eol_count > 1 ) {
     }
     ?>
     <div class="notice notice-success is-dismissible">
-    <p><?php echo sprintf(
-        __(
-            'The <code class="hl">%s</code> end-of-line delimiters are mixed (%s %s occur). The line delimiter you have set (%s) will be used. If you wish to change the one to be used%s',
+    <p><?php 
+        /* Translators: 1: filename, 2: eols used, 3: occurs, 4: eol to use, 5: cancel message */
+        echo wp_kses( sprintf( __(
+            'The <code class="hl">%1$s</code> end-of-line delimiters are mixed (%2$s %3$s occur). The line delimiter you have set (%4$s) will be used. If you wish to change the one to be used%5$s',
             'dev-debug-tools'
-        ),
+        ), [ 'code' => [] ] ),
         esc_attr( $filename ),
         wp_kses( implode( ', ', $eols_used ), $allow_code_tag ),
         esc_attr( $occur ),
@@ -337,11 +340,12 @@ if ( $eol_count > 1 ) {
 } elseif ( !in_array( $eol_to_use, $eols_used ) ) {
     ?>
     <div class="notice notice-success is-dismissible">
-    <p><?php echo sprintf(
-        __(
-            'The <code class="hl">%s</code> end-of-line delimiters are different than the one you currently have set. The file uses %s, but you are currently set to use %s. If you wish to change the one to be used%s',
+    <p><?php 
+        /* Translators: 1: filename, 2: eols used, 3: eol to use, 4: cancel message */
+        echo wp_kses( sprintf( __(
+            'The <code class="hl">%1$s</code> end-of-line delimiters are different than the one you currently have set. The file uses %2$s, but you are currently set to use %3$s. If you wish to change the one to be used%4$s',
             'dev-debug-tools'
-        ),
+        ), [ 'code' => [] ] ),
         esc_attr( $filename ),
         wp_kses( '<code class="hl">'.$eols_used[0].'</code>', $allow_code_tag ),
         wp_kses( '<code class="hl">'.$eol_to_use.'</code>', $allow_code_tag ),
@@ -385,18 +389,18 @@ $allow_code_tag = [
     <?php wp_nonce_field( $this_nonce, '_wpnonce' ); ?>
 
     <?php
+    // Read the TEMP WPCONFIG
+    $temp_filename = str_replace( '.php', '-'.DDTT_GO_PF.'temp.php', $filename );
+    if ( $wp_filesystem->is_readable( ABSPATH . $temp_filename ) ) {
+        $temp_file = ABSPATH . $temp_filename;
+    } elseif ( $wp_filesystem->is_readable( dirname( ABSPATH ) . '/' . $temp_filename ) ) {
+        $temp_file = dirname( ABSPATH ) . '/' . $temp_filename;
+    } else {
+        $temp_file = false;
+    }
+
     // Are we confirming?
     if ( $confirm ) { 
-
-        // Read the TEMP WPCONFIG
-        $temp_filename = str_replace( '.php', '-'.DDTT_GO_PF.'temp.php', $filename );
-        if ( is_readable( ABSPATH . $temp_filename ) ) {
-            $temp_file = ABSPATH . $temp_filename;
-        } elseif ( is_readable( dirname( ABSPATH ) . '/' . $temp_filename ) ) {
-            $temp_file = dirname( ABSPATH ) . '/' . $temp_filename;
-        } else {
-            $temp_file = false;
-        }
 
         // If the temp exists, show it
         if ( $temp_file && !$cancel ) { ?>
@@ -411,12 +415,14 @@ $allow_code_tag = [
                     </div></td>
                 </tr>
             </table>
-        <?php } elseif ( $temp_file && $cancel ) {
+        <?php }
 
-            // Or delete it if cancelled
-            unlink( $temp_file );
-        }
-    } ?>
+    } elseif ( $temp_file && $cancel ) {
+
+        // Or delete it if cancelled
+        $wp_filesystem->delete( $temp_file );
+    } 
+    ?>
 
     <table class="form-table">
         <tr valign="top">

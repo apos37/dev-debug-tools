@@ -82,16 +82,16 @@ $email = $user->user_email;
             <td><strong><?php echo wp_kses_post( ddtt_get_function_example( "ddtt_admin_error" ) ); ?></strong></td>
             <td><strong><?php echo wp_kses_post( ddtt_highlight_string( 'echo ddtt_admin_error( "Please do this to fix the error..." );' ) ); ?></strong>
             <p class="field-desc break"><span class="highlight-variable">$include_pre</span>: adds "ADMIN ERROR: " to the beginning of the message.
-            <br><span class="highlight-variable">$br</span>: adds a <code><?php echo htmlentities('<br>'); ?></code> tag before the message.
+            <br><span class="highlight-variable">$br</span>: adds a <code><?php echo esc_html( htmlentities( '<br>' ) ); ?></code> tag before the message.
             <br><span class="highlight-variable">$hide_error</span>: will force the error to be hidden during testing.</p></td>
         </tr>
         <tr>
-            <td><?php $total_time = ddtt_stop_timer( $start, true, true ); ?>Add a timer to your processes to check processing speed. Returns number of seconds or milliseconds (Example: this page loaded in <strong><?php echo absint( $total_time ); ?></strong> milliseconds up to this point)</td>
+            <td><?php $total_time = ddtt_stop_timer( $start, true, true ); ?>Add a timer to your processes to check processing speed. Returns number of seconds or milliseconds (Example: this page loaded in <strong><?php echo esc_attr( $total_time ); ?></strong> milliseconds up to this point)</td>
             <td><strong><?php echo wp_kses_post( ddtt_get_function_example( "ddtt_start_timer" ) ); ?></strong>
             <br><strong><?php echo wp_kses_post( ddtt_get_function_example( "ddtt_stop_timer" ) ); ?></strong></td>
             <td><strong><?php echo wp_kses_post( ddtt_highlight_string( '$start = ddtt_start_timer();' ) ); ?><br><?php echo wp_kses_post( ddtt_highlight_string( '// run your functions' ) ); ?><br>
             <?php echo wp_kses_post( ddtt_highlight_string( '$total_time = ddtt_stop_timer( $start );' ) ); ?></strong>
-            <p class="field-desc break">Useful to count seconds per item you are processing, such as: <code><?php echo htmlentities( '$sec_per_link = round( ( $total_time / $count_links ), 2 );' ); ?></code></p></td>
+            <p class="field-desc break">Useful to count seconds per item you are processing, such as: <code><?php echo esc_html( htmlentities( '$sec_per_link = round( ( $total_time / $count_links ), 2 );' ) ); ?></code></p></td>
         </tr>
         <tr>
             <td>Increase global test number</td>

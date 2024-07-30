@@ -25,7 +25,7 @@ class DDTT_QUICK_LINKS {
      * 
      * @var string
      */
-    public $quick_link_icon = '&#9889';
+    public $quick_link_icon = '&#9889;';
 
 
     /**
@@ -190,14 +190,13 @@ class DDTT_QUICK_LINKS {
             // Add an action to perform on each user when the page loads
             do_action( 'ddtt_admin_list_update_each_post', $post_id );
 
-            // Allow icon to be filtered
-            $quick_link_icon = apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon );
-
             // The content
-            if ( ddtt_is_dev() ){
-                echo absint( $post_id ).' <a href="'.ddtt_plugin_options_path( 'postmeta' ).'&post_id='.$post_id.'" target="_blank">'.$quick_link_icon.'</a>';
+            if ( ddtt_is_dev() ) {
+                $quick_link_icon = sanitize_text_field( apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon ) );
+                $url = add_query_arg( 'post_id', $post_id, ddtt_plugin_options_path( 'postmeta' ) );
+                echo esc_attr( $post_id ).' <a href="'.esc_url( $url ).'" target="_blank">'.esc_html( $quick_link_icon ).'</a>';
             } else {
-                echo absint( $post_id );
+                echo esc_attr( $post_id );
             }
         }
     } // End post_column_content()
@@ -255,15 +254,13 @@ class DDTT_QUICK_LINKS {
         // ID
         } elseif ( $column_name == strtolower( DDTT_PF ).'comment_id' ) {
 
-            // Allow icon to be filtered
-            $quick_link_icon = apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon );
-
             // The content
             if ( ddtt_is_dev() ) {
-                $link = ddtt_plugin_options_path( $this->debug_tab ).'&debug_comment='.$comment_id;
-                echo absint( $comment_id ).' <a href="'.esc_url( $link ).'" target="_blank">'.$quick_link_icon.'</a>';
+                $quick_link_icon = sanitize_text_field( apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon ) );
+                $url = add_query_arg( 'debug_comment', $comment_id, ddtt_plugin_options_path( $this->debug_tab ) );
+                echo esc_attr( $comment_id ).' <a href="'.esc_url( $url ).'" target="_blank">'.esc_html( $quick_link_icon ).'</a>';
             } else {
-                echo absint( $comment_id );
+                echo esc_attr( $comment_id );
             }
         }
     } // End comments_column_content()
@@ -313,13 +310,13 @@ class DDTT_QUICK_LINKS {
         }
 
         // The quick link icon
-        $quick_link_icon = apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon );
+        $quick_link_icon = sanitize_text_field( apply_filters( 'ddtt_quick_link_icon', $this->quick_link_icon ) );
 
         // Add the link
-        $link = ddtt_plugin_options_path( $this->debug_tab ).'&debug_entry='.$entry[ 'id' ];
+        $url = add_query_arg( 'debug_entry', $entry[ 'id' ], ddtt_plugin_options_path( $this->debug_tab ) );
         echo '| <span>'.sprintf( '<a href="%1$s" target="_blank">%2$s</a>',
-            esc_url( $link ), 
-            'Debug Entry '.$quick_link_icon
+            esc_url( $url ), 
+            'Debug Entry '.esc_html( $quick_link_icon )
         ).'</span>';
     } // End gf_entry_quick_link()
 
@@ -381,7 +378,7 @@ class DDTT_QUICK_LINKS {
         $results .= '</div>';
     
         // Return everything
-        echo $results;
+        echo wp_kses_post( $results );
     } // End gf_entry_meta_box_content()
 
     

@@ -216,10 +216,12 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
     }
 
     // Server ip
+    $server_ip = ddtt_get_server_ip();
+    if ( !$server_ip ) {
+        $server_ip = 'UNKNOWN';
+    }
     if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
-        $server_ip = '<span class="redact">'.DDTT_SERVER_IP.'</span>';
-    } else {
-        $server_ip = DDTT_SERVER_IP;
+        $server_ip = '<span class="redact">'.$server_ip.'</span>';
     }
 
     // Rest API root
@@ -238,8 +240,9 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'fx'                => [ 'Functions.php', 'A simple functions.php viewer.', true ],
         'phpini'            => [ 'PHP.INI', 'All registered configuration options from your php.ini', true ],
         'phpinfo'           => [ 'PHP Info', ' Information about your PHP\'s configuration', true ],
-        'cookies'           => [ __( 'Cookies', 'dev-debug-tools' ), 'Your browser cookies currently on this site.', true ],
         'crons'             => [ __( 'Cron Jobs', 'dev-debug-tools' ), 'A list of all scheduled cron jobs.', true ],
+        'cookies'           => [ __( 'Cookies', 'dev-debug-tools' ), 'Your browser cookies currently on this site.', true ],
+        'transients'        => [ __( 'Transients', 'dev-debug-tools' ), 'Your transients currently on this site.', true ],
         'siteoptions'       => [ __( 'Site Options', 'dev-debug-tools' ), 'A quick view of all the site\'s options for reference.', true ],
         'globalvars'        => [ __( 'Globals', 'dev-debug-tools' ), 'A list of available global variables that can be called with <code class="hl">global $variable;</code>', true ],
         'defines'           => [ __( 'Defines', 'dev-debug-tools' ), 'A full list of all the defined constants and their values. Constants are defined using <code class="hl">define( "CONSTANT", "VALUE" )</code>.', true ],

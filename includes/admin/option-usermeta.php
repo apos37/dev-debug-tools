@@ -8,6 +8,23 @@
 .false {
     color: hotpink;
 }
+#value-warning {
+    background: yellow;
+    width: fit-content;
+    color: black;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 4px;
+    display: none;
+}
+.full-value {
+    display: none;
+}
+.view-more {
+    display: block;
+    margin-top: 1rem;
+    width: fit-content;
+}
 </style>
 
 <?php include 'header.php'; ?>
@@ -17,6 +34,9 @@
 $page = ddtt_plugin_options_short_path();
 $tab = 'usermeta';
 $current_url = ddtt_plugin_options_path( $tab );
+
+// Define the character limit
+$char_limit = 1000;
 
 // Hidden inputs
 $hidden_allowed_html = [
@@ -90,7 +110,9 @@ if ( $hide_pf ) {
 if ( $notice ) {
     ?>
     <div class="notice notice-error is-dismissible">
-    <p><?php _e( 'User <strong>'.$s.'</strong> cannot be found.', 'dev-debug-tools' ); ?></p>
+        <p><?php 
+        /* Translators: 1: searched user */
+        echo wp_kses( sprintf( __( 'User <strong>%s</strong> cannot be found.', 'dev-debug-tools' ), [ 'strong' => [] ] ), $s ); ?></p>
     </div>
     <?php
 
@@ -103,38 +125,42 @@ if ( $notice ) {
     $type = '';
     $val = '';
 
-    // Sanitize $_POST
-    if ( $_POST ) {
-        $_POST = filter_input_array( INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-    }
-
     // Are we updating?
     if ( isset( $_POST[ 'update' ] ) && $_POST[ 'update' ] != '' &&
-        isset( $_POST[ 'mk' ] ) && $_POST[ 'mk' ] != '' ) {
+        isset( $_POST[ 'mk' ] ) && $_POST[ 'mk' ] != '' &&
+        isset( $_POST[ '_wpnonce' ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash ( $_POST[ '_wpnonce' ] ) ), 'update_user_meta' ) ) {
 
         // Run action
         do_action( 'ddtt_on_update_user_meta', $_POST );
 
         // Verify and sanitize
-        $upd = sanitize_text_field( $_POST[ 'update' ] );
-        $mk = sanitize_text_field( $_POST[ 'mk' ] );
+        $upd = sanitize_key( $_POST[ 'update' ] );
+        $mk = sanitize_key( $_POST[ 'mk' ] );
+        $type = isset( $_POST[ 'type' ] ) && $_POST[ 'type' ] !== '' ? sanitize_text_field( $_POST[ 'type' ] ) : false;
+        $dels = isset( $_POST[ 'dels' ] ) && $_POST[ 'dels' ] !== '' ? sanitize_text_field( $_POST[ 'dels' ] ) : false;
+        $format = isset( $_POST[ 'format' ] ) && $_POST[ 'format' ] !== '' ? sanitize_key( $_POST[ 'format' ] ) : false;
+        $val = isset( $_POST[ 'val' ] ) ? wp_kses_post( $_POST[ 'val' ] ) : false;
 
-        if ( isset( $_POST[ 'val' ] ) ) {
-            $val = sanitize_text_field( $_POST[ 'val' ] );
-        } else {
-            $val = false;
-        }
+        // Format value if array or object
+        if ( $format == 'array' || $format == 'object' ) {
+            $val = trim( $val );
+            $val = stripslashes( $val );
+            $val = preg_replace( '/,(\s*[\]}])/', '$1', $val );
+            $assoc = $format == 'array';
+            $decoded_val = json_decode( $val, $assoc );
+            if ( json_last_error() === JSON_ERROR_NONE ) {
+                $val = $decoded_val;
+            }
 
-        if ( isset( $_POST[ 'type' ] ) && $_POST[ 'type' ] != '' ) {
-            $type = sanitize_text_field( $_POST[ 'type' ] );
+        // String format
         } else {
-            $type = false;
-        }
-
-        if ( isset( $_POST[ 'dels' ] ) && $_POST[ 'dels' ] != '' ) {
-            $dels = sanitize_text_field( $_POST[ 'dels' ] );
-        } else {
-            $dels = false;
+            
+            // Check if it's a serialized array
+            $test_val = trim( $val );
+            $test_val = stripslashes( $test_val );
+            if ( ddtt_is_serialized_array( $test_val ) || ddtt_is_serialized_object( $test_val ) ) {
+                $val = unserialize( $test_val );
+            }
         }
 
         // Success notice
@@ -143,14 +169,12 @@ if ( $notice ) {
         // Add
         if ( $upd == 'add' && $val !== false ) {
 
-            // Sanitize it
-            $val = sanitize_meta( $mk, $val, 'post' );
-
             // Add it
             add_user_meta( $user_id, $mk, $val );
 
             // Success message
-            $success = 'The meta key "'.$mk.'" has been added.';
+            /* Translators: 1: meta key */
+            $success = sprintf( __( 'The meta key "%s" has been added.' ), $mk );
 
         // Update
         } elseif ( $upd == 'upd' && $type && $val !== false ) {
@@ -163,11 +187,6 @@ if ( $notice ) {
 
                     // Sanitize the post meta
                     $good = false;
-
-                    // Dates
-                    $dates = [
-                        'user_registered'
-                    ];
 
                     // Define err
                     $err = '';
@@ -200,17 +219,13 @@ if ( $notice ) {
                         }
 
                     // Dates
-                    } elseif ( in_array( $mk, $dates ) ) {
+                    } elseif ( in_array( $mk, [ 'user_registered' ] ) ) {
                         if ( $timestamp = strtotime( $val ) ) {
-                            $val = date( 'Y-m-d H:i:s', $timestamp );
+                            $val = gmdate( 'Y-m-d H:i:s', $timestamp );
                             $good = true;
                         } else {
                             $err = 'Invalid date format. Please use: "Y-m-d H:i:s" or "m/d/Y g:i AM" (if you do not include a time, it will default to 0:00:00.';
                         }
-
-                    // Everything else
-                    } else {
-                        $mk = sanitize_meta( $mk, $val, 'post' );
                     }
 
                     // Update the user meta
@@ -234,28 +249,30 @@ if ( $notice ) {
                         }
 
                         // Success message
-                        $success = 'The meta key "'.$mk.'" has been updated.';
+                        /* Translators: 1: meta key */
+                        $success = sprintf( __( 'The meta key "%s" has been updated.' ), $mk );
 
                     } else {
-                        $notice = 'There was a problem updating "'.$mk.'": '.$err;
+                        /* Translators: 1: meta key, 2: error */
+                        $notice = sprintf( __( 'There was a problem updating "%1$s": %2$s', 'dev-debug-tools' ), $mk, $err );
                         ?>
                         <div class="notice notice-error is-dismissible">
-                        <p><?php _e( $notice, 'dev-debug-tools' ); ?></p>
+                            <p><?php 
+                            /* Translators: 1: Notice */
+                            echo esc_html( $notice ); ?></p>
                         </div>
                         <?php
                     }
                 }
                 
-            } elseif ( $type == 'custom' && $val ) {
-
-                // Sanitize it
-                $val = sanitize_meta( $mk, $val, 'post' );
+            } elseif ( $type == 'custom' ) {
 
                 // Update it
                 update_user_meta( $user_id, $mk, $val );
 
                 // Success message
-                $success = 'The meta key "'.$mk.'" has been updated.';
+                /* Translators: 1: meta key */
+                $success = sprintf( __( 'The meta key "%s" has been updated.' ), $mk );
             }
 
         // Delete
@@ -273,7 +290,8 @@ if ( $notice ) {
             delete_user_meta( $user_id, $mk );
 
             // Success message
-            $success = 'The meta key "'.$mk.'" has been deleted.';
+            /* Translators: 1: meta key */
+            $success = sprintf( __( 'The meta key "%s" has been deleted.' ), $mk );
 
         // Delete Meta Keys Starting with Keyword
         } elseif ( $upd == 'dels' && $dels ) {
@@ -316,12 +334,16 @@ if ( $notice ) {
 
             // Success message
             if ( ( $dels_found_blank > 0 || $dels_found_all > 0 ) && !empty( $dels_found ) ) {
-                $success = 'All custom meta keys starting with "'.$mk.'" have been removed: '.implode( ', ', $dels_found );
+                /* Translators: 1: keyword, 2: meta keys */
+                $success = sprintf( __( 'All custom meta keys starting with "%1$s" have been removed: %2$s' ), $mk, implode( ', ', $dels_found ) );
             } else {
-                $notice = 'There were no custom meta keys starting with "'.$mk.'"';
+                /* Translators: 1: keyword */
+                $notice = sprintf( __( 'There were no custom meta keys starting with "%s"', 'dev-debug-tools' ), $mk );
                 ?>
                 <div class="notice notice-error is-dismissible">
-                <p><?php _e( $notice, 'dev-debug-tools' ); ?></p>
+                    <p><?php 
+                    /* Translators: 1: Notice */
+                    echo esc_html( $notice ); ?></p>
                 </div>
                 <?php
             }
@@ -331,7 +353,7 @@ if ( $notice ) {
         if ( $success != '' ) {
             ?>
             <div class="notice notice-success is-dismissible">
-            <p><?php _e( $success, 'dev-debug-tools' ); ?></p>
+                <p><?php echo esc_html( $success ); ?></p>
             </div>
             <?php
         }
@@ -377,7 +399,7 @@ if ( $user ) {
 $add_role = false;
 $remove_role = false;
 
-if ( ddtt_get( 'role' ) && $user ) {
+if ( ddtt_get( 'role' ) && $user && isset( $_POST[ '_wpnonce' ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash ( $_POST[ '_wpnonce' ] ) ), 'update_user_role' ) ) {
 
     // Get the role
     $role = ddtt_get( 'role' );
@@ -448,6 +470,7 @@ if ( $user ) {
             </tr>
         </table>
         <?php echo wp_kses( $hidden_path, $hidden_allowed_html ); ?>
+        <?php wp_nonce_field( 'update_user_role' ); ?>
         <input type="hidden" name="user" value="<?php echo esc_attr( $s ); ?>">
         <br><br><input type="submit" name="update_role" value="Add" id="role-add-button" class="button button-primary"/>
         <input type="submit" name="update_role" value="Remove" id="role-remove-button" class="button button-primary"/>
@@ -467,10 +490,10 @@ if ( $user ) {
 
     // Which choices do we have for updating?
     $update_choices = [
-        ['add', 'Add'],
-        ['upd', 'Update'],
-        ['del', 'Delete (Custom Meta Keys Only)'],
-        ['dels', 'Delete Custom Meta Keys Starting with Keyword'],
+        [ 'add', 'Add' ],
+        [ 'upd', 'Update' ],
+        [ 'del', 'Delete (Custom Meta Keys Only)' ],
+        [ 'dels', 'Delete Custom Meta Keys Starting with Keyword' ],
     ];
 
     // Hidden User ID
@@ -480,7 +503,7 @@ if ( $user ) {
     <br><hr><br></br>
     <h2>Update Meta Key</h2>
     <br><div class="user-update-form">
-    <form method="post" action="<?php echo esc_url( $current_url.'&user='.esc_attr( $s ) ); ?>">
+    <form id="update-meta-form" method="post" action="<?php echo esc_url( $current_url.'&user='.esc_attr( $s ) ); ?>">
         <table class="form-table">
             <tr valign="top">
                 <th scope="row">What do you want to do?</th>
@@ -489,7 +512,7 @@ if ( $user ) {
                 foreach ( $update_choices as $update_choice ) {
                     ?>
                     <div class="update_choice">
-                        <input class="update_choice_input" name="update" type="radio" value="<?php echo esc_attr( $update_choice[0] ); ?>" id="update_choice_<?php echo esc_attr( $update_choice[0] ); ?>"<?php echo esc_attr( ddtt_is_qs_checked( $upd, $update_choice[0] ) ); ?>> <label for="update_choice_<?php echo esc_attr( $update_choice[0] ); ?>"><?php echo esc_html( $update_choice[1] ); ?></label>
+                        <input class="update_choice_input" name="update" type="radio" value="<?php echo esc_attr( $update_choice[0] ); ?>" id="update_choice_<?php echo esc_attr( $update_choice[0] ); ?>"> <label for="update_choice_<?php echo esc_attr( $update_choice[0] ); ?>"><?php echo esc_html( $update_choice[1] ); ?></label>
                     </div>
                     <?php
                 }
@@ -505,17 +528,17 @@ if ( $user ) {
             <tr valign="top" class="metakey-tr" id="metakey-type">
                 <th scope="row"><label for="update_meta_key_type"><strong>Type</strong> <span class="required-text">(Required)</span>: </label></th>
                 <td><select name="type" id="update_meta_key_type">
-                    <option value="">-- Select One-- </option>
+                    <option value="">-- Select One -- </option>
                     <option value="object">WP_USER OBJECT</option>
                     <option value="custom">USER CUSTOM METADATA</option>
                 </select>
-                <span class="object_keys_notice"><br>// Meta keys not listed are not available to edit due to safety vulnerabilities or the key is deprecated.</span></td>
+                <span class="field-desc break">Meta keys not listed are not available to edit due to safety vulnerabilities or the key is deprecated.</span></td>
             </tr>
 
             <tr valign="top" class="metakey-tr metakey-type-selects" id="metakey-object-select">
                 <th scope="row"><label for="update_meta_key_object_select"><strong>Meta Key</strong> <span class="required-text">(Required)</span></label></th>
                 <td><select name="" id="update_meta_key_object_select">
-                    <option value="">-- Select a Meta Key-- </option>
+                    <option value="">-- Select a Meta Key -- </option>
                     <?php
                     foreach( $user->data as $key => $value ) {
                         $skip_keys = [
@@ -528,7 +551,7 @@ if ( $user ) {
                             continue;
                         }
                         ?>
-                        <option value="<?php echo esc_attr( $key ); ?>"<?php echo esc_attr( ddtt_is_qs_selected( $mk, $key ) ); ?>><?php echo esc_attr( $key ); ?></option>
+                        <option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_attr( $key ); ?></option>
                         <?php
                     }
                     ?>
@@ -538,11 +561,11 @@ if ( $user ) {
             <tr valign="top" class="metakey-tr metakey-type-selects" id="metakey-custom-select">
                 <th scope="row"><label for="update_meta_key_custom_select"><strong>Meta Key</strong> <span class="required-text">(Required)</span></label></th>
                 <td><select name="" id="update_meta_key_custom_select">
-                    <option value="">-- Select a Custom Meta Key-- </option>
+                    <option value="">-- Select a Custom Meta Key -- </option>
                     <?php
                     foreach( $user_meta as $key => $value ) {
                         ?>
-                        <option value="<?php echo esc_attr( $key ); ?>"<?php echo esc_attr( ddtt_is_qs_selected( $mk, $key ) ); ?>><?php echo esc_attr( $key ); ?></option>
+                        <option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_attr( $key ); ?></option>
                         <?php
                     }
                     ?>
@@ -558,15 +581,26 @@ if ( $user ) {
                 </select></td>
             </tr>
 
+            <tr valign="top" class="metakey-tr" id="metakey-format">
+                <th scope="row"><label for="update_meta_key_format"><strong>Format</strong> <span class="required-text">(Required)</span>: </label></th>
+                <td><select name="format" id="update_meta_key_format">
+                    <option value="string">String</option>
+                    <option value="array">Array - Enter Value as JSON String w/ Double Quotes</option>
+                    <option value="object">Object - Enter Value as JSON String w/ Double Quotes</option>
+                </select></td>
+            </tr>
+
             <tr valign="top" class="metakey-tr" id="metakey-value">
-                <th scope="row"><label for="update_meta_key_value"><strong>New Value</strong> </label></th>
-                <td><textarea name="val" id="update_meta_key_value"><?php echo wp_kses_post( $val ); ?></textarea></td>
+                <th scope="row"><label for="update_meta_key_value"><strong>Value</strong><br><br><em>(IMPORTANT: Please be careful updating array and object values. Test adding and updating one first before updating something critical. It's also a good idea to copy the serialized data just in case. You can enter a serialized array or object as a string. THIS DOES NOT WORK WELL WITH COMBINED ARRAY OF OBJECTS OR ARRAYS IN OBJECTS, SO DON'T TRY IT!)</em></label></th>
+                <td><textarea name="val" id="update_meta_key_value"></textarea>
+                <div id="value-warning"></div></td>
             </tr>
         </table>
 
         <?php echo wp_kses( $hidden_path, $hidden_allowed_html ); ?>
         <?php echo wp_kses( $hidden_uid, $hidden_allowed_html ); ?>
-        <div class="no-choice post-update-button"><br><br><input type="submit" value="Update" id="post-update-button" class="button button-primary"/></div>
+        <?php wp_nonce_field( 'update_user_meta' ); ?>
+        <div class="no-choice meta-update-button"><br><br><input type="submit" value="Update" id="meta-update-button" class="button button-primary"/></div>
     </form>
     </div>
     <br><br>
@@ -598,6 +632,14 @@ if ( $user ) {
 
                 if ( $key == 'user_pass' ) {
                     $value = '<em><a href="/'.DDTT_ADMIN_URL.'/user-edit.php?user_id='.$user_id.'" target="_blank">Edit profile to change password</a></em>';
+                }
+
+                // Check if the value exceeds the character limit
+                if ( strlen( $value ) > $char_limit ) {
+                    $short_value = substr( esc_html( $value ), 0, $char_limit ) . '... ';
+                    $view_more_link = '<a href="#" class="view-more">View More</a>';
+                    $full_value = '<span class="full-value">'.esc_html( $value ).'</span>';
+                    $value = $short_value.$full_value.$view_more_link;
                 }
                 ?>
                 <tr>
@@ -652,35 +694,20 @@ if ( $user ) {
                     // Check if the value is an ip address
                     if ( preg_match( '/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/', $value ) ) {
                         $value = str_replace( $value, '<div class="redact">'.$value.'</div>', $value );
-
-                    // Or if it's an array, let's search for an ip
-                    } elseif ( $value && ddtt_is_serialized_array( $value ) ) {
-                        $array = unserialize( $value );
-                        $new_array = [];
-                        foreach ( $array as $k => $a ) {
-                            if ( strtolower( $k ) == 'ip' ) {
-                                $new_array[ $k ] = str_replace( $a, '<div class="redact">'.$a.'</div>', $a );
-                            } elseif ( is_array( $a ) ) {
-                                $new_sub_array = [];
-                                foreach ( $a as $sub_k => $sub_a ) {
-                                    if ( strtolower( $sub_k ) == 'ip' ) {
-                                        $new_sub_array[ $sub_k ] = str_replace( $sub_a, '<div class="redact">'.$sub_a.'</div>', $sub_a );
-                                    } else {
-                                        $new_sub_array[ $sub_k ] = $sub_a;
-                                    }
-                                }
-                                $new_array[ $k ] = $new_sub_array;
-                            } else {
-                                $new_array[ $k ] = $a;
-                            }
-                        }
-                        $value = serialize( $new_array );
                     }
                 }
 
                 // Check if serialized array
-                if ( ddtt_is_serialized_array( $value ) && !empty( unserialize( $value ) ) ) {
+                if ( ( ddtt_is_serialized_array( $value ) || ddtt_is_serialized_object( $value ) ) && !empty( unserialize( $value ) ) ) {
                     $value = $value.'<br><code><pre>'.print_r( unserialize( $value ), true ).'</pre></code>';
+                }
+
+                // Check if the value exceeds the character limit
+                if ( strlen( $value ) > $char_limit ) {
+                    $short_value = substr( esc_html( $value ), 0, $char_limit ) . '... ';
+                    $view_more_link = '<a href="#" class="view-more">View More</a>';
+                    $full_value = '<span class="full-value">'.esc_html( $value ).'</span>';
+                    $value = $short_value.$full_value.$view_more_link;
                 }
                 ?>
                 <tr>
@@ -719,193 +746,5 @@ if ( $user ) {
             ?>
         </table>
     </div>
-    <br><br><br>
-
-    <script>
-    // Radio buttons
-    const selectUpdates = document.querySelectorAll( ".update_choice_input" );
-    for( const selectUpdate of selectUpdates ) {
-
-        // Unselect items on load
-        selectUpdate.checked = false;
-
-        // Show submit button for update form
-        selectUpdate.onclick = function() {
-            ddtt_show_hide_element( ".update_choice_input", ".post-update-button" );
-        }
-    }
-
-    // Update Form
-    const mkText = document.getElementById( "metakey-text" );
-    const mkTextLabel = document.getElementById( "metakey-text-label" );
-    const mkTextInput = document.getElementById( "update_meta_key_text" );
-    const mkType = document.getElementById( "metakey-type" );
-    const mkTypeSelect = document.getElementById( "update_meta_key_type" );
-    const mkDelsChoice = document.getElementById( "metakey-dels-choice" );
-    const mkDelsChoiceSelect = document.getElementById( "update_meta_key_dels_choice" );
-    const mkValue = document.getElementById( "metakey-value" );
-    const mkObjectSelect = document.getElementById( "metakey-object-select" );
-    const mkObjectSelectInput = document.getElementById( "update_meta_key_object_select" );
-    const mkCustomSelect = document.getElementById( "metakey-custom-select" );
-    const mkCustomSelectInput = document.getElementById( "update_meta_key_custom_select" );
-    
-    // Prevent spaces in new meta keys
-    jQuery( "#update_meta_key_text" ).keyup( function () {
-        this.value = this.value.replace(/ /g, "_");
-    } );
-
-    // Conditional Logic
-    <?php
-    foreach ( $update_choices as $update_choice ) {
-        ?>
-        const update_<?php echo esc_attr( $update_choice[0] ); ?> = document.getElementById( "update_choice_<?php echo esc_attr( $update_choice[0] ); ?>" );
-        update_<?php echo esc_attr( $update_choice[0] ); ?>.addEventListener( "change", function() {
-
-            // Add
-            if ( "<?php echo esc_attr( $update_choice[0] ); ?>" == 'add' ) {
-                if ( update_<?php echo esc_attr( $update_choice[0] ); ?>.checked ) {
-                    mkText.style.display = "revert";
-                    mkType.style.display = "none";
-                    mkValue.style.display = "revert";
-                    mkObjectSelect.style.display = "none";
-                    mkCustomSelect.style.display = "none";
-                    mkDelsChoice.style.display = "none";
-
-                    mkTextLabel.innerText = 'Meta Keys';
-                    
-                    mkTypeSelect.value = '';
-
-                    mkTextInput.setAttribute( "name", "mk" );
-                    mkObjectSelectInput.setAttribute( "name", "" );
-                    mkCustomSelectInput.setAttribute( "name", "" );
-
-                    mkTextInput.required = true;
-                    mkTypeSelect.required = false;
-                    mkObjectSelectInput.required = false;
-                    mkCustomSelectInput.required = false;
-                    mkDelsChoiceSelect.required = false;
-                }
-            }
-
-            // Update
-            if ( "<?php echo esc_attr( $update_choice[0] ); ?>" == 'upd' ) {
-                if ( update_<?php echo esc_attr( $update_choice[0] ); ?>.checked ) {
-                    mkText.style.display = "none";
-                    mkType.style.display = "revert";
-                    mkValue.style.display = "revert";
-                    mkObjectSelect.style.display = "none";
-                    mkCustomSelect.style.display = "none";
-                    mkDelsChoice.style.display = "none";
-
-                    mkTextInput.setAttribute( "name", "" );
-                    mkObjectSelectInput.setAttribute( "name", "" );
-                    mkCustomSelectInput.setAttribute( "name", "" );
-
-                    mkTextInput.required = false;
-                    mkTypeSelect.required = true;
-                    mkDelsChoiceSelect.required = false;
-                }
-            }
-
-            // Delete
-            if ( "<?php echo esc_attr( $update_choice[0] ); ?>" == 'del' ) {
-                if ( update_<?php echo esc_attr( $update_choice[0] ); ?>.checked ) {
-                    mkText.style.display = "none";
-                    mkType.style.display = "none";
-                    mkValue.style.display = "none";
-                    mkObjectSelect.style.display = "none";
-                    mkCustomSelect.style.display = "revert";
-                    mkDelsChoice.style.display = "none";
-
-                    mkTypeSelect.value = '';
-
-                    mkTextInput.setAttribute( "name", "" );
-                    mkObjectSelectInput.setAttribute( "name", "" );
-                    mkCustomSelectInput.setAttribute( "name", "mk" );
-
-                    mkTextInput.required = false;
-                    mkTypeSelect.required = false;
-                    mkObjectSelectInput.required = false;
-                    mkCustomSelectInput.required = true;
-                    mkDelsChoiceSelect.required = false;
-                }
-            }
-
-            // Delete Starting With
-            if ( "<?php echo esc_attr( $update_choice[0] ); ?>" == 'dels' ) {
-                if ( update_<?php echo esc_attr( $update_choice[0] ); ?>.checked ) {
-                    mkText.style.display = "revert";
-                    mkType.style.display = "none";
-                    mkValue.style.display = "none";
-                    mkObjectSelect.style.display = "none";
-                    mkCustomSelect.style.display = "none";
-                    mkDelsChoice.style.display = "revert";
-
-                    mkTextLabel.innerText = 'All Custom Meta Keys Starting With';
-
-                    mkTypeSelect.value = '';
-
-                    mkTextInput.setAttribute( "name", "mk" );
-                    mkObjectSelectInput.setAttribute( "name", "" );
-                    mkCustomSelectInput.setAttribute( "name", "" );
-
-                    mkTextInput.required = true;
-                    mkTypeSelect.required = false;
-                    mkObjectSelectInput.required = false;
-                    mkCustomSelectInput.required = false;
-                    mkDelsChoiceSelect.required = true;
-                }
-            }
-        } );
-        <?php
-    }
-    ?>
-
-    // Show hide other select fields
-    mkTypeSelect.addEventListener( "change", function() {
-        if ( mkTypeSelect.value == 'object' ) {
-            mkObjectSelect.style.display = "revert";
-            mkCustomSelect.style.display = "none";
-
-            mkObjectSelectInput.setAttribute( "name", "mk" );
-            mkCustomSelectInput.setAttribute( "name", "" );
-
-            mkObjectSelectInput.required = true;
-            mkCustomSelectInput.required = false;
-
-        } else if ( mkTypeSelect.value == 'custom' ) {
-            mkObjectSelect.style.display = "none";
-            mkCustomSelect.style.display = "revert";
-
-            mkObjectSelectInput.setAttribute( "name", "" );
-            mkCustomSelectInput.setAttribute( "name", "mk" );
-
-            mkObjectSelectInput.required = false;
-            mkCustomSelectInput.required = true;
-
-        } else {
-            mkObjectSelect.style.display = "none";
-            mkCustomSelect.style.display = "none";
-
-            mkObjectSelectInput.setAttribute( "name", "" );
-            mkCustomSelectInput.setAttribute( "name", "" );
-
-            mkObjectSelectInput.required = false;
-            mkCustomSelectInput.required = false;
-        }
-    } );
-
-    // Toggle function
-    function ddtt_show_hide_element( $select_element, $element_to_toggle ) {
-        const select = document.querySelector( $select_element );
-        const element = document.querySelector( $element_to_toggle );
-        if ( select.value && select.value != "" ) {
-            element.style.display = "revert";
-        } else {
-            element.style.display = "none";
-        }
-    }
-    </script>
-
     <?php
 }

@@ -105,23 +105,42 @@ class DDTT_LOGS {
      * @return string|bool
      */
     public function file_exists_with_content( $path ) {
-        $file = FALSE;
-        if ( is_readable( ABSPATH.$path ) ) {
-            $file = ABSPATH.$path;
-        } elseif ( is_readable( dirname( ABSPATH ).'/'.$path ) ) {
-            $file = dirname( ABSPATH ).'/'.$path;
-        } elseif ( is_readable( $path ) ) {
-            $file = $path;
+        // Initialize the WP_Filesystem
+        if ( !function_exists( 'WP_Filesystem' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+        global $wp_filesystem;
+        if ( !WP_Filesystem() ) {
+            ddtt_write_log( 'Failed to initialize WP_Filesystem' );
+            return false;
         }
 
-        if ( $file && filesize( $file ) > 0 ) {
+        // Construct possible file paths
+        $file_paths = [
+            ABSPATH . $path,
+            dirname( ABSPATH ) . '/' . $path,
+            $path
+        ];
+
+        // Check if any of the paths exist and are readable
+        $file = false;
+        foreach ( $file_paths as $file_path ) {
+            if ( $wp_filesystem->exists( $file_path ) ) {
+                $file = $file_path;
+                break;
+            }
+        }
+
+        // Check file size if a file is found
+        if ( $file && $wp_filesystem->size( $file ) > 0 ) {
             $result = $file;
-        } elseif ( $file && filesize( $file ) == 0 ) {
+        } elseif ( $file && $wp_filesystem->size( $file ) == 0 ) {
             $result = false;
         } else {
             $result = null;
         }
 
+        // Return the result
         return $result;
     } // End file_exists_with_content()
 

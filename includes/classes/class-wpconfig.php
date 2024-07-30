@@ -768,7 +768,15 @@ class DDTT_WPCONFIG {
         if ( $file ) {
 
             // Get the file
-            $wpconfig = file_get_contents( $file );
+            if ( !function_exists( 'WP_Filesystem' ) ) {
+                require_once ABSPATH . 'wp-admin/includes/file.php';
+            }
+            global $wp_filesystem;
+            if ( !WP_Filesystem() ) {
+                ddtt_write_log( 'Attempt to rewrite htaccess file failed. Could not fetch '.$file );
+                return false;
+            }
+            $wpconfig = $wp_filesystem->get_contents( $file );
 
             // Convert eol
             $eol = ddtt_get_eol_char( $eol );
@@ -1165,9 +1173,10 @@ class DDTT_WPCONFIG {
                         }
                     }
                     $separate_safe_lines = array_reverse( $separate_safe_lines );
+                    $separate_safe_lines = implode( '', $separate_safe_lines );
 
                     // Filenames
-                    $now = ddtt_convert_timezone( date( 'Y-m-d H:i:s' ), 'Y-m-d-H-i-s', get_option( 'ddtt_dev_timezone', wp_timezone_string() ) );
+                    $now = ddtt_convert_timezone( gmdate( 'Y-m-d H:i:s' ), 'Y-m-d-H-i-s', get_option( 'ddtt_dev_timezone', wp_timezone_string() ) );
                     $old_file = str_replace( '.php', '-'.$now.'.php', $file );
                     $temp_file = str_replace( '.php', '-'.DDTT_GO_PF.'temp.php', $file );
 
@@ -1175,7 +1184,7 @@ class DDTT_WPCONFIG {
                     if ( $confirm ) {
 
                         // Make human readable
-                        if ( file_put_contents( $temp_file, $separate_safe_lines ) ) {
+                        if ( $wp_filesystem->put_contents( $temp_file, $separate_safe_lines, FS_CHMOD_FILE ) ) {
                             ddtt_admin_notice( 'error', '&#9888; CAUTION! You are about to replace your '.$filename.' file, which may result in your site breaking. Please confirm below that the new file looks as you expect it to. Once confirmed, a copy of your old '.$filename.' file will be copied here:<br>"'.$old_file.'"<br>Please make note of this location so you can restore it if needed. To restore this file you will need to access your file manager from your host or through FTP, then simply delete the current '.$filename.' file and rename the copied version as '.$filename.'.' );
                         }
 
@@ -1201,7 +1210,7 @@ class DDTT_WPCONFIG {
                         update_option( 'ddtt_wpconfig_last_updated', $now );
 
                         // Update the file
-                        if ( file_put_contents( $file, $separate_safe_lines ) ) {
+                        if ( $wp_filesystem->put_contents( $file, $separate_safe_lines, FS_CHMOD_FILE ) ) {
                             ddtt_admin_notice( 'success', 'Your '.$filename.' file has been updated successfully!' );
                         } else {
                             ddtt_admin_notice( 'error', 'There was a problem updating your '.$filename.' file.' );
@@ -1254,11 +1263,6 @@ class DDTT_WPCONFIG {
                 $pattern = '/wp\-config\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}\-[0-9]{2}.php/';
                 if ( preg_match( $pattern, $short ) ) {
 
-                    // Get the date from the filename
-                    // $date_string = str_replace( [ 'wp-config-', '.php' ], '', $short );
-                    // $d = explode( '-', $date_string );
-                    // $date = date( 'Y-m-d H:i:s', strtotime( $d[0].'-'.$d[1].'-'.$d[2].' '.$d[3].':'.$d[4].':'.$d[5] ) );
-                    
                     // Skip the first one as it will always be the most recent
                     $delete++;
                     if ( $delete == 1 ) {
@@ -1266,7 +1270,7 @@ class DDTT_WPCONFIG {
                     }
 
                     // Otherwise delete it
-                    if ( file_exists( $backup ) && unlink( $backup ) ) {
+                    if ( file_exists( $backup ) && wp_delete_file( $backup ) ) {
                         $deleted[] = $short;
                     }
                 }

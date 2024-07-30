@@ -23,7 +23,7 @@ foreach ( $debugs as $debug ) {
             if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
 
                 // Add the title
-                echo '<h3>'.ucwords( $debug ).' Meta Data:</h3>';
+                echo '<h3>'.esc_attr( ucwords( $debug ) ).' Meta Data:</h3>';
 
                 // Get the array
                 if ( $debug == 'form' ) {

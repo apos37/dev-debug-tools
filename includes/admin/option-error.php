@@ -154,7 +154,7 @@ p.submit {
             if ( $enable_custom_settings && $overwrite_notice && $enabled_constants != $actual_constants ) {
                 ?>
                 <div class="notice notice-error is-dismissible">
-                <p><?php _e( 'Uh-oh! It appears that another plugin, custom code, or your host is overwriting these error reporting values. Unfortunately this tool won\'t work for you. It was a nice thought, though. If you are on a Managed WordPress hosting plan, this is likely the problem. You might want to switch to a cPanel plan that gives you more flexibility.', 'dev-debug-tools' ); ?></p>
+                <p><?php esc_html_e( 'Uh-oh! It appears that another plugin, custom code, or your host is overwriting these error reporting values. Unfortunately this tool won\'t work for you. It was a nice thought, though. If you are on a Managed WordPress hosting plan, this is likely the problem. You might want to switch to a cPanel plan that gives you more flexibility.', 'dev-debug-tools' ); ?></p>
                 </div>
                 <?php
             }

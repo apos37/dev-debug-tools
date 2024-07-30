@@ -83,10 +83,14 @@ class DDTT_DEBUG_TOOLS {
 	 * @return void
      */
     public function load_admin_dependencies() {
+        // Options page functions such as form table rows
+        require_once DDTT_PLUGIN_ADMIN_PATH . 'functions.php';
+
         // Classes
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-settings.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-logs.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-error-reporting.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-meta.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-api.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-download-files.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-validate-code.php';
@@ -97,9 +101,6 @@ class DDTT_DEBUG_TOOLS {
 
         // Admin menu, also loads options.php
         require_once DDTT_PLUGIN_ADMIN_PATH . 'menu.php';
-        
-        // Options page functions such as form table rows
-        require_once DDTT_PLUGIN_ADMIN_PATH . 'functions.php';
 
         // All functions modifying the admin area only
         require_once DDTT_PLUGIN_ADMIN_PATH . 'admin-area.php';

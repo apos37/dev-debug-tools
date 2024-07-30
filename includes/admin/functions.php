@@ -479,10 +479,27 @@ function ddtt_get_syntax_color( $key, $default ) {
  * @return void
  */
 function ddtt_get_defined_functions_in_file( $file ) {
-    // Get our file
-    $source = file_get_contents( $file );
+    // Get the file
+    if ( !function_exists( 'WP_Filesystem' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+    }
+    global $wp_filesystem;
+    if ( !WP_Filesystem() ) {
+        ddtt_write_log( 'Failed to initialize WP_Filesystem' );
+        return false;
+    }
+
+    // Get the file contents
+    $source = $wp_filesystem->get_contents( $file );
+    if ( $source === false ) {
+        ddtt_write_log( 'Failed to read the file.' );
+        return false;
+    }
+
+    // Get the tokens
     $tokens = token_get_all( $source );
 
+    // Work your magic
     $functions = [];
     $nextStringIsFunc = false;
     $inClass = false;
@@ -518,7 +535,7 @@ function ddtt_get_defined_functions_in_file( $file ) {
             case '}':
                 if ( $inClass ) {
                     $bracesCount--;
-                    if($bracesCount === 0) $inClass = false;
+                    if ( $bracesCount === 0 ) $inClass = false;
                 }
                 break;
         }
@@ -656,58 +673,47 @@ function ddtt_error_count() {
         return 0;
     }
 
+    // Initialize the WP_Filesystem
+    if ( !function_exists( 'WP_Filesystem' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+    }
+    global $wp_filesystem;
+    if ( !WP_Filesystem() ) {
+        ddtt_write_log( 'Failed to initialize WP_Filesystem' );
+        return 0;
+    }
+
     // New instance of logs class
     $DDTT_LOGS = new DDTT_LOGS();
-    
-    // Check for debug.log
-    if ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
-        $debug_loc = WP_DEBUG_LOG;
-    } else {
-        $debug_loc =  DDTT_CONTENT_URL . '/debug.log';
-    }
-    $debug_log = $DDTT_LOGS->file_exists_with_content( $debug_loc );
 
-    // Check for wp-admin error_log
-    $error_log_path = get_option( DDTT_GO_PF.'error_log_path' );
-    if ( !$error_log_path || $error_log_path == '' ) {
-        $error_log_path = 'error_log';
-    }
-    $error_log = $DDTT_LOGS->file_exists_with_content( $error_log_path );
+    // Define log paths and initial counts
+    $log_files = [
+        'debug'       => WP_DEBUG_LOG && WP_DEBUG_LOG !== true ? WP_DEBUG_LOG : DDTT_CONTENT_URL.'/debug.log',
+        'error'       => get_option( DDTT_GO_PF.'error_log_path' ) ?: 'error_log',
+        'admin_error' => get_option( DDTT_GO_PF.'admin_error_log_path' ) ?: DDTT_ADMIN_URL.'/error_log'
+    ];
 
-    // Check for wp-admin error_log
-    $admin_error_log_path = get_option( DDTT_GO_PF.'admin_error_log_path' );
-    if ( !$admin_error_log_path || $admin_error_log_path == '' ) {
-        $admin_error_log_path = DDTT_ADMIN_URL.'/error_log';
-    }
-    $admin_error_log = $DDTT_LOGS->file_exists_with_content( $admin_error_log_path );
-    
-    // Count debug log lines
-    $debug_log_count = 0;
-    if ( $debug_log ) {
-        $string = file_get_contents( $debug_log );
-        $lines = explode( PHP_EOL, $string );
-        $debug_log_count = count( array_filter( $lines ) );
+    // Store the total count
+    $total_count = 0;
+
+    // Iter
+    foreach ( $log_files as $log_key => $log_path ) {
+
+        // Check if the file exists and has content
+        $log_file = $DDTT_LOGS->file_exists_with_content( $log_path );
+        if ( $log_file ) {
+
+            // Read the file content
+            $string = $wp_filesystem->get_contents( $log_file );
+            $lines = explode( PHP_EOL, $string );
+            $count = count( array_filter( $lines ) );
+
+            // Add to total count
+            $total_count += $count;
+        }
     }
 
-    // Count error log lines
-    $error_log_count = 0;
-    if ( $error_log ) {
-        $string = file_get_contents( $error_log );
-        $lines = explode( PHP_EOL, $string );
-        $error_log_count = count( array_filter( $lines ) );
-    }
-
-    // Count admin error log lines
-    $admin_error_log_count = 0;
-    if ( $admin_error_log ) {
-        $string = file_get_contents( $admin_error_log );
-        $lines = explode( PHP_EOL, $string );
-        $admin_error_log_count = count( array_filter( $lines ) );
-    }
-    
-    // Return total count
-    $total_count = $debug_log_count + $error_log_count + $admin_error_log_count;
-    
+    // Return the count
     return $total_count;
 } // End ddtt_error_count()
 
@@ -767,20 +773,33 @@ function ddtt_get_max_log_filesize() {
  * @return string
  */
 function ddtt_view_file_contents( $path, $log = false ) {
-    // Define the file
-    $file = FALSE;
-    if ( is_readable( ABSPATH.'/'.$path ) ) {
-        $file = ABSPATH.$path;
-    } elseif ( is_readable( dirname( ABSPATH ).'/'.$path ) ) {
-        $file = dirname( ABSPATH ).'/'.$path;
-    } elseif ( is_readable( $path ) ) {
-        $file = $path;
+    // Initialize the WP_Filesystem
+    if ( !function_exists( 'WP_Filesystem' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+    }
+    global $wp_filesystem;
+    if ( !WP_Filesystem() ) {
+        return 'Failed to initialize WP_Filesystem';
     }
 
-    // Abspath
-    if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+    // Construct possible file paths
+    $file_paths = [
+        ABSPATH . $path,
+        dirname( ABSPATH ) . '/' . $path,
+        $path
+    ];
 
-        // Add redacted div to ABSPATH
+    // Check if any of the paths exist and are readable
+    $file = false;
+    foreach ( $file_paths as $file_path ) {
+        if ( $wp_filesystem->exists( $file_path ) ) {
+            $file = $file_path;
+            break;
+        }
+    }
+
+    // Path redaction
+    if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
         $public_html = strstr( $file, '/public_html', true );
         $redacted_path = str_replace( $public_html, '<span class="redact">'.$public_html.'</span>', $file );
     } else {
@@ -791,14 +810,12 @@ function ddtt_view_file_contents( $path, $log = false ) {
     if ( $file ) {
 
         // Get the file size
-        $file_size = filesize( $file );
-
-        // Max file size
+        $file_size = $wp_filesystem->size( $file );
         $max_filesize = ddtt_get_max_log_filesize();
         $offset = $file_size <= $max_filesize ? 0 : $max_filesize;
 
         // Get the file
-        $string = file_get_contents( $file, false, null, $offset );
+        $string = $wp_filesystem->get_contents( $file, $offset );
 
         // Separate each line into an array item
         $lines = explode( PHP_EOL, $string );
@@ -814,22 +831,14 @@ function ddtt_view_file_contents( $path, $log = false ) {
         
         // How many lines are we allowing?
         $allowed_qty = 100;
-
-        // Offset
         $allowed_qty_with_offset = $allowed_qty + 1;
-
-        // Get the difference
-        if ( $total_count > $allowed_qty_with_offset ) {
-            $start_count = $total_count - $allowed_qty_with_offset;
-        } else {
-            $start_count = 0;
-        }
+        $start_count = $total_count > $allowed_qty_with_offset ? $total_count - $allowed_qty_with_offset : 0;
 
         // Are we displaying the debug.log?
         if ( $log ) {
 
             // Iter
-            for ( $i = $start_count; $i < $total_count; $i++ ){
+            for ( $i = $start_count; $i < $total_count; $i++ ) {
 
                 // Line var
                 $line = $lines[ $i ];
@@ -839,7 +848,6 @@ function ddtt_view_file_contents( $path, $log = false ) {
 
                     // Convert UTC times to local
                     $dev_timezone = get_option( DDTT_GO_PF.'dev_timezone', wp_timezone_string() );
-
                     $get_date_section = substr( $line, 0, 26 );
                     $get_rest_section = substr( $line, 26 );
                     $new_line = '';
@@ -893,9 +901,7 @@ function ddtt_view_file_contents( $path, $log = false ) {
                 if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
 
                     // Redact sensitive info
-                    $substrings = [
-                        'Require ip ',
-                    ];
+                    $substrings = [ 'Require ip ' ];
 
                     // Iter the globals
                     foreach ( $substrings as $substring ) {
@@ -932,7 +938,7 @@ function ddtt_view_file_contents( $path, $log = false ) {
     if ( !empty( $lines ) ) {
 
         // Get the converted time
-        $utc_time = date( 'Y-m-d H:i:s', filemtime( $file ) );
+        $utc_time = gmdate( 'Y-m-d H:i:s', filemtime( $file ) );
         $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
         $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
         $last_modified = $dt->format( 'F j, Y g:i A T' );
@@ -975,12 +981,28 @@ function ddtt_view_file_contents( $path, $log = false ) {
  * @return string
  */
 function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_args = [], $allow_repeats = true ) {
-    // Define the file
-    $file = FALSE;
-    if ( is_readable( ABSPATH.'/'.$path ) ) {
-        $file = ABSPATH.$path;
-    } elseif ( is_readable( dirname( ABSPATH ).'/'.$path ) ) {
-        $file = dirname( ABSPATH ).'/'.$path;
+     // Initialize the WP_Filesystem
+     if ( !function_exists( 'WP_Filesystem' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+    }
+    global $wp_filesystem;
+    if ( !WP_Filesystem() ) {
+        return 'Failed to initialize WP_Filesystem';
+    }
+
+    // Construct possible file paths
+    $file_paths = [
+        ABSPATH . $path,
+        dirname( ABSPATH ) . '/' . $path
+    ];
+
+    // Check if any of the paths exist and are readable
+    $file = false;
+    foreach ( $file_paths as $file_path ) {
+        if ( $wp_filesystem->exists( $file_path ) ) {
+            $file = $file_path;
+            break;
+        }
     }
 
     // Start results
@@ -993,14 +1015,12 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
     if ( $file ) {
 
         // Get the file size
-        $file_size = filesize( $file );
-
-        // Max file size
+        $file_size = $wp_filesystem->size( $file );
         $max_filesize = ddtt_get_max_log_filesize();
         $offset = $file_size <= $max_filesize ? 0 : $max_filesize;
 
         // Get the file
-        $string = file_get_contents( $file, false, null, $offset );
+        $string = $wp_filesystem->get_contents( $file, $offset );
 
         // Separate each line in the file into an array item
         $lines = explode( PHP_EOL, $string );
@@ -1775,7 +1795,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
         }
 
         // Get the converted time
-        $utc_time = date( 'Y-m-d H:i:s', filemtime( $file ) );
+        $utc_time = gmdate( 'Y-m-d H:i:s', filemtime( $file ) );
         $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
         $dt->setTimezone( new DateTimeZone( $dev_timezone ) );
         $last_modified = $dt->format( 'F j, Y g:i A T' );
@@ -1813,15 +1833,58 @@ function ddtt_is_date( $date ) {
 
 
 /**
+ * Get all transients in an array
+ *
+ * @return array
+ */
+function ddtt_get_all_transients() {
+    global $wpdb;
+
+    // Query to get all transients
+    $results = $wpdb->get_results(
+        "SELECT option_name, option_value
+        FROM {$wpdb->options}
+        WHERE option_name LIKE '_transient_%'
+        OR option_name LIKE '_transient_timeout_%'"
+    );
+
+    $transients = [];
+    foreach ( $results as $result ) {
+        // Separate regular transients from timeout transients
+        if ( strpos( $result->option_name, '_transient_timeout_' ) === 0 ) {
+            $transient_name = str_replace( '_transient_timeout_', '', $result->option_name );
+            $transients[ $transient_name ][ 'timeout' ] = $result->option_value;
+        } else {
+            $transient_name = str_replace( '_transient_', '', $result->option_name );
+            $transients[ $transient_name ][ 'value' ] = $result->option_value;
+        }
+    }
+
+    // Sort transients by name
+    ksort( $transients );
+
+    return $transients;
+} // End ddtt_get_all_transients()
+
+
+/**
  * Delete ALL transients from the wpdb
  *
  * @return void
  */
 function ddtt_delete_all_transients() {
     global $wpdb;
- 
-    $sql = 'DELETE FROM ' . $wpdb->options . ' WHERE option_name LIKE "_transient_%"';
-    $wpdb->query($sql);
+
+    // Execute the DELETE query
+    $result = $wpdb->query(
+        $wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+            '_transient_%'
+        )
+    );
+
+    // Return true if rows were deleted, otherwise false
+    return $result !== false;
 } // End ddtt_delete_all_transients()
 
 
@@ -1832,52 +1895,56 @@ function ddtt_delete_all_transients() {
  * @param boolean $safemode
  * @return void
  */
-function ddtt_purge_expired_transients($older_than = '1 day', $safemode = true) {
- 
+function ddtt_purge_expired_transients( $older_than = '1 day', $safemode = true ) {
     global $wpdb;
-    $older_than_time = strtotime('-' . $older_than);
+    $older_than_time = strtotime( '-' . $older_than );
  
-    // Only check if the transients are older than the specified time
-    if ( $older_than_time > time() || $older_than_time < 1 ) {
+    // Check if the time is valid
+    if ( $older_than_time === false || $older_than_time > time() ) {
         return false;
     }
  
-    // Get all the expired transients
+    // Prepare the LIKE query with wildcards
+    $like_pattern = '_transient_timeout_%';
     $transients = $wpdb->get_col(
-    $wpdb->prepare( "
-    SELECT REPLACE(option_name, '_transient_timeout_', '') AS transient_name
-    FROM {$wpdb->options}
-    WHERE option_name LIKE '\_transient\_timeout\__%%'
-    AND option_value < %s
-    ", $older_than_time)
+        $wpdb->prepare(
+            "SELECT REPLACE(option_name, '_transient_timeout_', '') AS transient_name
+            FROM {$wpdb->options}
+            WHERE option_name LIKE %s
+            AND option_value < %d",
+            $like_pattern,
+            $older_than_time
+        )
     );
  
     // If safemode is ON just use the default WordPress get_transient() function to delete the expired transients
     if ( $safemode ) {
         foreach( $transients as $transient ) {
-            get_transient($transient);
+            get_transient( $transient );
         }
-    }
  
     // If safemode is OFF the just manually delete all the transient rows in the database
-    else {
-        $options_names = [];
-        foreach($transients as $transient) {
-            $options_names[] = '_transient_' . $transient;
-            $options_names[] = '_transient_timeout_' . $transient;
+    } else {
+        $option_names = [];
+        foreach( $transients as $transient ) {
+            $option_names[] = '_transient_' . $transient;
+            $option_names[] = '_transient_timeout_' . $transient;
         }
-        if ($options_names) {
-            $options_names = array_map(array($wpdb, 'escape'), $options_names);
-            $options_names = "'". implode("','", $options_names) ."'";
- 
-            $result = $wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name IN ({$options_names})" );
-            if (!$result) {
+        if ( $option_names ) {
+            $placeholders = implode( ',', array_fill( 0, count( $option_names ), '%s' ) );
+            
+            $result = $wpdb->query( $wpdb->prepare(
+                "DELETE FROM {$wpdb->options} WHERE option_name IN ($placeholders)",
+                ...$option_names
+            ) );
+
+            if ( $result === false ) {
                 return false;
             }
         }
     }
  
-    return $transients;
+    return true;
 } // End ddtt_purge_expired_transients()
 
 
@@ -2013,7 +2080,7 @@ function ddtt_highlight_file2( $filename, $return = false ) {
             if ( preg_match( $pattern, $string2, $define_pw ) ) {
                 
                 // Strip the tags
-                $stripped = strip_tags( $define_pw[0] );
+                $stripped = wp_strip_all_tags( $define_pw[0] );
 
                 // Remove the beginning
                 $pw = substr( $stripped, strpos( $stripped, ',') + 1 );
@@ -2164,10 +2231,9 @@ function ddtt_admin_notice( $type, $msg ) {
     // Set the class
     $class = 'notice notice-'.$args[ 'type' ];
 
-    // Set the message
-    $message = __( $args[ 'msg' ], 'dev-debug-tools' );
-
-    printf( '<div id="message" class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), wp_kses_post( $message ) );
+    // Echo
+    /* Translators: 1: class, 2: message */
+    printf( '<div id="message" class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), wp_kses_post( $args[ 'msg' ] ) );
 } // End ddtt_admin_notice()
 
 
@@ -2334,7 +2400,7 @@ function ddtt_plugin_card( $slug ) {
                 </div>
                 <div class="plugin-card-bottom">
                     <div class="vers column-rating">
-                        <div class="star-rating"><span class="screen-reader-text"><?php echo abs( $rating ); ?> rating based on <?php echo absint( $returned_object->num_ratings ); ?> ratings</span>
+                        <div class="star-rating"><span class="screen-reader-text"><?php echo esc_attr( abs( $rating ) ); ?> star rating based on <?php echo absint( $returned_object->num_ratings ); ?> ratings</span>
                             <?php echo wp_kses_post( ddtt_convert_to_stars( abs( $rating ) ) ); ?>
                         </div>					
                         <span class="num-ratings" aria-hidden="true">(<?php echo absint( $returned_object->num_ratings ); ?>)</span>
@@ -2437,7 +2503,7 @@ function ddtt_get_latest_plugin_version() {
 
     // Fetch the plugin info from the wp repository
     $response = wp_remote_post(
-        'http://api.wordpress.org/plugins/info/1.0/',
+        'https://api.wordpress.org/plugins/info/1.0/',
         [
             'body' => [
                 'action' => 'plugin_information',
@@ -2502,17 +2568,25 @@ function ddtt_get_latest_php_version( $major_only = false ) {
 
 
 /**
- * Check if a string is json
+ * Check if a string is a serialized array
  *
- * @param string $string
+ * @param mixed $string
  * @return boolean
  */
 function ddtt_is_serialized_array( $string ) {
-    if ( preg_match( '/a:\d+:\{/', $string ) ) {
-        return true;
-    }
-    return false;
-} // End ddtt_is_json()
+    return ( @unserialize( $string ) !== false || $string === 'b:0;' );
+} // End ddtt_is_serialized_array()
+
+
+/**
+ * Check if a string is a serialized object
+ *
+ * @param mixed $string
+ * @return boolean
+ */
+function ddtt_is_serialized_object( $string ) {
+    return ( is_string( $string ) && preg_match( '/^O:\d+:"[^"]+":\d+:{.*}$/s', $string ) );
+} // End ddtt_is_serialized_object()
 
 
 /**

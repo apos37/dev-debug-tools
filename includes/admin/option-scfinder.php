@@ -192,7 +192,8 @@ if ( $shortcode != '' ) {
         if ( empty( $results ) ) {
                 
             // Return no shortcode
-            $notice = 'Shortcode <code>'.$shortcode_string.'</code> not found on the following post types:<br>'.implode( ', ', $post_types );
+            /* Translators: 1: shortcode */
+            $notice = sprintf( __( 'Shortcode <code>%s</code> not found on the following post types:', 'dev-debug-tools' ), $shortcode_string ).'<br>'.implode( ', ', $post_types );
         }
 
     } else {
@@ -209,7 +210,7 @@ if ( $shortcode != '' ) {
 if ( $notice ) {
     ?>
     <div class="notice notice-error is-dismissible">
-    <p><?php _e( $notice, 'dev-debug-tools' ); ?></p>
+        <p><?php echo wp_kses( $notice, [ 'code' => [], 'br' => [] ] ); ?></p>
     </div>
     <?php
 }
@@ -219,7 +220,10 @@ if ( !empty( $results ) ) {
     $s = count( $results ) == 1 ? '' : 's';
     ?>
     <div class="notice notice-success is-dismissible">
-    <p><?php _e( 'Found '.count( $results ).' result'.$s.'. Scroll down to view.', 'dev-debug-tools' ); ?></p>
+        <p><?php 
+        /* Translators: 1: count, 2: results */
+        $notice = sprintf( __( 'Found %1$s %2$s. Scroll down to view.', 'dev-debug-tools' ), count( $results ), 'result'.$s );
+        echo esc_html( $notice ); ?></p>
     </div>
     <?php
 }

@@ -58,7 +58,7 @@ class DDTT_DISCORD {
         // ddtt_write_log( 'Fatal error reported to Discord...' );
 
         // Timestamp
-        $timestamp = date( 'c', strtotime( 'now' ) );
+        $timestamp = gmdate( 'c', strtotime( 'now' ) );
 
         // Message data
         $data = [
@@ -140,7 +140,7 @@ class DDTT_DISCORD {
         }
 
         // Encode
-        $json_data = json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+        $json_data = wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 
         // Send it to discord
         $options = [
