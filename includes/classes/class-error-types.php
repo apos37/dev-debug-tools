@@ -287,7 +287,7 @@ class DDTT_ERROR_REPORTING {
 
         // Feedback form and error code checker
         if ( ddtt_get( 'tab', '==', 'error-types' ) ) {
-            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'error-types.js', [ 'jquery' ], time() );
+            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'error-types.js', [ 'jquery' ], DDTT_VERSION );
             wp_localize_script( $handle, 'errorReportingAjax', [ 
                 'E_ALL'   => E_ALL,
                 'ajaxurl' => admin_url( 'admin-ajax.php' ) 
