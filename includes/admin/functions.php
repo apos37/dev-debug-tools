@@ -2574,7 +2574,29 @@ function ddtt_get_latest_php_version( $major_only = false ) {
  * @return boolean
  */
 function ddtt_is_serialized_array( $string ) {
-    return ( @unserialize( $string ) !== false || $string === 'b:0;' );
+    // Check if the string is empty or not a string
+    if ( !is_string( $string ) || empty( $string ) ) {
+        return false;
+    }
+
+    // Check if the string is a serialized format
+    $trimmed = trim( $string );
+    if ( $trimmed === 'b:0;' ) {
+        return true;
+    }
+
+    if ( preg_match( '/^(a|O|s|i|d|b|C):/i', $trimmed ) && preg_match( '/[;}]/', substr( $trimmed, -1 ) ) ) {
+        try {
+            // Try to unserialize the string
+            $result = unserialize( $trimmed );
+            return ( $result !== false || $string === 'b:0;' );
+        } catch ( Exception $e ) {
+            // Catch and handle any exceptions
+            return false;
+        }
+    }
+
+    return false;
 } // End ddtt_is_serialized_array()
 
 

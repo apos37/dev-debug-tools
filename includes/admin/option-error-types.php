@@ -8,8 +8,10 @@ $enable_custom_settings = get_option( DDTT_GO_PF.'error_enable' );
 // Should we show the overwrite notice
 $overwrite_notice = true;
 
-// Listen for $_REQUEST to add Must-Use-Plugin; we will not be adding it by default
+// Listen for $_REQUEST 
 if ( isset( $_REQUEST ) && isset( $_REQUEST[ 'settings-updated' ] ) && $_REQUEST[ 'settings-updated' ] ) {
+
+    // Add Must-Use-Plugin; we will not be adding it by default
     if ( $enable_custom_settings ) {
         if ( (new DDTT_ERROR_REPORTING)->add_remove_mu_plugin( 'add' ) ) {
             header( 'Refresh:0' );
@@ -54,15 +56,15 @@ p.submit {
     display: inline-block;
     height: 18px;
 }
-#error-reporting-table .highlight-row td {
+#error-types-table .highlight-row td {
     background-color: yellow !important;
     color: black !important;
     font-weight: bold !important;
 }
-#error-reporting-table .highlight-row td .highlight-variable {
+#error-types-table .highlight-row td .highlight-variable {
     color: black !important;
 }
-#error-reporting-table .highlight-row td a {
+#error-types-table .highlight-row td a {
     color: #2271B1 !important;
 }
 #error-code-constants-notice {
@@ -72,8 +74,8 @@ p.submit {
     margin-top: 10px;
     font-style: italic;
 }
-#error-reporting-table td:nth-child(3),
-#error-reporting-table td:nth-child(4) {
+#error-types-table td:nth-child(3),
+#error-types-table td:nth-child(4) {
     text-align: center;
 }
 </style>
@@ -89,16 +91,15 @@ p.submit {
 
         echo wp_kses( ddtt_options_tr( 'error_uninstall', 'Remove Must-Use-Plugin When Uninstalling Developer Debug Tools', 'checkbox', 'If enabled above, selecting this option will remove the Must-Use-Plugin upon uninstall. Keep this unchecked if you want to leave it.' ), $allowed_html );
         ?>
-
     </table>
+    <?php submit_button(); ?>
 
-    <br>
+    <br><br><br><br>
+    <h2>Debug Error Reporting Level</h2>
     <div class="full_width_container">
-
         <em>The "Actual" column has been added to verify what is actually set.</em>
         <br><br>
-
-        <table id="error-reporting-table" class="admin-large-table">
+        <table id="error-types-table" class="admin-large-table">
             <tr>
                 <th style="width: 50px;">Value</th>
                 <th style="width: 180px;">Constant</th>

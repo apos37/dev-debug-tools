@@ -497,6 +497,9 @@ if ( $current_screen->id == $options_page ) {
     .ddtt.nav-tab-wrapper .nav-tab-active {
         margin-bottom: 0px !important;
     }
+    .ddtt.nav-tab-wrapper .nav-tab-active:focus {
+        border-bottom: 0 !important;
+    }
     .nav-tab-active {
         background: <?php echo esc_attr( $bg_accent ); ?> !important;
         color: <?php echo esc_attr( $text_accent ); ?> !important;

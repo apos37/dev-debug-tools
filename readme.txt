@@ -1,10 +1,10 @@
 === Developer Debug Tools ===
-Contributors: apos37
+Contributors: apos37, venutius
 Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.6.1
 Requires PHP: 7.4
-Stable tag: 1.8.1
+Stable tag: 1.8.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -83,6 +83,11 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.8.2 =
+* Fix: Error reporting level conversion tool not highlighting correctly, using ajax too much
+* Update: Added Error Suppressing tab
+* Fix: unserialize(): Error at offset
+
 = 1.8.1 =
 * Fix: JS not loading on Post Meta tab for most recent post
 * Tweak: Hide purge transient buttons if there are no transients

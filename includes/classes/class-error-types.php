@@ -23,6 +23,14 @@ add_action( 'init', function() {
 class DDTT_ERROR_REPORTING {
 
     /**
+     * The MU-Plugin Name
+     *
+     * @var string
+     */
+    public $mu_plugin_name = 'Debug Error Reporting Level';
+
+
+    /**
 	 * Constructor
 	 */
 	public function init() {
@@ -165,10 +173,10 @@ class DDTT_ERROR_REPORTING {
 
             // Add the file
             if ( $wp_filesystem->copy( $mu_plugin_file, $file_path, true ) ) {
-                ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin has been added.' );
+                ddtt_write_log( '"'.$this->mu_plugin_name.'" must-use-plugin has been added.' );
                 return true;
             } else {
-                ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin could not be added.' );
+                ddtt_write_log( '"'.$this->mu_plugin_name.'" must-use-plugin could not be added.' );
             }
 
         // Remove
@@ -181,10 +189,10 @@ class DDTT_ERROR_REPORTING {
 
             // Remove the file
             if ( $wp_filesystem->delete( $file_path ) ) {
-                ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin has been removed.' );
+                ddtt_write_log( '"'.$this->mu_plugin_name.'" must-use-plugin has been removed.' );
                 return true;
             } else {
-                ddtt_write_log( '"Debug Error Reporting Level" must-use-plugin could not be deleted. To remove it, please remove the "'.$filename.'" file from "'.DDTT_MU_PLUGINS_DIR.'" via FTP or File Manager.' );
+                ddtt_write_log( '"'.$this->mu_plugin_name.'" must-use-plugin could not be deleted. To remove it, please remove the "'.$filename.'" file from "'.DDTT_MU_PLUGINS_DIR.'" via FTP or File Manager.' );
             }
         }
 
@@ -220,6 +228,7 @@ class DDTT_ERROR_REPORTING {
 
             if ( !empty( $constants ) ) {
                 $result[ 'type' ] = 'success';
+                $result[ 'code' ] = $code;
                 $result[ 'constants' ] = $constants;
             } else {
                 $result[ 'type' ] = 'error';
@@ -277,9 +286,9 @@ class DDTT_ERROR_REPORTING {
         $handle = DDTT_GO_PF.'error_script';
 
         // Feedback form and error code checker
-        if ( ddtt_get( 'tab', '==', 'error' ) ) {
-            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'error-reporting.js', [ 'jquery' ], DDTT_VERSION );
-            wp_localize_script( $handle, 'errorAjax', [ 
+        if ( ddtt_get( 'tab', '==', 'error-types' ) ) {
+            wp_register_script( $handle, DDTT_PLUGIN_JS_PATH.'error-types.js', [ 'jquery' ], time() );
+            wp_localize_script( $handle, 'errorReportingAjax', [ 
                 'E_ALL'   => E_ALL,
                 'ajaxurl' => admin_url( 'admin-ajax.php' ) 
             ] );

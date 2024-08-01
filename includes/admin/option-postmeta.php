@@ -24,9 +24,10 @@
 }
 </style>
 
-<?php include 'header.php'; ?>
-
 <?php 
+// Include the header
+include 'header.php';
+
 // Build the current url
 $page = ddtt_plugin_options_short_path();
 $tab = 'postmeta';

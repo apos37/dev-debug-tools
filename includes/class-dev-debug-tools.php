@@ -89,7 +89,8 @@ class DDTT_DEBUG_TOOLS {
         // Classes
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-settings.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-logs.php';
-        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-error-reporting.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-error-types.php';
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-error-suppressing.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-meta.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-api.php';
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-download-files.php';
