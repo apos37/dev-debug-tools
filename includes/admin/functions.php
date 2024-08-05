@@ -2937,5 +2937,269 @@ function ddtt_get_file_eol( $file_contents, $incl_code = true ) {
 
 
 /**
+ * Get plugins data fresh and recache
+ *
+ * @return array
+ */
+function ddtt_get_plugins_data() {
+    // Store the final plugins data here, and add current timestamp
+    $plugins_data = [ 'last_cached' => time() ];
+
+    // Store the plugins for all sites here
+    $plugins = [];
+
+    // If on the network, let's get all the sites plugins, not just the local
+    if ( is_multisite() ) {
+
+        // Get the network active plugins
+        $network_active = get_site_option( 'active_sitewide_plugins' );
+
+        // Add them to the active array
+        foreach ( $network_active as $na_key => $na ) {
+            $plugins[ $na_key ][] = 'network';
+        }
+
+        // Get all the sites
+        global $wpdb;
+        $subsites = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE archived = '0' AND deleted = '0' AND spam = '0' ORDER BY blog_id" );
+
+        // Iter the sites
+        if ( $subsites && !empty( $subsites ) ) {
+            foreach( $subsites as $subsite ) {
+
+                // Get the plugins
+                $site_active = get_blog_option( $subsite->blog_id, 'active_plugins' );
+
+                // Iter each plugin
+                foreach ( $site_active as $p_path ) {
+                    
+                    // Add the site
+                    $plugins[ $p_path ][] = $subsite->blog_id;
+                }
+            }
+        }
+
+    // If not on multisite network
+    } else {
+
+        // Get the active plugins
+        $site_active = get_option( 'active_plugins' );
+
+        // Iter each plugin
+        foreach ( $site_active as $site ) {
+            $plugins[ $site ] = 'local';
+        }
+    }
+
+    // Get all the plugins full info
+    $all = get_plugins();
+
+    // Iter each
+    foreach ( $all as $k => $a ) {
+
+        // Add the non-active plugins
+        if ( !array_key_exists( $k, $plugins ) ) {
+            $plugins[ $k ] = false;
+        }
+    }
+
+    // Store the new array here so we can sort them by name
+    $sorted_plugins = [];
+
+    // Get the full info for the plugins
+    foreach ( $plugins as $key => $p ) {      
+        
+        // Make sure the plugin exists
+        if ( isset( $all[ $key ] ) ) {
+
+            // Get the plugin name
+            $name = $all[ $key ][ 'Name' ];
+
+            // Add to sorted array
+            $sorted_plugins[ $name ] = [
+                'path' => $key,
+                'p'    => !$p ? [] : ( !is_array( $p ) ? [ $p ] : $p )
+            ];
+        }
+    }
+
+    // Get the full info for the plugins
+    foreach ( $sorted_plugins as $name => $args ) {
+
+        // Set the key/path
+        $key = $args[ 'path' ];
+        $p = $args[ 'p' ];
+        
+        // Make sure the plugin exists
+        if ( isset( $all[ $key ] ) ) {
+
+            // Check if the plugin has a Plugin URL
+            if ( $all[ $key ][ 'PluginURI' ] && $all[ $key ][ 'PluginURI' ] != '' ) {
+                $url = $all[ $key ][ 'PluginURI' ];
+            } elseif ( $all[ $key ][ 'AuthorURI' ] && $all[ $key ][ 'AuthorURI' ] != '' ) {
+                $url = $all[ $key ][ 'AuthorURI' ];
+            } else {
+                $url = false;
+            }
+
+            // Add author to name
+            if ( $all[ $key ][ 'Author' ] && $all[ $key ][ 'Author' ] != '' ) {
+                $author_name = $all[ $key ][ 'Author' ];
+            } elseif ( $all[ $key ][ 'AuthorName' ] && $all[ $key ][ 'AuthorName' ] != '' ) {
+                $author_name = $all[ $key ][ 'AuthorName' ];
+            }
+
+            // Get the last updated date and tested up to version
+            $last_updated = '';
+            $old_class = '';
+            $compatibility = '';
+            $incompatible_class = '';
+            $args = [ 
+                'slug' => $all[ $key ][ 'TextDomain' ], 
+                'fields' => [
+                    'last_updated' => true,
+                    'tested' => true
+                ]
+            ];
+            $response = wp_remote_post(
+                'http://api.wordpress.org/plugins/info/1.0/',
+                [
+                    'body' => [
+                        'action' => 'plugin_information',
+                        'request' => serialize( (object)$args )
+                    ]
+                ]
+            );
+            if ( !is_wp_error( $response ) ) {
+                $returned_object = unserialize( wp_remote_retrieve_body( $response ) );   
+                if ( $returned_object ) {
+                    
+                    // Last Updated
+                    if ( $name != 'Hello Dolly' ) {
+                        $last_updated = $returned_object->last_updated;
+                        $last_updated = ddtt_time_elapsed_string( $last_updated );
+                        
+                        // Add old class if more than 11 months old
+                        $earlier = new DateTime( $last_updated );
+                        $today = new DateTime( gmdate( 'Y-m-d' ) );
+                        $diff = $today->diff( $earlier )->format("%a");
+                        if ( $diff >= 335 ) {
+                            $old_class = ' warning';
+                        }
+
+                        // Compatibility
+                        $compatibility = $returned_object->tested;
+
+                        // Add incompatibility class
+                        global $wp_version;
+                        if ( $compatibility < $wp_version ) {
+                            $incompatible_class = ' warning';
+                        }
+                    } else {
+                        $last_updated = 'just now';
+                        $compatibility = '';
+                    }
+                }
+            }
+
+            // Get the folder size
+            if ( !function_exists( 'get_dirsize' ) ) {
+                require_once ABSPATH.WPINC.'/ms-functions.php';
+            }
+
+            // Strip the path to get the folder
+            $p_parts = explode( '/', $key );
+            $folder = $p_parts[0];
+            
+            // Get the path of a directory.
+            $directory = get_home_path().DDTT_PLUGINS_URL.'/'.$folder.'/';
+            
+            // Get the size of directory in bytes.
+            $bytes = get_dirsize( $directory );
+
+            // Get the last modified date and convert to developer's timezone
+            if ( $name != 'Hello Dolly' ) {
+                $utc_time = gmdate( 'Y-m-d H:i:s', filemtime( $directory ) );
+                $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
+                $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
+                $last_modified = $dt->format( 'F j, Y g:i A T' );
+            } else {
+                $last_modified = '';
+            }
+
+            // If plugin is active or on multisite
+            if ( !empty( $p ) ) {
+                    
+                // If on multisite
+                if ( is_multisite() ) {
+
+                    // If network activated
+                    if ( in_array( 'network', $p ) ) {
+                        $is_active = 'Network';
+
+                    // If on this site
+                    } elseif ( ( !is_network_admin() && in_array( get_current_blog_id(), $p ) ) || is_network_admin() ) {
+                        $is_active = 'Local Only';
+
+                    // If not on this site
+                    } else {
+                        $is_active = 'No';
+                    }
+                } else {
+                    $is_active = 'Yes';
+                }
+
+            // If inactive and not on network
+            } else {
+                $is_active = 'No';
+            }
+
+            // If on multisite network
+            if ( is_network_admin() ) {
+                if ( !empty( $p ) ) {
+                    $site_names = [];
+                    if ( in_array( 'network', $p ) ) {
+                        $site_names[] = 'Network Active';
+                    } else {
+                        foreach ( $p as $site_id ) {
+                            $site_names[] = 'ID:'.$site_id.' - '.get_blog_details( $site_id )->blogname;
+                        }
+                    }
+                    $site_names = implode( '<br>', $site_names );
+                } else {
+                    $site_names = 'None';
+                }
+            } else {
+                $site_names = '';
+            }
+
+            // Save data for transient
+            $plugins_data[ $key ] = [
+                'is_active'          => $is_active,
+                'name'               => $name,
+                'author'             => $author_name,
+                'url'                => $url,
+                'description'        => $all[ $key ][ 'Description' ],
+                'site_names'         => $site_names,
+                'version'            => $all[ $key ][ 'Version' ],
+                'old_class'          => $old_class,
+                'last_updated'       => $last_updated,
+                'incompatible_class' => $incompatible_class,
+                'compatibility'      => $compatibility,
+                'folder_size'        => $bytes,
+                'last_modified'      => $last_modified
+            ];
+        }           
+    }
+
+    // Set transient for 1 day
+    set_transient( DDTT_GO_PF.'plugins_data', $plugins_data, DAY_IN_SECONDS );
+
+    // Return it
+    return $plugins_data;
+} // End ddtt_get_plugins_data()
+
+
+/**
  * THE END
  */

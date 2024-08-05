@@ -544,6 +544,9 @@ if ( $current_screen->id == $options_page ) {
     .inactive {
         filter: brightness(50%);
     }
+    .size-large {
+        font-weight: bold;
+    }
     
 
     /* ---------------------------------------------

@@ -106,5 +106,11 @@ $email = $user->user_email;
             <p class="field-desc break">Accepts partial keywords, so if domain is <code>https://long-domain.com</code>, you can use <code>ddtt_is_site( "long" )</code> and it will return <code>true</code>.
             <br>This is really only useful if you are maintaining multiple sites on different domains.</p></td>
         </tr>
+        <tr>
+            <td>Fetch and cache plugins data that is used on the <a href="<?php echo esc_url( ddtt_plugin_options_path( 'plugins' ) ); ?>">Plugins</a> tab</td>
+            <td><strong><?php echo wp_kses_post( ddtt_get_function_example( "ddtt_get_plugins_data" ) ); ?></strong></td>
+            <td><strong><?php echo wp_kses_post( ddtt_highlight_string( 'ddtt_get_plugins_data();' ) ); ?></strong>
+            <p class="field-desc break">Fetches data for all of your plugins and caches them to a transient named <code>ddtt_plugins_data</code> for 1 day. You can schedule this to run at night using <a href="https://wordpress.org/plugins/wp-crontrol/" target="_blank">WP Crontrol</a>.</p></td>
+        </tr>
     </table>
 </div>
