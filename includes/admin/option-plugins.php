@@ -172,7 +172,8 @@ $display_last_cached = ddtt_convert_timezone( $last_cached );
     // No plugins
     } else {
 
-        echo 'No plugin data found.';
+        wp_safe_redirect( $current_url );
+        exit;
     }
     ?>
 </div>
