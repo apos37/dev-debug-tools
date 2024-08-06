@@ -375,6 +375,9 @@ if ( $shortcode != '' && !empty( $results ) ) {
                         // Get the file path of the callback function/method
                         $file_path = ddtt_relative_pathname( $fx->getFileName() );
 
+                        // Line number
+                        $line = $fx->getStartLine();
+
                         // Check if it's a plugin
                         if ( strpos( $file_path, DDTT_PLUGINS_URL ) !== false ) {
 
@@ -418,7 +421,7 @@ if ( $shortcode != '' && !empty( $results ) ) {
                                 } else {
                                     
                                     // Update short file path link
-                                    $file_path = '<a href="/'.esc_attr( $admin_url ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $file_path ).'</a>';
+                                    $file_path = '<a href="/'.esc_attr( $admin_url ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php&line='.esc_attr( $line ).'" target="_blank">'.esc_attr( $file_path ).'</a>';
                                 }
                             }
 
@@ -450,12 +453,12 @@ if ( $shortcode != '' && !empty( $results ) ) {
                             } else {
                                 
                                 // Update short file path link
-                                $file_path = '<a href="/'.esc_attr( $admin_url ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $file_path ).'</a>';
+                                $file_path = '<a href="/'.esc_attr( $admin_url ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'&line='.esc_attr( $line ).'" target="_blank">'.esc_attr( $file_path ).'</a>';
                             }
                         }
 
                         // Add the line number
-                        $short_file_path = $file_path.'<br><strong>Line:</strong> '.$fx->getStartLine();
+                        $short_file_path = $file_path.'<br><strong>Line:</strong> '.$line;
 
                         // Source
                         $source = $include.'<strong>Path: </strong>/'.$short_file_path;

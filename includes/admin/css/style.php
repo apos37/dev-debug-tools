@@ -187,6 +187,15 @@ if ( $current_screen->id == $options_page ) {
         font-weight: 500;
     }
 
+    .require-warning {
+        background: yellow;
+        color: red;
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 5px;
+        margin-right: 5px;
+    }
+
     /* Hide Screen Options */
     #screen-meta,
     #screen-meta-links {
@@ -366,6 +375,7 @@ if ( $current_screen->id == $options_page ) {
     /* Input fields */
     .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> input[type=text],
     .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> input[type=number],
+    .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> input[type=password],
     .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> textarea,
     .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> select {
         background-color: <?php echo esc_attr( $bg_secondary ); ?> !important;
@@ -390,6 +400,23 @@ if ( $current_screen->id == $options_page ) {
     .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> input[type=color] {
         background-color: <?php echo esc_attr( $bg_secondary ); ?> !important;
         height: 4rem;
+    }
+
+    /* Password fields */
+    .password-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: fit-content;
+    }
+    .password-container input {
+        padding-right: 2.5rem; /* Space for the icon */
+    }
+    .password-container .view-pass-icon {
+        position: absolute;
+        right: 0.5rem;
+        cursor: pointer;
+        font-size: 1.2rem; /* Adjust size as needed */
     }
 
     /* Field descriptions/comments */

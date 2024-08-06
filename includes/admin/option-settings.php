@@ -155,13 +155,9 @@
             ]; ?>
             <?php echo wp_kses( ddtt_options_tr( 'dev_timezone', 'Developer Timezone', 'select', '<br>Changes the timezone on Debug Log viewer and other areas in the plugin. Default is what the site uses.', $timezone_args ), $allowed_html ); ?>
             
-            <?php if ( $is_dev ) {
-                echo wp_kses( ddtt_options_tr( 'hide_plugin', 'Hide Plugin', 'checkbox', 'Hides the plugin from the left admin menu and disguises it on the plugins page as "Developer Notifications." I opted for disguising rather than hiding it altogether since part of debugging often requires disabling all plugins. Makes it difficult for people that have hacked an admin account from finding the plugin area and gaining access to sensitive information. Requires you to access this area directly (I recommend bookmarking this page first).' ), $allowed_html );
-            } ?>
-
         </table>
 
-        <?php submit_button(); ?>
+        <p class="submit"><input type="submit" class="button button-primary" value="Save Changes"></p>
 
         <?php if ( !ddtt_is_dev() ) {
             $readonly = ' style="display: none;"';
@@ -201,7 +197,7 @@
 
             </table>
 
-            <?php submit_button(); ?>
+            <p class="submit"><input type="submit" class="button button-primary" value="Save Changes"></p>
 
             <br><hr><br></br>
             <h2>Logging</h2>
@@ -241,7 +237,7 @@
 
             </table>
 
-            <?php submit_button(); ?>
+            <p class="submit"><input type="submit" class="button button-primary" value="Save Changes"></p>
 
             <br><hr><br></br>
             <h2>Show Online Users</h2>
@@ -307,7 +303,7 @@
 
             </table>
 
-            <?php submit_button(); ?>
+            <p class="submit"><input type="submit" class="button button-primary" value="Save Changes"></p>
 
             <br><hr><br></br>
             <h2>Admin Bar</h2>
@@ -348,7 +344,7 @@
                 
             </table>
 
-            <?php submit_button(); ?>
+            <p class="submit"><input type="submit" class="button button-primary" value="Save Changes"></p>
 
             <br><hr><br></br>
             <h2>Colors</h2>
@@ -364,7 +360,27 @@
                 
             </table>
 
-            <?php submit_button(); ?>
+            <p class="submit"><input type="submit" class="button button-primary" value="Save Changes"></p>
+
+            <br><hr><br></br>
+            <h2>Security</h2>
+            <table class="form-table">
+
+                <?php echo wp_kses( ddtt_options_tr( 'hide_plugin', 'Hide Plugin', 'checkbox', 'Hides the plugin from the left admin menu and disguises it on the plugins page as "Developer Notifications." Requires you to access this area directly (I recommend bookmarking this page first).' ), $allowed_html ); ?>
+                
+                <?php $pass = get_option( 'ddtt_pass' ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'enable_pass', 'Require Passwords', 'checkbox', 'Require a password to be entered to access tabs and other pages set below.', [ 'require' => [ 'pass' => [ 'label' => 'Password', 'check' => $pass ] ] ] ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'pass', ( $pass ? 'New ' : '' ).'Password', 'password', '<br>'.( $pass ? 'Password has been set. Enter a new one to change it, or leave it blank to keep using the one you set previously.' : 'Set a password of your choosing. Please review your password prior to saving it.' ) ), $allowed_html ); ?>
+                
+                <?php echo wp_kses( ddtt_options_tr( 'pass_exp', 'Keep Logged In For', 'number', '<br>Enter the number of minutes until you have to re-enter your password.', [ 'width' => '10rem', 'default' => 5 ] ), $allowed_html ); ?>
+                
+                <?php echo wp_kses( ddtt_options_tr( 'secure_pages', 'Admin Pages to Secure with Password', 'text+', 'All DDT pages are added to this list automatically. If you have additional admin pages you would like users to require a password for, enter the url paths here.', [ 'placeholder' => home_url( DDTT_ADMIN_URL.'/plugins.php' ), 'pattern' => 'https?://.+' ] ), $allowed_html ); ?>
+                
+            </table>
+
+            <p class="submit"><input type="submit" class="button button-primary" value="Save Changes"></p>
         </div>
     </form>
 <?php } ?>

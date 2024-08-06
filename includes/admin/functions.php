@@ -100,7 +100,32 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
 
     // Checkbox
     if ( $type == 'checkbox' ) {
-        $input = '<input type="checkbox" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="1" '.checked( 1, $value, false ).''.$required.'/>';
+        $attributes = '';
+        $class = '';
+        $warning = '';
+        if ( !is_null( $args ) ) {
+            $require = $args[ 'require' ];
+            if ( !empty( $require ) ) {
+                $warning_spans = [];
+                $completed = [];
+                $not_completed = [];
+                foreach ( $require as $key => $r ) {
+                    if ( $r[ 'check' ] ) {
+                        $completed[] = $key;
+                        $show_warning = 'none';
+                    } else {
+                        $not_completed[] = $key;
+                        $show_warning = 'inline';
+                    }
+                    $warning_spans[] = '<span class="require-warning '.$key.'" style="display: '.$show_warning.'">'.$r[ 'label' ].' is required.</span>';
+                }
+                $attributes = ' data-require="'.implode( ',', array_keys( $require ) ).'" data-completed="'.implode( ',', $completed ).'" data-stored="'.implode( ',', $completed ).'"';
+                $class = ' class="require"';
+                $warning = implode( '', $warning_spans );
+            }
+        }
+
+        $input = '<input type="checkbox" id="'.esc_attr( $option_name ).'"'.$class.$attributes.' name="'.esc_attr( $option_name ).'" value="1" '.checked( 1, $value, false ).''.$required.'/>'.$warning;
 
     // Checkboxes
     } elseif ( $type == 'checkboxes' ) {
@@ -187,6 +212,15 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
         
         $input = '<input type="number" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="'.esc_attr( $value ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$autocomplete.$required.'/>';
 
+    // Password Field
+    } elseif ( $type == 'password' ) {
+        if ( !is_null( $args ) && isset( $args[ 'width' ] ) ) {
+            $width = $args[ 'width' ];
+        } else {
+            $width = '20rem';
+        }
+        
+        $input = '<div class="password-container"><input type="password" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="" style="width: '.esc_attr( $width ).'"'.$autocomplete.$required.'/> <span class="view-pass-icon" data-id="'.esc_attr( $option_name ).'">👁️</span></div>';
 
     // Text with Color Field
     } elseif ( $type == 'color' ) {
@@ -357,7 +391,8 @@ function ddtt_wp_kses_allowed_html() {
         ],
         'span' => [
             'class' => [],
-            'style' => []
+            'style' => [],
+            'data-id' => []
         ],
         'a' => [
             'href' => [],
@@ -409,13 +444,16 @@ function ddtt_wp_kses_allowed_html() {
             'name' => [],
             'value' => [],
             'checked' => [],
-            'required' => [],
             'style' => [],
             'pattern' => [],
             'disabled' => [],
             'size' => [],
             'autocomplete' => [],
             'placeholder' => [],
+            'required' => [],
+            'data-require' => [],
+            'data-completed' => [],
+            'data-stored' => []
         ],
         'textarea' => [
             'type' => [],

@@ -40,7 +40,6 @@ class DDTT_GLOBAL_OPTIONS {
         $this->register_group_settings( 'settings', [
             'dev_email',
             'dev_timezone',
-            'hide_plugin',
             'view_sensitive_info',
             'php_eol',
             'test_number',
@@ -86,6 +85,11 @@ class DDTT_GLOBAL_OPTIONS {
             'color_fx_vars',
             'color_syntax',
             'color_text_quotes',
+            'hide_plugin',
+            'enable_pass',
+            'pass',
+            'pass_exp',
+            'secure_pages',
         ] );
 
         // WP-CONFIG Settings

@@ -219,4 +219,170 @@ jQuery( $ => {
         $( '#text_plus_ddtt_log_files .check' ).off( 'click' );
         ddttStartListening();
     }
+    
+
+    /**
+     * Secure Pages
+     */
+    // Suppressed errors text+ field
+    const savedPages = settingsAjax.secure_pages;
+    var securePagesWrapper = $( '#text_plus_ddtt_secure_pages' );
+
+    // Count
+    var s = 2;
+
+    // Iter the values
+    if ( parseInt( savedPages.length ) > 1 ) {
+        savedPages.slice( 1 ).forEach( function( v ) {
+            if ( v != '' ) {
+
+                // Add the input
+                $( securePagesWrapper ).append( ddttNewSecurePageRow( v, true ) );
+                s++;
+
+                // Restart listening
+                ddttRestartSecurePagesListening();
+            }
+        } );
+    }
+
+    // Listen only to Add New Field + link
+    $( '#text_plus_ddtt_secure_pages .add_form_field' ).on( 'click', function( e ) {
+        e.preventDefault();
+
+        // Only allow 10 at a time
+        if ( x < 10 ) {
+
+            // Add what is already in the database
+            $( securePagesWrapper ).append( ddttNewSecurePageRow() );
+            s++;
+
+            // Restart listening
+            ddttRestartSecurePagesListening();
+
+        } else {
+            alert( 'You reached the limit.' );
+        }
+    } );
+
+    // New row
+    function ddttNewSecurePageRow( val = '' ) {
+        return '<div><input type="text" name="ddtt_secure_pages[]" value="' + val + '" style="width: 43.75rem" pattern="https?://.+"/> <a href="javascript:void(0);" class="delete">Delete</a></div>';
+    }
+
+    // Start listening
+    ddttStartSecurePagesListening();
+    function ddttStartSecurePagesListening() {
+
+        // Listen for delete
+        $( securePagesWrapper ).on( 'click', '.delete', function( e ) {
+            e.preventDefault();
+            $( this ).parent( 'div' ).remove();
+            x--;
+        } );
+    }
+
+    // Stop listening for deletes
+    function ddttRestartSecurePagesListening() {
+        $( securePagesWrapper ).off( 'click' );
+        $( '#text_plus_ddtt_secure_pages .check' ).off( 'click' );
+        ddttStartSecurePagesListening();
+    }
+
+
+    /**
+     * Requires
+     */
+    // Check only the required fields associated with the element
+    function ddttCheckTheseRequiredFields( element ) {
+        const $this = element;
+        const isChecked = $this.is( ':checked' );
+        const req = $this.data( 'require' );
+        const completed = $this.data( 'completed' );
+        const stored = $this.data( 'stored' ); 
+
+        const requiredFields = req ? req.split(',') : [];
+        const completedFields = completed ? completed.split(',') : [];
+        const storedFields = stored ? stored.split(',') : [];
+
+        const relevantRequiredFields = ($this.attr('id') === 'ddtt_enable_pass')
+            ? requiredFields.filter(partialID => !storedFields.includes(partialID))
+            : requiredFields;
+
+        if ( isChecked ) {
+            const missingFields = relevantRequiredFields.filter( partialID => !completedFields.includes( partialID ) );
+
+            missingFields.forEach( partialID => {
+                $( `.require-warning.${partialID}` ).css( 'display', 'inline' );
+            } );
+
+            completedFields.forEach( partialID => {
+                $( `.require-warning.${partialID}` ).hide();
+            } );
+
+            relevantRequiredFields.forEach( partialID => {
+                const inputID = `ddtt_${partialID}`;
+                ddttStartListeningToRequiredFields( $this, inputID, partialID );
+                $( `#ddtt_${partialID}` ).attr( 'required', true );
+            } );
+        } else {
+            $this.siblings( '.require-warning' ).hide();
+            requiredFields.forEach(partialID => {
+                $( `#ddtt_${partialID}` ).removeAttr( 'required' );
+            });
+        }
+    }
+
+    // Function to update the "completed" attribute for the current element
+    function ddttUpdateCompletedAttribute( element, partialID, action ) {
+        const $this = element;
+        const completed = $this.data( 'completed' );
+        var completedFields = completed ? completed.split(',') : [];
+
+        if ( action === 'add' ) {
+            if ( !completedFields.includes( partialID ) ) {
+                completedFields.push( partialID );
+            }
+        } else if ( action === 'remove' ) {
+            if ( completedFields.includes( partialID ) ) {
+                completedFields = completedFields.filter( id => id !== partialID );
+            }
+        }
+        
+        const updatedCompleted = completedFields.join(',');
+        $this.data( 'completed', updatedCompleted );
+        $this.attr( 'data-completed', updatedCompleted );
+    }
+
+    // Function to start listening for input
+    function ddttStartListeningToRequiredFields( element, inputID, partialID ) {
+        $( `#${inputID}` ).off( 'input' );
+        $( `#${inputID}` ).on( 'input', function() {
+            const val = $( this ).val();
+            if ( val && val.trim() !== '' ) {
+                $( `.require-warning.${partialID}` ).hide();
+                ddttUpdateCompletedAttribute( element, partialID, 'add' );
+            } else {
+                if ( element.is( ':checked' ) ) {
+                    $( `.require-warning.${partialID}` ).css( 'display', 'inline' );
+                }
+                ddttUpdateCompletedAttribute( element, partialID, 'remove' );
+            }
+        } );
+    }
+
+    // Function to update warnings based on the current state of the fields
+    function ddttCheckAllRequiredFields() {
+        $( '.require' ).each( function() {
+            ddttCheckTheseRequiredFields( $( this ) );
+        } ) ;
+    }
+
+    // Initialize listeners and update warnings when the document is ready
+    ddttCheckAllRequiredFields();
+
+    // Optionally, also set up a listener for checkbox changes to update warnings dynamically
+    $( '.require' ).on( 'click', function() {
+        ddttCheckTheseRequiredFields( $( this ) );
+    } );
 } )

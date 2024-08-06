@@ -264,6 +264,8 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'resources'         => [ __( 'Resources', 'dev-debug-tools' ), 'Helpful resources for WP developers.', true ],
         'about'             => [ __( 'About', 'dev-debug-tools' ), '<a href="'.ddtt_plugin_options_path( 'changelog' ).'">View the Changelog</a>', false ],
         'changelog'         => [ __( 'Changelog', 'dev-debug-tools' ), 'Updates to this plugin.', false, true ],
+        'pw'                => [ __( 'Verify Password', 'dev-debug-tools' ), 'This page is used for accessing pages that are password protected.', false, true ],
+        'pw-reset'          => [ __( 'Reset Password', 'dev-debug-tools' ), 'Reset your security password.', false, true ],
     ];
 
     if ( !is_null( $slug ) ) {
