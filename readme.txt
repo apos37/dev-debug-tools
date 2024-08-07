@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.6.1
 Requires PHP: 7.4
-Stable tag: 1.8.2.4
+Stable tag: 1.8.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -83,7 +83,7 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
-= 1.8.2.4 =
+= 1.8.3 =
 * Update: Added a password feature, new security settings on bottom of Settings tab (props venutius for suggestion)
 * Tweak: Bolded the folder size on the Plugins tab if the size is over 2MB
 * Update: Refactored the Plugins tab to cache data for 1 day, added caching function to Functions tab for external use (props venutius for suggestion)
