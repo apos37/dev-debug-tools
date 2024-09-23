@@ -85,16 +85,37 @@ class DDTT_LOGS {
         
         // First check if we are copying a file from the plugin assets folder
         if ( $plugin_assets ) {
-            $file_to_copy = get_home_path() . DDTT_PLUGIN_FILES_PATH . $file_to_copy;
+            $file_to_copy =  get_home_path().DDTT_PLUGIN_FILES_PATH.$file_to_copy;
         } else {
-            $file_to_copy = get_home_path() . $file_to_copy;
+            $file_to_copy =  get_home_path().$file_to_copy;
         }
-        
-        // Get the full path of the file to replace
-        $file_to_replace = get_home_path() . $file_to_replace;
 
-        // Copy the file to new spot
-        copy( $file_to_copy, $file_to_replace );
+        // Extract the filename from the $file_to_replace path
+        $path_parts = pathinfo( $file_to_replace );
+        $replacement_filename = $path_parts[ 'basename' ];
+        $replacement_dir = $path_parts[ 'dirname' ];
+
+        // Define the temporary path for the copied file
+        $temp_file_path = $replacement_dir . '/' . $replacement_filename;
+
+        // Copy the file to the new spot
+        $result = copy( $file_to_copy, $temp_file_path );
+
+        if (!$result) {
+            $error = error_get_last();
+            ddtt_admin_notice( 'error', 'Uh oh! Your file could not be copied to ' . $temp_file_path . '! ' . $error[ 'message' ] );
+            return false;
+        }
+
+        // Rename the copied file to the final destination if necessary
+        $result = rename( $temp_file_path, $file_to_replace );
+
+        if (!$result) {
+            $error = error_get_last();
+            ddtt_admin_notice( 'error', 'Uh oh! Your file could not be renamed to ' . $file_to_replace . '! ' . $error[ 'message' ] );
+        }
+
+        return $result;
     } // End replace_file()
 
 

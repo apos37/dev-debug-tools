@@ -2,9 +2,9 @@
 Contributors: apos37, venutius
 Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
-Tested up to: 6.6.1
+Tested up to: 6.6.2
 Requires PHP: 7.4
-Stable tag: 1.8.3
+Stable tag: 1.8.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -83,6 +83,12 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.8.3.1 =
+* Tweak: Make DB Tables tab header row sticky when viewing a single table
+* Update: Added a setting for custom debug log path (for viewing and clearing only)
+* Update: Added a Domain tab for checking DNS records
+* Fix: Discord fatal error messages not showing quotes properly
+
 = 1.8.3 =
 * Update: Added a password feature, new security settings on bottom of Settings tab (props venutius for suggestion)
 * Tweak: Bolded the folder size on the Plugins tab if the size is over 2MB

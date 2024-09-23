@@ -4,12 +4,31 @@
 }
 
 .table-container {
-    overflow-x: auto;
+    /* overflow-x: auto; */
     white-space: nowrap;
+    overflow: auto;
+    /* height: 80vh; */
+    max-height: 100vh;
+}
+
+.db-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.db-table thead {
+    background: #2D2D2D;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .db-table th {
     min-width: 100px;
+    border: 1px solid white;
+    background: #222222;
+    position: sticky;
+    top: 0;
 }
 
 .db-table th.id { min-width: 50px; }
@@ -262,10 +281,10 @@ if ( !empty( $tables ) ) {
             ?>
             <div class="full_width_container">
                 <h3><?php echo esc_attr( $total_rows ); ?> record<?php echo esc_attr( ( $total_rows == 1 ) ? '' : 's' ); ?> found in <code class="hl" style="font-size: 1.3rem"><?php echo esc_html( $table_to_view ); ?></code><?php echo wp_kses( $incl_keywords, [ 'code' => [ 'class' => [], 'style'=> [] ] ] ); ?></h3>
-                <div class="table-container">
+                <div class="table-container db-table-container">
                     <table class="admin-large-table db-table">
                         <thead>
-                            <tr>
+                            <tr class="header-row">
                                 <?php
                                 foreach ( $columns as $col ) {
                                     $field_name = sanitize_text_field( $col[ 'Field' ] );

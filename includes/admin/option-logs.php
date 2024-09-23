@@ -14,28 +14,34 @@ $allowed_html = ddtt_wp_kses_allowed_html();
 $DDTT_LOGS = new DDTT_LOGS();
 
 // Get the debug log location
-if ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
+$debug_log_path = get_option( DDTT_GO_PF.'debug_log_path' );
+if ( $debug_log_path && $debug_log_path != '' ) {
+    $debug_loc = sanitize_text_field( $debug_log_path );
+    $debug_replace = $debug_loc;
+} elseif ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
     $debug_loc = WP_DEBUG_LOG;
+    $debug_replace = get_home_path().$debug_loc;
 } else {
     $debug_loc =  DDTT_CONTENT_URL.'/debug.log';
+    $debug_replace = get_home_path().$debug_loc;
 }
 
 // Replace the files if query string exists
 if ( ddtt_get( 'clear_error_log', '==', 'true' ) ) {
-    $DDTT_LOGS->replace_file( 'error_log', 'error_log', true );
+    $DDTT_LOGS->replace_file( get_home_path().'error_log', 'error_log', true );
 }
 if ( ddtt_get( 'clear_debug_log', '==', 'true' ) ) {
-    $DDTT_LOGS->replace_file( $debug_loc, 'debug.log', true );
+    $DDTT_LOGS->replace_file( $debug_replace, 'debug.log', true );
 }
 if ( ddtt_get( 'clear_admin_error_log', '==', 'true' ) ) {
-    $DDTT_LOGS->replace_file( DDTT_ADMIN_URL.'/error_log', 'error_log', true );
+    $DDTT_LOGS->replace_file( get_home_path().DDTT_ADMIN_URL.'/error_log', 'error_log', true );
 }
 
 
 /**
  * debug.log
  */
-echo '<h2>'.esc_attr( DDTT_CONTENT_URL ).'/debug.log</h2>';
+echo '<h2>'.esc_attr( $debug_loc ).'</h2>';
 
 // Contents?
 if ( $debug_log = $DDTT_LOGS->file_exists_with_content( $debug_loc ) ) {
@@ -67,6 +73,8 @@ if ( $debug_log = $DDTT_LOGS->file_exists_with_content( $debug_loc ) ) {
 $error_log_path = get_option( DDTT_GO_PF.'error_log_path' );
 if ( !$error_log_path || $error_log_path == '' ) {
     $error_log_path = 'error_log';
+} else {
+    $error_log_path = sanitize_text_field( $error_log_path );
 }
 
 // Title
@@ -98,6 +106,8 @@ if ( $error_log ) {
 $admin_error_log_path = get_option( DDTT_GO_PF.'admin_error_log_path' );
 if ( !$admin_error_log_path || $admin_error_log_path == '' ) {
     $admin_error_log_path = DDTT_ADMIN_URL.'/error_log';
+} else {
+    $admin_error_log_path = sanitize_text_field( $admin_error_log_path );
 }
 
 // Title

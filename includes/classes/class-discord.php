@@ -125,7 +125,7 @@ class DDTT_DISCORD {
 
             // Embed description
             if ( isset( $args[ 'desc' ] ) && $args[ 'desc' ] != '' ) {
-                $data[ 'embeds' ][0][ 'description' ] = esc_html( $args[ 'desc' ] );
+                $data[ 'embeds' ][0][ 'description' ] = wp_kses_post( $args[ 'desc' ] );
             }
 
             // Embed attached image

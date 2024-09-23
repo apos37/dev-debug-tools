@@ -254,6 +254,7 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'usermeta'          => [ __( 'User Meta', 'dev-debug-tools' ), 'A quick view of all the user meta so you don\'t have to log into phpMyAdmin.', true ],
         'postmeta'          => [ __( 'Post Meta', 'dev-debug-tools' ), 'A quick view of all the post meta so you don\'t have to log into phpMyAdmin.', true ],
         'autodrafts'        => [ __( 'Auto-Drafts', 'dev-debug-tools' ), 'View current auto-drafts. Auto-drafts are temporary drafts that are typically created when you start a new post and then leave the page without saving it. They can be hidden in the database and not show up in your admin list table with the rest of your drafts. Since these are unnecessary, this page allows you to clear them easily.', true ],
+        'domain'            => [ __( 'Domain', 'dev-debug-tools' ), 'Your domain\'s <em>public</em> DNS records, including nameservers. Your host will include all private and hidden records as well as record names, whereas we don\'t have access to them publically.', true ],
         'api'               => [ __( 'APIs', 'dev-debug-tools' ), 'A list of the site\'s registered REST APIs. Your REST API root is: <a href="'.$rest_api_root.'" target="_blank">'.$rest_api_root.'</a>', true ],
         'scfinder'          => [ __( 'Shortcode Finder', 'dev-debug-tools' ), 'Search through posts and pages for a shortcode.' ],
         'regex'             => [ 'Regex', 'Learn and test regex patterns.', true ],

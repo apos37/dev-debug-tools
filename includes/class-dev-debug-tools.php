@@ -24,7 +24,7 @@ class DDTT_DEBUG_TOOLS {
             if ( file_exists( DDTT_ADMIN_INCLUDES_URL.'plugin.php' ) ) {
                 include_once( DDTT_ADMIN_INCLUDES_URL.'plugin.php' );
             } else {
-                ddtt_write_log( 'Error: Could not find plugin.php file.' );
+                error_log( 'Error: Could not find plugin.php file.' );
             }
 		}
 

@@ -224,10 +224,11 @@
                 $active_theme = str_replace( '%2F', '/', rawurlencode( get_stylesheet() ) );
                 $active_theme_path = '/'.$themes_root_uri.$active_theme.'/';
                 ?>
+                <?php echo wp_kses( ddtt_options_tr( 'debug_log_path', 'View/clear path to debug.log', 'text', '', [ 'default' => DDTT_CONTENT_URL.'/debug.log', 'log_files' => 'yes' ] ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'error_log_path', 'Path to error_log', 'text', '', [ 'default' => 'error_log', 'log_files' => 'yes' ] ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'error_log_path', 'View/clear path to error_log', 'text', '', [ 'default' => 'error_log', 'log_files' => 'yes' ] ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'admin_error_log_path', 'Path to admin error_log', 'text', '', [ 'default' => DDTT_ADMIN_URL.'/error_log', 'log_files' => 'yes' ] ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'admin_error_log_path', 'View/clear path to admin error_log', 'text', '', [ 'default' => DDTT_ADMIN_URL.'/error_log', 'log_files' => 'yes' ] ), $allowed_html ); ?>
 
                 <?php echo wp_kses( ddtt_options_tr( 'log_files', 'Log Files to Check<br>.TXT Files Only', 'text+', 'We automatically check your debug.log, error_log, and admin error_log. If you have additional <strong>.TXT</strong> logs you would like to view on the Logs tab, enter the root paths to the files here (not including the domain).', [ 'placeholder' => $active_theme_path.'your_log_file.txt', 'log_files' => 'yes', 'pattern' => '.*\.txt$' ] ), $allowed_html ); ?>
 

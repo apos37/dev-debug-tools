@@ -1031,7 +1031,8 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
     // Construct possible file paths
     $file_paths = [
         ABSPATH . $path,
-        dirname( ABSPATH ) . '/' . $path
+        dirname( ABSPATH ) . '/' . $path,
+        $path
     ];
 
     // Check if any of the paths exist and are readable
@@ -1842,18 +1843,8 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
         $results .= 'Lines: <strong>'.$line_count.'</strong> <span class="sep">|</span> Unique Errors: <strong>'.count( $actual_lines ).'</strong> <span class="sep">|</span> Filesize: <strong>'.ddtt_format_bytes( filesize( $file ) ).'</strong> <span class="sep">|</span> Last Modified: <strong>'.$last_modified.'</strong><br><br>';
     }
 
-    // Check if we are redacting
-    if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
-
-        // Add redacted div to ABSPATH
-        $public_html = strstr( ABSPATH, '/public_html', true );
-        $abspath = str_replace( $public_html, '<span class="redact">'.$public_html.'</span>', ABSPATH );
-    } else {
-        $abspath = ABSPATH;
-    }
-
     // Return the code with the defined path at top
-    $results .= 'Installation path: '.$abspath.$path.'<br><br>'.$code;
+    $results .= 'Installation path: '.$path.'<br><br>'.$code;
 
     return $results;
 } // End ddtt_view_file_contents_easy_reader()
@@ -3236,6 +3227,65 @@ function ddtt_get_plugins_data() {
     // Return it
     return $plugins_data;
 } // End ddtt_get_plugins_data()
+
+
+/**
+ * Check SSL Cert Expiration
+ *
+ * @param string $domain
+ * @param integer $port
+ * @return array|false
+ */
+function ddtt_check_ssl_cert_expiration( $domain, $port = 443 ) {
+    // Create a stream context with SSL settings
+    $context = stream_context_create( [
+        "ssl" => [
+            "capture_peer_cert" => true
+        ]
+    ] );
+
+    // Open a socket connection to the domain
+    $socket = @stream_socket_client(
+        "ssl://$domain:$port", 
+        $errno, 
+        $errstr, 
+        30, 
+        STREAM_CLIENT_CONNECT, 
+        $context
+    );
+
+    if ( !$socket ) {
+        return "Unable to connect to $domain: $errstr ($errno)";
+    }
+
+    // Retrieve the certificate from the context
+    $params = stream_context_get_params( $socket );
+    $cert = $params[ 'options' ][ 'ssl' ][ 'peer_certificate' ];
+
+    // Get certificate details
+    $cert_info = openssl_x509_parse( $cert );
+
+    // Close the socket connection
+    fclose( $socket );
+
+    if ( !$cert_info ) {
+        return "Unable to parse SSL certificate";
+    }
+
+    // Extract and format expiration date
+    $validTo = $cert_info[ 'validTo_time_t' ];
+    if ( $validTo ) {
+        $expiration_date = gmdate( 'Y-m-d H:i:s', $validTo );
+        $is_active = $validTo > time();
+
+        return [
+            'expiration_date' => $expiration_date,
+            'is_active'       => $is_active ? 'Active' : 'Expired'
+        ];
+    } else {
+        return false;
+    }
+} // End ddtt_check_ssl_cert_expiration()
 
 
 /**

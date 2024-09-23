@@ -57,6 +57,7 @@ class DDTT_GLOBAL_OPTIONS {
             'max_log_size',
             'log_user_url',
             'wp_mail_failure',
+            'debug_log_path',
             'error_log_path',
             'admin_error_log_path',
             'log_files',
