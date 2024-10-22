@@ -392,6 +392,17 @@ class DDTT_WPCONFIG {
                 ],
                 'desc'  => 'This constant allows you to specify whether your site is running in a <code class="hl">development</code>, <code class="hl">staging</code>, or <code class="hl">production</code> environment. Some developers and setups might also use <code class="hl">local</code> as an alternative value to <code class="hl">development</code>. This helps plugins, themes, and developers to adjust their behavior or settings based on the environment.'
             ],
+            'woocommerce' => [
+                'label' => 'Remove WooCommerce Data (Add Before Deactivating)',
+                'lines' => [
+                    [
+                        'prefix'   => 'define',
+                        'variable' => 'WC_REMOVE_ALL_DATA',
+                        'value'    => TRUE
+                    ]
+                ],
+                'desc'  => 'WooCommerce leaves database tables after deactivation and uninstallation, so if you want to completely remove everything, add this to your config file, then deactivate and uninstall. Then you can remove this from your config file as it will no longer be needed. If you already uninstalled, you will have to reinstall and activate and then make sure this is added prior to deactivating and uninstalling again.'
+            ],
         ] );
         return $snippets;
     } // End snippets()

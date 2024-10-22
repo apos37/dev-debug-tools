@@ -82,7 +82,6 @@ class DDTT_LOGS {
      * @return void
      */
     public function replace_file( $file_to_replace, $file_to_copy, $plugin_assets = false ) {
-        
         // First check if we are copying a file from the plugin assets folder
         if ( $plugin_assets ) {
             $file_to_copy =  get_home_path().DDTT_PLUGIN_FILES_PATH.$file_to_copy;
@@ -101,7 +100,7 @@ class DDTT_LOGS {
         // Copy the file to the new spot
         $result = copy( $file_to_copy, $temp_file_path );
 
-        if (!$result) {
+        if ( !$result ) {
             $error = error_get_last();
             ddtt_admin_notice( 'error', 'Uh oh! Your file could not be copied to ' . $temp_file_path . '! ' . $error[ 'message' ] );
             return false;
@@ -110,7 +109,7 @@ class DDTT_LOGS {
         // Rename the copied file to the final destination if necessary
         $result = rename( $temp_file_path, $file_to_replace );
 
-        if (!$result) {
+        if ( !$result ) {
             $error = error_get_last();
             ddtt_admin_notice( 'error', 'Uh oh! Your file could not be renamed to ' . $file_to_replace . '! ' . $error[ 'message' ] );
         }

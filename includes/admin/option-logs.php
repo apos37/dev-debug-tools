@@ -17,6 +17,9 @@ $DDTT_LOGS = new DDTT_LOGS();
 $debug_log_path = get_option( DDTT_GO_PF.'debug_log_path' );
 if ( $debug_log_path && $debug_log_path != '' ) {
     $debug_loc = sanitize_text_field( $debug_log_path );
+    if ( str_starts_with( $debug_loc, 'wp-content/' ) ) {
+        $debug_loc = get_home_path().$debug_loc;
+    }
     $debug_replace = $debug_loc;
 } elseif ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
     $debug_loc = WP_DEBUG_LOG;

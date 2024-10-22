@@ -54,12 +54,15 @@ class DDTT_DOWNLOAD_FILES {
             
             // DEBUG.LOG
             if ( isset( $_POST[ 'ddtt_download_debug_log' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                if ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
+                $debug_log_path = get_option( DDTT_GO_PF.'debug_log_path' );
+                if ( $debug_log_path && $debug_log_path != '' ) {
+                    $debug_loc = sanitize_text_field( $debug_log_path );
+                } elseif ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
                     $debug_loc = WP_DEBUG_LOG;
                 } else {
                     $debug_loc =  DDTT_CONTENT_URL.'/debug.log';
                 }
-                $this->download_root_file( $debug_loc, DDTT_GO_PF.'debug_log_dl' );
+                $this->download_root_file( $debug_loc, DDTT_GO_PF.'debug_log_dl',  );
             }
             
             // ADMIN ERROR_LOG
@@ -134,8 +137,8 @@ class DDTT_DOWNLOAD_FILES {
         }
 
         // Copy the file to a temp location
-        if ( strpos( $filename, '/' ) !== false) {
-            $tmp_filename = strstr( $filename, '/' );
+        if ( strpos( $filename, '/' ) !== false ) {
+            $tmp_filename = basename( $filename );
         } else {
             $tmp_filename = $filename;
         }

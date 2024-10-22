@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.6.2
 Requires PHP: 7.4
-Stable tag: 1.8.3.1
+Stable tag: 1.8.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -83,8 +83,11 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Regex playground
 
 == Changelog ==
+= 1.8.3.2 =
+* Fix: Download Debug Log button not downloading file when using custom path
+
 = 1.8.3.1 =
-* Tweak: Make DB Tables tab header row sticky when viewing a single table
+* Tweak: Make DB Tables tab header row sticky when viewing a single table (props venutius for suggestion)
 * Update: Added a setting for custom debug log path (for viewing and clearing only)
 * Update: Added a Domain tab for checking DNS records
 * Fix: Discord fatal error messages not showing quotes properly

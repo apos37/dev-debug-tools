@@ -1427,13 +1427,13 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                 } else {
 
                     // If not, check for comment marks; add a class
-                    if (substr( $line, 0, 3 ) === '// ' || 
+                    if ( substr( $line, 0, 3 ) === '// ' || 
                         substr( $line, 0, 3 ) === '/**' || 
                         substr( $line, 0, 2 ) === ' *' || 
                         substr( $line, 0, 1 ) === '*' || 
                         substr( $line, 0, 2 ) === '*/' || 
                         substr( $line, 0, 2 ) === '/*' || 
-                        substr( $line, 0, 1 ) === '#') {
+                        substr( $line, 0, 1 ) === '#' ) {
                             $comment_out = ' comment-out';
                     } else {
                         $comment_out = '';
