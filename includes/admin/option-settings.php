@@ -212,7 +212,7 @@
                 ]; ?>
                 <?php echo wp_kses( ddtt_options_tr( 'log_viewer', 'Log Viewer', 'select', '<br>Change how the <a href="'.ddtt_plugin_options_path( 'logs' ).'">debug log</a> is displayed.', $log_viewers ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'max_log_size', 'Maximum Debug Log Size for Viewer', 'number', '<br>The maximum file size in MB alloted for viewing the debug log before giving a warning. This is set to prevent the page from crashing if it is too big and not allowing you to clear it.', [ 'width' => '10rem', 'default' => 3 ] ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'max_log_size', 'Maximum Debug Log Size for Viewer', 'number', '<br>The maximum file size in MB allotted for viewing the debug log before giving a warning. This is set to prevent the page from crashing if it is too big and not allowing you to clear it.', [ 'width' => '10rem', 'default' => 3 ] ), $allowed_html ); ?>
 
                 <?php echo wp_kses( ddtt_options_tr( 'log_user_url', 'Also Log User and URL With Errors', 'checkbox', 'Adds an additional line to debug.log errors with the user ID, user display name, and url with query strings when a user error is triggered.' ), $allowed_html ); ?>
 

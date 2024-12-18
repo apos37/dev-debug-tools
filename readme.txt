@@ -2,9 +2,9 @@
 Contributors: apos37, venutius
 Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
-Tested up to: 6.6.2
+Tested up to: 6.7.1
 Requires PHP: 7.4
-Stable tag: 1.8.3.2
+Stable tag: 1.8.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -79,10 +79,20 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 6. View .htaccess file
 7. Cron jobs
 8. View and update a user's meta
-9. Available functions to use for debugging and testing
-10. Regex playground
+9. Database table records
+10. Check API statuses
 
 == Changelog ==
+= 1.8.5 =
+* Tweak: Updated screenshots for repo
+* Update: Added ABSPATH to header
+* Fix: A few mispellings
+* Tweak: Added support for HTML in Easy Reader error box
+
+= 1.8.4 =
+* Fix: On plugins tab, some plugins not in the WP repo causing error with last updated date, preventing page from loading
+* Fix: Clearing log and transients removes full path from url instead of just the correct query string
+
 = 1.8.3.2 =
 * Fix: Download Debug Log button not downloading file when using custom path
 

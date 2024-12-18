@@ -1791,7 +1791,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                         <td class="line"><span class="unselectable">'.$actual_line[ 'line' ].'</span></td>
                         <td class="date">'.$actual_line[ 'date' ].'</td>
                         <td class="type">'.$actual_line[ 'type' ].'</td>
-                        <td class="err"><span class="the-error">'.$actual_line[ 'err' ].'</span>'.$plugin_or_theme.$file_and_line.$display_stack.$display_array.'</td>
+                        <td class="err"><span class="the-error">'.htmlspecialchars_decode( $actual_line[ 'err' ] ).'</span>'.$plugin_or_theme.$file_and_line.$display_stack.$display_array.'</td>
                         <td class="qty">x '.$final_qty.'</td>
                         <td class="help">'.implode( '<br>', $help_links ).'</td>
                     </tr>';
@@ -3084,45 +3084,46 @@ function ddtt_get_plugins_data() {
             $compatibility = '';
             $incompatible_class = '';
             $args = [ 
-                'slug' => $all[ $key ][ 'TextDomain' ], 
+                'slug'   => $all[ $key ][ 'TextDomain' ], 
                 'fields' => [
                     'last_updated' => true,
-                    'tested' => true
+                    'tested'       => true
                 ]
             ];
             $response = wp_remote_post(
                 'http://api.wordpress.org/plugins/info/1.0/',
                 [
                     'body' => [
-                        'action' => 'plugin_information',
+                        'action'  => 'plugin_information',
                         'request' => serialize( (object)$args )
                     ]
                 ]
             );
             if ( !is_wp_error( $response ) ) {
-                $returned_object = unserialize( wp_remote_retrieve_body( $response ) );   
+                $returned_object = unserialize( wp_remote_retrieve_body( $response ) );
                 if ( $returned_object ) {
                     
                     // Last Updated
                     if ( $name != 'Hello Dolly' ) {
-                        $last_updated = $returned_object->last_updated;
-                        $last_updated = ddtt_time_elapsed_string( $last_updated );
+                        if ( $last_updated = $returned_object->last_updated ) {
+                            $last_updated = ddtt_time_elapsed_string( $last_updated );
                         
-                        // Add old class if more than 11 months old
-                        $earlier = new DateTime( $last_updated );
-                        $today = new DateTime( gmdate( 'Y-m-d' ) );
-                        $diff = $today->diff( $earlier )->format("%a");
-                        if ( $diff >= 335 ) {
-                            $old_class = ' warning';
-                        }
+                            // Add old class if more than 11 months old
+                            $earlier = new DateTime( $last_updated );
+                            $today = new DateTime( gmdate( 'Y-m-d' ) );
+                            $diff = $today->diff( $earlier )->format("%a");
+                            if ( $diff >= 335 ) {
+                                $old_class = ' warning';
+                            }
 
-                        // Compatibility
-                        $compatibility = $returned_object->tested;
+                            // Compatibility
+                            $compatibility = $returned_object->tested;
 
-                        // Add incompatibility class
-                        global $wp_version;
-                        if ( $compatibility < $wp_version ) {
-                            $incompatible_class = ' warning';
+                            // Add incompatibility class
+                            global $wp_version;
+                            if ( $compatibility < $wp_version ) {
+                                $incompatible_class = ' warning';
+                            }
                         }
                     } else {
                         $last_updated = 'just now';

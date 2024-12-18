@@ -723,6 +723,15 @@ if ( $current_screen->id == $options_page ) {
         border-radius: 4px;
         box-shadow: 4px 4px 20px black;
     }
+    .easy-reader .the-error a {
+        color: #0073AA !important;
+    }
+    .easy-reader .the-error code {
+        background: rgba(0,0,0,.07) !important;
+        white-space: nowrap;
+        display: inline-block;
+        border-radius: 4px;
+    }
     .easy-reader .stack-trace {
         font-style: italic;
     }

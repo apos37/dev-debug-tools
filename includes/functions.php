@@ -199,8 +199,8 @@ function ddtt_get_current_url( $params = true, $domain = true ) {
     }
 
     // Get the URI
-    $uri = filter_input( INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_URL );
-
+    $uri = esc_url_raw( $_SERVER[ 'REQUEST_URI' ] );
+    
     // Put it together
     $full_url = $domain.$uri;
 
