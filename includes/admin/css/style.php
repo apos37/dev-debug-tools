@@ -951,6 +951,9 @@ if ( $current_screen->id == $options_page ) {
     .crons-table pre {
         margin: 0;
     }
+    h1 code, h2 code, h3 code, h4 code {
+        font-size: inherit;
+    }
     .comment-out { color: <?php echo esc_attr( $comment_out ); ?>; } 
     .wrap a.c0 { color: <?php echo esc_attr( $c3 ); ?> !important; } /* First line */
     .wrap a.c2, .highlight-variable { color: <?php echo esc_attr( $c2 ); ?> !important; } /* Functions and variables */

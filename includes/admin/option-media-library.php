@@ -31,13 +31,14 @@ $tab = 'media-library';
 $current_url = ddtt_plugin_options_path( $tab );
 
 // Limit
+$default_limit = 10;
 if ( $per_page = ddtt_get( 'per_page' ) ) {
     $limit = $per_page;
     update_option( DDTT_GO_PF.'media_per_page', $limit );
 } elseif ( $db_per_page = get_option( DDTT_GO_PF.'media_per_page' ) ) {
     $limit = $db_per_page;
 } else {
-    $limit = 10;
+    $limit = $default_limit;
 }
 $page_number = isset( $_GET[ 'page_num' ] ) ? intval( $_GET[ 'page_num' ] ) : 1;
 $offset = ( $page_number - 1 ) * $limit;

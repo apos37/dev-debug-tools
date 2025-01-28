@@ -78,23 +78,9 @@ $num_processors = false;
 
 // Try Linux's /proc/cpuinfo
 if ( is_readable( '/proc/cpuinfo' ) ) {
-    $cpuinfo = file_get_contents( '/proc/cpuinfo' );
-    $num_processors = substr_count( $cpuinfo, 'processor' );
-
-// Try shell
-} elseif ( function_exists( 'shell_exec' ) ) {
-    
-    // Try nproc
-    $output = shell_exec( 'nproc' );
-    if ( is_numeric( trim( $output ) ) ) {
-        $num_processors = (int) trim( $output );
-
-    // Try getconf
-    } else {
-        $output = shell_exec( 'getconf _NPROCESSORS_ONLN' );
-        if ( is_numeric( trim( $output ) ) ) {
-            $num_processors = (int) trim( $output );
-        }
+    $cpuinfo = @file_get_contents( '/proc/cpuinfo' );
+    if ( $cpuinfo !== false ) {
+        $num_processors = substr_count( $cpuinfo, 'processor' );
     }
 }
 
@@ -126,46 +112,49 @@ $memory_usage_percentage = 'N/A';
 $memory_class = 'good';
 
 if ( is_readable( '/proc/meminfo' ) ) {
-    $meminfo = file( '/proc/meminfo' );
-    $memory_data = [];
+    $meminfo = @file( '/proc/meminfo' );
+    if ( $meminfo !== false ) {
 
-    foreach ( $meminfo as $line ) {
-        list( $key, $value ) = explode( ':', $line, 2 ) + [ null, null ];
-        $key = trim( $key );
-        $value = trim( $value );
+        $memory_data = [];
 
-        if ( $key && $value ) {
-            $memory_data[ $key ] = $value;
+        foreach ( $meminfo as $line ) {
+            list( $key, $value ) = explode( ':', $line, 2 ) + [ null, null ];
+            $key = trim( $key );
+            $value = trim( $value );
+
+            if ( $key && $value ) {
+                $memory_data[ $key ] = $value;
+            }
         }
-    }
 
-    // Extract memory values
-    $memory_total = isset( $memory_data[ 'MemTotal' ] ) ? (int) str_replace( ' kB', '', $memory_data[ 'MemTotal' ] ) : 0;
-    $memory_free = isset( $memory_data[ 'MemFree' ] ) ? (int) str_replace( ' kB', '', $memory_data[ 'MemFree' ] ) : 0;
-    $memory_buffers = isset( $memory_data[ 'Buffers' ] ) ? (int) str_replace( ' kB', '', $memory_data[ 'Buffers' ] ) : 0;
-    $memory_cached = isset( $memory_data[ 'Cached' ] ) ? (int) str_replace( ' kB', '', $memory_data[ 'Cached' ] ) : 0;
+        // Extract memory values
+        $memory_total = isset( $memory_data[ 'MemTotal' ] ) ? (int) str_replace( ' kB', '', $memory_data[ 'MemTotal' ] ) : 0;
+        $memory_free = isset( $memory_data[ 'MemFree' ] ) ? (int) str_replace( ' kB', '', $memory_data[ 'MemFree' ] ) : 0;
+        $memory_buffers = isset( $memory_data[ 'Buffers' ] ) ? (int) str_replace( ' kB', '', $memory_data[ 'Buffers' ] ) : 0;
+        $memory_cached = isset( $memory_data[ 'Cached' ] ) ? (int) str_replace( ' kB', '', $memory_data[ 'Cached' ] ) : 0;
 
-    // Calculate memory used and available
-    $memory_used = $memory_total - $memory_free - $memory_buffers - $memory_cached;
+        // Calculate memory used and available
+        $memory_used = $memory_total - $memory_free - $memory_buffers - $memory_cached;
 
-    // Calculate the memory usage percentage
-    if ( $memory_total > 0 ) {
-        $memory_usage_percentage = round( ( $memory_used / $memory_total ) * 100, 2 );
-    }
-    
-    // Determine the memory usage class based on the percentage
-    if ( $memory_usage_percentage < 10 ) {
-        $memory_class = 'optimal'; // Memory usage below 10% is optimal
-    } elseif ( $memory_usage_percentage < 50 ) {
-        $memory_class = 'excellent'; // Memory usage between 10-50% is excellent
-    } elseif ( $memory_usage_percentage < 70 ) {
-        $memory_class = 'good'; // Memory usage between 50-70% is good
-    } elseif ( $memory_usage_percentage < 80 ) {
-        $memory_class = 'moderate'; // Memory usage between 70-80% is moderate
-    } elseif ( $memory_usage_percentage < 90 ) {
-        $memory_class = 'high'; // Memory usage between 80-90% is high
-    } else {
-        $memory_class = 'critical'; // Memory usage over 90% is critical
+        // Calculate the memory usage percentage
+        if ( $memory_total > 0 ) {
+            $memory_usage_percentage = round( ( $memory_used / $memory_total ) * 100, 2 );
+        }
+        
+        // Determine the memory usage class based on the percentage
+        if ( $memory_usage_percentage < 10 ) {
+            $memory_class = 'optimal'; // Memory usage below 10% is optimal
+        } elseif ( $memory_usage_percentage < 50 ) {
+            $memory_class = 'excellent'; // Memory usage between 10-50% is excellent
+        } elseif ( $memory_usage_percentage < 70 ) {
+            $memory_class = 'good'; // Memory usage between 50-70% is good
+        } elseif ( $memory_usage_percentage < 80 ) {
+            $memory_class = 'moderate'; // Memory usage between 70-80% is moderate
+        } elseif ( $memory_usage_percentage < 90 ) {
+            $memory_class = 'high'; // Memory usage between 80-90% is high
+        } else {
+            $memory_class = 'critical'; // Memory usage over 90% is critical
+        }
     }
 }
 
@@ -254,11 +243,11 @@ if ( $tab !== 'changelog' ) {
                     CPU Load: <span class="cpu-load <?php echo esc_attr( $load_class ); ?>"><?php echo esc_html( round( $load, 2 ) ); ?> (<?php echo esc_html( $num_processors ); ?> processors, <?php echo esc_html( $load_percentage ); ?>) — <?php echo esc_attr( ucwords( $load_class ) ); ?></span>
                 <?php endif; ?>
 
-                <?php if ( ( $load !== 'N/A' && $num_processors ) && ( $memory_class !== 'N/A' ) ) : ?>
+                <?php if ( ( $load_percentage !== 'N/A' && $num_processors ) && ( $memory_usage_percentage !== 'N/A' ) ) : ?>
                     <span class="sep"><?php echo esc_attr( $sep ); ?></span>
                 <?php endif; ?>
 
-                <?php if ( $memory_class !== 'N/A' ) : ?>
+                <?php if ( $memory_usage_percentage !== 'N/A' ) : ?>
                     Memory Usage: <span class="memory-usage <?php echo esc_attr( $memory_class ); ?>"><?php echo esc_html( $memory_usage_percentage ); ?>% — <?php echo esc_attr( ucwords( $memory_class ) ); ?></span>
                 <?php endif; ?>
             </div>

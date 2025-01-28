@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.7.1
 Requires PHP: 7.4
-Stable tag: 2.0.0.1
+Stable tag: 2.0.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -16,6 +16,7 @@ The "Developer Debug Tools" WordPress plugin is a powerhouse for developers and 
 This plugin offers a suite of features to aid in debugging, including, but not limited to:
 
 * Viewing and clearing `debug.log` and other error logs
+* Debug log Easy Reader combines duplicate lines and breaks down each error in an easy to read format
 * Viewing and updating `wp-config.php` and `.htaccess` files
 * Viewing and editing user meta and post meta
 * Viewing detailed info on post types and taxonomies
@@ -86,6 +87,14 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Check API statuses
 
 == Changelog ==
+= 2.0.0.3 =
+* Fix: CPU showing overload when using shell
+
+= 2.0.0.2 =
+* Fix: Version check error if there is a firewall
+* Fix: Server tab issues when there is no access to `/proc/` files
+* Fix: If memory is N/A, notice is showing critical; should be hidden
+
 = 2.0.0.1 =
 * Fix: Notices at the top of the page smashed into the header
 

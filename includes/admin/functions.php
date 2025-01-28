@@ -2940,26 +2940,33 @@ function ddtt_get_latest_plugin_version() {
     // Set the args
     $args = [ 'slug' => DDTT_TEXTDOMAIN ];
 
-    // Fetch the plugin info from the wp repository
+    // Fetch the plugin info from the WordPress repository
     $response = wp_remote_post(
         'https://api.wordpress.org/plugins/info/1.0/',
         [
             'body' => [
                 'action' => 'plugin_information',
-                'request' => serialize( (object)$args )
+                'request' => serialize( (object) $args )
             ]
         ]
     );
 
-    // If there is no error, continue
-    if ( !is_wp_error( $response ) ) {
-
-        // Unserialize
-        $returned_object = unserialize( wp_remote_retrieve_body( $response ) );   
-        if ( $returned_object ) {
-            return $returned_object->version;
-        }
+    // Check for errors in the response
+    if ( is_wp_error( $response ) ) {
+        return DDTT_VERSION;
     }
+
+    // Attempt to unserialize the response body
+    $response_body = wp_remote_retrieve_body( $response );
+    $returned_object = @unserialize( $response_body );
+
+    // If parsing fails or the returned object is invalid, fallback to DDTT_VERSION, it's not important to check for updates since WP will do it anyway
+    if ( !$returned_object || !isset( $returned_object->version ) ) {
+        return DDTT_VERSION;
+    }
+
+    // Return the latest version from the API
+    return $returned_object->version;
 } // End ddtt_get_latest_plugin_version()
 
 
