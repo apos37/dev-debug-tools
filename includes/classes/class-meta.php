@@ -48,7 +48,7 @@ class DDTT_META_TABS {
      */
     public function ajax() {
         // First verify the nonce
-        if ( !wp_verify_nonce( sanitize_text_field( wp_unslash ( $_REQUEST[ 'nonce' ] ) ), $this->nonce ) ) {
+        if ( !wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST[ 'nonce' ] ) ), $this->nonce ) ) {
             exit( 'No naughty business please.' );
         }
 

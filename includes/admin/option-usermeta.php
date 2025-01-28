@@ -384,6 +384,28 @@ if ( $user ) {
             <th scope="row"><label for="user-search-input">User ID or Email</label></th>
             <td><input type="text" name="user" id="user-search-input" value="<?php echo esc_attr( $s ); ?>" required></td>
         </tr>
+
+        <tr valign="top">
+            <th scope="row"><label for="user-avatar">Avatar</label></th>
+            <td>
+                <?php 
+                // Get the user's avatar by their ID
+                echo get_avatar( $user_id, 200, '', 'User Avatar', [ 'style' => 'max-width: 200px; max-height: 200px; object-fit: cover;' ] );
+                ?>
+            </td>
+        </tr>
+
+        <?php
+        $user_url = rest_url( "wp/v2/users/{$user_id}" );
+        $rest_status = ddtt_check_url_status_code( $user_url );
+        $rest_code = $rest_status[ 'code' ];
+        $rest_text = $rest_status[ 'text' ];
+        ?>
+        <tr valign="top">
+            <th scope="row"><label for="rest-url">API Rest URL</label></th>
+            <td><a href="<?php echo esc_url( $user_url ); ?>" target="_blank"><?php echo esc_url( $user_url ); ?></a><br>Status: <?php echo esc_attr( $rest_code ); ?> — <?php echo esc_html( $rest_text ); ?></td>
+        </tr>
+
         <tr valign="top">
             <th scope="row"><label for="hide-meta-keys">Hide Meta Keys with Prefixes</label></th>
             <td><input type="text" name="hide_pf" id="hide-meta-keys" value="<?php echo esc_attr( $hide_pf ); ?>"></td>
@@ -437,17 +459,22 @@ if ( $user ) {
         }
     }
 
-    // Turn into a string
-    if ( empty( $user_roles ) ) {
-        $roles_string = 'None';
-    } else {
-        sort( $user_roles );
-        $roles_string = implode( '<br>', $user_roles );
-    }
-
     // Get all available roles
     $roles = get_editable_roles();
     ksort( $roles );
+
+    // Turn into a string with role names
+    if ( empty( $user_roles ) ) {
+        $roles_string = 'None';
+    } else {
+        $formatted_roles = [];
+        foreach ( $user_roles as $role_slug ) {
+            $role_name = isset( $roles[ $role_slug ] ) ? $roles[ $role_slug ]['name'] : 'Unknown Role';
+            $formatted_roles[] = $role_slug . ' - (' . $role_name . ')';
+        }
+        sort( $formatted_roles );
+        $roles_string = implode( '<br>', $formatted_roles );
+    }
     ?>
     <form method="get" action="<?php echo esc_url( $current_url ); ?>">
         <table class="form-table">
@@ -619,15 +646,6 @@ if ( $user ) {
             foreach( $user->data as $key => $value ) {
                 if ( $key == $mk && $good ) {
                     $value = $val;
-                }
-
-                // Are we redacting?
-                if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
-
-                    // Check if the value is an ip address
-                    if ( $key == 'user_login' ) {
-                        $value = str_replace( $value, '<div class="redact">'.$value.'</div>', $value );
-                    }
                 }
 
                 if ( $key == 'user_pass' ) {

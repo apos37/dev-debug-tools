@@ -1510,6 +1510,351 @@ function ddtt_get_server_ip() {
 } // End ddtt_get_server_ip()
 
 
+/**
+ * Get the bots we will use in the activity log
+ *
+ * @return array
+ */
+function ddtt_get_bots() {
+    return filter_var_array( apply_filters( 'ddtt_bots_to_log', [
+        'Googlebot' => [
+            'name' => 'Google Bot',
+            'url' => 'http://www.google.com/bot.html'
+        ],
+        'Googlebot-Mobile' => [
+            'name' => 'Google Mobile Bot',
+            'url' => 'http://www.google.com/bot.html'
+        ],
+        'Googlebot-Image' => [
+            'name' => 'Google Image Bot',
+            'url' => 'http://www.google.com/bot.html'
+        ],
+        'Googlebot-News' => [
+            'name' => 'Google News Bot',
+            'url' => 'http://www.google.com/bot.html'
+        ],
+        'Googlebot-Video' => [
+            'name' => 'Google Video Bot',
+            'url' => 'http://www.google.com/bot.html'
+        ],
+        'AdsBot-Google' => [
+            'name' => 'Google Ads Bot',
+            'url' => 'http://www.google.com/adsbot.html'
+        ],
+        'AdsBot-Google-Mobile' => [
+            'name' => 'Google Ads Bot Mobile"',
+            'url' => 'http://www.google.com/mobile/adsbot.html'
+        ],
+        'Feedfetcher-Google' => [
+            'name' => 'Google Feedfetcher',
+            'url' => 'http://www.google.com/feedfetcher.html'
+        ],
+        'Mediapartners-Google' => [
+            'name' => 'Google Media Partners',
+            'url' => 'http://www.google.com/bot.html'
+        ],
+        'APIs-Google' => [
+            'name' => 'Google APIs',
+            'url' => 'https://developers.google.com/webmasters/APIs-Google.html'
+        ],
+        'Google-InspectionTool' => [
+            'name' => 'Google Inspection Tool',
+            'url' => 'https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers'
+        ],
+        'Storebot-Google' => [
+            'name' => 'Google Store Bot',
+            'url' => 'hhttps://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers'
+        ],
+        'Google-Site-Verification' => [
+            'name' => 'Google Site Verifier',
+            'url' => 'https://support.google.com/webmasters/answer/9008080'
+        ],
+        'Google-Safety' => [
+            'name' => 'Google Safety',
+            'url' => 'https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers'
+        ],
+        'Google-Read-Aloud' => [
+            'name' => 'Google Read Aloud',
+            'url' => 'https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers'
+        ],
+        'GoogleOther' => [
+            'name' => 'Google Other',
+            'url' => 'https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers'
+        ],
+        'bingbot' => [
+            'name' => 'Bing Bot',
+            'url' => 'http://www.bing.com/bingbot.htm'
+        ],
+        'Yahoo! Slurp' => [
+            'name' => 'Yahoo! Slurp',
+            'url' => 'http://help.yahoo.com/help/us/ysearch/slurp'
+        ],
+        'Wget' => [
+            'name' => 'Wget',
+            'url' => 'http://wget.alanreed.org'
+        ],
+        'LinkedInBot' => [
+            'name' => 'LinkedIn Bot',
+            'url' => 'http://www.google.com/bot.html'
+        ],
+        'Python-urllib' => [
+            'name' => 'Python Urllib',
+            'url' => 'https://docs.python.org/3/library/urllib.html'
+        ],
+        'python-requests' => [
+            'name' => 'Python Requests',
+            'url' => 'https://www.geeksforgeeks.org/user-agent-in-python-request/'
+        ],
+        'aiohttp' => [
+            'name' => 'AIOHTTP',
+            'url' => 'https://docs.aiohttp.org/en/stable/'
+        ],
+        'python-httpx' => [
+            'name' => 'Python HTTPX',
+            'url' => 'https://www.python-httpx.org'
+        ],
+        'libwww-perl' => [
+            'name' => 'libwww-perl',
+            'url' => 'https://github.com/libwww-perl/libwww-perl'
+        ],
+        'httpunit' => [
+            'name' => 'HttpUnit',
+            'url' => 'https://httpunit.sourceforge.net/'
+        ],
+        'nutch' => [
+            'name' => 'Apache Nutch',
+            'url' => 'https://nutch.apache.org/'
+        ],
+        'Go-http-client' => [
+            'name' => 'Go HTTP client',
+            'url' => 'https://golang.org/pkg/net/http/'
+        ],
+        'phpcrawl' => [
+            'name' => 'PHPCrawl',
+            'url' => 'http://phpcrawl.cuab.de/'
+        ],
+        'msnbot' => [
+            'name' => 'MSN Bot',
+            'url' => 'http://search.msn.com/msnbot.htm'
+        ],
+        'FAST-WebCrawler' => [
+            'name' => 'FAST-WebCrawler',
+            'url' => 'http://fast.no/support/crawler.asp'
+        ],
+        'FAST Enterprise Crawler' => [
+            'name' => 'FAST Enterprise Crawler',
+            'url' => 'http://www.scirus.com/srsapp/contactus/'
+        ],
+        'ia_archiver' => [
+            'name' => 'Internet Archive',
+            'url' => 'https://web.archive.org/'
+        ],
+        'HTTrack' => [
+            'name' => 'HTTrack Website Copier',
+            'url' => 'https://www.httrack.com/'
+        ],
+        'yacybot' => [
+            'name' => 'YaCy',
+            'url' => 'http://yacy.net/bot.html'
+        ],
+        'MJ12bot' => [
+            'name' => 'Majestic (MJ12Bot)',
+            'url' => 'http://majestic12.co.uk/bot.php'
+        ],
+        'Buzzbot' => [
+            'name' => 'Buzz Stream',
+            'url' => 'http://www.buzzstream.com'
+        ],
+        'Yandex' => [
+            'name' => 'Yandex',
+            'url' => 'http://yandex.com/bots'
+        ],
+        'Linguee Bot' => [
+            'name' => 'Linguee Bot',
+            'url' => 'http://www.linguee.com/bot'
+        ],
+        'Baiduspider' => [
+            'name' => 'Baidu Spider',
+            'url' => 'http://www.baidu.com/search/spider.html'
+        ],
+        'Turnitin' => [
+            'name' => 'Turnitin',
+            'url' => 'https://turnitin.com/robot/crawlerinfo.html'
+        ],
+        'Page2RSS' => [
+            'name' => 'Page2RSS',
+            'url' => 'http://page2rss.com/'
+        ],
+        'CCBot' => [
+            'name' => 'CCBot (Common Crawl)',
+            'url' => 'http://www.commoncrawl.org/bot.html'
+        ],
+        'facebookexternalhit' => [
+            'name' => 'Facebook External Hit',
+            'url' => 'http://www.facebook.com/externalhit_uatext.php'
+        ],
+        'DuckDuckBot' => [
+            'name' => 'DuckDuckBot',
+            'url' => 'http://duckduckgo.com/duckduckbot.html'
+        ],
+        'proximic' => [
+            'name' => 'Proximic',
+            'url' => 'http://www.proximic.com/info/spider.php'
+        ],
+        'Apache-HttpClient' => [
+            'name' => 'Apache HTTP Client',
+            'url' => 'https://hc.apache.org/httpcomponents-client-4.5.x/index.html'
+        ],
+        'Feedly' => [
+            'name' => 'Feedly',
+            'url' => 'https://www.feedly.com/fetcher.html'
+        ],
+        'zgrab' => [
+            'name' => 'ZGrab',
+            'url' => 'https://zmap.io/'
+        ],
+        'axios' => [
+            'name' => 'Axios',
+            'url' => 'https://github.com/axios/axios'
+        ],
+        'HubSpot' => [
+            'name' => 'HubSpot',
+            'url' => 'http://dev.hubspot.com/'
+        ],
+        'Chrome-Lighthouse' => [
+            'name' => 'Chrome Lighthouse',
+            'url' => 'https://developers.google.com/speed/pagespeed/insights'
+        ],
+        'HeadlessChrome' => [
+            'name' => 'Headless Chrome',
+            'url' => 'https://developers.google.com/web/updates/2017/04/headless-chrome'
+        ],
+        'Uptimebot' => [
+            'name' => 'Uptimebot',
+            'url' => 'http://www.uptime.com/uptimebot'
+        ],
+        'curl' => [
+            'name' => 'Curl',
+            'url' => 'https://curl.haxx.se/'
+        ],
+        'Bytespider' => [
+            'name' => 'Bytespider (ByteDance)',
+            'url' => 'https://bytedance.com'
+        ],
+        'PetalBot' => [
+            'name' => 'PetalBot',
+            'url' => 'https://webmaster.petalsearch.com/site/petalbot'
+        ],
+        'virustotalcloud' => [
+            'name' => 'Virustotal',
+            'url' => 'https://www.virustotal.com/gui/home/url'
+        ],
+        'SpeedCurve' => [
+            'name' => 'WebPageTest',
+            'url' => 'https://www.webpagetest.org'
+        ],
+        'Feedbin' => [
+            'name' => 'Feedbin',
+            'url' => 'https://feedbin.com/'
+        ],
+        'CriteoBot' => [
+            'name' => 'Criteo Crawler',
+            'url' => 'https://www.criteo.com/criteo-crawler/'
+        ],
+        'RuxitSynthetic' => [
+            'name' => 'Dynatrace',
+            'url' => 'https://www.dynatrace.com/support/help/platform-modules/digital-experience/synthetic-monitoring/browser-monitors/configure-browser-monitors#expand--default-user-agent'
+        ],
+        'GPTBot' => [
+            'name' => 'GPTBot (ChatGPT)',
+            'url' => 'https://openai.com/gptbot'
+        ],
+        'AwarioBot' => [
+            'name' => 'AwarioSmartBot',
+            'url' => 'https://awario.com/bots.html'
+        ],
+        'DataForSeoBot' => [
+            'name' => 'DataForSeoBot',
+            'url' => 'https://dataforseo.com/dataforseo-bot'
+        ],
+        'Linespider' => [
+            'name' => 'Linespider',
+            'url' => 'https://lin.ee/4dwXkTH'
+        ],
+        'BrightEdge' => [
+            'name' => 'BrightEdge Crawler',
+            'url' => 'https://www.brightedge.com/'
+        ],
+        'Iframely' => [
+            'name' => 'Iframely',
+            'url' => 'https://iframely.com/docs/about'
+        ],
+        'MetaInspector' => [
+            'name' => 'MetaInspector',
+            'url' => 'https://github.com/jaimeiniesta/metainspector'
+        ],
+        'node-fetch' => [
+            'name' => 'Node Fetch',
+            'url' => 'https://github.com/bitinn/node-fetch'
+        ],
+        'python-opengraph' => [
+            'name' => 'Python OpenGraph',
+            'url' => 'https://github.com/jaywink/python-opengraph'
+        ],
+        'Palo Alto Networks' => [
+            'name' => 'Cortex Xpanse Bot (Palo Alto Networks)',
+            'url' => 'https://www.paloaltonetworks.com/cortex/cortex-xpanse'
+        ],
+        'BW/' => [
+            'name' => 'BuiltWith',
+            'url' => 'https://builtwith.com/biup'
+        ],
+        'GeedoBot' => [
+            'name' => 'GeedoBot',
+            'url' => 'http://www.geedo.com/bot.html'
+        ],
+        'Audisto Crawler' => [
+            'name' => 'Audisto Crawler',
+            'url' => 'https://audisto.com/help/crawler/bot/'
+        ],
+        'PerplexityBot' => [
+            'name' => 'Perplexity AI',
+            'url' => 'https://perplexity.ai/perplexitybot'
+        ],
+    ] ), FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+} // End ddtt_get_bots()
+
+
+/**
+ * Check if a visitor is a bot
+ *
+ * @return boolean
+ */
+function ddtt_is_bot() {
+    $user_agent = isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) ? sanitize_text_field( $_SERVER[ 'HTTP_USER_AGENT' ] ) : '';
+
+    $bots = ddtt_get_bots();
+
+    foreach ( $bots as $ua => $props ) {
+        if ( strpos( strtolower( $user_agent ), strtolower( $ua ) ) !== false ) {
+            $bot_name = sanitize_text_field( $props[ 'name' ] );
+            $bot_url = sanitize_url( $props[ 'url' ] );
+            if ( stripos( $bot_name, 'Bot' ) === false && stripos( $bot_name, 'Robot' ) === false ) {
+                $bot_name .= ' Bot';
+            }
+            return [
+                'name' => $bot_name,
+                'url'  => $bot_url,
+                'keyword' => $ua,
+                'user_agent' => $user_agent
+            ];
+        }
+    }
+
+    return false;
+} // End ddtt_is_bot()
+
+
 
 /**
  * THE END

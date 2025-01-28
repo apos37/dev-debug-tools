@@ -66,6 +66,9 @@ class DDTT_DEBUG_TOOLS {
             require_once DDTT_PLUGIN_CLASSES_PATH . 'class-online-users.php';
         }
 
+        // Logging activity
+        require_once DDTT_PLUGIN_CLASSES_PATH . 'class-activity.php';
+
         // Discord notifications
         require_once DDTT_PLUGIN_CLASSES_PATH . 'class-discord.php';
 

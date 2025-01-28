@@ -131,15 +131,18 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
     } elseif ( $type == 'checkboxes' ) {
         if ( !is_null( $args ) ) {
             $options = $args[ 'options' ];
-            $class = isset( $args[ 'class' ] ) ? ' class="'.esc_attr( $args[ 'class' ] ).'"' : '';
+            $class = isset( $args[ 'class' ] ) ? ' class="'.sanitize_key( $args[ 'class' ] ).'"' : '';
+            $sort = isset( $args[ 'sort' ] ) && $args[ 'sort' ] ? true : false;
         } else {
             return false;
         }
 
         // Sort by label
-        usort( $options, function ( $item1, $item2 ) {
-            return strtolower( $item1[ 'label' ] ) <=> strtolower( $item2[ 'label' ] );
-        });
+        if ( $sort ) {
+            usort( $options, function ( $item1, $item2 ) {
+                return strtolower( $item1[ 'label' ] ) <=> strtolower( $item2[ 'label' ] );
+            } );
+        }
 
         // Iter the options
         $input = '';
@@ -245,7 +248,7 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
         } else {
             $placeholder = '';
         }
-        $input = '<textarea type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" rows="'.esc_attr( $rows ).'" cols="'.esc_attr( $cols ).'" placeholder="'.esc_html( $placeholder ).'" '.$autocomplete.$required.'>'.esc_html( $value ).'</textarea>';
+        $input = '<textarea id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" rows="'.esc_attr( $rows ).'" cols="'.esc_attr( $cols ).'" placeholder="'.esc_html( $placeholder ).'" '.$autocomplete.$required.'>'.esc_html( $value ).'</textarea>';
 
     // Select    
     } elseif ( $type == 'select' ) {
@@ -698,6 +701,46 @@ function ddtt_get_form_selections( $id, $selected, $include_inactive = false ) {
     }
     return $results;
 } // End ddtt_get_form_selections()
+
+
+/**
+ * Return activity log counts
+ *
+ * @return int
+ */
+function ddtt_activity_count() {
+    // Check if disabled
+    if ( get_option( DDTT_GO_PF.'disable_activity_counts' ) ) {
+        return 0;
+    }
+
+    // Initialize the WP_Filesystem
+    if ( !function_exists( 'WP_Filesystem' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+    }
+    global $wp_filesystem;
+    if ( !WP_Filesystem() ) {
+        ddtt_write_log( 'Failed to initialize WP_Filesystem' );
+        return 0;
+    }
+
+    // New instance of logs class
+    $DDTT_LOGS = new DDTT_LOGS();
+
+    // Check if the file exists and has content
+    $log_file = $DDTT_LOGS->file_exists_with_content( (new DDTT_ACTIVITY())->log_file_path );
+    if ( $log_file ) {
+
+        // Read the file content
+        $string = $wp_filesystem->get_contents( $log_file );
+        $lines = explode( PHP_EOL, $string );
+        $count = count( array_filter( $lines ) );
+
+        // Return the count
+        return $count;
+    }
+    return 0;
+} // End ddtt_activity_count()
 
 
 /**
@@ -1454,7 +1497,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
             if ( !empty( $actual_lines ) ) {
 
                 // Start the table
-                $code = '<table class="log-table easy-reader">
+                $code = '<table class="log-table easy-reader debug-log-table">
                 <tr>
                     <th class="line">Line #</th>
                     <th class="date">Date/Time</th>
@@ -1851,6 +1894,371 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
 
 
 /**
+ * Return the activity file in an Easy-to-Read format
+ *
+ * @param string $path
+ * @param array $highlight_args
+ * @return string
+ */
+function ddtt_view_activity_file_contents( $path, $highlight_args ) {
+    // Initialize the WP_Filesystem
+    if ( !function_exists( 'WP_Filesystem' ) ) {
+       require_once ABSPATH . 'wp-admin/includes/file.php';
+    }
+    global $wp_filesystem;
+    if ( !WP_Filesystem() ) {
+        return 'Failed to initialize WP_Filesystem';
+    }
+
+    // Construct possible file paths
+    $file_paths = [
+        ABSPATH . $path,
+        dirname( ABSPATH ) . '/' . $path,
+        $path
+    ];
+
+    // Check if any of the paths exist and are readable
+    $file = false;
+    foreach ( $file_paths as $file_path ) {
+        if ( $wp_filesystem->exists( $file_path ) ) {
+            $file = $file_path;
+            break;
+        }
+    }
+
+    // Start results
+    $results = '';
+
+    // Check if the file exists
+    if ( $file ) {
+
+        // Get the file size
+        $file_size = $wp_filesystem->size( $file );
+        $max_filesize = ddtt_get_max_log_filesize();
+        $offset = $file_size <= $max_filesize ? 0 : $max_filesize;
+
+        // Get the file
+        $string = $wp_filesystem->get_contents( $file, $offset );
+
+        // Separate each line in the file into an array item
+        $lines = explode( PHP_EOL, $string );
+
+        // Start the line count
+        $line_count = 0;
+
+        // Default CSS
+        $results = '';
+
+        // Check if we have lines
+        if ( !empty( $lines ) ) {
+
+            // Get the dev's timezone
+            if ( get_option( DDTT_GO_PF.'dev_timezone' ) && get_option( DDTT_GO_PF.'dev_timezone' ) != '' ) {
+                $dev_timezone = sanitize_text_field( get_option( DDTT_GO_PF.'dev_timezone' ) );
+            } else {
+                $dev_timezone = wp_timezone_string();
+            }
+
+            // Instantiate
+            $ACTIVITY = new DDTT_ACTIVITY();
+
+            // Args
+            $activities = $ACTIVITY->activities;
+
+            // Store the actual lines we are displaying
+            $actual_lines = [];
+
+            // For each file line...
+            foreach ( $lines as $line ) {
+                // dpr( $line );
+ 
+                // If so, we're going to filter out blank lines
+                if ( $line != '' ) {
+
+                    // Increase the line count
+                    $line_count ++;
+
+                    // Check for a date section
+                    $date_section = false;
+                    if ( preg_match( '/\[(.*?)\]/s', $line, $get_date_section ) ) {
+                        if ( strpos( $get_date_section[1], 'UTC' ) !== false && ddtt_is_date( $get_date_section[1] ) ) {
+                            $date_section = $get_date_section;
+                        }
+                    }
+
+                    // Check for a date section
+                    if ( $date_section ) {
+
+                        // Strip the brackets and timezone
+                        $date_parts = explode( ' ', $date_section[1] );
+                        $stripped_date = $date_parts[0].' '.$date_parts[1];
+
+                        // Convert timezone
+                        $datetime = new DateTime( $stripped_date, new DateTimeZone( 'UTC' ) );
+                        $datetime->setTimezone( new DateTimeZone( $dev_timezone ) );
+
+                        // Get the date, time and shortened timezone
+                        $date = $datetime->format('F j, Y');
+                        $time = $datetime->format('g:i A');
+                        $tz = $datetime->format('T');
+                        $display_date = $date.'<br>'.$time.' '.$tz;
+
+                        // Get the rest of the line
+                        $line_without_date = substr( $line, strlen( $date_section[0] ) );
+
+                        // Add classes to the line based on keywords found
+                        $class = '';
+                        $activity_key = '';
+                        if ( !empty( $highlight_args ) ) {
+
+                            // Iter the args
+                            foreach ( $highlight_args as $hl_key => $hl ) {
+                                if ( isset( $activities[ $hl_key ] ) ) {
+                                    foreach ( $activities[ $hl_key ] as $a_key => $labels ) {
+                                        
+                                        // Search the line for the action
+                                        if ( preg_match( '/'.str_replace( '/', '\/', $labels[ 'action' ] ).'/', $line_without_date ) ) {
+                                            $class .= ' '.esc_attr( $hl_key ) . ' ' . esc_attr( $a_key );
+                                            $activity_key = $hl_key;
+                                            break 2;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Line lines
+                        $line_parts = explode( '|', $line_without_date, 2 );
+                        $what_and_who = trim( $line_parts[0] );
+                        $note_parts = isset( $line_parts[1] ) ? array_map( 'trim', explode( '|', $line_parts[1] ) ) : [];
+
+                        // Extract activity type (first section before ':')
+                        $what_and_who_parts = explode( ':', $what_and_who, 2 );
+                        $activity = trim( $what_and_who_parts[0] );
+                        $user_info = isset( $what_and_who_parts[1] ) ? trim( $what_and_who_parts[1] ) : '';
+
+                        // Store the user data here that we will be displaying
+                        $display_user = [];
+
+                        // Extract user info (e.g., Socrates (test@wordpressenhanced.com - ID: 2))
+                        preg_match( '/^(.*?) \((.*?) - ID: (\d+)\)/', $user_info, $matches );
+                        $display_name = isset( $matches[1] ) ? $matches[1] : '';
+                        if ( $display_name ) {
+                            $display_user[] = $display_name;
+                        }
+
+                        $email = isset( $matches[2] ) ? $matches[2] : '';
+                        if ( $email ) {
+                            $display_user[] = $email;
+                        }
+
+                        $user_id = isset( $matches[3] ) ? $matches[3] : '';
+                        if ( $user_id ) {
+                            $display_user[] = 'User ID: ' . $user_id;
+                        }
+
+                        $display_user = !empty( $display_user ) ? implode( '<br>', $display_user ) : '<em>Unknown</em>';
+                        $search_user_info = $display_date . ' | ' . $email . ' | ' . $user_id;
+
+                        // Extract notes
+                        $notes = !empty( $note_parts ) ? implode( '<br>', $note_parts ) : '';
+
+                        // Check for a search filter
+                        if ( $search = ddtt_get( 's' ) ) {
+
+                            // Sanitize the text
+                            $search = sanitize_text_field( $search );
+                            // dpr( $search );
+
+                            // Convert to lowercase
+                            $search_lc = strtolower( $search );
+
+                            // Which column?
+                            if ( ddtt_get( 'c', '==', 'a' ) ) {
+                                $col = $activity_key . ' | ' . $activity;
+                            } elseif ( ddtt_get( 'c', '==', 'u' ) ) {
+                                $col = $search_user_info;
+                            } elseif ( ddtt_get( 'c', '==', 'n' ) ) {
+                                $col = $notes;
+                            } else {
+                                $col = $line_without_date;
+                            }
+
+                            // Continue var
+                            $continue = false;
+
+                            // Separate the words by spaces
+                            $words = explode( ' ', $search_lc );
+
+                            // Store the words to search for here
+                            $add = [];
+
+                            // Store the words to remove here
+                            $remove = [];
+
+                            // Iter the words
+                            foreach ( $words as $w ) {
+
+                                // Check the word for subtractions
+                                if ( str_starts_with( $w, '-' ) !== false ) {
+
+                                    // Add the word to the remove array
+                                    $remove[] = ltrim( $w, '\-' );
+
+                                } else {
+
+                                    // Add the word to the add array
+                                    $add[] = $w;
+                                }
+                            }
+
+                            // Now search the column for the adds
+                            if ( !empty( $add ) ) {
+
+                                // Iter the adds
+                                foreach ( $add as $a ) {
+
+                                    // If the line does not contain the add, then skip it
+                                    if ( strpos( strtolower( $col ), $a ) === false ) {
+                                        $continue = true;
+                                    }
+                                }
+                            }
+                            
+                            // Now search the column for the removes
+                            if ( !empty( $remove ) ) {
+
+                                // Iter the removes
+                                foreach ( $remove as $r ) {
+
+                                    // If the line contains the remove, then skip it
+                                    if ( $col && strpos( strtolower( $col ), $r ) !== false ) {
+                                        $continue = true;
+                                    }
+                                }
+                            }
+
+                            // Continue now?
+                            if ( $continue ) {
+                                continue;
+                            }
+                        }
+
+                        // Store the new actual line
+                        $actual_lines[] = [
+                            'line'    => $line_count,
+                            'date'    => $display_date,
+                            'type'    => $activity,
+                            'user'    => $display_user,
+                            'notes'   => $notes,
+                            'class'   => $class
+                        ];
+                    }
+                }
+            }
+
+            // Now that we have actual lines, let's add them
+            if ( !empty( $actual_lines ) ) {
+
+                // Start the table
+                $code = '<table class="log-table easy-reader activity-log-table">
+                <tr>
+                    <th class="line">Line #</th>
+                    <th class="date">Date/Time</th>
+                    <th class="type">Activity</th>
+                    <th class="user">User Performing Activity</th>
+                    <th class="notes">Notes</th>
+                </th>';
+
+                // Are we only displaying the most recent error?
+                if ( $most_recent = absint( ddtt_get( 'r' ) ) ) {
+                    
+                    // Get the last line key
+                    $last_key = array_key_last( $actual_lines );
+                    
+                    // Iter the most recent
+                    $recent_keys = [];
+                    for ( $r = 0; $r < $most_recent; $r++ ) {
+
+                        // Get the keys
+                        $recent_keys[] = $last_key - $r;
+                    }
+
+                    // Unset the others
+                    foreach ( $actual_lines as $al_key => $actual_line ) {
+                        if ( !in_array( $al_key, $recent_keys ) ) {
+                            unset( $actual_lines[ $al_key ] );
+                        }
+                    }
+                }
+
+                // Iter
+                foreach ( $actual_lines as $actual_line ) {
+
+                    // Create the row
+                    $code .= '<tr class="activity-li'.$actual_line[ 'class' ].'">
+                        <td class="line"><span class="unselectable">'.$actual_line[ 'line' ].'</span></td>
+                        <td class="date">'.$actual_line[ 'date' ].'</td>
+                        <td class="type">'.$actual_line[ 'type' ].'</td>
+                        <td class="user">' . $actual_line[ 'user' ] . '</td>
+                        <td class="notes">'.$actual_line[ 'notes' ].'</td>
+                    </tr>';
+                }
+
+                // End the table
+                $code .= '</table>';
+
+            // Else no lines
+            } else {
+
+                // Are we searching?
+                if ( ddtt_get( 's' ) ) {
+                    $code = 'No lines found when searching "'.ddtt_get( 's' ).'"';
+
+                // No? Okay, then just say it isn't so (but this should never happen)
+                } else {
+                    $code = 'No lines found.';
+                }
+            }
+            // dpr( $actual_lines );
+            
+        } else {
+            $code = 'No activity logged.';
+        }
+       
+   } else {
+       // Otherwise say the file wasn't found
+       $code = $path . ' not found';
+   }
+
+   // Check if we have lines
+   if ( !empty( $lines ) ) {
+
+       // Get the dev's timezone
+       if ( get_option( DDTT_GO_PF.'dev_timezone' ) && get_option( DDTT_GO_PF.'dev_timezone' ) != '' ) {
+           $dev_timezone = sanitize_text_field( get_option( DDTT_GO_PF.'dev_timezone' ) );
+       } else {
+           $dev_timezone = wp_timezone_string();
+       }
+
+       // Get the converted time
+       $utc_time = gmdate( 'Y-m-d H:i:s', filemtime( $file ) );
+       $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
+       $dt->setTimezone( new DateTimeZone( $dev_timezone ) );
+       $last_modified = $dt->format( 'F j, Y g:i A T' );
+           
+       // Display the count
+       $results .= 'Lines: <strong>'.$line_count.'</strong> <span class="sep">|</span> Filesize: <strong>'.ddtt_format_bytes( filesize( $file ) ).'</strong> <span class="sep">|</span> Last Modified: <strong>'.$last_modified.'</strong><br><br>';
+   }
+
+   // Return the code with the defined path at top
+   $results .= 'Installation path: '.$path.'<br><br>'.$code;
+
+   return $results;
+} // End ddtt_view_activity_file_contents()
+
+
+/**
  * Validate that a date is an actual date
  *
  * @param [type] $date
@@ -2175,16 +2583,18 @@ function ddtt_highlight_string( $text ) {
  * @return string
  */
 function ddtt_format_bytes( $bytes ) { 
-    $bytes = floatval($bytes);
-    if ($bytes >= 1073741824){
-        $bytes = number_format($bytes / 1073741824, 2) . ' GB';
-    } elseif ($bytes >= 1048576) {
-        $bytes = number_format($bytes / 1048576, 2) . ' MB';
-    } elseif ($bytes >= 1024) {
-        $bytes = number_format($bytes / 1024, 2) . ' KB';
-    } elseif ($bytes > 1) {
+    $bytes = floatval( $bytes );
+    if ( $bytes >= 1099511627776 ) {
+        $bytes = number_format( $bytes / 1099511627776, 2 ) . ' TB';
+    } elseif ( $bytes >= 1073741824 ) {
+        $bytes = number_format( $bytes / 1073741824, 2 ) . ' GB';
+    } elseif ( $bytes >= 1048576 ) {
+        $bytes = number_format( $bytes / 1048576, 2 ) . ' MB';
+    } elseif ( $bytes >= 1024 ) {
+        $bytes = number_format( $bytes / 1024, 2 ) . ' KB';
+    } elseif ( $bytes > 1 ) {
         $bytes = $bytes . ' bytes';
-    } elseif ($bytes == 1) {
+    } elseif ( $bytes == 1 ) {
         $bytes = $bytes . ' byte';
     } else {
         $bytes = '0 bytes';
@@ -3105,7 +3515,7 @@ function ddtt_get_plugins_data() {
                     
                     // Last Updated
                     if ( $name != 'Hello Dolly' ) {
-                        if ( $last_updated = $returned_object->last_updated ) {
+                        if ( isset( $returned_object->last_updated ) && $last_updated = $returned_object->last_updated ) {
                             $last_updated = ddtt_time_elapsed_string( $last_updated );
                         
                             // Add old class if more than 11 months old
@@ -3143,18 +3553,23 @@ function ddtt_get_plugins_data() {
             
             // Get the path of a directory.
             $directory = get_home_path().DDTT_PLUGINS_URL.'/'.$folder.'/';
-            
-            // Get the size of directory in bytes.
-            $bytes = get_dirsize( $directory );
+            if ( !is_dir( $directory ) ) {
+                $bytes = 'Unknown';
+                $last_modified = 'Directory does not exist or is not accessible';
 
-            // Get the last modified date and convert to developer's timezone
-            if ( $name != 'Hello Dolly' ) {
-                $utc_time = gmdate( 'Y-m-d H:i:s', filemtime( $directory ) );
-                $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
-                $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
-                $last_modified = $dt->format( 'F j, Y g:i A T' );
             } else {
-                $last_modified = '';
+                // Get the size of directory in bytes.
+                $bytes = get_dirsize( $directory );
+
+                // Get the last modified date and convert to developer's timezone
+                if ( $name != 'Hello Dolly' ) {
+                    $utc_time = gmdate( 'Y-m-d H:i:s', filemtime( $directory ) );
+                    $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
+                    $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
+                    $last_modified = $dt->format( 'F j, Y g:i A T' );
+                } else {
+                    $last_modified = '';
+                }
             }
 
             // If plugin is active or on multisite
@@ -3287,6 +3702,169 @@ function ddtt_check_ssl_cert_expiration( $domain, $port = 443 ) {
         return false;
     }
 } // End ddtt_check_ssl_cert_expiration()
+
+
+/**
+ * Check a URL to see if it Exists
+ *
+ * @param string $url
+ * @param integer|null $timeout
+ * @return array
+ */
+function ddtt_check_url_status_code( $url ) {
+    // Add the home url
+    if ( str_starts_with( $url, '/' ) ) {
+        $link = home_url().$url;
+    } else {
+        $link = $url;
+    }
+
+    // The request args
+    // See https://developer.wordpress.org/reference/classes/WP_Http/request/
+    $http_request_args = [
+        'method'      => 'GET',
+        'timeout'     => 5,        // How long the connection should stay open in seconds. Default 5.
+        'redirection' => 0,        // Number of allowed redirects. Not supported by all transports. Default 5.
+        'httpversion' => '1.1',    // Version of the HTTP protocol to use. Accepts '1.0' and '1.1'. Default '1.0'.
+        'sslverify'   => false
+    ];
+
+    // Store the message text
+    $text = '';
+
+    // Check the link
+    $response = wp_safe_remote_get( $link, $http_request_args );
+    if ( !is_wp_error( $response ) ) {
+        $code = wp_remote_retrieve_response_code( $response );
+        if ( $code !== 200 ) {
+            $body = wp_remote_retrieve_body( $response );
+            if ( !is_wp_error( $body ) ) {
+                $decoded = json_decode( $body, true );
+                if ( isset( $decoded[ 'data' ][ 'status' ] ) && $decoded[ 'message' ] ) {
+                    $code = $decoded[ 'data' ][ 'status' ];
+                    $text = '. '.$decoded[ 'message' ];
+                }
+            }
+            $error = $text;
+        }
+        $error = 'Unknown';
+    } else {
+        $code = 0;
+        $error = $response->get_error_message();
+    }
+
+    // Possible Codes
+    $codes = [
+        0 => $error,
+        100 => 'Continue',
+        101 => 'Switching Protocols',
+        102 => 'Processing', // WebDAV; RFC 2518
+        103 => 'Early Hints', // RFC 8297
+        200 => 'OK',
+        201 => 'Created',
+        202 => 'Accepted',
+        203 => 'Non-Authoritative Information', // since HTTP/1.1
+        204 => 'No Content',
+        205 => 'Reset Content',
+        206 => 'Partial Content', // RFC 7233
+        207 => 'Multi-Status', // WebDAV; RFC 4918
+        208 => 'Already Reported', // WebDAV; RFC 5842
+        226 => 'IM Used', // RFC 3229
+        300 => 'Multiple Choices',
+        301 => 'Moved Permanently',
+        302 => 'Found', // Previously "Moved temporarily"
+        303 => 'See Other', // since HTTP/1.1
+        304 => 'Not Modified', // RFC 7232
+        305 => 'Use Proxy', // since HTTP/1.1
+        306 => 'Switch Proxy',
+        307 => 'Temporary Redirect', // since HTTP/1.1
+        308 => 'Permanent Redirect', // RFC 7538
+        400 => 'Bad Request',
+        401 => 'Unauthorized', // RFC 7235
+        402 => 'Payment Required',
+        403 => 'Forbidden or Unsecure',
+        404 => 'Not Found',
+        405 => 'Method Not Allowed',
+        406 => 'Not Acceptable',
+        407 => 'Proxy Authentication Required', // RFC 7235
+        408 => 'Request Timeout',
+        409 => 'Conflict',
+        410 => 'Gone',
+        411 => 'Length Required',
+        412 => 'Precondition Failed', // RFC 7232
+        413 => 'Payload Too Large', // RFC 7231
+        414 => 'URI Too Long', // RFC 7231
+        415 => 'Unsupported Media Type', // RFC 7231
+        416 => 'Range Not Satisfiable', // RFC 7233
+        417 => 'Expectation Failed',
+        418 => 'I\'m a teapot', // RFC 2324, RFC 7168
+        421 => 'Misdirected Request', // RFC 7540
+        422 => 'Unprocessable Entity', // WebDAV; RFC 4918
+        423 => 'Locked', // WebDAV; RFC 4918
+        424 => 'Failed Dependency', // WebDAV; RFC 4918
+        425 => 'Too Early', // RFC 8470
+        426 => 'Upgrade Required',
+        428 => 'Precondition Required', // RFC 6585
+        429 => 'Too Many Requests', // RFC 6585
+        431 => 'Request Header Fields Too Large', // RFC 6585
+        451 => 'Unavailable For Legal Reasons', // RFC 7725
+        500 => 'Internal Server Error',
+        501 => 'Not Implemented',
+        502 => 'Bad Gateway',
+        503 => 'Service Unavailable',
+        504 => 'Gateway Timeout',
+        505 => 'HTTP Version Not Supported',
+        506 => 'Variant Also Negotiates', // RFC 2295
+        507 => 'Insufficient Storage', // WebDAV; RFC 4918
+        508 => 'Loop Detected', // WebDAV; RFC 5842
+        510 => 'Not Extended', // RFC 2774
+        511 => 'Network Authentication Required', // RFC 6585
+        
+        // Unofficial codes
+        103 => 'Checkpoint',
+        218 => 'This is fine', // Apache Web Server
+        419 => 'Page Expired', // Laravel Framework
+        420 => 'Method Failure', // Spring Framework
+        420 => 'Enhance Your Calm', // Twitter
+        430 => 'Request Header Fields Too Large', // Shopify
+        450 => 'Blocked by Windows Parental Controls', // Microsoft
+        498 => 'Invalid Token', // Esri
+        499 => 'Token Required', // Esri
+        509 => 'Bandwidth Limit Exceeded', // Apache Web Server/cPanel
+        526 => 'Invalid SSL Certificate', // Cloudflare and Cloud Foundry's gorouter
+        529 => 'Site is overloaded', // Qualys in the SSLLabs
+        530 => 'Site is frozen', // Pantheon web platform
+        598 => 'Network read timeout error', // Informal convention
+        440 => 'Login Time-out', // IIS
+        449 => 'Retry With', // IIS
+        451 => 'Redirect', // IIS
+        444 => 'No Response', // nginx
+        494 => 'Request header too large', // nginx
+        495 => 'SSL Certificate Error', // nginx
+        496 => 'SSL Certificate Required', // nginx
+        497 => 'HTTP Request Sent to HTTPS Port', // nginx
+        499 => 'Client Closed Request', // nginx
+        520 => 'Web Server Returned an Unknown Error', // Cloudflare
+        521 => 'Web Server Is Down', // Cloudflare
+        522 => 'Connection Timed Out', // Cloudflare
+        523 => 'Origin Is Unreachable', // Cloudflare
+        524 => 'A Timeout Occurred', // Cloudflare
+        525 => 'SSL Handshake Failed', // Cloudflare
+        526 => 'Invalid SSL Certificate', // Cloudflare
+        527 => 'Railgun Error', // Cloudflare
+        666 => $error, // Our own error converted from 0
+        999 => 'Scanning Not Permitted' // Non-standard code
+    ];
+
+    // Filter status
+    $status = [
+        'code' => $code,
+        'text' => isset( $codes[ $code ] ) ? $codes[ $code ].$text : $error.$text,
+    ];
+
+    // Return the array
+    return $status;
+} // End ddtt_check_url_status_code()
 
 
 /**

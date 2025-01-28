@@ -501,8 +501,10 @@ class DDTT_ADMIN_AREA {
                 }
 
                 // Set the tab title
-                if ( $tab == 'logs' ) {
-                    $tab_title = 'Logs';
+                if ( $tab == 'activity' ) {
+                    $tab_title = 'Activity Logs';
+                } elseif ( $tab == 'logs' ) {
+                    $tab_title = 'Error Logs';
                 } else {
                     $tab_title = ddtt_plugin_menu_items( $tab );
                 }

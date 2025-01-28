@@ -154,6 +154,16 @@
                 'options' => DateTimeZone::listIdentifiers()
             ]; ?>
             <?php echo wp_kses( ddtt_options_tr( 'dev_timezone', 'Developer Timezone', 'select', '<br>Changes the timezone on Debug Log viewer and other areas in the plugin. Default is what the site uses.', $timezone_args ), $allowed_html ); ?>
+
+            <?php $menu_types = [
+                'options' => [
+                    'Tabs',
+                    'Dropdown',
+                    'Side Menu Only'
+                ],
+                'default' => 'Tabs'
+            ]; ?>
+            <?php echo wp_kses( ddtt_options_tr( 'menu_type', 'Menu Type', 'select', '', $menu_types ), $allowed_html ); ?>
             
         </table>
 
@@ -202,7 +212,7 @@
             <br><hr><br></br>
             <h2>Logging</h2>
             <table class="form-table">
-                <?php echo wp_kses( ddtt_options_tr( 'disable_error_counts', 'Disable Error Counts', 'checkbox', 'Disabling this will prevent counting and improve page load time. Good to use when you have a lot of errors in your logs.' ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'disable_error_counts', 'Disable Error Counts', 'checkbox', 'Disabling this will prevent counting and slightly improve page load time for developers (since developers are the only ones that see the count). Good to use when you have a lot of errors in your logs.' ), $allowed_html ); ?>
 
                 <?php $log_viewers = [
                     'options' => [
@@ -235,6 +245,64 @@
                 <?php echo wp_kses( ddtt_options_tr( 'fatal_discord_webhook', 'Discord Webhook URL<br>** BETA **', 'text', '<br>Send notifications to a <a href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks" target="_blank">Discord Webhook</a> when a fatal error occurs.<br>Webhook URL should look like this: https://discord.com/api/webhooks/xxx/xxx...', [ 'pattern' => "(https:\/\/discord\.com\/api\/webhooks\/([A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)" ] ), $allowed_html ); ?>
 
                 <?php echo wp_kses( ddtt_options_tr( 'fatal_discord_enable', 'Send Fatal Errors to Discord Channel (Must have WP_DEBUG enabled)', 'checkbox' ), $allowed_html ); ?>
+
+                <?php
+                // Activities
+                $activities = (new DDTT_ACTIVITY)->activities;
+
+                // Store the activities here
+                $activity_options = [];
+
+                // Iter the roles
+                foreach ( $activities as $activity ) {
+                    foreach ( $activity as $key => $a ) {
+                        $activity_options[] = [
+                            'label'   => $a[ 'settings' ],
+                            'value'   => $key,
+                            'checked' => false
+                        ];
+                    }
+                }
+
+                // Set the args
+                $activity_args = [
+                    'options' => $activity_options,
+                    'class'   => DDTT_GO_PF.'activity_checkbox',
+                ]; ?>
+                <?php echo wp_kses( ddtt_options_tr( 'activity', 'Log Activity', 'checkboxes', 'Logs will be included on the <a href="'.ddtt_plugin_options_path( 'activity' ).'">activity</a> tab if any are selected.', $activity_args ), $allowed_html ); ?>
+
+                <?php $usermeta_skip_keys = [ 
+                    'session_tokens',
+                    'user_activation_key',
+                    'wpfv_user_level',
+                    '_transient_*'
+                ]; ?>
+                <?php echo wp_kses( ddtt_options_tr( 'activity_updating_usermeta_skip_keys', 'Activity Log: Omit User Meta Keys', 'textarea', '<br>Enter user meta keys (comma-separated) to exclude from the activity log. Use asterisks (*) as wildcards for prefixes or suffixes. For example, "wp_*" excludes all keys starting with "wp_".<br>Suggested: <code>' . implode( '</code>, <code>', $usermeta_skip_keys ) . '</code>', [ 'default' => implode( ', ', $usermeta_skip_keys ) ] ), $allowed_html ); ?>
+
+                <?php $postmeta_skip_keys = [
+                    'ID',
+                    'post_modified',
+                    'post_modified_gmt',
+                    'filter',
+                    '_edit_lock',
+                    '_edit_last',
+                    '_wp_desired_post_slug',
+                    '_encloseme',
+                    '_wp_trash_',
+                    '_transient_*'
+                ]; ?>
+                <?php echo wp_kses( ddtt_options_tr( 'activity_updating_postmeta_skip_keys', 'Activity Log: Omit Post Meta Keys', 'textarea', '<br>Enter post meta keys (comma-separated) to exclude from the activity log. Use asterisks (*) as wildcards for prefixes or suffixes. For example, "wp_*" excludes all keys starting with "wp_".<br>Suggested: <code>' . implode( '</code>, <code>', $postmeta_skip_keys ) . '</code>', [ 'default' => implode( ', ', $postmeta_skip_keys ) ] ), $allowed_html ); ?>
+
+                <?php $settings_skip_keys = [ 
+                    'cron',
+                    'rewrite_rules',
+                    'recently_edited',
+                    '_site_transient_*',
+                    '_transient_*' 
+                ]; ?>
+                <?php echo wp_kses( ddtt_options_tr( 'activity_updating_setting_skip_keys', 'Activity Log: Omit Setting/Option Keys', 'textarea', '<br>Enter options (comma-separated) to exclude from the activity log. Use asterisks (*) as wildcards for prefixes or suffixes. For example, "wp_*" excludes all options starting with "wp_".<br>Suggested: <code>' . implode( '</code>, <code>', $settings_skip_keys ) . '</code>', [ 'default' => implode( ', ', $settings_skip_keys ) ] ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'disable_activity_counts', 'Disable Activity Counts', 'checkbox', 'Disabling this will prevent counting and slightly improve page load time for developers (since developers are the only ones that see the count). Good to use when you have a lot of activity in your logs.' ), $allowed_html ); ?>
 
             </table>
 
@@ -280,7 +348,8 @@
                 // Set the args
                 $prioritize_roles_args = [
                     'options' => $role_options,
-                    'class'   => DDTT_GO_PF.'role_checkbox'
+                    'class'   => DDTT_GO_PF.'role_checkbox',
+                    'sort'    => true
                 ]; ?>
                 <?php echo wp_kses( ddtt_options_tr( 'online_users_priority_roles', 'Roles to Prioritize on Top', 'checkboxes', '', $prioritize_roles_args ), $allowed_html ); ?>
 

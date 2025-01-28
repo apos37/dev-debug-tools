@@ -32,6 +32,7 @@ class DDTT_MENU {
 	 * Constructor
 	 */
 	public function __construct() {
+        
         // Define the menu slug
         $this->slug = DDTT_TEXTDOMAIN;
 
@@ -41,6 +42,7 @@ class DDTT_MENU {
 
         // Show active menu
         add_filter( 'parent_file', [ $this, 'submenus' ] );
+        
 	} // End __construct()
 
 
@@ -175,7 +177,18 @@ class DDTT_MENU {
  * @since   1.0.0
  */
 function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
-    // Get notification count
+    // Get notification counts
+    $notif_act = '';
+    if ( ddtt_is_dev() ) {
+        $notice = 0;
+        if ( !ddtt_get( 'clear_activity_log' ) || ddtt_get( 'clear_activity_log', '!=', 'true' ) ) {
+            $notice = ddtt_activity_count();
+        }
+        if ( $notice > 0 ) {
+            $notif_act = ' <span class="awaiting-mod">'.$notice.'</span>';
+        }
+    }
+
     $notif = '';
     if ( ddtt_is_dev() ) {
         $warning = 0;
@@ -236,7 +249,8 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
     $items = [
         'settings'          => [ __( 'Settings', 'dev-debug-tools' ), 'This area is for developers only.' ],
         'plugins'           => [ __( 'Plugins', 'dev-debug-tools' ), 'A more in-depth breakdown of all the plugins installed on the site.' ],
-        'logs'              => [ __( 'Logs', 'dev-debug-tools' ).$notif, 'All of your log files in one place. You can add more log files in <a href="'.ddtt_plugin_options_path( 'settings' ).'">Settings</a>.'.$multisite, true ],
+        'activity'          => [ __( 'Activity Logs', 'dev-debug-tools' ).$notif_act, 'Here you can see your users\' activity, if you enable it in settings.', true ],
+        'logs'              => [ __( 'Error Logs', 'dev-debug-tools' ).$notif, 'All of your error log files in one place. You can add more log files in <a href="'.ddtt_plugin_options_path( 'settings' ).'">Settings</a>.'.$multisite, true ],
         'error-types'       => [ __( 'Error Types', 'dev-debug-tools' ), 'Choose which types of errors are reported '.$error_desc, true ],
         'error-suppressing' => [ __( 'Error Suppressing', 'dev-debug-tools' ), 'Suppress individual errors from being reported '.$error_desc, true ],
         'wpcnfg'            => [ 'WP-CONFIG', 'View and update your wp-config.php. Please backup the original before updating.'.$multisite, true ],
@@ -244,6 +258,7 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'fx'                => [ 'Functions.php', 'A simple functions.php viewer.', true ],
         'phpini'            => [ 'PHP.INI', 'All registered configuration options from your php.ini', true ],
         'phpinfo'           => [ 'PHP Info', ' Information about your PHP\'s configuration', true ],
+        'server'            => [ __( 'Server', 'dev-debug-tools' ), 'Available server metrics.', true ],
         'crons'             => [ __( 'Cron Jobs', 'dev-debug-tools' ), 'A list of all scheduled cron jobs.', true ],
         'cookies'           => [ __( 'Cookies', 'dev-debug-tools' ), 'Your browser cookies currently on this site.', true ],
         'transients'        => [ __( 'Transients', 'dev-debug-tools' ), 'Your transients currently on this site.', true ],
@@ -253,6 +268,9 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'db'                => [ __( 'DB Tables', 'dev-debug-tools' ), 'A quick reference of the database table and column structure.', true ],
         'usermeta'          => [ __( 'User Meta', 'dev-debug-tools' ), 'A quick view of all the user meta so you don\'t have to log into phpMyAdmin.', true ],
         'postmeta'          => [ __( 'Post Meta', 'dev-debug-tools' ), 'A quick view of all the post meta so you don\'t have to log into phpMyAdmin.', true ],
+        'post-types'        => [ __( 'Post Types', 'dev-debug-tools' ), 'Check out all of your post type settings and associated taxonomies from one place.', true ],
+        'taxonomies'        => [ __( 'Taxonomies', 'dev-debug-tools' ), 'Check out all of your taxonomy settings and associated post types from one place.', true ],
+        'media-library'     => [ __( 'Media Library', 'dev-debug-tools' ), 'Information about the media in your library.', true ],
         'autodrafts'        => [ __( 'Auto-Drafts', 'dev-debug-tools' ), 'View current auto-drafts. Auto-drafts are temporary drafts that are typically created when you start a new post and then leave the page without saving it. They can be hidden in the database and not show up in your admin list table with the rest of your drafts. Since these are unnecessary, this page allows you to clear them easily.', true ],
         'domain'            => [ __( 'Domain', 'dev-debug-tools' ), 'Your domain\'s <em>public</em> DNS records, including nameservers. Your host will include all private and hidden records as well as record names, whereas we don\'t have access to them publicly.', true ],
         'api'               => [ __( 'APIs', 'dev-debug-tools' ), 'A list of the site\'s registered REST APIs. Your REST API root is: <a href="'.$rest_api_root.'" target="_blank">'.$rest_api_root.'</a>', true ],
@@ -264,7 +282,7 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         'hooks'             => [ __( 'Available Hooks', 'dev-debug-tools' ), 'A list of the action and filter hooks available for developers. As of version 1.7.4, you can now look up hooks found on other plugins, but please note that we can only look for hooks that are <em>not</em> set up dynamically, so it would be wise to actually look at the plugin\'s documentation if they have any, or search for hooks (<code class="hl">do_action</code> and <code class="hl">apply_filters</code>) in your favorite IDE. This is just a good starting point to find things you may not know it exist. <em>You might also want to see <a href="https://developer.wordpress.org/apis/hooks/action-reference/" target="_blank">WP Core Actions</a> and <a href="https://developer.wordpress.org/apis/hooks/filter-reference/" target="_blank">WP Core Filters</a>.</em>', true ],
         'resources'         => [ __( 'Resources', 'dev-debug-tools' ), 'Helpful resources for WP developers.', true ],
         'about'             => [ __( 'About', 'dev-debug-tools' ), '<a href="'.ddtt_plugin_options_path( 'changelog' ).'">View the Changelog</a>', false ],
-        'changelog'         => [ __( 'Changelog', 'dev-debug-tools' ), 'Updates to this plugin.', false, true ],
+        'changelog'         => [ __( 'Changelog', 'dev-debug-tools' ), 'Below is a list of updates to this plugin. You can get here again from the <a href="'.ddtt_plugin_options_path( 'about' ).'">About</a> tab.', false, true ],
         'pw'                => [ __( 'Verify Password', 'dev-debug-tools' ), 'This page is used for accessing pages that are password protected.', false, true ],
         'pw-reset'          => [ __( 'Reset Password', 'dev-debug-tools' ), 'Reset your security password.', false, true ],
     ];

@@ -2,11 +2,6 @@
 // Include the header
 include 'header.php';
 
-// Remove the clear query string if avail
-if ( ddtt_get( 'clear_debug_log', '==', 'true' ) ) {
-    ddtt_remove_qs_without_refresh( [ 'clear_debug_log' ] );
-}
-
 // Allowed HTML
 $allowed_html = ddtt_wp_kses_allowed_html();
 
@@ -34,6 +29,7 @@ if ( ddtt_get( 'clear_error_log', '==', 'true' ) ) {
     $DDTT_LOGS->replace_file( get_home_path().'error_log', 'error_log', true );
 }
 if ( ddtt_get( 'clear_debug_log', '==', 'true' ) ) {
+    ddtt_remove_qs_without_refresh( [ 'clear_debug_log' ] );
     $DDTT_LOGS->replace_file( $debug_replace, 'debug.log', true );
 }
 if ( ddtt_get( 'clear_admin_error_log', '==', 'true' ) ) {
@@ -44,7 +40,7 @@ if ( ddtt_get( 'clear_admin_error_log', '==', 'true' ) ) {
 /**
  * debug.log
  */
-echo '<h2>'.esc_attr( $debug_loc ).'</h2>';
+echo '<h2>'.esc_attr( str_replace( ABSPATH, '', $debug_loc ) ).'</h2>';
 
 // Contents?
 if ( $debug_log = $DDTT_LOGS->file_exists_with_content( $debug_loc ) ) {

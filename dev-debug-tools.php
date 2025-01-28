@@ -3,7 +3,7 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             1.8.5
+ * Version:             2.0.0.1
  * Requires at least:   5.9.0
  * Tested up to:        6.7.1
  * Requires PHP:        7.4
@@ -25,7 +25,7 @@ if ( !defined( 'ABSPATH' ) ) {
  */
 
 // Versions
-define( 'DDTT_VERSION', '1.8.5' );
+define( 'DDTT_VERSION', '2.0.0.1' );
 define( 'DDTT_BETA', false ); // TODO:
 define( 'DDTT_MIN_PHP_VERSION', '7.4' );
 
@@ -66,9 +66,10 @@ define( 'DDTT_ABSPATH', ddtt_canonical_pathname( ABSPATH ) );
 define( 'DDTT_ADMIN_URL', str_replace( $site_url, '', rtrim( ddtt_admin_url(), '/' ) ) );                                       //: wp-admin || wp-admin/network
 define( 'DDTT_CONTENT_URL', str_replace( $site_url, '', content_url() ) );                                                      //: wp-content
 define( 'DDTT_INCLUDES_URL', str_replace( $site_url, '', rtrim( includes_url(), '/' ) ) );                                      //: wp-includes
-define( 'DDTT_ADMIN_INCLUDES_URL', trailingslashit( ABSPATH.str_replace( $site_url, '', ddtt_admin_url( 'includes/' ) ) ) );    //: /abspath/.../public_html/wp-admin/includes/
+define( 'DDTT_ADMIN_INCLUDES_URL', trailingslashit( ABSPATH . DDTT_ADMIN_URL . '/includes/' ) );                                //: /abspath/.../public_html/wp-admin/includes/
 define( 'DDTT_PLUGINS_URL', str_replace( $site_url, '', plugins_url() ) );                                                      //: wp-content/plugins
 define( 'DDTT_MU_PLUGINS_DIR', ABSPATH.DDTT_CONTENT_URL.'/mu-plugins/' );                                                       //: /abspath/.../public_html/wp-content/mu-plugins/
+define( 'DDTT_UPLOADS_DIR', wp_upload_dir()[ 'basedir' ] );                                                                     //: /abspath/.../public_html/wp-content/uploads/
 
 // Define plugin specific paths
 define( 'DDTT_PLUGIN_ABSOLUTE', __FILE__ );                                                                                     //: /abspath/.../public_html/wp-content/plugins/dev-debug-tools/dev-debug-tools.php)
@@ -254,12 +255,29 @@ function ddtt_activate_plugin() {
  * Registered inside register_activation_hook above
  */
 function ddtt_uninstall_plugin() {
-    // Delete options
-    delete_option( DDTT_GO_PF.'plugin_installed' );     // Date the plugin was installed
-    delete_option( DDTT_GO_PF.'test_number' );          // Test number
-    delete_option( DDTT_GO_PF.'centering_tool_cols' );  // Centering tool columns
-    delete_option( DDTT_GO_PF.'dev_email' );            // Dev email
-    delete_option( DDTT_GO_PF.'disable_fb_form' );      // Disable the deactivate feedback form
+    // Define the options to be deleted
+    $options = [
+        'admin_menu_links',             // Admin bar menu links
+        'centering_tool_cols',          // Centering tool columns
+        'dev_email',                    // Dev email
+        'disable_fb_form',              // Disable the deactivate feedback form
+        'htaccess_last_updated',        // HTACCESS last updated date
+        'htaccess_og_replaced_date',    // HTACCESS original was replaced date
+        'last_viewed_version',          // Last viewed version
+        'plugin_activated',             // Last date plugin was activated
+        'plugin_activated_by',          // Who that plugin was last activated by
+        'plugin_installed',             // When the plugin was installed
+        'plugins',                      // A list of the plugins used by the activity log
+        'suppressed_errors',            // Suppressed errors
+        'test_number',                  // Test number
+        'wpconfig_last_updated',        // When the wp-config.php file was last updated
+        'wpconfig_og_replaced_date',    // When the original wp-config.php was replaced
+    ];
+
+    // Loop through the options and delete them
+    foreach ( $options as $option ) {
+        delete_option( DDTT_GO_PF . $option );
+    }
     
     // Remove Must-Use-Plugin upon uninstall
     $remove_mu_plugin = get_option( DDTT_GO_PF.'error_uninstall' );
@@ -269,6 +287,9 @@ function ddtt_uninstall_plugin() {
         delete_option( DDTT_GO_PF.'error_uninstall' );
         delete_option( DDTT_GO_PF.'error_constants' );
     }
+
+    // Remove the activity log
+    (new DDTT_ACTIVITY())->remove_log_file();
 } // End ddtt_uninstall_plugin()
 
 

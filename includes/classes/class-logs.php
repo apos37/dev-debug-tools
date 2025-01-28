@@ -179,8 +179,28 @@ class DDTT_LOGS {
      * @return void
      */
     public function file_contents_with_clear_button( $query_string_param, $button_label, $path, $filesize, $log = false, $highlight_args = [], $allow_repeats = true ) {
+        // Button for downloading
+        if ( $button_label == 'Debug Log' ) {
+            $dl = 'debug_log';
+        } elseif ( $button_label == 'Admin Error Log' ) {
+            $dl = 'admin_error_log';
+        } elseif ( $button_label == 'Error Log' ) {
+            $dl = 'error_log';
+        } elseif ( $button_label == 'Activity Log' ) {
+            $dl = 'activity_log';
+        } else {
+            $dl = 'null';
+        }
+
+        // The current url
+        if ( $dl == 'activity_log' ) {
+            $current_url = ddtt_plugin_options_path( 'activity' );
+        } else {
+            $current_url = ddtt_plugin_options_path( 'logs' );
+        }
+        
         // The clear url
-        $clear_url = esc_url( add_query_arg( $query_string_param, 'true', ddtt_plugin_options_path( 'logs' ) ) );
+        $clear_url = esc_url( add_query_arg( $query_string_param, 'true', $current_url ) );
 
         // Button for clearing log
         if ( ( is_multisite() && !is_network_admin() && is_main_site() ) || !is_multisite() ) {
@@ -189,16 +209,6 @@ class DDTT_LOGS {
             $clear_button = '';
         }
 
-        // Button for downloading
-        if ( $button_label == 'Debug Log' ) {
-            $dl = 'debug_log';
-        } elseif ( $button_label == 'Admin Error Log' ) {
-            $dl = 'admin_error_log';
-        } elseif ( $button_label == 'Error Log' ) {
-            $dl = 'error_log';
-        } else {
-            $dl = 'null';
-        }
         $download_button = '<div><form method="post">
             '.wp_nonce_field( DDTT_GO_PF.$dl.'_dl', '_wpnonce' ).'
             <input type="submit" value="Download '.esc_html( $button_label ).'" name="ddtt_download_'.$dl.'" class="button button-primary"/>
@@ -236,23 +246,29 @@ class DDTT_LOGS {
 
             // Get the contents
             if ( $dl_viewer == 'easy' ) {
-                $contents = ddtt_view_file_contents_easy_reader( $path, $log, $highlight_args, $allow_repeats);
+                $contents = ddtt_view_file_contents_easy_reader( $path, $log, $highlight_args, $allow_repeats );
             } else {
                 $contents = ddtt_view_file_contents( $path, $log );
             }
-        }
 
-        // Get the contents
-        if ( $dl != 'debug_log' ) {
+        // Activity log
+        } elseif ( $dl == 'activity_log' ) {
+
+            // Get the contents
+            if ( $dl_viewer == 'easy' ) {
+                $contents = ddtt_view_activity_file_contents( $path, $highlight_args );
+            } else {
+                $contents = ddtt_view_file_contents( $path, $log );
+            }
+
+        // Otherwise
+        } else {
             $contents = ddtt_view_file_contents( $path, $log );
         }
 
-        // The current url
-        $current_url = ddtt_plugin_options_path( 'logs' );
-
         // Add viewer links
         $switch_to = '';
-        if ( $dl == 'debug_log' ) {
+        if ( $dl == 'debug_log' || $dl == 'activity_log' ) {
             if ( $dl_viewer == 'easy' ) {
                 $switch_to = '<a href="'.$current_url.'&viewer=classic">Switch to Classic View</a>';
             } else {
@@ -261,14 +277,14 @@ class DDTT_LOGS {
         }
 
         // Add recent links
-        if ( $dl == 'debug_log' && $dl_viewer == 'easy' ) {
+        if ( ( $dl == 'debug_log' || $dl == 'activity_log' ) && $dl_viewer == 'easy' ) {
             $recent = '<br><br>View Recent: <a href="'.$current_url.'&r=1">1</a> | <a href="'.$current_url.'&r=5">5</a> | <a href="'.$current_url.'&r=10">10</a>';
         } else {
             $recent = '';
         }
 
         // Add color panel
-        if ( $dl == 'debug_log' && $dl_viewer == 'easy' && !empty( $highlight_args ) ) {
+        if ( ( $dl == 'debug_log' || $dl == 'activity_log' ) && $dl_viewer == 'easy' && !empty( $highlight_args ) ) {
 
             // Outer container
             $highlights = '<br><br><div id="color-identifiers">';
@@ -289,17 +305,25 @@ class DDTT_LOGS {
                     // Add links if easy reader
                     if ( $dl_viewer == 'easy' ) {
 
-                        // Set the link col
-                        if ( $hl[ 'column' ] == 'type' ) {
-                            $col = '&c=t';
-                        } elseif ( $hl[ 'column' ] == 'path' ) {
-                            $col = '&c=p';
+                        // Debug log
+                        if ( $dl == 'debug_log' ) {
+                            $keyword = $hl[ 'keyword' ];
+                            if ( $hl[ 'column' ] == 'type' ) {
+                                $col = '&c=t';
+                            } elseif ( $hl[ 'column' ] == 'path' ) {
+                                $col = '&c=p';
+                            } else {
+                                $col = '';
+                            }
+
+                        // Activity log
                         } else {
-                            $col = '';
+                            $keyword = $hl_key;
+                            $col = '&c=a';
                         }
 
                         // Add the link
-                        $text = '<a href="'.$current_url.'&s='.$hl[ 'keyword' ].$col.'">'.$hl[ 'name' ].'</a>';
+                        $text = '<a href="'.$current_url.'&s='.$keyword.$col.'">'.$hl[ 'name' ].'</a>';
                     } else {
                         $text = $hl[ 'name' ];
                     }
@@ -314,12 +338,13 @@ class DDTT_LOGS {
 
             // End the outer container
             $highlights .= '</div>';
+            
         } else {
             $highlights = '';
         }
 
         // Search bar
-        if ( $dl == 'debug_log' && $dl_viewer == 'easy' ) {
+        if ( ( $dl == 'debug_log' || $dl == 'activity_log' ) && $dl_viewer == 'easy' ) {
 
             // Put the search bar together
             $search_bar = '<tr valign="top">
@@ -332,47 +357,95 @@ class DDTT_LOGS {
                     } else {
                         $search = '';
                     }
-                    
-                    // Get the column
-                    if ( ddtt_get( 'c', '==', 't' ) ) {
-                        $check_type = ' checked="checked"';
-                        $check_err = '';
-                        $check_path = '';
-                    } elseif ( ddtt_get( 'c', '==', 'p' ) ) {
-                        $check_type = '';
-                        $check_err = '';
-                        $check_path = ' checked="checked"';
+
+                    // Debug log
+                    if ( $dl == 'debug_log' ) {
+
+                        // Get the column
+                        if ( ddtt_get( 'c', '==', 't' ) ) {
+                            $check_type = ' checked="checked"';
+                            $check_err = '';
+                            $check_path = '';
+                        } elseif ( ddtt_get( 'c', '==', 'p' ) ) {
+                            $check_type = '';
+                            $check_err = '';
+                            $check_path = ' checked="checked"';
+                        } else {
+                            $check_type = '';
+                            $check_err = ' checked="checked"';
+                            $check_path = '';
+                        }
+
+                        // Get all of the query strings
+                        $qs_array = filter_input_array( INPUT_GET, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+                        
+                        // Iter the params
+                        $hidden_inputs = [];
+                        foreach ( $qs_array as $k => $v ) {
+
+                            // Add hidden inputs
+                            $hidden_inputs[] = '<input type="hidden" id="ddtt-dl-search-'.$k.'" name="'.$k.'" value="'.$v.'"/>';
+                        }
+
+                        // Add the search field and button
+                        $search_bar .= implode( '', $hidden_inputs ).'
+                        <div id="ddtt-dl-search-bar">
+                            <input type="text" name="s" id="ddtt-dl-search" value="'.$search.'" style="width: 43.75rem"/>
+                            <br>// You may remove an item from the list by adding a minus (-) symbol before a keyword (ie. -keyword)
+                        </div>                    
+                        <div id="ddtt-dl-search-options">
+                            <input class="update_choice_input" type="radio" name="c" id="ddtt-dl-search-col-t" value="t"'.$check_type.'/> <label for="ddtt-dl-search-col-t">Type</label>
+                            <input class="update_choice_input" type="radio" name="c" id="ddtt-dl-search-col-e" value="e"'.$check_err.'/> <label for="ddtt-dl-search-col-e">Error</label>
+                            <input class="update_choice_input" type="radio" name="c" id="ddtt-dl-search-col-p" value="p"'.$check_path.'/> <label for="ddtt-dl-search-col-p">File Path</label>
+                            <input type="submit" value="Search" id="ddtt-dl-search-btn"/>
+                            <a href="'.$current_url.'" id="ddtt-dl-reset-btn" class="button button-primary">Reset</a>
+                        </div>';
+
+                    // Activity Log
                     } else {
-                        $check_type = '';
-                        $check_err = ' checked="checked"';
-                        $check_path = '';
+
+                        // Get the column
+                        if ( ddtt_get( 'c', '==', 'a' ) ) {
+                            $check_type = ' checked="checked"';
+                            $check_user = '';
+                            $check_all = '';
+                        } elseif ( ddtt_get( 'c', '==', 'u' ) ) {
+                            $check_type = '';
+                            $check_user = ' checked="checked"';
+                            $check_all = '';
+                        } else {
+                            $check_type = '';
+                            $check_user = '';
+                            $check_all = ' checked="checked"';
+                        }
+
+                        // Get all of the query strings
+                        $qs_array = filter_input_array( INPUT_GET, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+                        
+                        // Iter the params
+                        $hidden_inputs = [];
+                        foreach ( $qs_array as $k => $v ) {
+
+                            // Add hidden inputs
+                            $hidden_inputs[] = '<input type="hidden" id="ddtt-dl-search-'.$k.'" name="'.$k.'" value="'.$v.'"/>';
+                        }
+
+                        // Add the search field and button
+                        $search_bar .= implode( '', $hidden_inputs ).'
+                        <div id="ddtt-dl-search-bar">
+                            <input type="text" name="s" id="ddtt-dl-search" value="'.$search.'" style="width: 43.75rem"/>
+                            <br>// You may remove an item from the list by adding a minus (-) symbol before a keyword (ie. -keyword)
+                        </div>                    
+                        <div id="ddtt-dl-search-options">
+                            <input class="update_choice_input" type="radio" name="c" id="ddtt-dl-search-col-t" value="a"'.$check_type.'/> <label for="ddtt-dl-search-col-t">Activity</label>
+                            <input class="update_choice_input" type="radio" name="c" id="ddtt-dl-search-col-u" value="u"'.$check_user.'/> <label for="ddtt-dl-search-col-u">User</label>
+                            <input class="update_choice_input" type="radio" name="c" id="ddtt-dl-search-col-a" value=""'.$check_all.'/> <label for="ddtt-dl-search-col-a">All</label>
+                            <input type="submit" value="Search" id="ddtt-dl-search-btn"/>
+                            <a href="'.$current_url.'" id="ddtt-dl-reset-btn" class="button button-primary">Reset</a>
+                        </div>';
                     }
 
-                    // Get all of the query strings
-                    $qs_array = filter_input_array( INPUT_GET, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-                    
-                    // Iter the params
-                    $hidden_inputs = [];
-                    foreach ( $qs_array as $k => $v ) {
-
-                        // Add hidden inputs
-                        $hidden_inputs[] = '<input type="hidden" id="ddtt-dl-search-'.$k.'" name="'.$k.'" value="'.$v.'"/>';
-                    }
-
-                    // Add the search field and button
-                    $search_bar .= implode( '', $hidden_inputs ).'
-                    <div id="ddtt-dl-search-bar">
-                        <input type="text" name="s" id="ddtt-dl-search" value="'.$search.'" style="width: 43.75rem"/>
-                        <br>// You may remove an item from the list by adding a minus (-) symbol before a keyword (ie. -keyword)
-                    </div>                    
-                    <div id="ddtt-dl-search-options">
-                        <input class="update_choice_input" type="radio" name="c" id="ddtt-dl-search-col-t" value="t"'.$check_type.'/> <label for="ddtt-dl-search-col-t">Type</label>
-                        <input class="update_choice_input" type="radio" name="c" id="ddtt-dl-search-col-e" value="e"'.$check_err.'/> <label for="ddtt-dl-search-col-e">Error</label>
-                        <input class="update_choice_input" type="radio" name="c" id="ddtt-dl-search-col-p" value="p"'.$check_path.'/> <label for="ddtt-dl-search-col-p">File Path</label>
-                        <input type="submit" value="Search" id="ddtt-dl-search-btn"/>
-                        <a href="'.$current_url.'" id="ddtt-dl-reset-btn" class="button button-primary">Reset</a>
-                    </div>
-                </form></td>
+                $search_bar .= '</form></td>
             </tr>';
         } else {
             $search_bar = '';

@@ -22,6 +22,9 @@
     margin-top: 1rem;
     width: fit-content;
 }
+.full_width_container .admin-large-table .child-comment td {
+    font-style: italic;
+}
 </style>
 
 <?php 
@@ -379,6 +382,9 @@ if ( $hide_pf ) {
 } else {
     $hide_pf = get_option( DDTT_GO_PF.'post_meta_hide_pf' );
 }
+
+// Are we redacting some info
+$is_redacting = !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1;
 ?>
 
 <form method="get" action="<?php echo esc_url( $current_url ); ?>">
@@ -429,6 +435,35 @@ if ( $hide_pf ) {
             <th scope="row"><label for="post-search-input">Post ID</label></th>
             <td><input type="text" name="post_id" id="post-search-input" value="<?php echo absint( $post_id ); ?>" style="width: 10rem;" required></td>
         </tr>
+
+        <?php
+        // Get featured image
+        if ( has_post_thumbnail( $post_id ) ) {
+            $featured_image_url = get_the_post_thumbnail_url( $post_id, 'full' ); // Full size image URL
+        }
+        ?>
+        <tr valign="top">
+            <th scope="row"><label for="post-featured-image">Featured Image</label></th>
+            <td>
+                <?php if ( isset( $featured_image_url ) && !empty( $featured_image_url ) ) { ?>
+                    <img src="<?php echo esc_url( $featured_image_url ); ?>" alt="Featured Image" style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                <?php } else { ?>
+                    <em>None</em>
+                <?php } ?>
+            </td>
+        </tr>
+
+        <?php
+        $post_url = rest_url( "wp/v2/posts/{$post_id}" );
+        $rest_status = ddtt_check_url_status_code( $post_url );
+        $rest_code = $rest_status[ 'code' ];
+        $rest_text = $rest_status[ 'text' ];
+        ?>
+        <tr valign="top">
+            <th scope="row"><label for="rest-url">API Rest URL</label></th>
+            <td><a href="<?php echo esc_url( $post_url ); ?>" target="_blank"><?php echo esc_url( $post_url ); ?></a><br>Status: <?php echo esc_attr( $rest_code ); ?> — <?php echo esc_html( $rest_text ); ?></td>
+        </tr>
+
         <tr valign="top">
             <th scope="row"><label for="hide-meta-keys">Hide Meta Keys with Prefixes</label></th>
             <td><input type="text" name="hide_pf" id="hide-meta-keys" value="<?php echo esc_attr( $hide_pf ); ?>"></td>
@@ -629,6 +664,13 @@ if ( $valid_search ) {
             </tr>
             <?php
             foreach( $post as $key => $value ) {
+                // Post author
+                if ( $key == 'post_author' ) {
+                    $user_id = $value;
+                    $user = get_userdata( $user_id );
+                    $value = $value . ' — <em>' . $user->display_name . ' (<span class="' . ( $is_redacting ? 'redact' : '' ) . '">' . $user->user_email . '</span>)</em>';
+                }
+
                 // Check if the value exceeds the character limit
                 if ( strlen( $value ) > $char_limit ) {
                     if ( $key == 'post_content' ) {
@@ -682,9 +724,18 @@ if ( $valid_search ) {
                 }
 
                 // Get the value
+                $key_desc = '';
                 $value = $value[0];
                 if ( ( ddtt_is_serialized_array( $value ) || ddtt_is_serialized_object( $value ) ) && !empty( unserialize( $value ) ) ) {
                     $value = $value.'<br><code><pre>'.print_r( unserialize( $value ), true ).'</pre></code>';
+                } elseif ( $key == '_edit_lock' ) {
+                    $key_desc = 'Last Edited Date';
+                    list( $timestamp, $user_id ) = explode( ':', $value );
+                    $value = $value . ' — <em>' . gmdate( 'F j, Y \a\t g:i A', (int) $timestamp ) . '</em>';
+                } elseif ( $key == '_edit_last' ) {
+                    $key_desc = 'Last Edited By';
+                    $last_user = get_userdata( $value );
+                    $value = $value . ' — <em>' . esc_html( $last_user->display_name ) . ' (<span class="' . $is_redacting ? 'redact' : '' . '">' . esc_html( $last_user->user_email ) . '</span>)</em>';
                 } else {
                     $value = esc_html( $value );
                 }
@@ -698,7 +749,7 @@ if ( $valid_search ) {
                 }
                 ?>
                 <tr>
-                    <td><span class="highlight-variable"><?php echo esc_attr( $key ); ?></span></td>
+                    <td><span class="highlight-variable"><?php echo esc_attr( $key ); ?></span><?php echo wp_kses_post( $key_desc ? ' <em>(' . $key_desc . ')</em>' : '' ); ?></td>
                     <td><?php echo wp_kses_post( $value ); ?></td>
                 </tr>
                 <?php
@@ -709,6 +760,8 @@ if ( $valid_search ) {
     <br><br><br>
 
     <div class="full_width_container">
+        <h2>POST TAXONOMIES</h2>
+
         <table class="admin-large-table">
             <tr>
                 <th style="width: 300px;">Taxonomy</th>
@@ -756,5 +809,57 @@ if ( $valid_search ) {
             ?>
         </table>
     </div>
+    <br><br><br>
+
+    <div class="full_width_container">
+        <h2>POST COMMENTS</h2>
+
+        <table class="admin-large-table">
+            <tr>
+                <th style="width: 50px;">Comment ID</th>
+                <th style="width: 100px;">Reply?</th>
+                <th style="width: 200px;">Date</th>
+                <th>Content</th>
+                <th style="width: 200px;">Author</th>
+                <th style="width: 70px;">Approved</th>
+                <th style="width: 50px;">Karma</th>
+            </tr>
+            
+            <?php
+            // Fetch comments for the current post
+            $comments = get_comments( [
+                'post_id' => $post_id,
+                'orderby' => 'comment_date',
+                'order'   => 'ASC',
+            ] );
+
+            if ( $comments ) {
+                foreach ( $comments as $comment ) {
+                    $comment_class = !empty( $comment->comment_parent ) ? 'child-comment' : 'parent-comment';
+                    ?>
+                    <tr class="<?php echo esc_attr( $comment_class); ?>">
+                        <td><?php echo esc_attr( $comment->comment_ID ); ?></td>
+                        <td><?php echo wp_kses_post( $comment->comment_parent ? 'Replying to ' . $comment->comment_parent : 'No' ); ?></td>
+                        <td><?php echo esc_html( gmdate( 'n/j/Y \a\t g:i A', strtotime( $comment->comment_date ) ) ); ?></td>
+                        <td><?php echo wp_kses_post( $comment->comment_content ); ?></td>
+                        <td>
+                            <?php echo esc_html( $comment->comment_author ); ?><br>
+                            <span class="<?php echo esc_attr( $is_redacting ? 'redact' : '' ); ?>"><?php echo esc_html( $comment->comment_author_email ); ?></span><br>
+                            User ID: <?php echo esc_html( $comment->user_id ); ?><br>
+                            IP: <span class="<?php echo esc_attr( $is_redacting ? 'redact' : '' ); ?>"><?php echo esc_html( $comment->comment_author_IP ); ?></span>
+                        </td>
+                        <td style="text-align: center;"><?php echo esc_html( $comment->comment_approved ? 'Yes' : 'No' ); ?></td>
+                        <td style="text-align: center;"><?php echo esc_attr( $comment->karma ? $comment->karma : 0 ); ?></td>
+                    </tr>
+                <?php }
+            } else { ?>
+                <tr>
+                    <td colspan="7">No comments found.</td>
+                </tr>
+            <?php } ?>
+        </table>
+    </div>
+
+
     <?php
 }

@@ -53,7 +53,7 @@ $hidden_path = '<input type="hidden" name="page" value="'.$page.'">
 <input type="hidden" name="tab" value="'.$tab.'">';
 
 // Are we updating?
-if ( isset( $_POST[ '_wpnonce' ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash ( $_POST[ '_wpnonce' ] ) ), 'update_suppressed_errors' ) ) {
+if ( isset( $_POST[ '_wpnonce' ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ '_wpnonce' ] ) ), 'update_suppressed_errors' ) ) {
 
     // Add Must-Use-Plugin; we will not be adding it by default
     $enable = isset( $_POST[ 'enable' ] ) ? absint( $_POST[ 'enable' ] ) : false;

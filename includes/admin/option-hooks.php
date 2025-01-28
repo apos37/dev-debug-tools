@@ -12,6 +12,13 @@ code {
 <?php include 'header.php'; ?>
 
 <?php 
+$bots = ddtt_get_bots();
+$bot_names = [];
+foreach ( $bots as $key => $bot ) {
+    $bot_names[] = '<code class="hl">' . $bot[ 'name' ] . '</code>';
+}
+sort( $bot_names );
+
 $hooks = [
     [ 
         'type' => 'Filter',
@@ -97,6 +104,11 @@ $hooks = [
         'type' => 'Filter',
         'hook' => 'ddtt_ignore_pages_for_discord_notifications', 
         'desc' => 'Add, remove or modify pages that should be ignored when using Discord Notifications found in <a href="'.ddtt_plugin_options_path( 'settings' ).'">settings</a> under Show Online Users.' 
+    ],
+    [ 
+        'type' => 'Filter',
+        'hook' => 'ddtt_bots_to_log', 
+        'desc' => 'Add, remove or modify user agents that are flagged as bots to be included in the Bots Crawling Posts and Pages option of the <a href="'.ddtt_plugin_options_path( 'activity' ).'">activity log</a>.<br><br>Current bots: ' . implode( ', ', $bot_names )
     ]
 ];
 

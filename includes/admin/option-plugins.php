@@ -14,6 +14,9 @@ if ( $force_get ) {
     ddtt_remove_qs_without_refresh( 'force_get' );
 }
 $recache = ( $plugins_data === false || $force_get );
+if ( $recache ) {
+    $plugins_data = ddtt_get_plugins_data();
+}
 
 // Last cached date
 $last_cached = ( $plugins_data && isset( $plugins_data[ 'last_cached' ] ) && !$force_get ) ? $plugins_data[ 'last_cached' ] : gmdate( 'Y-m-d H:i:s' );
@@ -39,11 +42,6 @@ $display_last_cached = ddtt_convert_timezone( $last_cached );
     // Convert to simple list if in query string
     if ( ddtt_get( 'simple_plugin_list', '==', 'true' ) ) {
         $table = false;
-    }
-
-    // If not cached or recaching
-    if ( $recache ) {
-        ddtt_get_plugins_data();
     }
 
     // Validation
@@ -115,21 +113,23 @@ $display_last_cached = ddtt_convert_timezone( $last_cached );
                     $threshold = 2 * 1024 * 1024; // 2MB in bytes
 
                     // Check if the size exceeds the threshold
-                    if ( $bytes > $threshold ) {
+                    if ( $bytes == 'Unknown' ) {
+                        $size_class = 'unknown';
+                    } elseif ( $bytes > $threshold ) {
                         $size_class = 'size-large';
                     } else {
                         $size_class = 'size-small';
                     }
                     
                     // Get the MB
-                    $folder_size = ddtt_format_bytes( $bytes );
+                    $folder_size = $bytes == 'Unknown' ? 'Unknown' : ddtt_format_bytes( $bytes );
 
                     // The table row
                     $results .= '<tr class="'.$active_class.'">
                         <td>'.$plugin_data[ 'is_active' ].'</td>
                         <td>'.$name.' <em>by '.$plugin_data[ 'author' ].'</em>'.$incl_desc.'</td>
                         '.$site_row.'
-                        <td>Version '.$plugin_data[ 'version' ].'</td>
+                        <td>'.$plugin_data[ 'version' ].'</td>
                         <td class="'.$plugin_data[ 'old_class' ].'">'.$plugin_data[ 'last_updated' ].'</td>
                         <td class="'.$plugin_data[ 'incompatible_class' ].'">'.$plugin_data[ 'compatibility' ].'</td>
                         <td class="'.$size_class.'">'.$folder_size.'</td>

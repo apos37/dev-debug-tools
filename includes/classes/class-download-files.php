@@ -42,6 +42,11 @@ class DDTT_DOWNLOAD_FILES {
         // Admins only
         if ( current_user_can( 'administrator' ) ) {
 
+            // ACTIVITY LOG
+            if ( isset( $_POST[ 'ddtt_download_activity_log' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                $this->download_root_file( 'activity.log', DDTT_GO_PF.'activity_log_dl', null, (new DDTT_ACTIVITY)->log_directory_path );
+            }
+
             // WP-CONFIG
             if ( isset( $_POST[ 'ddtt_download_wpconfig' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
                 $this->download_root_file( 'wp-config.php', DDTT_GO_PF.'wpconfig_dl' );
@@ -98,8 +103,8 @@ class DDTT_DOWNLOAD_FILES {
      */
     public function download_root_file( $filename, $nonce_action, $content_type = null, $path = null ) {
         // First verify the nonce
-        if ( !isset( $_POST[ '_wpnonce' ] ) || !wp_verify_nonce( sanitize_text_field( wp_unslash ( $_REQUEST[ '_wpnonce' ] ) ), $nonce_action ) ) {
-            exit( 'No naughty business please.' );
+        if ( !isset( $_REQUEST[ '_wpnonce' ] ) || !wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST[ '_wpnonce' ] ) ), $nonce_action ) ) {
+            exit( 'No naughty business here please.' );
         }
 
         // Initialize WP_Filesystem

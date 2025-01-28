@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9.0
 Tested up to: 6.7.1
 Requires PHP: 7.4
-Stable tag: 1.8.5
+Stable tag: 2.0.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -15,17 +15,20 @@ The "Developer Debug Tools" WordPress plugin is a powerhouse for developers and 
 
 This plugin offers a suite of features to aid in debugging, including, but not limited to:
 
-* Viewing and clearing `debug.log` and other logs
+* Viewing and clearing `debug.log` and other error logs
 * Viewing and updating `wp-config.php` and `.htaccess` files
 * Viewing and editing user meta and post meta
-* Quick links for debugging users, posts, pages, comments, and Gravity Forms forms and entries.
+* Viewing detailed info on post types and taxonomies
+* Quick links for debugging users, posts, pages and comments
 * Clearing all taxonomy terms from a given post
 * Clearing all or expired transients easily
-* Finding where shortcodes are used
+* Finding which posts and pages shortcodes are used on
 * Seeing whom is online with their roles
+* Activity logging such as when user meta, post meta, site settings, plugins and themes are updated or when bots crawl the site
 * Discord notifications of fatal errors, user page loads, and user logins
+* Viewing your database tables and entries at a glance without worry
 * Enhancements to the admin bar such as condensing/removing items and seeing user/post info at a glance
-* Viewing helpful information such php.ini values, php configs, scheduled cron jobs, site options, global variables, and more
+* Viewing helpful information such php.ini values, php configs, scheduled cron jobs, site options, global variables, server metrics and more
 * Access to a handful of additional functions and hooks that you can use for debugging
 
 With "Developer Debug Tools", you can:
@@ -83,6 +86,29 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Check API statuses
 
 == Changelog ==
+= 2.0.0.1 =
+* Fix: Notices at the top of the page smashed into the header
+
+= 2.0.0 =
+* Update: Added a new Activity Log tab with different options in settings
+* Update: Added a new tab for Server metrics
+* Update: Added a new Taxonomies tab
+* Update: Added a new Post Types tab
+* Update: Added a new Media Library tab
+* Update: Added CPU Load and Memory Usage to header
+* Tweak: Renamed Logs tab to Error Logs
+* Tweak: Changed checkboxes to squares instead of circles because they looked like radio buttons
+* Update: Added setting for changing menu type
+* Fix: filemtime(): stat failed for Dreamhost Panel Login plugin
+* Tweak: Updated Globals tab to include all globals available
+* Tweak: Added role names to User Meta tab
+* Update: Added API Rest URL to Post Meta tab
+* Update: Added featured image to Post Meta tab
+* Tweak: Added _edit_lock and _edit_last conversion to Post Meta tab
+* Tweak: Added author name and email to Post Meta tab
+* Update: Added post comments to Post Meta tab
+* Update: Added a "what's new" button to the header
+
 = 1.8.5 =
 * Tweak: Updated screenshots for repo
 * Update: Added ABSPATH to header

@@ -6,6 +6,11 @@
 // Include the header
 include 'header.php';
 
+$last_viewed_version = get_option( DDTT_GO_PF . 'last_viewed_version' );
+if ( !$last_viewed_version || version_compare( DDTT_VERSION, $last_viewed_version, '>' ) ) {
+    update_option( DDTT_GO_PF . 'last_viewed_version', DDTT_VERSION );
+}
+
 // Get the dev timezone
 $timezone = get_option( DDTT_GO_PF.'dev_timezone', wp_timezone_string() );
 

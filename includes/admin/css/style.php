@@ -50,6 +50,10 @@ if ( $current_screen->id == $options_page ) {
     // Get the debug log colors
     $DDTT_LOGS = new DDTT_LOGS();
     $dl_colors = $DDTT_LOGS->highlight_args();
+
+    // Get the activity log colors
+    $DDTT_ACTIVITY = new DDTT_ACTIVITY();
+    $act_colors = $DDTT_ACTIVITY->highlight_args();
     ?>
     <style>
     /* ---------------------------------------------
@@ -292,6 +296,31 @@ if ( $current_screen->id == $options_page ) {
         color: #333;
     }
 
+    /* CPU load classes */
+    .cpu-load.high,
+    .memory-usage.high {
+        background-color: orangered;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    .cpu-load.critical,
+    .memory-usage.critical {
+        background-color: red;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    .cpu-load.overload,
+    .memory-usage.overload {
+        background-color: darkred;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
 
     /* ---------------------------------------------
                     ALL PAGES - FORMS
@@ -341,7 +370,7 @@ if ( $current_screen->id == $options_page ) {
         border: 1px solid <?php echo esc_attr( $bg_accent ); ?>;
         width: 30px;
         height: 30px;
-        border-radius: 50%;
+        border-radius: 20%;
         vertical-align: middle;
         -webkit-appearance: none;
         outline: none;
@@ -390,6 +419,9 @@ if ( $current_screen->id == $options_page ) {
         width: 100%;
         height: 20rem;
         cursor: auto;
+    }
+    .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> #testing-options textarea {
+        height: 6rem;
     }
     .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> select {
         background: none;
@@ -486,6 +518,16 @@ if ( $current_screen->id == $options_page ) {
     /* ---------------------------------------------
                         MENU / NAV
     --------------------------------------------- */
+
+    /* Menu wrapper */
+    .menu-wrapper.tabs {
+        margin-top: 2rem;
+    }
+    .info-menu-cont.dropdown {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
     
     /* Warning count */
     .awaiting-mod {
@@ -538,6 +580,11 @@ if ( $current_screen->id == $options_page ) {
     }
     .nav-tab-wrapper {
         border-bottom: 1px solid <?php echo esc_attr( $bg_secondary ); ?>;
+    }
+
+    /* Nav dropdown */
+    #menu-dropdown {
+        width: 200px;
     }
 
 
@@ -665,28 +712,35 @@ if ( $current_screen->id == $options_page ) {
         font-weight: bold;
     }
 
-    .easy-reader th.line {
-        width: 1%;
+    .easy-reader th.line { width: 1%; }
+    .easy-reader th.date { width: 12%; }
+
+    .easy-reader.debug-log-table th.type { width: 10%; }
+    .easy-reader.debug-log-table th.qty { width: 7%; }
+    .easy-reader.debug-log-table th.help { width: 14%; }
+
+    .easy-reader.activity-log-table th.type { width: 12%; }
+    .easy-reader.activity-log-table th.user { width: 20%; }
+
+    .easy-reader.activity-log-table td.type,
+    .easy-reader.activity-log-table td.notes {
+        word-break: normal !important;
     }
-    .easy-reader th.qty {
-        width: 7%;
-    }
-    .easy-reader th.date {
-        width: 12%;
-    }
-    .easy-reader th.type {
-        width: 10%;
-    }
-    .easy-reader th.help {
-        width: 14%;
-    }
+    
     .easy-reader th.line,
     .easy-reader th.date
     .easy-reader th.type,
+    .easy-reader th.user,
     .easy-reader th.qty,
     .easy-reader th.help {
+        text-wrap: nowrap;
         white-space: nowrap;
     }
+
+    .easy-reader.activity-log-table .notes {
+        line-height: 1.75;
+    }
+
     .easy-reader th,
     .easy-reader td.line,
     .easy-reader td.qty {
@@ -744,7 +798,7 @@ if ( $current_screen->id == $options_page ) {
     }
     <?php
 
-    // Check if there are highlight colors
+    // Debug log highlight colors
     if ( !empty( $dl_colors ) ) {
 
         // Cycle through each debug log color
@@ -785,6 +839,38 @@ if ( $current_screen->id == $options_page ) {
                 <?php
             }
         }
+    } 
+
+    // Activity highlight colors
+    if ( !empty( $act_colors ) ) {
+
+        // Cycle through each debug log color
+        foreach ( $act_colors as $act_key => $actc ) {
+
+            if ( isset( $actc[ 'bg_color' ] ) && isset( $actc[ 'font_color' ] ) ) {
+                ?>
+                #color-identifiers .color-box.<?php echo esc_attr( $act_key ); ?>,
+                .activity-li.<?php echo esc_attr( $act_key ); ?> {
+                    background-color: <?php echo esc_attr( $actc[ 'bg_color' ] ); ?> !important;
+                }
+                #color-identifiers .color-box.<?php echo esc_attr( $act_key ); ?>,
+                <?php echo esc_attr( $priority ); ?>.activity-li.<?php echo esc_attr( $act_key); ?>,
+                <?php echo esc_attr( $priority ); ?>.activity-li.<?php echo esc_attr( $act_key ); ?> td,
+                <?php echo esc_attr( $priority ); ?>.activity-li.<?php echo esc_attr( $act_key ); ?> td a,
+                <?php echo esc_attr( $priority ); ?>.activity-li.<?php echo esc_attr( $act_key ); ?> .ln-content,
+                <?php echo esc_attr( $priority ); ?>.activity-li.<?php echo esc_attr( $act_key ); ?> .ln-content a,
+                <?php echo esc_attr( $priority ); ?>.activity-li.<?php echo esc_attr( $act_key ); ?> .activity-ln {
+                    color: <?php echo esc_attr( $actc[ 'font_color' ] ); ?> !important;
+                    font-weight: 500;
+                }
+                <?php
+            }
+        }
+        
+    }
+
+    // Color box
+    if ( !empty( $dl_colors ) || !empty( $act_colors ) ) {
         ?>
         #color-identifiers .color-box {
             width: 20px;
@@ -802,7 +888,8 @@ if ( $current_screen->id == $options_page ) {
             display: inline-block;
         }
         <?php
-    } ?>
+    }
+    ?>
     /* Allow debug lines to be selectable without the line numbers */
     .unselectable {
         -webkit-touch-callout: none;
@@ -841,9 +928,15 @@ if ( $current_screen->id == $options_page ) {
         background: blue !important;
     }
 
+    /* Code links */
+    .activity-li.posts td code a {
+        color: <?php echo esc_attr( $links ); ?> !important;
+    }
+
     /* Syntax */
     code { background: none; }
     code.hl,
+    .easy-reader .activity-li code,
     .notice code { 
         padding: 3px 5px 4px 5px !important;
         background: #2f3136 !important;

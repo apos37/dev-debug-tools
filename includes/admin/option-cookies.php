@@ -24,6 +24,22 @@ if ( $clear_all = ddtt_get( 'clear', '==', 'true' ) ) {
     <?php
 }
 
+// Start the session if it's not already active
+if ( ! session_id() ) {
+    session_start();
+}
+
+// Set test data in the session
+if ( empty( $_SESSION['test_data'] ) ) {
+    $_SESSION['test_data'] = [
+        'user_id'    => get_current_user_id(),
+        'ip_address' => $_SERVER['REMOTE_ADDR'],
+        'timestamp'  => time(),
+        'message'    => 'This is a test session!',
+    ];
+}
+
+
 // The current url
 $current_url = ddtt_plugin_options_path( 'cookies' );
 ?>
