@@ -204,7 +204,7 @@ class DDTT_WPCONFIG {
                 'remove' => TRUE
             ],
             'force_ssl_admin' => [
-                'label' => 'Ensure Sensetive Admin-area Info is Encrypted when Transmitting to Server',
+                'label' => 'Ensure Sensitive Admin-area Info is Encrypted when Transmitting to Server',
                 'lines' => [
                     [
                         'prefix'   => 'define',

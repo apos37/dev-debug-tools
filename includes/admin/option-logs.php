@@ -26,6 +26,7 @@ if ( $debug_log_path && $debug_log_path != '' ) {
 
 // Replace the files if query string exists
 if ( ddtt_get( 'clear_error_log', '==', 'true' ) ) {
+    ddtt_remove_qs_without_refresh( [ 'clear_error_log' ] );
     $DDTT_LOGS->replace_file( get_home_path().'error_log', 'error_log', true );
 }
 if ( ddtt_get( 'clear_debug_log', '==', 'true' ) ) {
@@ -33,6 +34,7 @@ if ( ddtt_get( 'clear_debug_log', '==', 'true' ) ) {
     $DDTT_LOGS->replace_file( $debug_replace, 'debug.log', true );
 }
 if ( ddtt_get( 'clear_admin_error_log', '==', 'true' ) ) {
+    ddtt_remove_qs_without_refresh( [ 'clear_admin_error_log' ] );
     $DDTT_LOGS->replace_file( get_home_path().DDTT_ADMIN_URL.'/error_log', 'error_log', true );
 }
 

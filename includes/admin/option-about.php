@@ -50,9 +50,45 @@ ul li {
 }
 .plugin-card, .plugin-card-bottom {
     background-color: #2D2D2D;
+    color: #F6F7F7 !important;
+}
+.plugin-card .desc p {
+    color: #F6F7F7 !important;
 }
 body #wpbody-content .plugin-card .plugin-action-buttons a.button.install-now[aria-disabled="true"] {
     color: #2D2D2D !important;
+}
+#the-list {
+    display: flex;
+    flex-flow: wrap;
+}
+.plugin-card {
+    display: flex;
+    flex-direction: column;
+    margin-left: 0 !important;
+}
+.plugin-card .plugin-card-top {
+    flex: 1;
+}
+.plugin-card .plugin-card-bottom {
+    margin-top: auto;
+}
+.plugin-card .ws_stars {
+    display: inline-block;
+}
+.php-incompatible {
+    padding: 12px 20px;
+    background-color: #D1231B;
+    color: #FFFFFF;
+    border-top: 1px solid #dcdcde;
+    overflow: hidden;
+}
+#wpbody-content .plugin-card .plugin-action-buttons a.install-now[aria-disabled="true"] {
+    /* color: #CBB8AD !important; */
+    border-color: #CBB8AD !important;
+}
+.plugin-action-buttons {
+    list-style: none !important;   
 }
 </style>
 
@@ -99,9 +135,19 @@ echo '<a class="button button-primary" href="https://wordpress.org/support/plugi
 
 <?php if ( ddtt_get_domain() != 'playground.wordpress.net' ) { ?>
     <br><br>
-    <h3>Try My Other Plugins</h3>
-    <?php ddtt_plugin_card( 'admin-help-docs' ); ?>
-    <?php ddtt_plugin_card( 'gf-discord' ); ?>
-    <?php ddtt_plugin_card( 'gf-msteams' ); ?>
-    <?php ddtt_plugin_card( 'broken-link-notifier' ); ?>
+    <h2><?php echo esc_html__( 'Try My Other Plugins', 'admin-help-docs' ); ?></h2>
+    <div class="wp-list-table widefat plugin-install">
+        <div id="the-list">
+            <?php ddtt_plugin_card( 'admin-help-docs' ); ?>
+            <?php ddtt_plugin_card( 'clear-cache-everywhere' ); ?>
+            <?php ddtt_plugin_card( 'broken-link-notifier' ); ?>
+            <?php ddtt_plugin_card( 'eri-file-library' ); ?>
+            <?php if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) { ?>
+                <?php ddtt_plugin_card( 'gf-tools' ); ?>
+                <?php ddtt_plugin_card( 'gf-discord' ); ?>
+                <?php ddtt_plugin_card( 'gf-msteams' ); ?>
+                <?php ddtt_plugin_card( 'gravity-zwr' ); ?>
+            <?php } ?>
+        </div>
+    </div>
 <?php } ?>

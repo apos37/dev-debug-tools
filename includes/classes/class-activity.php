@@ -1194,6 +1194,8 @@ class DDTT_ACTIVITY {
         // Get action label
         if ( $action_label = $this->get_action_label( __FUNCTION__ ) ) {
 
+            $ip = get_current_user_id() ? sanitize_text_field( $_SERVER[ 'REMOTE_ADDR' ] ) : '';
+
             // Prepare log message
             $log_message = sprintf(
                 'Title: <code>%s</code> | Link: <code><a href="%s" target="_blank">%s</a></code> | %s ID: <code>%d</code>',
@@ -1205,7 +1207,7 @@ class DDTT_ACTIVITY {
             );
 
             // Write to the log
-            if ( !$this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
+            if ( !$this->write_to_log( $this->current_user_log_message( $action_label, null, $ip ) . ' | ' . $log_message ) ) {
                 ddtt_write_log( 'Failed to write to activity log during post visit.' );
             }
         }
@@ -1248,6 +1250,8 @@ class DDTT_ACTIVITY {
         // Get action label
         if ( $action_label = $this->get_action_label( __FUNCTION__ ) ) {
 
+            $ip = sanitize_text_field( $_SERVER[ 'REMOTE_ADDR' ] );
+
             // Prepare log message
             $log_message = sprintf(
                 'Title: <code>%s</code> | Link: <code><a href="%s" target="_blank">%s</a></code> | %s ID: <code>%d</code> | Bot: <code><a href="%s" target="_blank">%s</a></code> | User Agent: <code>%s</code>',
@@ -1261,11 +1265,8 @@ class DDTT_ACTIVITY {
                 $bot[ 'user_agent' ],
             );
 
-            $ip = sanitize_text_field( $_SERVER[ 'REMOTE_ADDR' ] );
-            $ip_link = '<a href="https://www.criminalip.io/asset/report/' . $ip . '" target="_blank">' . $ip . '</a>';
-
             // Write to the log
-            if ( !$this->write_to_log( $this->current_user_log_message( $action_label, null, 'IP: ' . $ip_link ) . ' | ' . $log_message ) ) {
+            if ( !$this->write_to_log( $this->current_user_log_message( $action_label, null, $ip ) . ' | ' . $log_message ) ) {
                 ddtt_write_log( 'Failed to write to activity log during post visit.' );
             }
         }

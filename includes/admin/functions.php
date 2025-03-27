@@ -768,11 +768,32 @@ function ddtt_error_count() {
     $DDTT_LOGS = new DDTT_LOGS();
 
     // Define log paths and initial counts
-    $log_files = [
-        'debug'       => WP_DEBUG_LOG && WP_DEBUG_LOG !== true ? WP_DEBUG_LOG : DDTT_CONTENT_URL.'/debug.log',
-        'error'       => get_option( DDTT_GO_PF.'error_log_path' ) ?: 'error_log',
-        'admin_error' => get_option( DDTT_GO_PF.'admin_error_log_path' ) ?: DDTT_ADMIN_URL.'/error_log'
-    ];
+    if ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
+        $debug_loc = WP_DEBUG_LOG;
+    } else {
+        $debug_log_path = get_option( DDTT_GO_PF.'debug_log_path' );
+        if ( $debug_log_path && $debug_log_path != '' ) {
+            $debug_loc = sanitize_text_field( $debug_log_path );
+            if ( str_starts_with( $debug_loc, 'wp-content/' ) ) {
+                $debug_loc = get_home_path().$debug_loc;
+            }
+        } elseif ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
+            $debug_loc = WP_DEBUG_LOG;
+        } else {
+            $debug_loc =  DDTT_CONTENT_URL.'/debug.log';
+        }
+    }
+
+    $log_files = [];
+    if ( !isset( $_GET[ 'clear_debug_log' ] ) ) {
+        $log_files[ 'debug' ] = $debug_loc;
+    }
+    if ( !isset( $_GET['clear_error_log'] ) ) {
+        $log_files[ 'error' ] = get_option( DDTT_GO_PF . 'error_log_path' ) ?: 'error_log';
+    }
+    if ( !isset( $_GET['clear_admin_error_log'] ) ) {
+        $log_files[ 'admin_error' ] = get_option( DDTT_GO_PF . 'admin_error_log_path' ) ?: DDTT_ADMIN_URL . '/error_log';
+    }
 
     // Store the total count
     $total_count = 0;
@@ -1900,7 +1921,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
  * @param array $highlight_args
  * @return string
  */
-function ddtt_view_activity_file_contents( $path, $highlight_args ) {
+function ddtt_view_activity_file_contents( $path, $highlight_args, $ip_address_link = 'https://www.criminalip.io/asset/report/{ip}' ) {
     // Initialize the WP_Filesystem
     if ( !function_exists( 'WP_Filesystem' ) ) {
        require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -2041,7 +2062,7 @@ function ddtt_view_activity_file_contents( $path, $highlight_args ) {
                         $display_user = [];
 
                         // Extract user info (e.g., Socrates (test@wordpressenhanced.com - ID: 2))
-                        preg_match( '/^(.*?) \((.*?) - ID: (\d+)\)/', $user_info, $matches );
+                        preg_match( '/^(.*?) \((.*?) - ID: (\d+)\)(?: (.*?))?$/', $user_info, $matches );
                         $display_name = isset( $matches[1] ) ? $matches[1] : '';
                         if ( $display_name ) {
                             $display_user[] = $display_name;
@@ -2055,6 +2076,13 @@ function ddtt_view_activity_file_contents( $path, $highlight_args ) {
                         $user_id = isset( $matches[3] ) ? $matches[3] : '';
                         if ( $user_id ) {
                             $display_user[] = 'User ID: ' . $user_id;
+                        }
+
+                        $ip_address = isset( $matches[4] ) ? $matches[4] : '';
+                        if ( $ip_address ) {
+                            $ip_url = str_replace( '{ip}', $ip_address, $ip_address_link );
+                            $ip_link = '<a href="' . $ip_url . '" target="_blank">' . $ip_address . '</a>';
+                            $display_user[] = 'IP: ' . $ip_link;
                         }
 
                         $display_user = !empty( $display_user ) ? implode( '<br>', $display_user ) : '<em>Unknown</em>';

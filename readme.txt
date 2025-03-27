@@ -1,10 +1,10 @@
 === Developer Debug Tools ===
 Contributors: apos37, venutius
 Tags: debug, developer, testing, wp-config, htaccess
-Requires at least: 5.9.0
-Tested up to: 6.7.1
+Requires at least: 5.9
+Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.0.0.3
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -56,14 +56,14 @@ Yes! It is always best to back these files up when making updates to them.
 = Can I use this plugin on a live website? =
 Yes, but you should always make a backup of your site before using functionality that makes changes to your core files or database.
 
-= My site broke when updating my wp-config.php or .htaccess. How do I revert back to my original?
-The originals are stored in your root folder and renamed with the date and time from which they were replaced. For example, the wp-config.php file will have been renamed to wp-config-2022-08-22-15-25-46.php and replaced with a new file. Simply log into your FTP or File Manager (from your host), rename the current file to something else such as wp-config-BROKEN.php (just in case you need it), and then rename the version you want to revert back to as wp-config.php. If everything looks good, then you can either delete this file or send a copy of it to me so I can figure out what went wrong. You can do so in the Discord server mentioned below.
+= My site broke when updating my wp-config.php or .htaccess. How do I revert back to my original? =
+The originals are stored in your root folder and renamed with the date and time from which they were replaced. For example, the `wp-config.php` file will have been renamed to `wp-config-2022-08-22-15-25-46.php` and replaced with a new file. Simply log into your FTP or File Manager (from your host), rename the current file to something else such as `wp-config-BROKEN.php` (just in case you need it), and then rename the version you want to revert back to as `wp-config.php`. If everything looks good, then you can either delete this file or send a copy of it to me so I can figure out what went wrong. You can do so in the Discord server mentioned below.
 
 = Why can't I edit a username for a user? =
 Some hosts will not allow you to update a user's username directly from WP. In order to do so, you'll have to update it in your database directly.
 
 = Where is the centering tool? =
-Viewable only on the front-end, there is a link on the admin bar that shows +Off. Click on it and it will add a transparent bar with lines on it at the top of the page underneath the admin bar. If you click on the centering bar it will expand all the way down the page. Click on it again and it will minimize back to the top. You can click on the +On link from the admin bar to make it go away.
+Viewable only on the front-end, there is a link on the admin bar that shows `+Off`. Click on it and it will add a transparent bar with lines on it at the top of the page underneath the admin bar. If you click on the centering bar it will expand all the way down the page. Click on it again and it will minimize back to the top. You can click on the `+On` link from the admin bar to make it go away.
 
 = Where are the quick debug links? =
 You have to enable them on the Developer Debug Tools settings first. Once they are enabled, an "ID" column will be added to the user and/or post admin list pages. Next to the user or post's ID you will see a lightning bolt icon. Clicking on the lightning bolt will redirect you to the User Meta or Post Meta tab on our plugin where you can view and edit all of the meta easily.
@@ -87,6 +87,12 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Check API statuses
 
 == Changelog ==
+= 2.0.1 =
+* Tweak: Optimization of main file
+* Fix: Remove error count if just cleared
+* Fix: Mispelling on WPCONFIG tab
+* Fix: Count on tab not using updated debug log path
+
 = 2.0.0.3 =
 * Fix: CPU showing overload when using shell
 

@@ -3,21 +3,40 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             2.0.0.3
- * Requires at least:   5.9.0
- * Tested up to:        6.7.1
+ * Version:             2.0.1
+ * Requires at least:   5.9
+ * Tested up to:        6.7
  * Requires PHP:        7.4
- * Author:              Apos37
- * Author URI:          https://apos37.com/
+ * Author:              WordPress Enhanced
+ * Author URI:          https://wordpressenhanced.com/
+ * Support URI:         https://discord.gg/3HnzNEJVnR
  * Text Domain:         dev-debug-tools
  * License:             GPLv2 or later
  * License URI:         http://www.gnu.org/licenses/gpl-2.0.txt
+ * Created on:          May 13, 2022
  */
 
-// Exit if accessed directly.
-if ( !defined( 'ABSPATH' ) ) {
-	exit;
-}
+
+/**
+ * Exit if accessed directly.
+ */
+if ( !defined( 'ABSPATH' ) ) exit;
+
+
+/**
+ * Defines
+ */
+$plugin_data = get_file_data( __FILE__, [
+    'name'         => 'Plugin Name',
+    'description'  => 'Description',
+    'version'      => 'Version',
+    'plugin_uri'   => 'Plugin URI',
+    'requires_php' => 'Requires PHP',
+    'textdomain'   => 'Text Domain',
+    'author'       => 'Author',
+    'author_uri'   => 'Author URI',
+    'support_uri'  => 'Support URI',
+] );
 
 
 /**
@@ -25,9 +44,9 @@ if ( !defined( 'ABSPATH' ) ) {
  */
 
 // Versions
-define( 'DDTT_VERSION', '2.0.0.3' );
-define( 'DDTT_BETA', false ); // TODO:
-define( 'DDTT_MIN_PHP_VERSION', '7.4' );
+define( 'DDTT_VERSION', $plugin_data[ 'version' ] );
+define( 'DDTT_BETA', false );
+define( 'DDTT_MIN_PHP_VERSION', $plugin_data[ 'requires_php' ] );
 
 // Prevent loading the plugin if PHP version is not minimum
 if ( version_compare( PHP_VERSION, DDTT_MIN_PHP_VERSION, '<=' ) ) {
@@ -50,12 +69,12 @@ define( 'DDTT_PF', 'DDTT_' ); // Plugin prefix
 define( 'DDTT_GO_PF', 'ddtt_' ); // Global options prefix
 
 // Names
-define( 'DDTT_NAME', 'Developer Debug Tools' );
-define( 'DDTT_TEXTDOMAIN', 'dev-debug-tools' );
-define( 'DDTT_AUTHOR', 'Apos37' );
+define( 'DDTT_NAME', $plugin_data[ 'name' ] );
+define( 'DDTT_TEXTDOMAIN', $plugin_data[ 'textdomain' ] );
+define( 'DDTT_AUTHOR', $plugin_data[ 'author' ] );
 define( 'DDTT_AUTHOR_EMAIL', 'apos37@pm.me' );
-define( 'DDTT_AUTHOR_URL', 'https://apos37.com/' );
-define( 'DDTT_DISCORD_SUPPORT_URL', 'https://discord.gg/3HnzNEJVnR' );
+define( 'DDTT_AUTHOR_URL', $plugin_data[ 'author_uri' ] );
+define( 'DDTT_DISCORD_SUPPORT_URL', $plugin_data[ 'support_uri' ] );
 
 // Fetch site url only once
 $site_url = site_url( '/' );

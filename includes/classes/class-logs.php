@@ -93,7 +93,7 @@ class DDTT_LOGS {
         $path_parts = pathinfo( $file_to_replace );
         $replacement_filename = $path_parts[ 'basename' ];
         $replacement_dir = $path_parts[ 'dirname' ];
-
+        
         // Define the temporary path for the copied file
         $temp_file_path = $replacement_dir . '/' . $replacement_filename;
 
