@@ -100,25 +100,37 @@ class DDTT_ADMIN_BAR {
                     }
                 }
         }
-
+        
 
         /**
          * Add centering tool
          */
         if ( !$remove_centering_tool && !is_admin() ) {
 
-            // Get column count
-            if ( get_option( DDTT_GO_PF.'centering_tool') && get_option( DDTT_GO_PF.'centering_tool') != '' ) {
-                $ct_count = get_option( DDTT_GO_PF.'centering_tool');
-            } else {
-                $ct_count = 16;
-            }
+            // Get cell width and height in string format (with units)
+            $ct_width = get_option( DDTT_GO_PF.'centering_tool_width', '100px' );
+            $ct_height = get_option( DDTT_GO_PF.'centering_tool_height', '50px' );
+
+            // Extract numeric values and units
+            $ct_width_value = (int) str_replace( ['px', 'rem'], '', $ct_width );
+            $ct_width_unit = str_replace( $ct_width_value, '', $ct_width ); // Get unit part (px or rem)
+            $ct_height_value = (int) str_replace( ['px', 'rem'], '', $ct_height );
+            $ct_height_unit = str_replace( $ct_height_value, '', $ct_height );
+
+            // Set screen dimensions to 1920px width and 1080px height (as per your assumption)
+            $screen_width = 1920;
+            $screen_height = 1080;
+
+            // Calculate number of columns based on screen width
+            $num_columns = floor( $screen_width / $ct_width_value );
+
+            // Calculate number of rows based on screen height
+            $num_rows = floor( $screen_height / $ct_height_value );
 
             // Update
             if ( ddtt_get( 'ct' ) && ddtt_get( 'ct' ) == 'true' ) {
-                update_user_meta( $user_id, DDTT_GO_PF.'centering_tool', $ct_count );
+                update_user_meta( $user_id, DDTT_GO_PF.'centering_tool', true );
                 ddtt_remove_qs_without_refresh( 'ct', false );
-                
             } elseif ( ddtt_get( 'ct' ) && ddtt_get( 'ct' ) == 'false' ) {
                 update_user_meta( $user_id, DDTT_GO_PF.'centering_tool', false );
                 ddtt_remove_qs_without_refresh( 'ct', false );
@@ -131,20 +143,32 @@ class DDTT_ADMIN_BAR {
 
                 // Container
                 $centering_tool = '<div id="ct-top" class="centering-tool" data-expanded="false">';
-                for ( $i = 0; $i < $ct_count; $i++ ) {
-                    if ( $ct_count % 2 == 0 && $i == round( ( $ct_count / 2 ) - 1, 0 ) || 
-                        $ct_count % 2 == 1 && $i == round( ( $ct_count / 2 ) - 1, 0 ) || 
-                        $ct_count % 2 == 1 && $i == round( ( $ct_count / 2 ) - 2, 0 ) ) {
 
-                        $center = ' center';
-                    } else {
-                        $center = '';
+                // Start table for rows and columns
+                $centering_tool .= '<div class="ct-table">';
+
+                // Create the grid
+                for ( $i = 0; $i < $num_rows; $i++ ) { // Loop for rows (horizontal lines)
+                    $centering_tool .= '<div class="ct-row">'; // Start a new row
+
+                    for ( $j = 0; $j < $num_columns; $j++ ) { // Loop for columns (vertical lines)
+
+                        // For center column (middle column), double its width
+                        if ( $j == floor( $num_columns / 2 ) ) {
+                            $centering_tool .= '<div class="ct-cell ct-center"></div>';
+                        } else {
+                            $centering_tool .= '<div class="ct-cell"></div>';
+                        }
                     }
-                    $centering_tool .= '<div class="ct-q'.$center.'"></div>';
-                }
-                $centering_tool .= '</div>';
 
-                // Add to page 
+                    $centering_tool .= '</div>'; // End of row
+                }
+
+                $centering_tool .= '</div>'; // End of table
+
+                $centering_tool .= '</div>'; // End of container
+
+                // Add to page
                 echo wp_kses_post( $centering_tool );
 
                 // Text and link
@@ -164,56 +188,82 @@ class DDTT_ADMIN_BAR {
                         }
                     } );
                 } );
-                
                 </script>';
 
                 // CSS
                 echo '<style>
-                ul li .ab-item, #wpadminbar .quicklinks .menupop ul li a strong, #wpadminbar .quicklinks .menupop.hover ul li .ab-item, #wpadminbar .shortlink-input, #wpadminbar.nojs .quicklinks .menupop:hover ul li .ab-item {
-                    line-height: 2.5 !important;
-                }
-                    
                 div#ct-top {
                     height: 25px;
                     transition: height 300ms;
                     width: 100%;
-                    background: rgba(0, 0, 0, 0.15);
-                    display: flex;
+                    background: rgba(250, 250, 250, 0.25);
                     position: fixed;
-                    top: 30px;
+                    top: 30px; /* Allow room for admin bar */
                     left: 0;
                     right: 0%;
                     z-index: 9999;
                     cursor: pointer;
-                    background: linear-gradient(to bottom, 
-                            #000 1px, /* Color and thickness of the line */
-                            transparent 1px, /* Line separation */
-                            transparent 2px /* End of line thickness */
-                        );
-                    background-size: 100% 20px;
+                    overflow: hidden;
                 }
-                .ct-q {
-                    width: 25%;
+
+                /* Table container */
+                .ct-table {
+                    display: table;
+                    width: auto; /* Let the table size adjust based on content */
+                    margin-left: calc(50% - ' . ($ct_width_value * $num_columns / 2) . $ct_width_unit . '); /* Center the grid */
+                    margin-right: calc(50% - ' . ($ct_width_value * $num_columns / 2) . $ct_width_unit . '); /* Center the grid */
+                    border-left: 1px solid #000;
+                }
+
+                /* Row container */
+                .ct-row {
+                    display: table-row;
+                }
+
+                /* Default cell container */
+                .ct-cell {
+                    display: table-cell;
                     border-right: 1px solid #000;
+                    border-bottom: 1px solid #000;
+                    width: ' . $ct_width . '; /* Custom width with unit */
+                    height: ' . $ct_height . '; /* Custom height with unit */
                 }
-                .ct-q.center {
-                    border-right: 2px solid blue;
+
+                /* Center column - red line down the middle */
+                .ct-cell.ct-center {
+                    position: relative;
                 }
-                .ct-q:last-child {
-                    width: 25%;
-                    border-right: none;
+
+                /* Red line for the center column */
+                .ct-cell.ct-center::before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 50%;
+                    width: 2px;
+                    height: 100%;
+                    background-color: red; /* Red line */
+                    transform: translateX(-50%);
                 }
+
+                /* Override width and height for middle column */
+                .ct-cell.ct-center {
+                    width: calc(' . $ct_width_value . ' * 2' . $ct_width_unit . '); /* Double the width for center column */
+                }
+
+                /* Responsive Design for smaller screens */
                 @media only screen and (max-width: 641px) {
                     div#ct-top {
                         top: 0 !important;
                     }
-                }';
-                echo '</style>';
-                
+                }
+                </style>';
+
             } else {
                 $ct_text = 'Off';
                 $ct_link = $current_url.$qsi.'ct=true';
             }
+
             $wp_admin_bar->add_node( [
                 'id'     => DDTT_GO_PF.'ct-admin-bar',
                 'parent' => 'top-secondary',

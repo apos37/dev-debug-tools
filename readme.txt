@@ -2,9 +2,9 @@
 Contributors: apos37, venutius
 Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9
-Tested up to: 6.7
+Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -87,7 +87,12 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Check API statuses
 
 == Changelog ==
+= 2.0.2 =
+* Update: Updated author name and website again per WordPress trademark policy
+* Update: Changed centering tool option to height and width options for more control
+
 = 2.0.1 =
+* Update: Changed author name from Apos37 to WordPress Enhanced, new Author URI
 * Tweak: Optimization of main file
 * Fix: Remove error count if just cleared
 * Fix: Mispelling on WPCONFIG tab

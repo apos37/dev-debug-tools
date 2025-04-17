@@ -185,7 +185,9 @@
 
                 <?php echo wp_kses( ddtt_options_tr( 'test_number', 'Debugging Test Number', 'number', null, [ 'width' => '10rem' ] ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'centering_tool_cols', 'Centering Tool Columns (Found on Admin Bar in Front-End)', 'number', null, [ 'width' => '10rem', 'default' => 16 ] ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'centering_tool_width', 'Centering Tool Column Width', 'text', 'Centering Tool is found on admin bar in front-end.', [ 'width' => '10rem', 'default' => '100px' ] ), $allowed_html ); ?>
+
+                <?php echo wp_kses( ddtt_options_tr( 'centering_tool_height', 'Centering Tool Column Height', 'text', 'Centering Tool is found on admin bar in front-end.', [ 'width' => '10rem', 'default' => '50px' ] ), $allowed_html ); ?>
 
                 <?php echo wp_kses( ddtt_options_tr( 'stop_heartbeat', 'Stop Heartbeat', 'checkbox', 'Helpful to resolve 503 INTERNAL ERRORS.' ), $allowed_html ); ?>
 

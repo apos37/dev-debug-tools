@@ -3,12 +3,12 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://github.com/apos37/dev-debug-tools
  * Description:         WordPress debugging and testing tools for developers
- * Version:             2.0.1
+ * Version:             2.0.2
  * Requires at least:   5.9
- * Tested up to:        6.7
+ * Tested up to:        6.8
  * Requires PHP:        7.4
- * Author:              WordPress Enhanced
- * Author URI:          https://wordpressenhanced.com/
+ * Author:              PluginRx
+ * Author URI:          https://pluginrx.com/
  * Support URI:         https://discord.gg/3HnzNEJVnR
  * Text Domain:         dev-debug-tools
  * License:             GPLv2 or later
