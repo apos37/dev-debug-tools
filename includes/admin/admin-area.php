@@ -21,6 +21,45 @@ new DDTT_ADMIN_AREA;
  */
 class DDTT_ADMIN_AREA {
 
+
+    /**
+     * Recommended plugins
+     *
+     * @var array
+     */
+    private $recommended_plugins = [
+        'admin-help-docs',
+        'another-show-hooks',
+        'aryo-activity-log',
+        'asgaros-forum',
+        'broken-link-notifier',
+        'child-theme-configurator',
+        'clear-cache-everywhere',
+        'code-snippets',
+        'debug-bar',
+        'debug-this',
+        'debugpress',
+        'disk-usage-sunburst',
+        'fakerpress',
+        'go-live-update-urls',
+        'heartbeat-control', // WP Dashboard: 60, Frontend: Disable, Post Editor: 30
+        'import-users-from-csv-with-meta',
+        'ns-cloner-site-copier',
+        'post-type-switcher',
+        'query-monitor',
+        'redirection',
+        'simple-maintenance-redirect',
+        'string-locator',
+        'user-menus',
+        'user-role-editor',
+        'wp-crontrol',
+        'wp-downgrade',
+        'wp-mail-logging',
+        'wp-optimize',
+        'wp-rollback'
+    ];
+
+
     /**
 	 * Constructor
 	 */
@@ -36,7 +75,8 @@ class DDTT_ADMIN_AREA {
         add_action( 'post_submitbox_misc_actions', [ $this, 'post_submitbox_actions' ] );
 
         // Add plugins to featured plugins list
-        add_filter( 'install_plugins_table_api_args_featured', [ $this, 'featured_plugins_tab' ] );
+        add_filter( 'install_plugins_tabs', [ $this, 'add_plugins_tab' ] );
+        add_action( 'install_plugins_dev_debug_tools', [ $this, 'render_add_plugins_tab' ] );
 
         // Add columns to plugins page
         if ( !get_option( DDTT_GO_PF.'plugins_page_data' ) || get_option( DDTT_GO_PF.'plugins_page_data' ) != 1 ) {
@@ -138,99 +178,39 @@ class DDTT_ADMIN_AREA {
 
 
     /**
-     * Add our plugins to recommended list.
+     * Add a new tab for Dev Debug Tools.
      *
-     * @param [type] $res
-     * @param [type] $action
-     * @param [type] $args
-     * @return void
+     * @param array $tabs Existing plugin install tabs.
+     * @return array Modified tabs with custom "Dev Debug Tools" tab.
      */
-    public function plugins_api_result( $res, $action, $args ) {
-        remove_filter( 'plugins_api_result', [ $this, 'plugins_api_result' ], 10, 1 );
-
-        // Remove the defaults
-        $res->plugins = [];
-
-        // WP.org plugins
-        $wp_plugins = apply_filters( 'ddtt_recommended_plugins', [
-            'admin-help-docs',
-            'another-show-hooks',
-            'aryo-activity-log',
-            'asgaros-forum',
-            'broken-link-notifier',
-            'child-theme-configurator',
-            'code-snippets',
-            'debug-bar',
-            'debug-this',
-            'debugpress',
-            'disk-usage-sunburst',
-            'fakerpress',
-            'go-live-update-urls',
-            'heartbeat-control', // WP Dashboard: 60, Frontend: Disable, Post Editor: 30
-            'import-users-from-csv-with-meta',
-            'ns-cloner-site-copier',
-            'post-type-switcher',
-            'query-monitor',
-            'redirection',
-            'string-locator',
-            'user-menus',
-            'user-role-editor',
-            'wp-crontrol',
-            'wp-downgrade',
-            'wp-mail-logging',
-            'wp-optimize',
-            'wp-rollback'
-        ] );
-
-        // Sort them
-        rsort( $wp_plugins );
-
-        // Add plugin list which you want to show as feature in dashboard.
-        foreach ( $wp_plugins as $wp_p ) {
-            $res = $this->add_plugin_favs( $wp_p, $res );
-        }
-
-        // Return the results
-        return $res;
-    } // End plugins_api_result()
-    
-    
-    /**
-     * Helper function for adding plugins to fav list.
-     *
-     * @param [type] $args
-     * @return void
-     */
-    public function featured_plugins_tab( $args ) {
-        if ( ddtt_get( 'tab', '==', 'featured' ) ) {
-            add_filter( 'plugins_api_result', [ $this, 'plugins_api_result' ], 10, 3 );
-        }
-        return $args;
-    } // End featured_plugins_tab()
+    public function add_plugins_tab( $tabs ) {
+        $tabs[ 'dev_debug_tools' ] = __( 'Dev Debug Tools', 'dev-debug-tools' );
+        return $tabs;
+    } // End add_plugins_tab()
 
 
     /**
-     * Add single plugin to list of favs.
+     * Render the custom "Dev Debug Tools" tab content
      *
-     * @param [type] $plugin_slug
-     * @param [type] $res
      * @return void
      */
-    public function add_plugin_favs( $plugin_slug, $res ) {
-        if ( !empty( $res->plugins ) && is_array( $res->plugins ) ) {
-            foreach ( $res->plugins as $plugin ) {
-                if ( is_object($plugin) && !empty($plugin->slug) && $plugin->slug == $plugin_slug ) {
-                    return $res;
-                }
-            } // foreach
-        }
+    public function render_add_plugins_tab() {
+        echo '<div class="wrap">';
 
-        if ( $plugin_info = get_transient( 'wf-plugin-info-' . $plugin_slug ) ) {
-            array_unshift( $res->plugins, $plugin_info );
+        require_once ABSPATH . 'wp-admin/includes/class-wp-plugin-install-list-table.php';
 
-        } else {
-            $plugin_info = plugins_api( 'plugin_information', [
-                'slug'   => $plugin_slug,
+        $table = new WP_Plugin_Install_List_Table();
+
+        // List of plugin slugs for "Dev Debug Tools" tab
+        $plugin_slugs = $this->recommended_plugins;
+
+        // Store the plugins here
+        $plugins = [];
+
+        // Loop through the slugs and get plugin information
+        foreach ( $plugin_slugs as $slug ) {
+            $response = plugins_api( 'plugin_information', [
+                'slug'   => $slug,
                 'is_ssl' => is_ssl(),
                 'fields' => [
                     'banners'           => true,
@@ -239,16 +219,33 @@ class DDTT_ADMIN_AREA {
                     'active_installs'   => true,
                     'icons'             => true,
                     'short_description' => true,
-                ]            
-            ] );
-            if ( !is_wp_error( $plugin_info ) ) {
-                $res->plugins[] = $plugin_info;
-                set_transient( 'wf-plugin-info-' . $plugin_slug, $plugin_info, DAY_IN_SECONDS * 7 );
+                ],
+            ]);
+
+            if ( is_wp_error( $response ) ) {
+                echo '<p>' . __( 'Error fetching plugin details. ' . $response->get_error_message() . '. Please try again later.', 'apos37' ) . '</p>';
+                return;
+            }
+
+            if ( $response ) {
+                $plugins[] = $response;
             }
         }
 
-        return $res;
-    } // End add_plugin_favs()
+        // Inject the plugins data (we assume plugins exist)
+        $table->items = $plugins;
+
+        // Since we are only showing a fixed set of plugins, no pagination needed
+        $table->set_pagination_args([
+            'total_items' => count( $plugins ),
+            'per_page'    => count( $plugins ), // Display all plugins
+            'total_pages' => 1,
+        ]);
+
+        $table->display();
+
+        echo '</div>';
+    } // End render_add_plugins_tab()
 
 
     /**

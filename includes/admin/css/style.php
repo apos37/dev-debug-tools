@@ -777,7 +777,7 @@ if ( $current_screen->id == $options_page ) {
         border-radius: 4px;
         box-shadow: 4px 4px 20px black;
     }
-    .easy-reader .the-error a {
+    .easy-reader .debug-li.plugin td.err .the-error a {
         color: #0073AA !important;
     }
     .easy-reader .the-error code {

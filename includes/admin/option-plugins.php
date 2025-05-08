@@ -5,7 +5,7 @@
 $page = ddtt_plugin_options_short_path();
 $tab = 'plugins';
 $current_url = ddtt_plugin_options_path( $tab );
-$featured_plugins_url = home_url( DDTT_ADMIN_URL.'/plugin-install.php?tab=featured' );
+$featured_plugins_url = home_url( DDTT_ADMIN_URL.'/plugin-install.php?tab=dev_debug_tools' );
 
 // Cached data
 $plugins_data = get_transient( DDTT_GO_PF.'plugins_data' );

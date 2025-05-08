@@ -320,38 +320,49 @@ if ( $eol_count > 1 ) {
     }
     ?>
     <div class="notice notice-success is-dismissible">
-    <p><?php 
-        /* Translators: 1: filename, 2: eols used, 3: occurs, 4: eol to use, 5: cancel message */
-        echo wp_kses( sprintf( __(
-            'The <code class="hl">%1$s</code> end-of-line delimiters are mixed (%2$s %3$s occur). The line delimiter you have set (%4$s) will be used. If you wish to change the one to be used%5$s',
-            'dev-debug-tools'
-        ), [ 'code' => [] ] ),
-        esc_attr( $filename ),
-        wp_kses( implode( ', ', $eols_used ), $allow_code_tag ),
-        esc_attr( $occur ),
-        wp_kses( '<code class="hl">'.$eol_to_use.'</code>', $allow_code_tag ),
-        wp_kses( $cancel_eol_msg, $allow_code_tag )
-    ); ?></p>
+        <p><?php
+            echo wp_kses(
+                /* Translators: 1: filename, 2: eols used, 3: occurs, 4: eol to use, 5: cancel message */
+                sprintf(
+                    __(
+                        'The <code class="hl">%1$s</code> end-of-line delimiters are mixed (%2$s %3$s occur). The line delimiter you have set (%4$s) will be used. If you wish to change the one to be used%5$s',
+                        'dev-debug-tools'
+                    ),
+                    esc_html( $filename ),
+                    esc_html( implode( ', ', $eols_used ) ),
+                    esc_html( $occur ),
+                    '<code class="hl">' . esc_html( $eol_to_use ) . '</code>',
+                    wp_kses( $cancel_eol_msg, [ 'a' => [ 'href' => true ], 'code' => [ 'class' => true ] ] )
+                ),
+                [ 'code' => [ 'class' => true ] ]
+            );
+        ?></p>
     </div>
     <?php
     $default_eol = ddtt_convert_php_eol_to_string();
 
-// Only one type amd different
+// Only one type and different
 } elseif ( !in_array( $eol_to_use, $eols_used ) ) {
     ?>
     <div class="notice notice-success is-dismissible">
-    <p><?php 
-        /* Translators: 1: filename, 2: eols used, 3: eol to use, 4: cancel message */
-        echo wp_kses( sprintf( __(
-            'The <code class="hl">%1$s</code> end-of-line delimiters are different than the one you currently have set. The file uses %2$s, but you are currently set to use %3$s. If you wish to change the one to be used%4$s',
-            'dev-debug-tools'
-        ), [ 'code' => [] ] ),
-        esc_attr( $filename ),
-        wp_kses( '<code class="hl">'.$eols_used[0].'</code>', $allow_code_tag ),
-        wp_kses( '<code class="hl">'.$eol_to_use.'</code>', $allow_code_tag ),
-        wp_kses( $cancel_eol_msg, $allow_code_tag )
-    ); ?></p>
+        <p><?php
+            echo wp_kses(
+                /* Translators: 1: filename, 2: eols used, 3: eol to use, 4: cancel message */
+                sprintf(
+                    __(
+                        'The <code class="hl">%1$s</code> end-of-line delimiters are different than the one you currently have set. The file uses %2$s, but you are currently set to use %3$s. If you wish to change the one to be used%4$s',
+                        'dev-debug-tools'
+                    ),
+                    esc_html( $filename ),
+                    '<code class="hl">' . esc_html( $eols_used[0] ) . '</code>',
+                    '<code class="hl">' . esc_html( $eol_to_use ) . '</code>',
+                    wp_kses( $cancel_eol_msg, [ 'a' => [ 'href' => true ], 'code' => [ 'class' => true ] ] )
+                ),
+                [ 'code' => [ 'class' => true ] ]
+            );
+        ?></p>
     </div>
+
     <?php
     $default_eol = $eols_used[0];
 } else {

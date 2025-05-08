@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.0.2
+Stable tag: 2.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -87,6 +87,11 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Check API statuses
 
 == Changelog ==
+= 2.0.3 =
+* Fix: Error regarding sprintf() requiring X number of parameters, not enough given (props @venutius for pointing it out)
+* Tweak: Updated Plugin Support help link on Easy Reader to just go to general support page instead of trying to search for the error which rarely comes up with anything
+* Tweak: Marked php notice (Function _load_textdomain_just_in_time was called incorrectly) as a plugin type on Easy Reader
+
 = 2.0.2 =
 * Update: Updated author name and website again per WordPress trademark policy
 * Update: Changed centering tool option to height and width options for more control

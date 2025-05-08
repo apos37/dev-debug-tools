@@ -51,7 +51,10 @@ class DDTT_LOGS {
             ],
             'plugin' => [
                 'name'          => 'Plugin',
-                'keyword'       => DDTT_PLUGINS_URL,
+                'keyword'       => [ 
+                    DDTT_PLUGINS_URL, 
+                    'Function _load_textdomain_just_in_time was called' 
+                ],
                 'bg_color'      => '#0073AA',
                 'font_color'    => '#FFFFFF',
                 'priority'      => false,

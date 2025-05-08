@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Option pages functions.
  */
 
 // Exit if accessed directly.
-if ( !defined( 'ABSPATH' ) ) {
-	exit;
+if (!defined('ABSPATH')) {
+    exit;
 }
 
 
@@ -16,8 +17,9 @@ if ( !defined( 'ABSPATH' ) ) {
  * @param string|int $the_key
  * @return string
  */
-function ddtt_is_qs_selected( $option, $the_key ) {
-    if ( esc_attr( $option ) == esc_attr( $the_key ) ) {
+function ddtt_is_qs_selected($option, $the_key)
+{
+    if (esc_attr($option) == esc_attr($the_key)) {
         $results = ' selected';
     } else {
         $results = '';
@@ -33,8 +35,9 @@ function ddtt_is_qs_selected( $option, $the_key ) {
  * @param string|int $the_key
  * @return string
  */
-function ddtt_is_qs_checked( $option, $the_key ) {
-    if ( esc_attr( $option ) == esc_attr( $the_key ) ) {
+function ddtt_is_qs_checked($option, $the_key)
+{
+    if (esc_attr($option) == esc_attr($the_key)) {
         $results = ' checked="checked"';
     } else {
         $results = '';
@@ -75,21 +78,22 @@ function ddtt_is_qs_checked( $option, $the_key ) {
  * @param string $comments // Use 'get_option' for click to copy get_option()
  * @return string
  */
-function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args = null ) {
+function ddtt_options_tr($option_name, $label, $type, $comments = null, $args = null)
+{
     // Add the prefix to the option name
-    $option_name = DDTT_GO_PF.$option_name;
+    $option_name = DDTT_GO_PF . $option_name;
 
     // Get default
-    if ( get_option( $option_name ) ) {
-        $value = get_option( $option_name );
-    } elseif ( !is_null( $args ) && isset( $args[ 'default' ] ) && $args[ 'default' ] != '' ) {
-        $value = $args[ 'default' ];
+    if (get_option($option_name)) {
+        $value = get_option($option_name);
+    } elseif (!is_null($args) && isset($args['default']) && $args['default'] != '') {
+        $value = $args['default'];
     } else {
         $value = '';
     }
 
     // Mark required?
-    if ( !is_null( $args ) && isset( $args[ 'required' ] ) && $args[ 'required' ] == true ) {
+    if (!is_null($args) && isset($args['required']) && $args['required'] == true) {
         $required = ' required';
     } else {
         $required = '';
@@ -99,272 +103,272 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
     $autocomplete = ' autocomplete="off"';
 
     // Checkbox
-    if ( $type == 'checkbox' ) {
+    if ($type == 'checkbox') {
         $attributes = '';
         $class = '';
         $warning = '';
-        if ( !is_null( $args ) ) {
-            $require = $args[ 'require' ];
-            if ( !empty( $require ) ) {
+        if (!is_null($args)) {
+            $require = $args['require'];
+            if (!empty($require)) {
                 $warning_spans = [];
                 $completed = [];
                 $not_completed = [];
-                foreach ( $require as $key => $r ) {
-                    if ( $r[ 'check' ] ) {
+                foreach ($require as $key => $r) {
+                    if ($r['check']) {
                         $completed[] = $key;
                         $show_warning = 'none';
                     } else {
                         $not_completed[] = $key;
                         $show_warning = 'inline';
                     }
-                    $warning_spans[] = '<span class="require-warning '.$key.'" style="display: '.$show_warning.'">'.$r[ 'label' ].' is required.</span>';
+                    $warning_spans[] = '<span class="require-warning ' . $key . '" style="display: ' . $show_warning . '">' . $r['label'] . ' is required.</span>';
                 }
-                $attributes = ' data-require="'.implode( ',', array_keys( $require ) ).'" data-completed="'.implode( ',', $completed ).'" data-stored="'.implode( ',', $completed ).'"';
+                $attributes = ' data-require="' . implode(',', array_keys($require)) . '" data-completed="' . implode(',', $completed) . '" data-stored="' . implode(',', $completed) . '"';
                 $class = ' class="require"';
-                $warning = implode( '', $warning_spans );
+                $warning = implode('', $warning_spans);
             }
         }
 
-        $input = '<input type="checkbox" id="'.esc_attr( $option_name ).'"'.$class.$attributes.' name="'.esc_attr( $option_name ).'" value="1" '.checked( 1, $value, false ).''.$required.'/>'.$warning;
+        $input = '<input type="checkbox" id="' . esc_attr($option_name) . '"' . $class . $attributes . ' name="' . esc_attr($option_name) . '" value="1" ' . checked(1, $value, false) . '' . $required . '/>' . $warning;
 
-    // Checkboxes
-    } elseif ( $type == 'checkboxes' ) {
-        if ( !is_null( $args ) ) {
-            $options = $args[ 'options' ];
-            $class = isset( $args[ 'class' ] ) ? ' class="'.sanitize_key( $args[ 'class' ] ).'"' : '';
-            $sort = isset( $args[ 'sort' ] ) && $args[ 'sort' ] ? true : false;
+        // Checkboxes
+    } elseif ($type == 'checkboxes') {
+        if (!is_null($args)) {
+            $options = $args['options'];
+            $class = isset($args['class']) ? ' class="' . sanitize_key($args['class']) . '"' : '';
+            $sort = isset($args['sort']) && $args['sort'] ? true : false;
         } else {
             return false;
         }
 
         // Sort by label
-        if ( $sort ) {
-            usort( $options, function ( $item1, $item2 ) {
-                return strtolower( $item1[ 'label' ] ) <=> strtolower( $item2[ 'label' ] );
-            } );
+        if ($sort) {
+            usort($options, function ($item1, $item2) {
+                return strtolower($item1['label']) <=> strtolower($item2['label']);
+            });
         }
 
         // Iter the options
         $input = '';
-        foreach ( $options as $option ) {
-            if ( isset( $option[ 'value' ] ) && isset( $option[ 'label' ] ) ) {
-                $option_value = $option[ 'value' ];
-                $option_label = $option[ 'label' ];
-            } elseif ( !is_array( $option ) ) {
+        foreach ($options as $option) {
+            if (isset($option['value']) && isset($option['label'])) {
+                $option_value = $option['value'];
+                $option_label = $option['label'];
+            } elseif (!is_array($option)) {
                 $option_value = $option;
                 $option_label = $option;
             }
-            if ( ( !empty( $value ) && array_key_exists( $option_value, $value ) ) || ( get_option( $option_name ) === false && isset( $option[ 'checked' ] ) && $option[ 'checked' ] == true ) ) {
+            if ((!empty($value) && array_key_exists($option_value, $value)) || (get_option($option_name) === false && isset($option['checked']) && $option['checked'] == true)) {
                 $checked = ' checked="checked"';
             } else {
                 $checked = '';
             }
 
-            $input .= '<div class="checkbox_cont"><input type="checkbox" id="'.esc_attr( $option_name.'_'.$option_value ).'"'.$class.' name="'.esc_attr( $option_name ).'['.$option_value.']" value="1"'.$checked.'/> <label for="'.esc_attr( $option_name.'_'.$option_value ).'">'.$option_label.'</label></div>';
+            $input .= '<div class="checkbox_cont"><input type="checkbox" id="' . esc_attr($option_name . '_' . $option_value) . '"' . $class . ' name="' . esc_attr($option_name) . '[' . $option_value . ']" value="1"' . $checked . '/> <label for="' . esc_attr($option_name . '_' . $option_value) . '">' . $option_label . '</label></div>';
         }
 
-    // Text Field
-    } elseif ( $type == 'text' ) {
-        if ( !is_null( $args ) && isset( $args[ 'width' ] ) ) {
-            $width = $args[ 'width' ];
+        // Text Field
+    } elseif ($type == 'text') {
+        if (!is_null($args) && isset($args['width'])) {
+            $width = $args['width'];
         } else {
             $width = '43.75rem';
         }
-        if ( !is_null( $args ) && isset( $args[ 'pattern' ] ) ) {
-            $pattern = ' pattern="'.$args[ 'pattern' ].'"';
+        if (!is_null($args) && isset($args['pattern'])) {
+            $pattern = ' pattern="' . $args['pattern'] . '"';
         } else {
             $pattern = '';
         }
-        if ( !is_null( $args ) && isset( $args[ 'log_files' ] ) && $args[ 'log_files' ] == 'yes' ) {
+        if (!is_null($args) && isset($args['log_files']) && $args['log_files'] == 'yes') {
             $file = false;
-            if ( $value != '' ) {
-                if ( is_readable( ABSPATH.'/'.$value ) ) {
-                    $file = ABSPATH.''.$value;
-                } elseif ( is_readable( dirname( ABSPATH ).'/'.$value ) ) {
-                    $file = dirname( ABSPATH ).'/'.$value;
-                } elseif ( is_readable( $value ) ) {
+            if ($value != '') {
+                if (is_readable(ABSPATH . '/' . $value)) {
+                    $file = ABSPATH . '' . $value;
+                } elseif (is_readable(dirname(ABSPATH) . '/' . $value)) {
+                    $file = dirname(ABSPATH) . '/' . $value;
+                } elseif (is_readable($value)) {
                     $file = $value;
                 }
             }
-            if ( $file ) {
+            if ($file) {
                 $verified = 'VERIFIED';
-                $verified_class= 'enabled';
+                $verified_class = 'enabled';
             } else {
                 $verified = 'FILE NOT FOUND';
-                $verified_class= 'disabled';
+                $verified_class = 'disabled';
             }
-            $log_file_verified = ' <code class="verification '.$verified_class.'">'.$verified.'</code> <button type="button" class="button check hide">CHECK</button>';
+            $log_file_verified = ' <code class="verification ' . $verified_class . '">' . $verified . '</code> <button type="button" class="button check hide">CHECK</button>';
         } else {
             $log_file_verified = '';
         }
-        
-        $input = '<input type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="'.esc_attr( $value ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$autocomplete.$required.'/>'.$log_file_verified;
 
-    // Number Field
-    } elseif ( $type == 'number' ) {
-        if ( !is_null( $args ) && isset( $args[ 'width' ] ) ) {
-            $width = $args[ 'width' ];
+        $input = '<input type="text" id="' . esc_attr($option_name) . '" name="' . esc_attr($option_name) . '" value="' . esc_attr($value) . '" style="width: ' . esc_attr($width) . '"' . $pattern . $autocomplete . $required . '/>' . $log_file_verified;
+
+        // Number Field
+    } elseif ($type == 'number') {
+        if (!is_null($args) && isset($args['width'])) {
+            $width = $args['width'];
         } else {
             $width = '43.75rem';
         }
-        if ( !is_null( $args ) && isset( $args[ 'pattern' ] ) ) {
-            $pattern = ' pattern="'.$args[ 'pattern' ].'"';
+        if (!is_null($args) && isset($args['pattern'])) {
+            $pattern = ' pattern="' . $args['pattern'] . '"';
         } else {
             $pattern = '';
         }
-        
-        $input = '<input type="number" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="'.esc_attr( $value ).'" style="width: '.esc_attr( $width ).'"'.$pattern.$autocomplete.$required.'/>';
 
-    // Password Field
-    } elseif ( $type == 'password' ) {
-        if ( !is_null( $args ) && isset( $args[ 'width' ] ) ) {
-            $width = $args[ 'width' ];
+        $input = '<input type="number" id="' . esc_attr($option_name) . '" name="' . esc_attr($option_name) . '" value="' . esc_attr($value) . '" style="width: ' . esc_attr($width) . '"' . $pattern . $autocomplete . $required . '/>';
+
+        // Password Field
+    } elseif ($type == 'password') {
+        if (!is_null($args) && isset($args['width'])) {
+            $width = $args['width'];
         } else {
             $width = '20rem';
         }
-        
-        $input = '<div class="password-container"><input type="password" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="" style="width: '.esc_attr( $width ).'"'.$autocomplete.$required.'/> <span class="view-pass-icon" data-id="'.esc_attr( $option_name ).'">👁️</span></div>';
 
-    // Text with Color Field
-    } elseif ( $type == 'color' ) {
-        if ( !is_null( $args ) && isset( $args[ 'width' ] ) ) {
-            $width = $args[ 'width' ];
+        $input = '<div class="password-container"><input type="password" id="' . esc_attr($option_name) . '" name="' . esc_attr($option_name) . '" value="" style="width: ' . esc_attr($width) . '"' . $autocomplete . $required . '/> <span class="view-pass-icon" data-id="' . esc_attr($option_name) . '">👁️</span></div>';
+
+        // Text with Color Field
+    } elseif ($type == 'color') {
+        if (!is_null($args) && isset($args['width'])) {
+            $width = $args['width'];
         } else {
             $width = '10rem';
         }
-        $input = '<input type="color" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" value="'.esc_html( $value ).'" style="width: '.esc_attr( $width ).'"/>';
+        $input = '<input type="color" id="' . esc_attr($option_name) . '" name="' . esc_attr($option_name) . '" value="' . esc_html($value) . '" style="width: ' . esc_attr($width) . '"/>';
 
-    // Textarea    
-    } elseif ( $type == 'textarea' ) {
-        if ( !is_null( $args ) && isset( $args[ 'rows' ] ) && isset( $args[ 'cols' ] ) ) {
-            $rows = $args[ 'rows' ];
-            $cols = $args[ 'cols' ];
+        // Textarea    
+    } elseif ($type == 'textarea') {
+        if (!is_null($args) && isset($args['rows']) && isset($args['cols'])) {
+            $rows = $args['rows'];
+            $cols = $args['cols'];
         } else {
             $rows = 6;
             $cols = 50;
         }
-        if ( !is_null( $args ) && isset( $args[ 'placeholder' ] ) ) {
-            $placeholder = sanitize_textarea_field( $args[ 'placeholder' ] );
+        if (!is_null($args) && isset($args['placeholder'])) {
+            $placeholder = sanitize_textarea_field($args['placeholder']);
         } else {
             $placeholder = '';
         }
-        $input = '<textarea id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'" rows="'.esc_attr( $rows ).'" cols="'.esc_attr( $cols ).'" placeholder="'.esc_html( $placeholder ).'" '.$autocomplete.$required.'>'.esc_html( $value ).'</textarea>';
+        $input = '<textarea id="' . esc_attr($option_name) . '" name="' . esc_attr($option_name) . '" rows="' . esc_attr($rows) . '" cols="' . esc_attr($cols) . '" placeholder="' . esc_html($placeholder) . '" ' . $autocomplete . $required . '>' . esc_html($value) . '</textarea>';
 
-    // Select    
-    } elseif ( $type == 'select' ) {
-        if ( !is_null( $args ) ) {
-            $options = $args[ 'options' ];
-            
-            if ( isset( $args[ 'blank' ] ) ) {
-                $blank = '<option value="">'.esc_html( $args[ 'blank' ] ).'</option>';
+        // Select    
+    } elseif ($type == 'select') {
+        if (!is_null($args)) {
+            $options = $args['options'];
+
+            if (isset($args['blank'])) {
+                $blank = '<option value="">' . esc_html($args['blank']) . '</option>';
             } else {
                 $blank = '';
             }
 
-            if ( !is_null( $args ) && isset( $args[ 'width' ] ) ) {
-                $width = $args[ 'width' ];
+            if (!is_null($args) && isset($args['width'])) {
+                $width = $args['width'];
             } else {
                 $width = '43.75rem';
             }
         } else {
             return false;
         }
-        $input = '<select id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'"'.$required.' style="width: '.esc_attr( $width ).'">'.$blank;
+        $input = '<select id="' . esc_attr($option_name) . '" name="' . esc_attr($option_name) . '"' . $required . ' style="width: ' . esc_attr($width) . '">' . $blank;
 
-        foreach ( $options as $option ) {
-            if ( isset( $option[ 'value' ] ) && isset( $option[ 'label' ] ) ) {
-                $option_value = $option[ 'value' ];
-                $option_label = $option[ 'label' ];
-            } elseif ( !is_array( $option ) ) {
+        foreach ($options as $option) {
+            if (isset($option['value']) && isset($option['label'])) {
+                $option_value = $option['value'];
+                $option_label = $option['label'];
+            } elseif (!is_array($option)) {
                 $option_value = $option;
                 $option_label = $option;
             }
-            $input .= '<option value="'.esc_attr( $option_value ).'"'.ddtt_is_qs_selected( $option_value, $value ).'>'.$option_label.'</option>';
+            $input .= '<option value="' . esc_attr($option_value) . '"' . ddtt_is_qs_selected($option_value, $value) . '>' . $option_label . '</option>';
         }
 
         $input .= '</select>';
 
-    // Text+ Field
-    } elseif ( $type == 'text+' ) {
-        if ( !is_null( $args ) && isset( $args[ 'width' ] ) ) {
-            $width = $args[ 'width' ];
+        // Text+ Field
+    } elseif ($type == 'text+') {
+        if (!is_null($args) && isset($args['width'])) {
+            $width = $args['width'];
         } else {
             $width = '43.75rem';
         }
-        if ( !is_null( $args ) && isset( $args[ 'pattern' ] ) ) {
-            $pattern = ' pattern="'.$args[ 'pattern' ].'"';
+        if (!is_null($args) && isset($args['pattern'])) {
+            $pattern = ' pattern="' . $args['pattern'] . '"';
         } else {
             $pattern = '';
         }
-        if ( !is_array( $value ) ) {
-            $value = [ $value ];
+        if (!is_array($value)) {
+            $value = [$value];
         }
-        if ( !is_null( $args ) && isset( $args[ 'placeholder' ] ) ) {
-            $placeholder = sanitize_textarea_field( $args[ 'placeholder' ] );
+        if (!is_null($args) && isset($args['placeholder'])) {
+            $placeholder = sanitize_textarea_field($args['placeholder']);
         } else {
             $placeholder = '';
         }
-        if ( !is_null( $args ) && isset( $args[ 'log_files' ] ) && $args[ 'log_files' ] == 'yes' ) {
+        if (!is_null($args) && isset($args['log_files']) && $args['log_files'] == 'yes') {
             $file = false;
-            if ( $value[0] != '' ) {
-                if ( is_readable( ABSPATH.'/'.$value[0] ) ) {
-                    $file = ABSPATH.''.$value[0];
-                } elseif ( is_readable( dirname( ABSPATH ).'/'.$value[0] ) ) {
-                    $file = dirname( ABSPATH ).'/'.$value[0];
-                } elseif ( is_readable( $value[0] ) ) {
+            if ($value[0] != '') {
+                if (is_readable(ABSPATH . '/' . $value[0])) {
+                    $file = ABSPATH . '' . $value[0];
+                } elseif (is_readable(dirname(ABSPATH) . '/' . $value[0])) {
+                    $file = dirname(ABSPATH) . '/' . $value[0];
+                } elseif (is_readable($value[0])) {
                     $file = $value[0];
                 }
             }
-            if ( $file ) {
+            if ($file) {
                 $verified = 'VERIFIED';
-                $verified_class= 'enabled';
+                $verified_class = 'enabled';
             } else {
                 $verified = 'FILE NOT FOUND';
-                $verified_class= 'disabled';
+                $verified_class = 'disabled';
             }
-            $log_file_verified = ' <code class="verification '.$verified_class.'">'.$verified.'</code> <button type="button" class="button check hide">CHECK</button>';
+            $log_file_verified = ' <code class="verification ' . $verified_class . '">' . $verified . '</code> <button type="button" class="button check hide">CHECK</button>';
         } else {
             $log_file_verified = '';
         }
-        
-        $input = '<div id="text_plus_'.esc_attr( $option_name ).'">
+
+        $input = '<div id="text_plus_' . esc_attr($option_name) . '">
             <a href="#" class="add_form_field">Add New Field +</a>
-            <div><input type="text" id="'.esc_attr( $option_name ).'" name="'.esc_attr( $option_name ).'[]" value="'.esc_attr( $value[0] ).'" style="width: '.esc_attr( $width ).'" placeholder="'.esc_html( $placeholder ).'" '.$pattern.$autocomplete.$required.'/>'.$log_file_verified.'</div>
+            <div><input type="text" id="' . esc_attr($option_name) . '" name="' . esc_attr($option_name) . '[]" value="' . esc_attr($value[0]) . '" style="width: ' . esc_attr($width) . '" placeholder="' . esc_html($placeholder) . '" ' . $pattern . $autocomplete . $required . '/>' . $log_file_verified . '</div>
         </div>';
 
-    // Otherwise return false
+        // Otherwise return false
     } else {
         return false;
     }
 
     // If comments
     $incl_comments = '';
-    if ( !is_null( $comments ) ) {
-        if ( $comments == '' ) {
+    if (!is_null($comments)) {
+        if ($comments == '') {
             $incl_comments = '';
-        } elseif ( $comments == 'get_option' ) {
-            $incl_comments = 'get_option( '.$option_name.' )';
-        } elseif ( str_starts_with( $comments, '<br>' ) ) {
-            $comments = ltrim( $comments, '<br>' );
-            $incl_comments = '<p class="field-desc break">'.$comments.'</p>';
+        } elseif ($comments == 'get_option') {
+            $incl_comments = 'get_option( ' . $option_name . ' )';
+        } elseif (str_starts_with($comments, '<br>')) {
+            $comments = ltrim($comments, '<br>');
+            $incl_comments = '<p class="field-desc break">' . $comments . '</p>';
         } else {
-            $incl_comments = '<p class="field-desc">'.$comments.'</p>';
+            $incl_comments = '<p class="field-desc">' . $comments . '</p>';
         }
     }
 
     // Submit button
-    if ( !is_null( $args ) && isset( $args[ 'submit_button' ] ) && $args[ 'submit_button' ] == true ) {
-        $submit_button = get_submit_button( 'Search', 'button button-primary button-large '.$option_name );
+    if (!is_null($args) && isset($args['submit_button']) && $args['submit_button'] == true) {
+        $submit_button = get_submit_button('Search', 'button button-primary button-large ' . $option_name);
     } else {
         $submit_button = '';
     }
 
     // Build the row
-    $row = '<tr valign="top" id="row_'.esc_attr( $option_name ).'">
-        <th scope="row">'.$label.'</th>
-        <td>'.$input.$submit_button.' '.$incl_comments.'</td>
+    $row = '<tr valign="top" id="row_' . esc_attr($option_name) . '">
+        <th scope="row">' . $label . '</th>
+        <td>' . $input . $submit_button . ' ' . $incl_comments . '</td>
     </tr>';
-    
+
     // Return the row
     return $row;
 } // End ddtt_options_tr()
@@ -375,7 +379,8 @@ function ddtt_options_tr( $option_name, $label, $type, $comments = null, $args =
  *
  * @return array
  */
-function ddtt_wp_kses_allowed_html() {
+function ddtt_wp_kses_allowed_html()
+{
     $allowed_html = [
         'div' => [
             'id' => [],
@@ -503,9 +508,10 @@ function ddtt_wp_kses_allowed_html() {
  * @param string $key
  * @return string
  */
-function ddtt_get_syntax_color( $key, $default ) {
-    if ( get_option( DDTT_GO_PF.$key ) && get_option( DDTT_GO_PF.$key ) != '' ) {
-        $color = get_option( DDTT_GO_PF.$key );
+function ddtt_get_syntax_color($key, $default)
+{
+    if (get_option(DDTT_GO_PF . $key) && get_option(DDTT_GO_PF . $key) != '') {
+        $color = get_option(DDTT_GO_PF . $key);
     } else {
         $color = $default;
     }
@@ -519,26 +525,27 @@ function ddtt_get_syntax_color( $key, $default ) {
  * @param string $file
  * @return void
  */
-function ddtt_get_defined_functions_in_file( $file ) {
+function ddtt_get_defined_functions_in_file($file)
+{
     // Get the file
-    if ( !function_exists( 'WP_Filesystem' ) ) {
+    if (!function_exists('WP_Filesystem')) {
         require_once ABSPATH . 'wp-admin/includes/file.php';
     }
     global $wp_filesystem;
-    if ( !WP_Filesystem() ) {
-        ddtt_write_log( 'Failed to initialize WP_Filesystem' );
+    if (!WP_Filesystem()) {
+        ddtt_write_log('Failed to initialize WP_Filesystem');
         return false;
     }
 
     // Get the file contents
-    $source = $wp_filesystem->get_contents( $file );
-    if ( $source === false ) {
-        ddtt_write_log( 'Failed to read the file.' );
+    $source = $wp_filesystem->get_contents($file);
+    if ($source === false) {
+        ddtt_write_log('Failed to read the file.');
         return false;
     }
 
     // Get the tokens
-    $tokens = token_get_all( $source );
+    $tokens = token_get_all($source);
 
     // Work your magic
     $functions = [];
@@ -546,17 +553,17 @@ function ddtt_get_defined_functions_in_file( $file ) {
     $inClass = false;
     $bracesCount = 0;
 
-    foreach( $tokens as $token ) {
-        switch( $token[0] ) {
+    foreach ($tokens as $token) {
+        switch ($token[0]) {
             case T_CLASS:
                 $inClass = true;
                 break;
             case T_FUNCTION:
-                if ( !$inClass ) $nextStringIsFunc = true;
+                if (!$inClass) $nextStringIsFunc = true;
                 break;
 
             case T_STRING:
-                if ( $nextStringIsFunc ) {
+                if ($nextStringIsFunc) {
                     $nextStringIsFunc = false;
                     $functions[] = $token[1];
                 }
@@ -570,13 +577,13 @@ function ddtt_get_defined_functions_in_file( $file ) {
 
             // Exclude Classes
             case '{':
-                if ( $inClass ) $bracesCount++;
+                if ($inClass) $bracesCount++;
                 break;
 
             case '}':
-                if ( $inClass ) {
+                if ($inClass) {
                     $bracesCount--;
-                    if ( $bracesCount === 0 ) $inClass = false;
+                    if ($bracesCount === 0) $inClass = false;
                 }
                 break;
         }
@@ -592,57 +599,57 @@ function ddtt_get_defined_functions_in_file( $file ) {
  * @param string $function_name
  * @return string
  */
-function ddtt_get_function_example( $function_name ) {
+function ddtt_get_function_example($function_name)
+{
     // Check if the function exists
-    if ( function_exists( $function_name ) ) {
+    if (function_exists($function_name)) {
 
         // Store the attributes here
         $attribute_names = [];
 
         // Get the function
-        $fx = new ReflectionFunction( $function_name );
+        $fx = new ReflectionFunction($function_name);
 
         // Get the params
-        foreach ( $fx->getParameters() as $param ) {
+        foreach ($fx->getParameters() as $param) {
 
             // Check for optional params
-            if ( $param->isOptional() ) {
+            if ($param->isOptional()) {
 
                 // Get the default
-                if ( is_null( $param->getDefaultValue() ) ) {
+                if (is_null($param->getDefaultValue())) {
                     $default_value = 'null';
-                } elseif ( $param->getDefaultValue() === false ) {
+                } elseif ($param->getDefaultValue() === false) {
                     $default_value = 'false';
-                } elseif ( ddtt_is_enabled( $param->getDefaultValue() ) ) {
+                } elseif (ddtt_is_enabled($param->getDefaultValue())) {
                     $default_value = 'true';
-                } elseif ( is_array( $param->getDefaultValue() ) ) {
+                } elseif (is_array($param->getDefaultValue())) {
                     $default_value = 'array()';
-                } elseif ( is_numeric( $param->getDefaultValue() ) ) {
+                } elseif (is_numeric($param->getDefaultValue())) {
                     $default_value = $param->getDefaultValue();
                 } else {
-                    $default_value = '"'.$param->getDefaultValue().'"';
+                    $default_value = '"' . $param->getDefaultValue() . '"';
                 }
 
                 // Add the default to the name
-                $attribute_names[] = '$'.$param->name.' = '.$default_value;
-                
-            // Otherwise just add the name
+                $attribute_names[] = '$' . $param->name . ' = ' . $default_value;
+
+                // Otherwise just add the name
             } else {
-                $attribute_names[] = '$'.$param->name;
+                $attribute_names[] = '$' . $param->name;
             }
-        }           
+        }
 
         // Put the function together
-        if ( !empty( $attribute_names ) ) {
-            $attributes = ' '.implode( ', ', $attribute_names ).' ';
+        if (!empty($attribute_names)) {
+            $attributes = ' ' . implode(', ', $attribute_names) . ' ';
         } else {
             $attributes = '';
         }
-        $display_fx = $function_name.'('.$attributes.')';
-        return ddtt_highlight_string( $display_fx );
-
+        $display_fx = $function_name . '(' . $attributes . ')';
+        return ddtt_highlight_string($display_fx);
     } else {
-        return ddtt_admin_error( 'FUNCTION DOES NOT EXIST' );
+        return ddtt_admin_error('FUNCTION DOES NOT EXIST');
     }
 } // End ddtt_get_function_example()
 
@@ -655,49 +662,50 @@ function ddtt_get_function_example( $function_name ) {
  * @param boolean $include_inactive
  * @return string
  */
-function ddtt_get_form_selections( $id, $selected, $include_inactive = false ) {
+function ddtt_get_form_selections($id, $selected, $include_inactive = false)
+{
     // Get active forms
-    $forms = GFAPI::get_forms( true, false, 'title' );
+    $forms = GFAPI::get_forms(true, false, 'title');
 
     // Check if there are any pages
-    if ( !empty( $forms ) ) {
+    if (!empty($forms)) {
 
         // Let's start the selection
-        $results = '<select id="'.$id.'" name="'.$id.'">
+        $results = '<select id="' . $id . '" name="' . $id . '">
             <option value="">-- Select a Form --</option>
             <option disabled>Active Forms</option>';
 
         // For each page
-        foreach ( $forms as $form ) {
+        foreach ($forms as $form) {
 
             // Get the page name, page id, and status
             $name = $form['title'];
             $page_id = $form['id'];
 
             // Return the option
-            $results.= '<option value="'.$page_id.'"'.ddtt_is_qs_selected($page_id, $selected).'>'.$name.'</option>';
+            $results .= '<option value="' . $page_id . '"' . ddtt_is_qs_selected($page_id, $selected) . '>' . $name . '</option>';
         }
 
         // Get inactive forms
-        if ( $include_inactive ) {
-            $inactive_forms = GFAPI::get_forms( false, false, 'title' );
+        if ($include_inactive) {
+            $inactive_forms = GFAPI::get_forms(false, false, 'title');
 
             $results .= '<option disabled>Inactive Forms</option>';
 
             // For each page
-            foreach ( $inactive_forms as $inactive_form ) {
+            foreach ($inactive_forms as $inactive_form) {
 
                 // Get the page name, page id, and status
                 $name = $inactive_form['title'];
                 $page_id = $inactive_form['id'];
 
                 // Return the option
-                $results.= '<option value="'.$page_id.'"'.ddtt_is_qs_selected( $page_id, $selected ).'>'.$name.'</option>';
+                $results .= '<option value="' . $page_id . '"' . ddtt_is_qs_selected($page_id, $selected) . '>' . $name . '</option>';
             }
         }
-        
+
         // End the selection
-        $results.= '</select>';
+        $results .= '</select>';
     }
     return $results;
 } // End ddtt_get_form_selections()
@@ -708,19 +716,20 @@ function ddtt_get_form_selections( $id, $selected, $include_inactive = false ) {
  *
  * @return int
  */
-function ddtt_activity_count() {
+function ddtt_activity_count()
+{
     // Check if disabled
-    if ( get_option( DDTT_GO_PF.'disable_activity_counts' ) ) {
+    if (get_option(DDTT_GO_PF . 'disable_activity_counts')) {
         return 0;
     }
 
     // Initialize the WP_Filesystem
-    if ( !function_exists( 'WP_Filesystem' ) ) {
+    if (!function_exists('WP_Filesystem')) {
         require_once ABSPATH . 'wp-admin/includes/file.php';
     }
     global $wp_filesystem;
-    if ( !WP_Filesystem() ) {
-        ddtt_write_log( 'Failed to initialize WP_Filesystem' );
+    if (!WP_Filesystem()) {
+        ddtt_write_log('Failed to initialize WP_Filesystem');
         return 0;
     }
 
@@ -728,13 +737,13 @@ function ddtt_activity_count() {
     $DDTT_LOGS = new DDTT_LOGS();
 
     // Check if the file exists and has content
-    $log_file = $DDTT_LOGS->file_exists_with_content( (new DDTT_ACTIVITY())->log_file_path );
-    if ( $log_file ) {
+    $log_file = $DDTT_LOGS->file_exists_with_content((new DDTT_ACTIVITY())->log_file_path);
+    if ($log_file) {
 
         // Read the file content
-        $string = $wp_filesystem->get_contents( $log_file );
-        $lines = explode( PHP_EOL, $string );
-        $count = count( array_filter( $lines ) );
+        $string = $wp_filesystem->get_contents($log_file);
+        $lines = explode(PHP_EOL, $string);
+        $count = count(array_filter($lines));
 
         // Return the count
         return $count;
@@ -748,19 +757,20 @@ function ddtt_activity_count() {
  *
  * @return int
  */
-function ddtt_error_count() {
+function ddtt_error_count()
+{
     // Check if disabled
-    if ( get_option( DDTT_GO_PF.'disable_error_counts' ) ) {
+    if (get_option(DDTT_GO_PF . 'disable_error_counts')) {
         return 0;
     }
 
     // Initialize the WP_Filesystem
-    if ( !function_exists( 'WP_Filesystem' ) ) {
+    if (!function_exists('WP_Filesystem')) {
         require_once ABSPATH . 'wp-admin/includes/file.php';
     }
     global $wp_filesystem;
-    if ( !WP_Filesystem() ) {
-        ddtt_write_log( 'Failed to initialize WP_Filesystem' );
+    if (!WP_Filesystem()) {
+        ddtt_write_log('Failed to initialize WP_Filesystem');
         return 0;
     }
 
@@ -768,47 +778,47 @@ function ddtt_error_count() {
     $DDTT_LOGS = new DDTT_LOGS();
 
     // Define log paths and initial counts
-    if ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
+    if (WP_DEBUG_LOG && WP_DEBUG_LOG !== true) {
         $debug_loc = WP_DEBUG_LOG;
     } else {
-        $debug_log_path = get_option( DDTT_GO_PF.'debug_log_path' );
-        if ( $debug_log_path && $debug_log_path != '' ) {
-            $debug_loc = sanitize_text_field( $debug_log_path );
-            if ( str_starts_with( $debug_loc, 'wp-content/' ) ) {
-                $debug_loc = get_home_path().$debug_loc;
+        $debug_log_path = get_option(DDTT_GO_PF . 'debug_log_path');
+        if ($debug_log_path && $debug_log_path != '') {
+            $debug_loc = sanitize_text_field($debug_log_path);
+            if (str_starts_with($debug_loc, 'wp-content/')) {
+                $debug_loc = get_home_path() . $debug_loc;
             }
-        } elseif ( WP_DEBUG_LOG && WP_DEBUG_LOG !== true ) {
+        } elseif (WP_DEBUG_LOG && WP_DEBUG_LOG !== true) {
             $debug_loc = WP_DEBUG_LOG;
         } else {
-            $debug_loc =  DDTT_CONTENT_URL.'/debug.log';
+            $debug_loc =  DDTT_CONTENT_URL . '/debug.log';
         }
     }
 
     $log_files = [];
-    if ( !isset( $_GET[ 'clear_debug_log' ] ) ) {
-        $log_files[ 'debug' ] = $debug_loc;
+    if (!isset($_GET['clear_debug_log'])) {
+        $log_files['debug'] = $debug_loc;
     }
-    if ( !isset( $_GET['clear_error_log'] ) ) {
-        $log_files[ 'error' ] = get_option( DDTT_GO_PF . 'error_log_path' ) ?: 'error_log';
+    if (!isset($_GET['clear_error_log'])) {
+        $log_files['error'] = get_option(DDTT_GO_PF . 'error_log_path') ?: 'error_log';
     }
-    if ( !isset( $_GET['clear_admin_error_log'] ) ) {
-        $log_files[ 'admin_error' ] = get_option( DDTT_GO_PF . 'admin_error_log_path' ) ?: DDTT_ADMIN_URL . '/error_log';
+    if (!isset($_GET['clear_admin_error_log'])) {
+        $log_files['admin_error'] = get_option(DDTT_GO_PF . 'admin_error_log_path') ?: DDTT_ADMIN_URL . '/error_log';
     }
 
     // Store the total count
     $total_count = 0;
 
     // Iter
-    foreach ( $log_files as $log_key => $log_path ) {
+    foreach ($log_files as $log_key => $log_path) {
 
         // Check if the file exists and has content
-        $log_file = $DDTT_LOGS->file_exists_with_content( $log_path );
-        if ( $log_file ) {
+        $log_file = $DDTT_LOGS->file_exists_with_content($log_path);
+        if ($log_file) {
 
             // Read the file content
-            $string = $wp_filesystem->get_contents( $log_file );
-            $lines = explode( PHP_EOL, $string );
-            $count = count( array_filter( $lines ) );
+            $string = $wp_filesystem->get_contents($log_file);
+            $lines = explode(PHP_EOL, $string);
+            $count = count(array_filter($lines));
 
             // Add to total count
             $total_count += $count;
@@ -825,7 +835,8 @@ function ddtt_error_count() {
  *
  * @return array
  */
-function ddtt_get_error_reporting_constants( $return_e_all = false ) {
+function ddtt_get_error_reporting_constants($return_e_all = false)
+{
     // Store constants
     $constants = [];
 
@@ -833,16 +844,16 @@ function ddtt_get_error_reporting_constants( $return_e_all = false ) {
     $err_code = error_reporting();
 
     // If E_ALL
-    if ( $return_e_all && $err_code == E_ALL ) {
+    if ($return_e_all && $err_code == E_ALL) {
         $constants[] = 'E_ALL';
 
-    // Otherwise break it down
+        // Otherwise break it down
     } else {
 
         // Iter the codes
         $pot = 0;
-        foreach ( array_reverse( str_split( decbin( $err_code ) ) ) as $bit ) {
-            $constants[] = array_search( pow( 2, $pot ), get_defined_constants( true )[ 'Core' ] );
+        foreach (array_reverse(str_split(decbin($err_code))) as $bit) {
+            $constants[] = array_search(pow(2, $pot), get_defined_constants(true)['Core']);
             $pot++;
         }
     }
@@ -857,10 +868,11 @@ function ddtt_get_error_reporting_constants( $return_e_all = false ) {
  *
  * @return int|float
  */
-function ddtt_get_max_log_filesize() {
-    $megabytes = get_option( DDTT_GO_PF.'max_log_size', 2 );
+function ddtt_get_max_log_filesize()
+{
+    $megabytes = get_option(DDTT_GO_PF . 'max_log_size', 2);
     $bytes = $megabytes * 1024 * 1024;
-    return apply_filters( 'ddtt_debug_log_max_filesize', $bytes );
+    return apply_filters('ddtt_debug_log_max_filesize', $bytes);
 } // End ddtt_get_max_log_filesize()
 
 
@@ -874,53 +886,54 @@ function ddtt_get_max_log_filesize() {
  * @param boolean $log
  * @return string
  */
-function ddtt_view_file_contents( $path, $log = false ) {
+function ddtt_view_file_contents($path, $log = false)
+{
     // Initialize the WP_Filesystem
-    if ( !function_exists( 'WP_Filesystem' ) ) {
+    if (!function_exists('WP_Filesystem')) {
         require_once ABSPATH . 'wp-admin/includes/file.php';
     }
     global $wp_filesystem;
-    if ( !WP_Filesystem() ) {
+    if (!WP_Filesystem()) {
         return 'Failed to initialize WP_Filesystem';
     }
 
     // Construct possible file paths
     $file_paths = [
         ABSPATH . $path,
-        dirname( ABSPATH ) . '/' . $path,
+        dirname(ABSPATH) . '/' . $path,
         $path
     ];
 
     // Check if any of the paths exist and are readable
     $file = false;
-    foreach ( $file_paths as $file_path ) {
-        if ( $wp_filesystem->exists( $file_path ) ) {
+    foreach ($file_paths as $file_path) {
+        if ($wp_filesystem->exists($file_path)) {
             $file = $file_path;
             break;
         }
     }
 
     // Path redaction
-    if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
-        $public_html = strstr( $file, '/public_html', true );
-        $redacted_path = str_replace( $public_html, '<span class="redact">'.$public_html.'</span>', $file );
+    if (!get_option(DDTT_GO_PF . 'view_sensitive_info') || get_option(DDTT_GO_PF . 'view_sensitive_info') != 1) {
+        $public_html = strstr($file, '/public_html', true);
+        $redacted_path = str_replace($public_html, '<span class="redact">' . $public_html . '</span>', $file);
     } else {
         $redacted_path = $file;
     }
 
     // Check if the file exists
-    if ( $file ) {
+    if ($file) {
 
         // Get the file size
-        $file_size = $wp_filesystem->size( $file );
+        $file_size = $wp_filesystem->size($file);
         $max_filesize = ddtt_get_max_log_filesize();
         $offset = $file_size <= $max_filesize ? 0 : $max_filesize;
 
         // Get the file
-        $string = $wp_filesystem->get_contents( $file, $offset );
+        $string = $wp_filesystem->get_contents($file, $offset);
 
         // Separate each line into an array item
-        $lines = explode( PHP_EOL, $string );
+        $lines = explode(PHP_EOL, $string);
 
         // Empty array
         $modified_lines = [];
@@ -929,135 +942,136 @@ function ddtt_view_file_contents( $path, $log = false ) {
         $results = '';
 
         // Count the total number of lines
-        $total_count = count( $lines );
-        
+        $total_count = count($lines);
+
         // How many lines are we allowing?
         $allowed_qty = 100;
         $allowed_qty_with_offset = $allowed_qty + 1;
         $start_count = $total_count > $allowed_qty_with_offset ? $total_count - $allowed_qty_with_offset : 0;
 
         // Are we displaying the debug.log?
-        if ( $log ) {
+        if ($log) {
 
             // Iter
-            for ( $i = $start_count; $i < $total_count; $i++ ) {
+            for ($i = $start_count; $i < $total_count; $i++) {
 
                 // Line var
-                $line = $lines[ $i ];
-            
+                $line = $lines[$i];
+
                 // If so, we're going to filter out blank lines
-                if ( $line != '' ) {
+                if ($line != '') {
 
                     // Convert UTC times to local
-                    $dev_timezone = get_option( DDTT_GO_PF.'dev_timezone', wp_timezone_string() );
-                    $get_date_section = substr( $line, 0, 26 );
-                    $get_rest_section = substr( $line, 26 );
+                    $dev_timezone = get_option(DDTT_GO_PF . 'dev_timezone', wp_timezone_string());
+                    $get_date_section = substr($line, 0, 26);
+                    $get_rest_section = substr($line, 26);
                     $new_line = '';
-                    if ( preg_match( '/\bUTC\b/', $get_date_section ) ) {
-                        $chars = [ '[', ']', 'UTC' ];
-                        $remove   = [ '', '', '' ];
-                        $stripped_date = str_replace( $chars, $remove, $get_date_section );
-                        $date = new DateTime( $stripped_date, new DateTimeZone( 'UTC' ) );
-                        $date->setTimezone( new DateTimeZone( $dev_timezone ) );
+                    if (preg_match('/\bUTC\b/', $get_date_section)) {
+                        $chars = ['[', ']', 'UTC'];
+                        $remove   = ['', '', ''];
+                        $stripped_date = str_replace($chars, $remove, $get_date_section);
+                        $date = new DateTime($stripped_date, new DateTimeZone('UTC'));
+                        $date->setTimezone(new DateTimeZone($dev_timezone));
                         $time = $date->format('d-M-Y H:i:s');
-                        $new_date = '['.$time.' '.$dev_timezone.']';
-                        $new_line = $new_date.''.$get_rest_section;
+                        $new_date = '[' . $time . ' ' . $dev_timezone . ']';
+                        $new_line = $new_date . '' . $get_rest_section;
                     } else {
                         $new_line = $line;
                     }
-    
+
                     // Escape any html
-                    $esc_line = esc_html( $new_line );
+                    $esc_line = esc_html($new_line);
 
                     // Add the line
-                    $modified_lines[] = '<div class="debug-li"><span class="debug-ln unselectable">'.round( $i + 1 ).'</span><span class="ln-content">'.$esc_line.'</span></div>';
+                    $modified_lines[] = '<div class="debug-li"><span class="debug-ln unselectable">' . round($i + 1) . '</span><span class="ln-content">' . $esc_line . '</span></div>';
                 }
             }
 
-        // Otherwise, no log
+            // Otherwise, no log
         } else {
 
             // Start the line count
             $line_count = 1;
 
             // For each line...
-            foreach ( $lines as $key => $line ) {
+            foreach ($lines as $key => $line) {
 
                 // If not, check for comment marks; add a class
-                if ( substr( $line, 0, 3 ) === '// ' || 
-                    substr( $line, 0, 3 ) === '/**' || 
-                    substr( $line, 0, 2 ) === ' *' || 
-                    substr( $line, 0, 1 ) === '*' || 
-                    substr( $line, 0, 2 ) === '*/' || 
-                    substr( $line, 0, 2 ) === '/*' || 
-                    substr( $line, 0, 1 ) === '#' ) {
+                if (
+                    substr($line, 0, 3) === '// ' ||
+                    substr($line, 0, 3) === '/**' ||
+                    substr($line, 0, 2) === ' *' ||
+                    substr($line, 0, 1) === '*' ||
+                    substr($line, 0, 2) === '*/' ||
+                    substr($line, 0, 2) === '/*' ||
+                    substr($line, 0, 1) === '#'
+                ) {
                     $comment_out = ' comment-out';
                 } else {
                     $comment_out = '';
                 }
 
                 // Escape the html early
-                $line = esc_html( $line );
+                $line = esc_html($line);
 
                 // Check if we are redacting
-                if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+                if (!get_option(DDTT_GO_PF . 'view_sensitive_info') || get_option(DDTT_GO_PF . 'view_sensitive_info') != 1) {
 
                     // Redact sensitive info
-                    $substrings = [ 'Require ip ' ];
+                    $substrings = ['Require ip '];
 
                     // Iter the globals
-                    foreach ( $substrings as $substring ) {
+                    foreach ($substrings as $substring) {
 
                         // Attempt to find it
-                        if ( strpos( $line, $substring ) !== false ) {
-                            
+                        if (strpos($line, $substring) !== false) {
+
                             // Get the remaining piece of text
-                            $redact = trim( str_replace( $substring, '', $line ) );
+                            $redact = trim(str_replace($substring, '', $line));
 
                             // Add redact div
-                            $line = str_replace( $redact, '<div class="redact">'.$redact.'</div>', $line );
+                            $line = str_replace($redact, '<div class="redact">' . $redact . '</div>', $line);
                         }
                     }
                 }
 
                 // Add a new, modified line to the array
-                $modified_lines[] = '<div class="debug-li 2"><span class="debug-ln unselectable">'.$line_count.'</span><span class="ln-content'.$comment_out.' selectable">'.$line.'</span></div>';
+                $modified_lines[] = '<div class="debug-li 2"><span class="debug-ln unselectable">' . $line_count . '</span><span class="ln-content' . $comment_out . ' selectable">' . $line . '</span></div>';
 
                 // Increase Line Count
-                $line_count ++; 
+                $line_count++;
             }
         }
-        
+
         // Turn the new lines into a string
-        $code = implode( '', $modified_lines );
-        
+        $code = implode('', $modified_lines);
     } else {
         // Otherwise say the file wasn't found
         $code = $path . ' not found';
     }
 
     // Check if we have lines
-    if ( !empty( $lines ) ) {
+    if (!empty($lines)) {
 
         // Get the converted time
-        $utc_time = gmdate( 'Y-m-d H:i:s', filemtime( $file ) );
-        $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
-        $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
-        $last_modified = $dt->format( 'F j, Y g:i A T' );
+        $utc_time = gmdate('Y-m-d H:i:s', filemtime($file));
+        $dt = new DateTime($utc_time, new DateTimeZone('UTC'));
+        $dt->setTimezone(new DateTimeZone(get_option('ddtt_dev_timezone', wp_timezone_string())));
+        $last_modified = $dt->format('F j, Y g:i A T');
 
         // Include last number of lines for log
-        if ( $log && $total_count > $allowed_qty ) {
-            $incl_showing = ' (Showing last '.$allowed_qty.')';
+        if ($log && $total_count > $allowed_qty) {
+            $incl_showing = ' (Showing last ' . $allowed_qty . ')';
         } else {
             $incl_showing = '';
         }
-            
+
         // Display the error count
-        $results .= 'Lines: <strong>'.$total_count.'</strong>'.$incl_showing.' <span class="sep">|</span> Filesize: <strong>'.ddtt_format_bytes( filesize( $file ) ).'</strong> <span class="sep">|</span> Last Modified: <strong>'.$last_modified.'</strong><br><br>';
+        $results .= 'Lines: <strong>' . $total_count . '</strong>' . $incl_showing . ' <span class="sep">|</span> Filesize: <strong>' . ddtt_format_bytes(filesize($file)) . '</strong> <span class="sep">|</span> Last Modified: <strong>' . $last_modified . '</strong><br><br>';
     }
-    
+
     // Path
-    $results .= '<pre class="code">Installation path: '.$redacted_path.'<br><br>'.$code.'</pre>';
+    $results .= '<pre class="code">Installation path: ' . $redacted_path . '<br><br>' . $code . '</pre>';
 
     // Return
     return $results;
@@ -1082,27 +1096,28 @@ function ddtt_view_file_contents( $path, $log = false ) {
  * @param boolean $allow_repeats
  * @return string
  */
-function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_args = [], $allow_repeats = true ) {
-     // Initialize the WP_Filesystem
-     if ( !function_exists( 'WP_Filesystem' ) ) {
+function ddtt_view_file_contents_easy_reader($path, $log = false, $highlight_args = [], $allow_repeats = true)
+{
+    // Initialize the WP_Filesystem
+    if (!function_exists('WP_Filesystem')) {
         require_once ABSPATH . 'wp-admin/includes/file.php';
     }
     global $wp_filesystem;
-    if ( !WP_Filesystem() ) {
+    if (!WP_Filesystem()) {
         return 'Failed to initialize WP_Filesystem';
     }
 
     // Construct possible file paths
     $file_paths = [
         ABSPATH . $path,
-        dirname( ABSPATH ) . '/' . $path,
+        dirname(ABSPATH) . '/' . $path,
         $path
     ];
 
     // Check if any of the paths exist and are readable
     $file = false;
-    foreach ( $file_paths as $file_path ) {
-        if ( $wp_filesystem->exists( $file_path ) ) {
+    foreach ($file_paths as $file_path) {
+        if ($wp_filesystem->exists($file_path)) {
             $file = $file_path;
             break;
         }
@@ -1115,18 +1130,18 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
     $actual_lines = [];
 
     // Check if the file exists
-    if ( $file ) {
+    if ($file) {
 
         // Get the file size
-        $file_size = $wp_filesystem->size( $file );
+        $file_size = $wp_filesystem->size($file);
         $max_filesize = ddtt_get_max_log_filesize();
         $offset = $file_size <= $max_filesize ? 0 : $max_filesize;
 
         // Get the file
-        $string = $wp_filesystem->get_contents( $file, $offset );
+        $string = $wp_filesystem->get_contents($file, $offset);
 
         // Separate each line in the file into an array item
-        $lines = explode( PHP_EOL, $string );
+        $lines = explode(PHP_EOL, $string);
 
         // Store the rests here for checking repeats
         $rests = [];
@@ -1138,29 +1153,29 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
         $results = '';
 
         // Check if we have lines
-        if ( !empty( $lines ) ) {
+        if (!empty($lines)) {
 
             // Get the dev's timezone
-            if ( get_option( DDTT_GO_PF.'dev_timezone' ) && get_option( DDTT_GO_PF.'dev_timezone' ) != '' ) {
-                $dev_timezone = sanitize_text_field( get_option( DDTT_GO_PF.'dev_timezone' ) );
+            if (get_option(DDTT_GO_PF . 'dev_timezone') && get_option(DDTT_GO_PF . 'dev_timezone') != '') {
+                $dev_timezone = sanitize_text_field(get_option(DDTT_GO_PF . 'dev_timezone'));
             } else {
                 $dev_timezone = wp_timezone_string();
             }
 
             // For each file line...
-            foreach ( $lines as $line ) {
+            foreach ($lines as $line) {
 
                 // Check if we're viewing a log
-                if ( $log ) {
+                if ($log) {
 
                     // If so, we're going to filter out blank lines
-                    if ( $line != '' ) {
+                    if ($line != '') {
 
                         // By default, this should be a new actual line
                         $new_actual_line = true;
 
                         // Increase the line count
-                        $line_count ++;
+                        $line_count++;
 
                         // Stack trace bool
                         $is_stack = false;
@@ -1174,54 +1189,60 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
 
                         // Check for a date section
                         $date_section = false;
-                        if ( preg_match( '/\[(.*?)\]/s', $line, $get_date_section ) ) {
-                            if ( strpos( $get_date_section[1], 'UTC' ) !== false && ddtt_is_date( $get_date_section[1] ) ) {
+                        if (preg_match('/\[(.*?)\]/s', $line, $get_date_section)) {
+                            if (strpos($get_date_section[1], 'UTC') !== false && ddtt_is_date($get_date_section[1])) {
                                 $date_section = $get_date_section;
                             }
                         }
-        
+
                         // Check for a date section
                         // dpr( $get_date_section[1] );
-                        if ( $date_section ) {
+                        if ($date_section) {
 
                             // Strip the brackets and timezone
-                            $date_parts = explode( ' ', $date_section[1] );
-                            $stripped_date = $date_parts[0].' '.$date_parts[1];
+                            $date_parts = explode(' ', $date_section[1]);
+                            $stripped_date = $date_parts[0] . ' ' . $date_parts[1];
 
                             // Convert timezone
-                            $datetime = new DateTime( $stripped_date, new DateTimeZone( 'UTC' ) );
-                            $datetime->setTimezone( new DateTimeZone( $dev_timezone ) );
+                            $datetime = new DateTime($stripped_date, new DateTimeZone('UTC'));
+                            $datetime->setTimezone(new DateTimeZone($dev_timezone));
 
                             // Get the date, time and shortened timezone
                             $date = $datetime->format('F j, Y');
                             $time = $datetime->format('g:i A');
                             $tz = $datetime->format('T');
-                            $display_date = $date.'<br>'.$time.' '.$tz;
+                            $display_date = $date . '<br>' . $time . ' ' . $tz;
 
                             // Get the rest of the line
-                            $rest = substr( $line, strlen( $date_section[0] ) );
+                            $rest = substr($line, strlen($date_section[0]));
 
                             // Add classes to the line based on keywords found
                             $class = '';
-                            if ( !empty( $highlight_args ) ) {
+                            if (!empty($highlight_args)) {
 
                                 // Iter the args
-                                foreach ( $highlight_args as $hl_key => $hl ) {
+                                foreach ($highlight_args as $hl_key => $hl) {
 
                                     // Make sure we have a keyword/class and the column is err
-                                    if ( isset( $hl[ 'keyword' ] ) && 
-                                         isset( $hl[ 'column' ] ) && 
-                                         ( $hl[ 'column' ] == 'err' || $hl[ 'column' ] == 'path' ) ) {
+                                    if (
+                                        isset($hl['keyword']) &&
+                                        isset($hl['column']) &&
+                                        ($hl['column'] == 'err' || $hl['column'] == 'path')
+                                    ) {
 
-                                        // Get the keyword
-                                        $keyword = sanitize_text_field( $hl[ 'keyword' ] );
+                                        // Normalize keyword to array
+                                        $keywords = is_array($hl['keyword']) ? $hl['keyword'] : [$hl['keyword']];
 
-                                        // Allow slashes
-                                        $keyword = str_replace( '/', '\/', $keyword );
+                                        foreach ($keywords as $keyword) {
 
-                                        // Search the line for the keyword
-                                        if ( preg_match( '/'.$keyword.'/', $rest ) ) {
-                                            $class .= ' '.esc_attr( $hl_key );
+                                            // Sanitize and allow slashes
+                                            $keyword = str_replace('/', '\/', sanitize_text_field($keyword));
+
+                                            // Search the line for the keyword
+                                            if (preg_match('/' . $keyword . '/', $rest)) {
+                                                $class .= ' ' . esc_attr($hl_key);
+                                                break; // Exit loop once a match is found
+                                            }
                                         }
                                     }
                                 }
@@ -1229,32 +1250,32 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
 
                             // Separate warning from path
                             // Remove html from the rest
-                            $esc_line = esc_html( $rest );
+                            $esc_line = esc_html($rest);
 
                             // Does the path exist?
-                            if ( strpos( $esc_line, 'in /' ) !== false ) {
+                            if (strpos($esc_line, 'in /') !== false) {
 
                                 // Let's split it up
-                                $line_parts = explode( ' in /', $esc_line );
+                                $line_parts = explode(' in /', $esc_line);
 
                                 // The warning and error
                                 $warning_and_error = $line_parts[0];
 
                                 // Split the warning and error
-                                if ( preg_match( '/PHP(.*?)\:/s', $warning_and_error, $wae ) ) {
-                                    $warning = rtrim( $wae[0], ':' );
-                                    $err = trim( str_replace( $warning.':', '', $warning_and_error ) );
+                                if (preg_match('/PHP(.*?)\:/s', $warning_and_error, $wae)) {
+                                    $warning = rtrim($wae[0], ':');
+                                    $err = trim(str_replace($warning . ':', '', $warning_and_error));
 
-                                // Otherwise it's unknown
+                                    // Otherwise it's unknown
                                 } else {
                                     $warning = 'Unknown';
                                     $err = $warning_and_error;
                                 }
 
                                 // The path with the line number
-                                $full_path = '/'.$line_parts[1];
-                            
-                            // Otherwise the whole thing is the error
+                                $full_path = '/' . $line_parts[1];
+
+                                // Otherwise the whole thing is the error
                             } else {
                                 $warning = 'Unknown';
                                 $err = $esc_line;
@@ -1264,16 +1285,16 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                             // Prevent repeats
                             $path_only = '';
                             $on_line_num = 0;
-                            if ( $allow_repeats ) {
+                            if ($allow_repeats) {
 
                                 // Iter the rests
                                 $repeat = false;
                                 $repeat_key = false;
-                                foreach ( $rests as $rest_key => $r ) {
+                                foreach ($rests as $rest_key => $r) {
 
                                     // Have we already added this rest?
-                                    if ( in_array( $rest, $r ) ) {
-                                        
+                                    if (in_array($rest, $r)) {
+
                                         // Found
                                         $repeat = true;
                                         $repeat_key = $rest_key;
@@ -1284,69 +1305,70 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                                 }
 
                                 // Have we already added this rest?
-                                if ( $repeat && ( !$is_array || ( $is_array && !$start_collecting_array ) ) ) {
+                                if ($repeat && (!$is_array || ($is_array && !$start_collecting_array))) {
 
                                     // Don't add this line
                                     $new_actual_line = false;
 
                                     // Count this as a repeat
-                                    $qty = $rests[ $repeat_key ][ 'qty' ] + 1;
-                                    $rests[ $repeat_key ][ 'qty' ] = $qty;
-                                        
+                                    $qty = $rests[$repeat_key]['qty'] + 1;
+                                    $rests[$repeat_key]['qty'] = $qty;
                                 } else {
 
                                     // Add the rest
-                                    $rests[ $line_count ] = [
+                                    $rests[$line_count] = [
                                         'rest' => $rest,
                                         'qty' => $qty
                                     ];
                                 }
 
                                 // Check for a line number
-                                if ( strval( strstr( $full_path, 'on line' ) ) ) {
-                                    $path_parts = explode( ' ', $full_path );
+                                if (strval(strstr($full_path, 'on line'))) {
+                                    $path_parts = explode(' ', $full_path);
                                     $path_only = $path_parts[0];
-                                } elseif ( strpos( $full_path, ':' ) !== false ) {
-                                    $path_parts = explode( ':', $full_path );
+                                } elseif (strpos($full_path, ':') !== false) {
+                                    $path_parts = explode(':', $full_path);
                                     $path_only = $path_parts[0];
                                 }
 
                                 // Get the line number by itself
-                                if ( preg_match_all( '/\d+/', $rest, $on_line_numbers ) ) {
-                                    $on_line_num = end( $on_line_numbers[0] );
+                                if (preg_match_all('/\d+/', $rest, $on_line_numbers)) {
+                                    $on_line_num = end($on_line_numbers[0]);
                                 }
                             }
 
                             // Check if array
-                            if ( str_starts_with( $rest, ' Array' ) ) {
+                            if (str_starts_with($rest, ' Array')) {
                                 $err = 'Array';
                                 $warning = 'Array';
                                 $new_actual_line = true;
                                 $start_collecting_array = true;
                             }
 
-                        // Or if there is no date
+                            // Or if there is no date
                         } else {
 
                             // Check if it is a stack trace
-                            if ( str_starts_with( $line, 'Stack trace' ) || str_starts_with( $line, '#' ) || str_starts_with( ltrim( $line ), 'thrown' ) ) {
+                            if (str_starts_with($line, 'Stack trace') || str_starts_with($line, '#') || str_starts_with(ltrim($line), 'thrown')) {
                                 $is_stack = true;
                                 $new_actual_line = false;
 
-                            // Check if we are still looking for the rest of the array
-                            } elseif ( $start_collecting_array && 
-                                      ( iconv_strlen( $line, 'UTF-8' ) == 1 && str_starts_with( $line, '(' ) ) || 
-                                      ( iconv_strlen( $line, 'UTF-8' ) > 1 && !str_starts_with( $line, ')' ) ) ) {
+                                // Check if we are still looking for the rest of the array
+                            } elseif (
+                                $start_collecting_array &&
+                                (iconv_strlen($line, 'UTF-8') == 1 && str_starts_with($line, '(')) ||
+                                (iconv_strlen($line, 'UTF-8') > 1 && !str_starts_with($line, ')'))
+                            ) {
                                 $is_array = true;
                                 $new_actual_line = false;
-                            
-                            // Stop looking for the rest of the array
-                            } elseif ( $start_collecting_array && iconv_strlen( $line, 'UTF-8' ) == 1 && str_starts_with( $line, ')' ) ) {
+
+                                // Stop looking for the rest of the array
+                            } elseif ($start_collecting_array && iconv_strlen($line, 'UTF-8') == 1 && str_starts_with($line, ')')) {
                                 $is_array = true;
                                 $new_actual_line = false;
                                 $start_collecting_array = false;
 
-                            // Otherwise something is fishy
+                                // Otherwise something is fishy
                             } else {
                                 $display_date = '--';
                                 $warning = 'Unknown';
@@ -1358,26 +1380,26 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                         }
 
                         // Count actual lines
-                        $actual_line_count = count( $actual_lines );
+                        $actual_line_count = count($actual_lines);
                         $actual_line_count = $actual_line_count > 0 ? $actual_line_count - 1 : 0;
-                            
+
                         // Are we creating a new line?
-                        if ( $new_actual_line ) {
-                            
+                        if ($new_actual_line) {
+
                             // Check for a search filter
-                            if ( $search = ddtt_get( 's' ) ) {
+                            if ($search = ddtt_get('s')) {
 
                                 // Sanitize the text
-                                $search = sanitize_text_field( $search );
+                                $search = sanitize_text_field($search);
                                 // dpr( $search );
 
                                 // Convert to lowercase
-                                $search_lc = strtolower( $search );
+                                $search_lc = strtolower($search);
 
                                 // Which column?
-                                if ( ddtt_get( 'c', '==', 't' ) ) {
+                                if (ddtt_get('c', '==', 't')) {
                                     $col = $warning;
-                                } elseif ( ddtt_get( 'c', '==', 'p' ) ) {
+                                } elseif (ddtt_get('c', '==', 'p')) {
                                     $col = $path_only;
                                 } else {
                                     $col = $err;
@@ -1387,7 +1409,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                                 $continue = false;
 
                                 // Separate the words by spaces
-                                $words = explode( ' ', $search_lc );
+                                $words = explode(' ', $search_lc);
 
                                 // Store the words to search for here
                                 $add = [];
@@ -1396,14 +1418,13 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                                 $remove = [];
 
                                 // Iter the words
-                                foreach ( $words as $w ) {
+                                foreach ($words as $w) {
 
                                     // Check the word for subtractions
-                                    if ( str_starts_with( $w, '-' ) !== false ) {
+                                    if (str_starts_with($w, '-') !== false) {
 
                                         // Add the word to the remove array
-                                        $remove[] = ltrim( $w, '\-' );
-
+                                        $remove[] = ltrim($w, '\-');
                                     } else {
 
                                         // Add the word to the add array
@@ -1412,33 +1433,33 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                                 }
 
                                 // Now search the column for the adds
-                                if ( !empty( $add ) ) {
+                                if (!empty($add)) {
 
                                     // Iter the adds
-                                    foreach ( $add as $a ) {
+                                    foreach ($add as $a) {
 
                                         // If the line does not contain the add, then skip it
-                                        if ( strpos( strtolower( $col ), $a ) === false ) {
+                                        if (strpos(strtolower($col), $a) === false) {
                                             $continue = true;
                                         }
                                     }
                                 }
-                                
+
                                 // Now search the column for the removes
-                                if ( !empty( $remove ) ) {
+                                if (!empty($remove)) {
 
                                     // Iter the removes
-                                    foreach ( $remove as $r ) {
+                                    foreach ($remove as $r) {
 
                                         // If the line contains the remove, then skip it
-                                        if ( strpos( strtolower( $col ), $r ) !== false ) {
+                                        if (strpos(strtolower($col), $r) !== false) {
                                             $continue = true;
                                         }
                                     }
                                 }
 
                                 // Continue now?
-                                if ( $continue ) {
+                                if ($continue) {
                                     continue;
                                 }
                             }
@@ -1454,68 +1475,69 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                                 'class' => $class
                             ];
 
-                        // Or add the stack
-                        } elseif ( $is_stack ) {
+                            // Or add the stack
+                        } elseif ($is_stack) {
 
                             // Get the current stack lines
-                            if ( isset( $actual_lines[ $actual_line_count ][ 'stack' ] ) ) {
-                                $stack_lines = $actual_lines[ $actual_line_count ][ 'stack' ];
+                            if (isset($actual_lines[$actual_line_count]['stack'])) {
+                                $stack_lines = $actual_lines[$actual_line_count]['stack'];
                             } else {
                                 $stack_lines = [];
                             }
 
                             // If the line has not been added
-                            if ( !in_array( $line, $stack_lines ) ) {
+                            if (!in_array($line, $stack_lines)) {
 
                                 // Then add the line
-                                $actual_lines[ $actual_line_count ][ 'stack' ][] = $line;
+                                $actual_lines[$actual_line_count]['stack'][] = $line;
                             }
 
-                        // Or add the array
-                        } elseif ( $is_array ) {
+                            // Or add the array
+                        } elseif ($is_array) {
 
                             // Check for a search filter
-                            if ( ddtt_get( 's' ) ) {
+                            if (ddtt_get('s')) {
                                 continue;
                             }
 
                             // Check if the line # matches
-                            if ( isset( $actual_lines[ $actual_line_count ][ 'err' ] ) && $actual_lines[ $actual_line_count ][ 'err' ] === 'Array' ) {
+                            if (isset($actual_lines[$actual_line_count]['err']) && $actual_lines[$actual_line_count]['err'] === 'Array') {
 
                                 // Then add the line
-                                $actual_lines[ $actual_line_count ][ 'array' ][] = $line;
+                                $actual_lines[$actual_line_count]['array'][] = $line;
                             }
                         }
                     }
-
                 } else {
 
                     // If not, check for comment marks; add a class
-                    if ( substr( $line, 0, 3 ) === '// ' || 
-                        substr( $line, 0, 3 ) === '/**' || 
-                        substr( $line, 0, 2 ) === ' *' || 
-                        substr( $line, 0, 1 ) === '*' || 
-                        substr( $line, 0, 2 ) === '*/' || 
-                        substr( $line, 0, 2 ) === '/*' || 
-                        substr( $line, 0, 1 ) === '#' ) {
-                            $comment_out = ' comment-out';
+                    if (
+                        substr($line, 0, 3) === '// ' ||
+                        substr($line, 0, 3) === '/**' ||
+                        substr($line, 0, 2) === ' *' ||
+                        substr($line, 0, 1) === '*' ||
+                        substr($line, 0, 2) === '*/' ||
+                        substr($line, 0, 2) === '/*' ||
+                        substr($line, 0, 1) === '#'
+                    ) {
+                        $comment_out = ' comment-out';
                     } else {
                         $comment_out = '';
                     }
 
                     // Escape the html early
-                    $line = esc_html( $line );
+                    $line = esc_html($line);
 
                     // Add a new, modified line to the array
-                    $modified_lines[] = '<div class="debug-li 2"><span class="debug-ln unselectable">'.$line_count.'</span><span class="ln-content'.$comment_out.' selectable">'.$line.'</span></div>';
+                    $modified_lines[] = '<div class="debug-li 2"><span class="debug-ln unselectable">' . $line_count . '</span><span class="ln-content' . $comment_out . ' selectable">' . $line . '</span></div>';
 
                     // Increase Line Count
-                    $line_count ++; 
+                    $line_count++;
                 }
             }
 
             // Now that we have actual lines, let's add them
-            if ( !empty( $actual_lines ) ) {
+            if (!empty($actual_lines)) {
 
                 // Start the table
                 $code = '<table class="log-table easy-reader debug-log-table">
@@ -1529,7 +1551,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                 </th>';
 
                 // Get help links
-                $search_engines = apply_filters( 'ddtt_debug_log_help_col', [
+                $search_engines = apply_filters('ddtt_debug_log_help_col', [
                     'google' => [
                         'name'   => 'Google',
                         'url'    => 'https://www.google.com/search?q=',
@@ -1562,8 +1584,8 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                     ],
                     'wp_plugin_support' => [
                         'name'   => 'Plugin Support',
-                        'url'    => 'https://wordpress.org/search/',
-                        'format' => '{type}: {err} intext:"Plugin: {plugin}"',
+                        'url'    => 'https://wordpress.org/support/plugin/',
+                        'format' => '{plugin_slug}',
                         'filter' => 'plugin'
                     ],
                     'google_stackoverflow' => [
@@ -1578,7 +1600,7 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                         'format' => '{err}',
                         'filter' => false
                     ]
-                ] );
+                ]);
 
                 // Get all plugins
                 $plugins = get_plugins();
@@ -1587,86 +1609,88 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                 $themes = wp_get_themes();
 
                 // Are we only displaying the most recent error?
-                if ( $most_recent = absint( ddtt_get( 'r' ) ) ) {
-                    
+                if ($most_recent = absint(ddtt_get('r'))) {
+
                     // Get the last line key
-                    $last_key = array_key_last( $actual_lines );
-                    
+                    $last_key = array_key_last($actual_lines);
+
                     // Iter the most recent
                     $recent_keys = [];
-                    for ( $r = 0; $r < $most_recent; $r++ ) {
+                    for ($r = 0; $r < $most_recent; $r++) {
 
                         // Get the keys
                         $recent_keys[] = $last_key - $r;
                     }
 
                     // Unset the others
-                    foreach ( $actual_lines as $al_key => $actual_line ) {
-                        if ( !in_array( $al_key, $recent_keys ) ) {
-                            unset( $actual_lines[ $al_key ] );
+                    foreach ($actual_lines as $al_key => $actual_line) {
+                        if (!in_array($al_key, $recent_keys)) {
+                            unset($actual_lines[$al_key]);
                         }
                     }
                 }
 
                 // Iter
-                foreach ( $actual_lines as $actual_line ) {
+                foreach ($actual_lines as $actual_line) {
 
                     // Set the error type class
                     $error_class = '';
-                    foreach ( $highlight_args as $hl_key => $hl ) {
+                    foreach ($highlight_args as $hl_key => $hl) {
 
                         // Make sure we have a keyword/class and the column is err
-                        if ( isset( $hl[ 'keyword' ] ) && 
-                             isset( $hl[ 'column' ] ) && 
-                             $hl[ 'column' ] == 'type' ) {
+                        if (
+                            isset($hl['keyword']) &&
+                            isset($hl['column']) &&
+                            $hl['column'] == 'type'
+                        ) {
 
                             // Get the keyword
-                            $error_type = sanitize_text_field( $hl[ 'keyword' ] );
+                            $error_type = sanitize_text_field($hl['keyword']);
 
                             // Search the line for the keyword
-                            if ( preg_match( '/'.$error_type.'/', $actual_line[ 'type' ] ) ) {
-                                $error_class = ' '.esc_attr( $hl_key );
+                            if (preg_match('/' . $error_type . '/', $actual_line['type'])) {
+                                $error_class = ' ' . esc_attr($hl_key);
                             }
                         }
                     }
 
                     // Is there a stack trace?
-                    if ( isset( $actual_line[ 'stack' ] ) ) {
-                        $stack = $actual_line[ 'stack' ];
+                    if (isset($actual_line['stack'])) {
+                        $stack = $actual_line['stack'];
 
                         // Iter the stack
                         $stack_array = [];
-                        foreach ( $stack as $s ) {
+                        foreach ($stack as $s) {
 
                             // Shorten the paths
-                            $s = str_replace( ABSPATH, '/', $s );
-                            
+                            $s = str_replace(ABSPATH, '/', $s);
+
                             // Add a class to the first line
-                            if ( str_starts_with( $s, 'Stack trace' ) ) {
-                                $stack_array[] = '<span class="stack-trace">'.$s.'</span>';
+                            if (str_starts_with($s, 'Stack trace')) {
+                                $stack_array[] = '<span class="stack-trace">' . $s . '</span>';
 
-                            // Add spaces to thrown
-                            } elseif ( str_starts_with( trim( $s ), 'thrown' ) ) {
-                                $stack_array[] = '<span class="stack-thrown">'.$s.'</span>';
+                                // Add spaces to thrown
+                            } elseif (str_starts_with(trim($s), 'thrown')) {
+                                $stack_array[] = '<span class="stack-thrown">' . $s . '</span>';
 
-                            // Otherwise do nothing
+                                // Otherwise do nothing
                             } else {
                                 $stack_array[] = $s;
                             }
                         }
-                        $display_stack = '<br><br>'.implode( '<br>', $stack_array );
+                        $display_stack = '<br><br>' . implode('<br>', $stack_array);
                     } else {
                         $display_stack = '';
                     }
 
                     // Is there an array?
-                    if ( isset( $actual_line[ 'array' ] ) ) {
-                        $array = $actual_line[ 'array' ];
+                    if (isset($actual_line['array'])) {
+                        $array = $actual_line['array'];
 
                         // // Iter the array
                         // $array_array = [];
                         // foreach ( $array as $a ) {
-                            
+
                         //     // Remove the brackets
                         //     if ( $a == '(' || $a == ')' ) {
                         //         continue;
@@ -1678,8 +1702,8 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
 
                         //     // Shorten the paths
                         //     $a = str_replace( ABSPATH, '/', $a );
-                            
-                            
+
+
                         //     // Add a class to the first line
                         //     if ( str_starts_with( $a, 'Array' ) ) {
                         //         $array_array[] = '<span class="array">'.$a.'</span>';
@@ -1689,226 +1713,239 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
                         //         $array_array[] = $a;
                         //     }
                         // }
-                        $display_array = '<pre>'.print_r( $array, true ).'</pre>';
+                        $display_array = '<pre>' . print_r($array, true) . '</pre>';
                         // $display_array = '<pre>'.print_r( $array_array, true ).'</pre>';
                     } else {
                         $display_array = '';
                     }
-                    
+
                     // Shorten the path
-                    $short_path = str_replace( ABSPATH, '/', $actual_line[ 'path' ] );
+                    $short_path = str_replace(ABSPATH, '/', $actual_line['path']);
 
                     // Get the admin url
-                    if ( is_multisite() ) {
-                        $admin_url = str_replace( site_url( '/' ), '', rtrim( network_admin_url(), '/' ) );
+                    if (is_multisite()) {
+                        $admin_url = str_replace(site_url('/'), '', rtrim(network_admin_url(), '/'));
                     } else {
                         $admin_url = DDTT_ADMIN_URL;
                     }
 
                     // Check if it's a plugin
                     $plugin_name = '';
+                    $plugin_slug = '';
                     $theme_name = '';
                     $plugin_or_theme = '';
                     $plugin_requires = false;
-                    if ( strpos( $short_path, DDTT_PLUGINS_URL ) !== false ) {
+                    $plugin_folder_and_file = false;
 
-                        // If so, get the plugin slug
-                        $plugin_path_and_filename = str_replace( DDTT_PLUGINS_URL, '', ltrim( $short_path, '\/' ) );
-                        $plugin_path_parts = explode( '/', $plugin_path_and_filename );
+                    // Plugin-related check (normal or known error)
+                    if (strpos($actual_line['err'], 'Function _load_textdomain_just_in_time was called') !== false) {
+
+                        // Try to extract plugin slug from <code>custom-fonts</code> or &lt;code&gt;custom-fonts&lt;/code&gt;
+                        if (
+                            preg_match('#<code>([^<]+)</code>#', $actual_line['err'], $matches) ||
+                            preg_match('#&lt;code&gt;([^&]+)&lt;/code&gt;#', $actual_line['err'], $matches)
+                        ) {
+
+                            $plugin_slug = sanitize_title($matches[1]);
+                            $plugin_filename = $plugin_slug . '.php';
+                            $plugin_folder_and_file = $plugin_slug . '/' . $plugin_filename;
+                        }
+                    } elseif (strpos($short_path, DDTT_PLUGINS_URL) !== false) {
+
+                        // Get plugin slug and file
+                        $plugin_path_and_filename = str_replace(DDTT_PLUGINS_URL, '', ltrim($short_path, '\/'));
+                        $plugin_path_parts = explode('/', $plugin_path_and_filename);
                         $plugin_slug = $plugin_path_parts[1];
-                        $plugin_filename = substr( $plugin_path_and_filename, strpos( $plugin_path_and_filename, '/' ) + 1 );
-                    
-                        // Now check the active plugins for the file
-                        $plugin_folder_and_file = false;
-                        foreach( $plugins as $key => $ap ) {                            
-                            if ( str_starts_with( $key, $plugin_slug ) ) {
+                        $plugin_filename = substr($plugin_path_and_filename, strpos($plugin_path_and_filename, '/') + 1);
+
+                        // Match plugin folder/file in active plugins
+                        foreach ($plugins as $key => $ap) {
+                            if (str_starts_with($key, $plugin_slug)) {
                                 $plugin_folder_and_file = $key;
                             }
                         }
+                    }
 
-                        // Make sure we found the file
-                        if ( $plugin_folder_and_file ) {
+                    // Continue if plugin folder and file was set
+                    if ($plugin_folder_and_file) {
 
-                            // Require the get_plugin_data function
-                            if( !function_exists( 'get_plugin_data' ) ){
-                                require_once( ABSPATH.DDTT_ADMIN_URL.'/includes/plugin.php' );
-                            }
-
-                            // Get the file
-                            $plugin_file = ABSPATH.DDTT_PLUGINS_URL.'/'.$plugin_folder_and_file;
-
-                            // Get the plugin data
-                            $plugin_data = get_plugin_data( $plugin_file );
-                            
-                            // Check if requires exists
-                            if ( $plugin_data[ 'RequiresWP' ] && $plugin_data[ 'RequiresWP' ] != '' ) {
-                                $plugin_requires = true;
-                            }
-
-                            // Store for search filter merge tags
-                            $plugin_name = $plugin_data[ 'Name' ];
-
-                            // This is what we will display
-                            $plugin_or_theme = 'Plugin: '.$plugin_name.'<br>';
-
-                            // Make sure editors are not disabled
-                            if ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) {
-                                
-                                // Update short file path link
-                                $short_path = esc_attr( $short_path );
-
-                            } else {
-                                
-                                // Update short file path link
-                                $short_path = '<a href="/'.esc_attr( $admin_url ).'/plugin-editor.php?file='.esc_attr( urlencode( $plugin_filename ) ).'&plugin='.esc_attr( $plugin_slug ).'%2F'.esc_attr( $plugin_slug ).'.php" target="_blank">'.esc_attr( $short_path ).'</a>';
-                            }
+                        // Require the get_plugin_data function
+                        if (!function_exists('get_plugin_data')) {
+                            require_once(ABSPATH . DDTT_ADMIN_URL . '/includes/plugin.php');
                         }
 
-                    // Check if it's a theme file
-                    } elseif ( strpos( $short_path, DDTT_CONTENT_URL.'/themes/' ) !== false ) {
+                        // Get the file
+                        $plugin_file = ABSPATH . DDTT_PLUGINS_URL . '/' . $plugin_folder_and_file;
+
+                        // Get the plugin data
+                        $plugin_data = get_plugin_data($plugin_file);
+
+                        // Check if requires exists
+                        if ($plugin_data['RequiresWP'] && $plugin_data['RequiresWP'] != '') {
+                            $plugin_requires = true;
+                        }
+
+                        // Store for search filter merge tags
+                        $plugin_name = $plugin_data['Name'];
+
+                        // This is what we will display
+                        $plugin_or_theme = 'Plugin: '.$plugin_name.'<br>';
+
+                        // Make sure editors are not disabled
+                        if (defined('DISALLOW_FILE_EDIT') && DISALLOW_FILE_EDIT) {
+
+                            // Update short file path link
+                            $short_path = esc_attr($short_path);
+                        } else {
+
+                            // Update short file path link
+                            $short_path = '<a href="/' . esc_attr($admin_url) . '/plugin-editor.php?file=' . esc_attr(urlencode($plugin_filename)) . '&plugin=' . esc_attr($plugin_slug) . '%2F' . esc_attr($plugin_slug) . '.php" target="_blank">' . esc_attr($short_path) . '</a>';
+                        }
+
+                        // Check if it's a theme file
+                    } elseif (strpos($short_path, DDTT_CONTENT_URL . '/themes/') !== false) {
 
                         // Theme parts
-                        $theme_parts = explode( '/', ltrim( $short_path, '\/' ) );
+                        $theme_parts = explode('/', ltrim($short_path, '\/'));
                         $theme_filename = $theme_parts[3];
                         $theme_slug = $theme_parts[2];
 
                         // Check if the themes exists in the array
                         $theme_name = 'Unknown';
-                        foreach ( $themes as $k => $t ) {
-                            if ( $k == $theme_slug ) {
-                                $theme_name = $t->get( 'Name' );
+                        foreach ($themes as $k => $t) {
+                            if ($k == $theme_slug) {
+                                $theme_name = $t->get('Name');
                             }
                         }
 
                         // This is what we will display
-                        $plugin_or_theme = 'Theme: '.$theme_name.'<br>';
+                        $plugin_or_theme = 'Theme: ' . $theme_name . '<br>';
 
                         // Make sure editors are not disabled
-                        if ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) {
-                            
-                            // Update short file path link
-                            $short_path = esc_attr( $short_path );
+                        if (defined('DISALLOW_FILE_EDIT') && DISALLOW_FILE_EDIT) {
 
-                        } else {
-                            
                             // Update short file path link
-                            $short_path = '<a href="/'.esc_attr( $admin_url ).'/theme-editor.php?file='.esc_attr( urlencode( $theme_filename ) ).'&theme='.esc_attr( $theme_slug ).'" target="_blank">'.esc_attr( $short_path ).'</a>';
+                            $short_path = esc_attr($short_path);
+                        } else {
+
+                            // Update short file path link
+                            $short_path = '<a href="/' . esc_attr($admin_url) . '/theme-editor.php?file=' . esc_attr(urlencode($theme_filename)) . '&theme=' . esc_attr($theme_slug) . '" target="_blank">' . esc_attr($short_path) . '</a>';
                         }
                     }
 
                     // Check for a qty
-                    if ( isset( $rests[ $actual_line[ 'line' ] ] ) ) {
-                        $final_qty = $rests[ $actual_line[ 'line' ] ][ 'qty' ];
+                    if (isset($rests[$actual_line['line']])) {
+                        $final_qty = $rests[$actual_line['line']]['qty'];
                     } else {
                         $final_qty = 1;
                     }
-                                     
+
                     // Iter the search engines
                     $help_links = [];
-                    foreach ( $search_engines as $se ) {
+                    foreach ($search_engines as $se) {
 
                         // Get the format
-                        $format = $se[ 'format' ];
+                        $format = $se['format'];
 
                         // Only include "plugin or theme or path" if they exist on the line
-                        if ( $se[ 'filter' ] == 'plugin' && $plugin_name == '' ) {
+                        if ($se['filter'] == 'plugin' && $plugin_name == '') {
                             continue;
-                        } elseif ( $se[ 'filter' ] == 'theme' && $theme_name == '' ) {
+                        } elseif ($se['filter'] == 'theme' && $theme_name == '') {
                             continue;
-                        } elseif ( $se[ 'filter' ] == 'path' && $short_path == '' ) {
+                        } elseif ($se['filter'] == 'path' && $short_path == '') {
                             continue;
                         }
 
                         // Now if plugin, check if it's on WP.org, skip if not
-                        if ( $se[ 'filter' ] == 'plugin' && strpos( $se[ 'url' ], 'wordpress.org' ) !== false && !$plugin_requires ) {
-                            continue;
-                        }
+                        // if ($se['filter'] == 'plugin' && strpos($se['url'], 'wordpress.org') !== false && !$plugin_requires) {
+                        //     continue;
+                        // }
 
                         // Replace merge tags in format
                         $merge_tags = [
-                            '{type}'            => $actual_line[ 'type' ],
-                            '{err}'             => $actual_line[ 'err' ],
-                            '{path}'            => str_replace( ABSPATH, '/', $actual_line[ 'path' ] ),
+                            '{type}'            => $actual_line['type'],
+                            '{err}'             => $actual_line['err'],
+                            '{path}'            => str_replace(ABSPATH, '/', $actual_line['path']),
                             '{plugin}'          => $plugin_name,
+                            '{plugin_slug}'     => $plugin_slug,
                             '{theme}'           => $theme_name
                         ];
-                        foreach ( $merge_tags as $merge_tag => $search_value ) {
-                            $format = str_replace( $merge_tag, $search_value, $format );
+                        foreach ($merge_tags as $merge_tag => $search_value) {
+                            $format = str_replace($merge_tag, $search_value, $format);
                         }
 
                         // Get the name
-                        $name = $se[ 'name' ];
-                        
+                        $name = $se['name'];
+
                         // Add the link
-                        $help_links[] = '<a class="help-links" href=\''.$se[ 'url' ].$format.'\' target="_blank" rel="noopener noreferrer">'.$name.'</a>';
+                        $help_links[] = '<a class="help-links" href=\'' . $se['url'] . $format . '\' target="_blank" rel="noopener noreferrer">' . $name . '</a>';
                     }
 
                     // Add file and line number
-                    if ( $actual_line[ 'type' ] != 'Unknown' && $actual_line[ 'type' ] != 'Array' ) {
-                        $file_and_line = 'File: '.$short_path.'<br>Line: '.$actual_line[ 'lnum' ];
+                    if ($actual_line['type'] != 'Unknown' && $actual_line['type'] != 'Array') {
+                        $file_and_line = 'File: ' . $short_path . '<br>Line: ' . $actual_line['lnum'];
                     } else {
                         $file_and_line = '';
                     }
 
                     // Create the row
-                    $code .= '<tr class="debug-li'.$error_class.$actual_line[ 'class' ].'">
-                        <td class="line"><span class="unselectable">'.$actual_line[ 'line' ].'</span></td>
-                        <td class="date">'.$actual_line[ 'date' ].'</td>
-                        <td class="type">'.$actual_line[ 'type' ].'</td>
-                        <td class="err"><span class="the-error">'.htmlspecialchars_decode( $actual_line[ 'err' ] ).'</span>'.$plugin_or_theme.$file_and_line.$display_stack.$display_array.'</td>
-                        <td class="qty">x '.$final_qty.'</td>
-                        <td class="help">'.implode( '<br>', $help_links ).'</td>
+                    $code .= '<tr class="debug-li' . $error_class . $actual_line['class'] . '">
+                        <td class="line"><span class="unselectable">' . $actual_line['line'] . '</span></td>
+                        <td class="date">' . $actual_line['date'] . '</td>
+                        <td class="type">' . $actual_line['type'] . '</td>
+                        <td class="err"><span class="the-error">' . htmlspecialchars_decode($actual_line['err']) . '</span>' . $plugin_or_theme . $file_and_line . $display_stack . $display_array . '</td>
+                        <td class="qty">x ' . $final_qty . '</td>
+                        <td class="help">' . implode('<br>', $help_links) . '</td>
                     </tr>';
                 }
 
                 // End the table
                 $code .= '</table>';
 
-            // Else no lines
+                // Else no lines
             } else {
 
                 // Are we searching?
-                if ( ddtt_get( 's' ) ) {
-                    $code = 'No lines found when searching "'.ddtt_get( 's' ).'"';
+                if (ddtt_get('s')) {
+                    $code = 'No lines found when searching "' . ddtt_get('s') . '"';
 
-                // No? Okay, then just say it isn't so (but this should never happen)
+                    // No? Okay, then just say it isn't so (but this should never happen)
                 } else {
                     $code = 'No lines found.';
                 }
             }
             // dpr( $actual_lines );
-            
+
         } else {
             $code = 'No errors.';
         }
-        
     } else {
         // Otherwise say the file wasn't found
         $code = $path . ' not found';
     }
 
     // Check if we have lines
-    if ( !empty( $lines ) ) {
+    if (!empty($lines)) {
 
         // Get the dev's timezone
-        if ( get_option( DDTT_GO_PF.'dev_timezone' ) && get_option( DDTT_GO_PF.'dev_timezone' ) != '' ) {
-            $dev_timezone = sanitize_text_field( get_option( DDTT_GO_PF.'dev_timezone' ) );
+        if (get_option(DDTT_GO_PF . 'dev_timezone') && get_option(DDTT_GO_PF . 'dev_timezone') != '') {
+            $dev_timezone = sanitize_text_field(get_option(DDTT_GO_PF . 'dev_timezone'));
         } else {
             $dev_timezone = wp_timezone_string();
         }
 
         // Get the converted time
-        $utc_time = gmdate( 'Y-m-d H:i:s', filemtime( $file ) );
-        $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
-        $dt->setTimezone( new DateTimeZone( $dev_timezone ) );
-        $last_modified = $dt->format( 'F j, Y g:i A T' );
-            
+        $utc_time = gmdate('Y-m-d H:i:s', filemtime($file));
+        $dt = new DateTime($utc_time, new DateTimeZone('UTC'));
+        $dt->setTimezone(new DateTimeZone($dev_timezone));
+        $last_modified = $dt->format('F j, Y g:i A T');
+
         // Display the error count
-        $results .= 'Lines: <strong>'.$line_count.'</strong> <span class="sep">|</span> Unique Errors: <strong>'.count( $actual_lines ).'</strong> <span class="sep">|</span> Filesize: <strong>'.ddtt_format_bytes( filesize( $file ) ).'</strong> <span class="sep">|</span> Last Modified: <strong>'.$last_modified.'</strong><br><br>';
+        $results .= 'Lines: <strong>' . $line_count . '</strong> <span class="sep">|</span> Unique Errors: <strong>' . count($actual_lines) . '</strong> <span class="sep">|</span> Filesize: <strong>' . ddtt_format_bytes(filesize($file)) . '</strong> <span class="sep">|</span> Last Modified: <strong>' . $last_modified . '</strong><br><br>';
     }
 
     // Return the code with the defined path at top
-    $results .= 'Installation path: '.$path.'<br><br>'.$code;
+    $results .= 'Installation path: ' . $path . '<br><br>' . $code;
 
     return $results;
 } // End ddtt_view_file_contents_easy_reader()
@@ -1921,27 +1958,28 @@ function ddtt_view_file_contents_easy_reader( $path, $log = false, $highlight_ar
  * @param array $highlight_args
  * @return string
  */
-function ddtt_view_activity_file_contents( $path, $highlight_args, $ip_address_link = 'https://www.criminalip.io/asset/report/{ip}' ) {
+function ddtt_view_activity_file_contents($path, $highlight_args, $ip_address_link = 'https://www.criminalip.io/asset/report/{ip}')
+{
     // Initialize the WP_Filesystem
-    if ( !function_exists( 'WP_Filesystem' ) ) {
-       require_once ABSPATH . 'wp-admin/includes/file.php';
+    if (!function_exists('WP_Filesystem')) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
     }
     global $wp_filesystem;
-    if ( !WP_Filesystem() ) {
+    if (!WP_Filesystem()) {
         return 'Failed to initialize WP_Filesystem';
     }
 
     // Construct possible file paths
     $file_paths = [
         ABSPATH . $path,
-        dirname( ABSPATH ) . '/' . $path,
+        dirname(ABSPATH) . '/' . $path,
         $path
     ];
 
     // Check if any of the paths exist and are readable
     $file = false;
-    foreach ( $file_paths as $file_path ) {
-        if ( $wp_filesystem->exists( $file_path ) ) {
+    foreach ($file_paths as $file_path) {
+        if ($wp_filesystem->exists($file_path)) {
             $file = $file_path;
             break;
         }
@@ -1951,18 +1989,18 @@ function ddtt_view_activity_file_contents( $path, $highlight_args, $ip_address_l
     $results = '';
 
     // Check if the file exists
-    if ( $file ) {
+    if ($file) {
 
         // Get the file size
-        $file_size = $wp_filesystem->size( $file );
+        $file_size = $wp_filesystem->size($file);
         $max_filesize = ddtt_get_max_log_filesize();
         $offset = $file_size <= $max_filesize ? 0 : $max_filesize;
 
         // Get the file
-        $string = $wp_filesystem->get_contents( $file, $offset );
+        $string = $wp_filesystem->get_contents($file, $offset);
 
         // Separate each line in the file into an array item
-        $lines = explode( PHP_EOL, $string );
+        $lines = explode(PHP_EOL, $string);
 
         // Start the line count
         $line_count = 0;
@@ -1971,11 +2009,11 @@ function ddtt_view_activity_file_contents( $path, $highlight_args, $ip_address_l
         $results = '';
 
         // Check if we have lines
-        if ( !empty( $lines ) ) {
+        if (!empty($lines)) {
 
             // Get the dev's timezone
-            if ( get_option( DDTT_GO_PF.'dev_timezone' ) && get_option( DDTT_GO_PF.'dev_timezone' ) != '' ) {
-                $dev_timezone = sanitize_text_field( get_option( DDTT_GO_PF.'dev_timezone' ) );
+            if (get_option(DDTT_GO_PF . 'dev_timezone') && get_option(DDTT_GO_PF . 'dev_timezone') != '') {
+                $dev_timezone = sanitize_text_field(get_option(DDTT_GO_PF . 'dev_timezone'));
             } else {
                 $dev_timezone = wp_timezone_string();
             }
@@ -1990,56 +2028,56 @@ function ddtt_view_activity_file_contents( $path, $highlight_args, $ip_address_l
             $actual_lines = [];
 
             // For each file line...
-            foreach ( $lines as $line ) {
+            foreach ($lines as $line) {
                 // dpr( $line );
- 
+
                 // If so, we're going to filter out blank lines
-                if ( $line != '' ) {
+                if ($line != '') {
 
                     // Increase the line count
-                    $line_count ++;
+                    $line_count++;
 
                     // Check for a date section
                     $date_section = false;
-                    if ( preg_match( '/\[(.*?)\]/s', $line, $get_date_section ) ) {
-                        if ( strpos( $get_date_section[1], 'UTC' ) !== false && ddtt_is_date( $get_date_section[1] ) ) {
+                    if (preg_match('/\[(.*?)\]/s', $line, $get_date_section)) {
+                        if (strpos($get_date_section[1], 'UTC') !== false && ddtt_is_date($get_date_section[1])) {
                             $date_section = $get_date_section;
                         }
                     }
 
                     // Check for a date section
-                    if ( $date_section ) {
+                    if ($date_section) {
 
                         // Strip the brackets and timezone
-                        $date_parts = explode( ' ', $date_section[1] );
-                        $stripped_date = $date_parts[0].' '.$date_parts[1];
+                        $date_parts = explode(' ', $date_section[1]);
+                        $stripped_date = $date_parts[0] . ' ' . $date_parts[1];
 
                         // Convert timezone
-                        $datetime = new DateTime( $stripped_date, new DateTimeZone( 'UTC' ) );
-                        $datetime->setTimezone( new DateTimeZone( $dev_timezone ) );
+                        $datetime = new DateTime($stripped_date, new DateTimeZone('UTC'));
+                        $datetime->setTimezone(new DateTimeZone($dev_timezone));
 
                         // Get the date, time and shortened timezone
                         $date = $datetime->format('F j, Y');
                         $time = $datetime->format('g:i A');
                         $tz = $datetime->format('T');
-                        $display_date = $date.'<br>'.$time.' '.$tz;
+                        $display_date = $date . '<br>' . $time . ' ' . $tz;
 
                         // Get the rest of the line
-                        $line_without_date = substr( $line, strlen( $date_section[0] ) );
+                        $line_without_date = substr($line, strlen($date_section[0]));
 
                         // Add classes to the line based on keywords found
                         $class = '';
                         $activity_key = '';
-                        if ( !empty( $highlight_args ) ) {
+                        if (!empty($highlight_args)) {
 
                             // Iter the args
-                            foreach ( $highlight_args as $hl_key => $hl ) {
-                                if ( isset( $activities[ $hl_key ] ) ) {
-                                    foreach ( $activities[ $hl_key ] as $a_key => $labels ) {
-                                        
+                            foreach ($highlight_args as $hl_key => $hl) {
+                                if (isset($activities[$hl_key])) {
+                                    foreach ($activities[$hl_key] as $a_key => $labels) {
+
                                         // Search the line for the action
-                                        if ( preg_match( '/'.str_replace( '/', '\/', $labels[ 'action' ] ).'/', $line_without_date ) ) {
-                                            $class .= ' '.esc_attr( $hl_key ) . ' ' . esc_attr( $a_key );
+                                        if (preg_match('/' . str_replace('/', '\/', $labels['action']) . '/', $line_without_date)) {
+                                            $class .= ' ' . esc_attr($hl_key) . ' ' . esc_attr($a_key);
                                             $activity_key = $hl_key;
                                             break 2;
                                         }
@@ -2049,64 +2087,64 @@ function ddtt_view_activity_file_contents( $path, $highlight_args, $ip_address_l
                         }
 
                         // Line lines
-                        $line_parts = explode( '|', $line_without_date, 2 );
-                        $what_and_who = trim( $line_parts[0] );
-                        $note_parts = isset( $line_parts[1] ) ? array_map( 'trim', explode( '|', $line_parts[1] ) ) : [];
+                        $line_parts = explode('|', $line_without_date, 2);
+                        $what_and_who = trim($line_parts[0]);
+                        $note_parts = isset($line_parts[1]) ? array_map('trim', explode('|', $line_parts[1])) : [];
 
                         // Extract activity type (first section before ':')
-                        $what_and_who_parts = explode( ':', $what_and_who, 2 );
-                        $activity = trim( $what_and_who_parts[0] );
-                        $user_info = isset( $what_and_who_parts[1] ) ? trim( $what_and_who_parts[1] ) : '';
+                        $what_and_who_parts = explode(':', $what_and_who, 2);
+                        $activity = trim($what_and_who_parts[0]);
+                        $user_info = isset($what_and_who_parts[1]) ? trim($what_and_who_parts[1]) : '';
 
                         // Store the user data here that we will be displaying
                         $display_user = [];
 
                         // Extract user info (e.g., Socrates (test@wordpressenhanced.com - ID: 2))
-                        preg_match( '/^(.*?) \((.*?) - ID: (\d+)\)(?: (.*?))?$/', $user_info, $matches );
-                        $display_name = isset( $matches[1] ) ? $matches[1] : '';
-                        if ( $display_name ) {
+                        preg_match('/^(.*?) \((.*?) - ID: (\d+)\)(?: (.*?))?$/', $user_info, $matches);
+                        $display_name = isset($matches[1]) ? $matches[1] : '';
+                        if ($display_name) {
                             $display_user[] = $display_name;
                         }
 
-                        $email = isset( $matches[2] ) ? $matches[2] : '';
-                        if ( $email ) {
+                        $email = isset($matches[2]) ? $matches[2] : '';
+                        if ($email) {
                             $display_user[] = $email;
                         }
 
-                        $user_id = isset( $matches[3] ) ? $matches[3] : '';
-                        if ( $user_id ) {
+                        $user_id = isset($matches[3]) ? $matches[3] : '';
+                        if ($user_id) {
                             $display_user[] = 'User ID: ' . $user_id;
                         }
 
-                        $ip_address = isset( $matches[4] ) ? $matches[4] : '';
-                        if ( $ip_address ) {
-                            $ip_url = str_replace( '{ip}', $ip_address, $ip_address_link );
+                        $ip_address = isset($matches[4]) ? $matches[4] : '';
+                        if ($ip_address) {
+                            $ip_url = str_replace('{ip}', $ip_address, $ip_address_link);
                             $ip_link = '<a href="' . $ip_url . '" target="_blank">' . $ip_address . '</a>';
                             $display_user[] = 'IP: ' . $ip_link;
                         }
 
-                        $display_user = !empty( $display_user ) ? implode( '<br>', $display_user ) : '<em>Unknown</em>';
+                        $display_user = !empty($display_user) ? implode('<br>', $display_user) : '<em>Unknown</em>';
                         $search_user_info = $display_date . ' | ' . $email . ' | ' . $user_id;
 
                         // Extract notes
-                        $notes = !empty( $note_parts ) ? implode( '<br>', $note_parts ) : '';
+                        $notes = !empty($note_parts) ? implode('<br>', $note_parts) : '';
 
                         // Check for a search filter
-                        if ( $search = ddtt_get( 's' ) ) {
+                        if ($search = ddtt_get('s')) {
 
                             // Sanitize the text
-                            $search = sanitize_text_field( $search );
+                            $search = sanitize_text_field($search);
                             // dpr( $search );
 
                             // Convert to lowercase
-                            $search_lc = strtolower( $search );
+                            $search_lc = strtolower($search);
 
                             // Which column?
-                            if ( ddtt_get( 'c', '==', 'a' ) ) {
+                            if (ddtt_get('c', '==', 'a')) {
                                 $col = $activity_key . ' | ' . $activity;
-                            } elseif ( ddtt_get( 'c', '==', 'u' ) ) {
+                            } elseif (ddtt_get('c', '==', 'u')) {
                                 $col = $search_user_info;
-                            } elseif ( ddtt_get( 'c', '==', 'n' ) ) {
+                            } elseif (ddtt_get('c', '==', 'n')) {
                                 $col = $notes;
                             } else {
                                 $col = $line_without_date;
@@ -2116,7 +2154,7 @@ function ddtt_view_activity_file_contents( $path, $highlight_args, $ip_address_l
                             $continue = false;
 
                             // Separate the words by spaces
-                            $words = explode( ' ', $search_lc );
+                            $words = explode(' ', $search_lc);
 
                             // Store the words to search for here
                             $add = [];
@@ -2125,14 +2163,13 @@ function ddtt_view_activity_file_contents( $path, $highlight_args, $ip_address_l
                             $remove = [];
 
                             // Iter the words
-                            foreach ( $words as $w ) {
+                            foreach ($words as $w) {
 
                                 // Check the word for subtractions
-                                if ( str_starts_with( $w, '-' ) !== false ) {
+                                if (str_starts_with($w, '-') !== false) {
 
                                     // Add the word to the remove array
-                                    $remove[] = ltrim( $w, '\-' );
-
+                                    $remove[] = ltrim($w, '\-');
                                 } else {
 
                                     // Add the word to the add array
@@ -2141,33 +2178,33 @@ function ddtt_view_activity_file_contents( $path, $highlight_args, $ip_address_l
                             }
 
                             // Now search the column for the adds
-                            if ( !empty( $add ) ) {
+                            if (!empty($add)) {
 
                                 // Iter the adds
-                                foreach ( $add as $a ) {
+                                foreach ($add as $a) {
 
                                     // If the line does not contain the add, then skip it
-                                    if ( strpos( strtolower( $col ), $a ) === false ) {
+                                    if (strpos(strtolower($col), $a) === false) {
                                         $continue = true;
                                     }
                                 }
                             }
-                            
+
                             // Now search the column for the removes
-                            if ( !empty( $remove ) ) {
+                            if (!empty($remove)) {
 
                                 // Iter the removes
-                                foreach ( $remove as $r ) {
+                                foreach ($remove as $r) {
 
                                     // If the line contains the remove, then skip it
-                                    if ( $col && strpos( strtolower( $col ), $r ) !== false ) {
+                                    if ($col && strpos(strtolower($col), $r) !== false) {
                                         $continue = true;
                                     }
                                 }
                             }
 
                             // Continue now?
-                            if ( $continue ) {
+                            if ($continue) {
                                 continue;
                             }
                         }
@@ -2186,7 +2223,7 @@ function ddtt_view_activity_file_contents( $path, $highlight_args, $ip_address_l
             }
 
             // Now that we have actual lines, let's add them
-            if ( !empty( $actual_lines ) ) {
+            if (!empty($actual_lines)) {
 
                 // Start the table
                 $code = '<table class="log-table easy-reader activity-log-table">
@@ -2199,90 +2236,89 @@ function ddtt_view_activity_file_contents( $path, $highlight_args, $ip_address_l
                 </th>';
 
                 // Are we only displaying the most recent error?
-                if ( $most_recent = absint( ddtt_get( 'r' ) ) ) {
-                    
+                if ($most_recent = absint(ddtt_get('r'))) {
+
                     // Get the last line key
-                    $last_key = array_key_last( $actual_lines );
-                    
+                    $last_key = array_key_last($actual_lines);
+
                     // Iter the most recent
                     $recent_keys = [];
-                    for ( $r = 0; $r < $most_recent; $r++ ) {
+                    for ($r = 0; $r < $most_recent; $r++) {
 
                         // Get the keys
                         $recent_keys[] = $last_key - $r;
                     }
 
                     // Unset the others
-                    foreach ( $actual_lines as $al_key => $actual_line ) {
-                        if ( !in_array( $al_key, $recent_keys ) ) {
-                            unset( $actual_lines[ $al_key ] );
+                    foreach ($actual_lines as $al_key => $actual_line) {
+                        if (!in_array($al_key, $recent_keys)) {
+                            unset($actual_lines[$al_key]);
                         }
                     }
                 }
 
                 // Iter
-                foreach ( $actual_lines as $actual_line ) {
+                foreach ($actual_lines as $actual_line) {
 
                     // Create the row
-                    $code .= '<tr class="activity-li'.$actual_line[ 'class' ].'">
-                        <td class="line"><span class="unselectable">'.$actual_line[ 'line' ].'</span></td>
-                        <td class="date">'.$actual_line[ 'date' ].'</td>
-                        <td class="type">'.$actual_line[ 'type' ].'</td>
-                        <td class="user">' . $actual_line[ 'user' ] . '</td>
-                        <td class="notes">'.$actual_line[ 'notes' ].'</td>
+                    $code .= '<tr class="activity-li' . $actual_line['class'] . '">
+                        <td class="line"><span class="unselectable">' . $actual_line['line'] . '</span></td>
+                        <td class="date">' . $actual_line['date'] . '</td>
+                        <td class="type">' . $actual_line['type'] . '</td>
+                        <td class="user">' . $actual_line['user'] . '</td>
+                        <td class="notes">' . $actual_line['notes'] . '</td>
                     </tr>';
                 }
 
                 // End the table
                 $code .= '</table>';
 
-            // Else no lines
+                // Else no lines
             } else {
 
                 // Are we searching?
-                if ( ddtt_get( 's' ) ) {
-                    $code = 'No lines found when searching "'.ddtt_get( 's' ).'"';
+                if (ddtt_get('s')) {
+                    $code = 'No lines found when searching "' . ddtt_get('s') . '"';
 
-                // No? Okay, then just say it isn't so (but this should never happen)
+                    // No? Okay, then just say it isn't so (but this should never happen)
                 } else {
                     $code = 'No lines found.';
                 }
             }
             // dpr( $actual_lines );
-            
+
         } else {
             $code = 'No activity logged.';
         }
-       
-   } else {
-       // Otherwise say the file wasn't found
-       $code = $path . ' not found';
-   }
+    } else {
+        // Otherwise say the file wasn't found
+        $code = $path . ' not found';
+    }
 
-   // Check if we have lines
-   if ( !empty( $lines ) ) {
+    // Check if we have lines
+    if (!empty($lines)) {
 
-       // Get the dev's timezone
-       if ( get_option( DDTT_GO_PF.'dev_timezone' ) && get_option( DDTT_GO_PF.'dev_timezone' ) != '' ) {
-           $dev_timezone = sanitize_text_field( get_option( DDTT_GO_PF.'dev_timezone' ) );
-       } else {
-           $dev_timezone = wp_timezone_string();
-       }
+        // Get the dev's timezone
+        if (get_option(DDTT_GO_PF . 'dev_timezone') && get_option(DDTT_GO_PF . 'dev_timezone') != '') {
+            $dev_timezone = sanitize_text_field(get_option(DDTT_GO_PF . 'dev_timezone'));
+        } else {
+            $dev_timezone = wp_timezone_string();
+        }
 
-       // Get the converted time
-       $utc_time = gmdate( 'Y-m-d H:i:s', filemtime( $file ) );
-       $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
-       $dt->setTimezone( new DateTimeZone( $dev_timezone ) );
-       $last_modified = $dt->format( 'F j, Y g:i A T' );
-           
-       // Display the count
-       $results .= 'Lines: <strong>'.$line_count.'</strong> <span class="sep">|</span> Filesize: <strong>'.ddtt_format_bytes( filesize( $file ) ).'</strong> <span class="sep">|</span> Last Modified: <strong>'.$last_modified.'</strong><br><br>';
-   }
+        // Get the converted time
+        $utc_time = gmdate('Y-m-d H:i:s', filemtime($file));
+        $dt = new DateTime($utc_time, new DateTimeZone('UTC'));
+        $dt->setTimezone(new DateTimeZone($dev_timezone));
+        $last_modified = $dt->format('F j, Y g:i A T');
 
-   // Return the code with the defined path at top
-   $results .= 'Installation path: '.$path.'<br><br>'.$code;
+        // Display the count
+        $results .= 'Lines: <strong>' . $line_count . '</strong> <span class="sep">|</span> Filesize: <strong>' . ddtt_format_bytes(filesize($file)) . '</strong> <span class="sep">|</span> Last Modified: <strong>' . $last_modified . '</strong><br><br>';
+    }
 
-   return $results;
+    // Return the code with the defined path at top
+    $results .= 'Installation path: ' . $path . '<br><br>' . $code;
+
+    return $results;
 } // End ddtt_view_activity_file_contents()
 
 
@@ -2292,8 +2328,9 @@ function ddtt_view_activity_file_contents( $path, $highlight_args, $ip_address_l
  * @param [type] $date
  * @return bool
  */
-function ddtt_is_date( $date ) {
-    return (bool)strtotime( $date );
+function ddtt_is_date($date)
+{
+    return (bool)strtotime($date);
 } // End ddtt_validate_date()
 
 
@@ -2302,7 +2339,8 @@ function ddtt_is_date( $date ) {
  *
  * @return array
  */
-function ddtt_get_all_transients() {
+function ddtt_get_all_transients()
+{
     global $wpdb;
 
     // Query to get all transients
@@ -2314,19 +2352,19 @@ function ddtt_get_all_transients() {
     );
 
     $transients = [];
-    foreach ( $results as $result ) {
+    foreach ($results as $result) {
         // Separate regular transients from timeout transients
-        if ( strpos( $result->option_name, '_transient_timeout_' ) === 0 ) {
-            $transient_name = str_replace( '_transient_timeout_', '', $result->option_name );
-            $transients[ $transient_name ][ 'timeout' ] = $result->option_value;
+        if (strpos($result->option_name, '_transient_timeout_') === 0) {
+            $transient_name = str_replace('_transient_timeout_', '', $result->option_name);
+            $transients[$transient_name]['timeout'] = $result->option_value;
         } else {
-            $transient_name = str_replace( '_transient_', '', $result->option_name );
-            $transients[ $transient_name ][ 'value' ] = $result->option_value;
+            $transient_name = str_replace('_transient_', '', $result->option_name);
+            $transients[$transient_name]['value'] = $result->option_value;
         }
     }
 
     // Sort transients by name
-    ksort( $transients );
+    ksort($transients);
 
     return $transients;
 } // End ddtt_get_all_transients()
@@ -2337,7 +2375,8 @@ function ddtt_get_all_transients() {
  *
  * @return void
  */
-function ddtt_delete_all_transients() {
+function ddtt_delete_all_transients()
+{
     global $wpdb;
 
     // Execute the DELETE query
@@ -2360,15 +2399,16 @@ function ddtt_delete_all_transients() {
  * @param boolean $safemode
  * @return void
  */
-function ddtt_purge_expired_transients( $older_than = '1 day', $safemode = true ) {
+function ddtt_purge_expired_transients($older_than = '1 day', $safemode = true)
+{
     global $wpdb;
-    $older_than_time = strtotime( '-' . $older_than );
- 
+    $older_than_time = strtotime('-' . $older_than);
+
     // Check if the time is valid
-    if ( $older_than_time === false || $older_than_time > time() ) {
+    if ($older_than_time === false || $older_than_time > time()) {
         return false;
     }
- 
+
     // Prepare the LIKE query with wildcards
     $like_pattern = '_transient_timeout_%';
     $transients = $wpdb->get_col(
@@ -2381,34 +2421,34 @@ function ddtt_purge_expired_transients( $older_than = '1 day', $safemode = true 
             $older_than_time
         )
     );
- 
+
     // If safemode is ON just use the default WordPress get_transient() function to delete the expired transients
-    if ( $safemode ) {
-        foreach( $transients as $transient ) {
-            get_transient( $transient );
+    if ($safemode) {
+        foreach ($transients as $transient) {
+            get_transient($transient);
         }
- 
-    // If safemode is OFF the just manually delete all the transient rows in the database
+
+        // If safemode is OFF the just manually delete all the transient rows in the database
     } else {
         $option_names = [];
-        foreach( $transients as $transient ) {
+        foreach ($transients as $transient) {
             $option_names[] = '_transient_' . $transient;
             $option_names[] = '_transient_timeout_' . $transient;
         }
-        if ( $option_names ) {
-            $placeholders = implode( ',', array_fill( 0, count( $option_names ), '%s' ) );
-            
-            $result = $wpdb->query( $wpdb->prepare(
+        if ($option_names) {
+            $placeholders = implode(',', array_fill(0, count($option_names), '%s'));
+
+            $result = $wpdb->query($wpdb->prepare(
                 "DELETE FROM {$wpdb->options} WHERE option_name IN ($placeholders)",
                 ...$option_names
-            ) );
+            ));
 
-            if ( $result === false ) {
+            if ($result === false) {
                 return false;
             }
         }
     }
- 
+
     return true;
 } // End ddtt_purge_expired_transients()
 
@@ -2421,23 +2461,24 @@ function ddtt_purge_expired_transients( $older_than = '1 day', $safemode = true 
  * @param string $dumk
  * @return string|bool
  */
-function ddtt_delete_unused_mk_tab( $post_type, $keyword, $dumk ) {
+function ddtt_delete_unused_mk_tab($post_type, $keyword, $dumk)
+{
     // Let's get the published posts
-    $args = [ 
+    $args = [
         'post_type' => $post_type,
         'post_status' => 'publish',
         'posts_per_page' => -1,
     ];
 
     // Run the query
-    $the_query = new WP_Query( $args );
+    $the_query = new WP_Query($args);
 
     // Continue if there are posts found
-    if ( $the_query->have_posts() ) {
+    if ($the_query->have_posts()) {
 
         // Temporarily extend cURL timeout
-        update_option( 'ddtt_enable_curl_timeout', 1 );
-        update_option( 'ddtt_change_curl_timeout', 300 );
+        update_option('ddtt_enable_curl_timeout', 1);
+        update_option('ddtt_change_curl_timeout', 300);
 
         // Start timing
         $time = microtime();
@@ -2447,10 +2488,10 @@ function ddtt_delete_unused_mk_tab( $post_type, $keyword, $dumk ) {
 
         // Echo the title of the post
         $post_meta_tab = 'postmeta';
-        $post_meta_url = ddtt_plugin_options_path( $post_meta_tab );
+        $post_meta_url = ddtt_plugin_options_path($post_meta_tab);
 
         // For each list item...
-        while ( $the_query->have_posts() ) {
+        while ($the_query->have_posts()) {
 
             // Get the post
             $the_query->the_post();
@@ -2459,17 +2500,17 @@ function ddtt_delete_unused_mk_tab( $post_type, $keyword, $dumk ) {
             $post_id = get_the_ID();
 
             // Add the title
-            echo '<br><br><strong>Checking... '.esc_html( get_the_title() ).' (Post ID: <a href="'.esc_url( $post_meta_url ).'&post_id='.absint( $post_id ).'" target="_blank">'.absint( $post_id ).'</a>)</strong><br><br>';
+            echo '<br><br><strong>Checking... ' . esc_html(get_the_title()) . ' (Post ID: <a href="' . esc_url($post_meta_url) . '&post_id=' . absint($post_id) . '" target="_blank">' . absint($post_id) . '</a>)</strong><br><br>';
 
             // Are we testing or doing this fo real?
-            if ( $dumk == 'Test' ) {
+            if ($dumk == 'Test') {
                 $delete_all = false;
-            } elseif ( $dumk == 'Remove' ) {
+            } elseif ($dumk == 'Remove') {
                 $delete_all = true;
             }
 
             // Run the function
-            delete_unused_post_meta( $post_id, $keyword, $delete_all );
+            delete_unused_post_meta($post_id, $keyword, $delete_all);
         }
 
         // Finish timing
@@ -2480,10 +2521,10 @@ function ddtt_delete_unused_mk_tab( $post_type, $keyword, $dumk ) {
         $total_time = round(($finish - $start), 2);
 
         // Now restore cURL timeout
-        update_option( 'ddtt_enable_curl_timeout', 0 );
-        update_option( 'ddtt_change_curl_timeout', '' );
+        update_option('ddtt_enable_curl_timeout', 0);
+        update_option('ddtt_change_curl_timeout', '');
 
-        $results = '<span class="time-loaded">Results generated in <strong>'.$total_time.' seconds</strong></span><br>';
+        $results = '<span class="time-loaded">Results generated in <strong>' . $total_time . ' seconds</strong></span><br>';
 
         // Restore original Post Data
         wp_reset_postdata();
@@ -2501,23 +2542,24 @@ function ddtt_delete_unused_mk_tab( $post_type, $keyword, $dumk ) {
  * @param bool $ret
  * @return void|bool
  */
-function ddtt_highlight_file2( $filename, $return = false ) {
+function ddtt_highlight_file2($filename, $return = false)
+{
     // Change the colors
-    $comments = ddtt_get_syntax_color( 'color_comments', '#5E9955' );
-    $fx_vars = ddtt_get_syntax_color( 'color_fx_vars', '#DCDCAA' );
-    $text_quotes = ddtt_get_syntax_color( 'color_text_quotes', '#ACCCCC' );
-    $syntax = ddtt_get_syntax_color( 'color_syntax', '#569CD6' );
-    ini_set( 'highlight.comment', $comments );
-    ini_set( 'highlight.default', $fx_vars );
-    ini_set( 'highlight.html', $text_quotes );
-    ini_set( 'highlight.keyword', $syntax );
-    ini_set( 'highlight.string', $text_quotes );
+    $comments = ddtt_get_syntax_color('color_comments', '#5E9955');
+    $fx_vars = ddtt_get_syntax_color('color_fx_vars', '#DCDCAA');
+    $text_quotes = ddtt_get_syntax_color('color_text_quotes', '#ACCCCC');
+    $syntax = ddtt_get_syntax_color('color_syntax', '#569CD6');
+    ini_set('highlight.comment', $comments);
+    ini_set('highlight.default', $fx_vars);
+    ini_set('highlight.html', $text_quotes);
+    ini_set('highlight.keyword', $syntax);
+    ini_set('highlight.string', $text_quotes);
 
     // Stock highlight
-    $string2 = highlight_file( $filename, true );
+    $string2 = highlight_file($filename, true);
 
     // Check if we are redacting
-    if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
+    if (!get_option(DDTT_GO_PF . 'view_sensitive_info') || get_option(DDTT_GO_PF . 'view_sensitive_info') != 1) {
 
         // Redact sensitive info
         $globals = [
@@ -2536,35 +2578,35 @@ function ddtt_highlight_file2( $filename, $return = false ) {
         ];
 
         // Iter the globals
-        foreach ( $globals as $global ) {
+        foreach ($globals as $global) {
 
             // The pattern we're searching for
-            $pattern = '/define\s*\<\/span\>\s*\<span[^>]*>\s*\(\s*(&nbsp;)*\<\/span\>\s*(\'|\")'.$global.'(\'|\")\s*\<span[^>]*>\s*,\s*(&nbsp;)*\<\/span\>\s*(\'|\")(.*?)(\'|\")/i';
+            $pattern = '/define\s*\<\/span\>\s*\<span[^>]*>\s*\(\s*(&nbsp;)*\<\/span\>\s*(\'|\")' . $global . '(\'|\")\s*\<span[^>]*>\s*,\s*(&nbsp;)*\<\/span\>\s*(\'|\")(.*?)(\'|\")/i';
 
             // Attempt to find it
-            if ( preg_match( $pattern, $string2, $define_pw ) ) {
-                
+            if (preg_match($pattern, $string2, $define_pw)) {
+
                 // Strip the tags
-                $stripped = wp_strip_all_tags( $define_pw[0] );
+                $stripped = wp_strip_all_tags($define_pw[0]);
 
                 // Remove the beginning
-                $pw = substr( $stripped, strpos( $stripped, ',') + 1 );
+                $pw = substr($stripped, strpos($stripped, ',') + 1);
 
                 // Remove any spaces from beginning
-                $despace = ltrim( $pw, ' &nbsp;', );
+                $despace = ltrim($pw, ' &nbsp;',);
 
                 // Remove quotes
-                $unquoted = str_replace( [ '"', "'" ], '', $despace );
+                $unquoted = str_replace(['"', "'"], '', $despace);
 
                 // Add redact div
-                $string2 = str_replace( $unquoted, '<div class="redact">'.$unquoted.'</div>', $string2 );
+                $string2 = str_replace($unquoted, '<div class="redact">' . $unquoted . '</div>', $string2);
             }
         }
     }
 
     // Return it
-    if ( $return ) return $string2;
-    else echo wp_kses_post( $string2 );
+    if ($return) return $string2;
+    else echo wp_kses_post($string2);
 } // End ddtt_highlight_file2()
 
 
@@ -2575,28 +2617,29 @@ function ddtt_highlight_file2( $filename, $return = false ) {
  * @param boolean $return
  * @return string
  */
-function ddtt_highlight_string( $text ) {
+function ddtt_highlight_string($text)
+{
     // Change the colors
-    ini_set( 'highlight.comment', ddtt_get_syntax_color( 'color_text_quotes', '#ACCCCC' ) );
-    ini_set( 'highlight.default', ddtt_get_syntax_color( 'color_fx_vars', '#DCDCAA' ) );
-    ini_set( 'highlight.html', ddtt_get_syntax_color( 'color_text_quotes', '#ACCCCC' ) );
-    ini_set( 'highlight.keyword', ddtt_get_syntax_color( 'color_comments', '#5E9955' )."; font-weight: bold" );
-    ini_set( 'highlight.string', ddtt_get_syntax_color( 'color_syntax', '#569CD6' ) );
+    ini_set('highlight.comment', ddtt_get_syntax_color('color_text_quotes', '#ACCCCC'));
+    ini_set('highlight.default', ddtt_get_syntax_color('color_fx_vars', '#DCDCAA'));
+    ini_set('highlight.html', ddtt_get_syntax_color('color_text_quotes', '#ACCCCC'));
+    ini_set('highlight.keyword', ddtt_get_syntax_color('color_comments', '#5E9955') . "; font-weight: bold");
+    ini_set('highlight.string', ddtt_get_syntax_color('color_syntax', '#569CD6'));
 
     // Trim
-    $text = trim( $text );
+    $text = trim($text);
 
     // highlight_string() requires opening PHP tag or otherwise it will not colorize the text
-    $text = highlight_string( '<?php ' . $text, true );
+    $text = highlight_string('<?php ' . $text, true);
 
     // Add a class to the code tag
-    $text = preg_replace( '/<code[^>]*>/', '<code class="function">', $text, 1 );
+    $text = preg_replace('/<code[^>]*>/', '<code class="function">', $text, 1);
 
     // Now remove the opening PHP tag
     $pf = "&lt;?php ";
-    $pos = strpos( $text, $pf );
-    if ( $pos !== false ) {
-        $text = substr_replace( $text, '', $pos, strlen( $pf ) );
+    $pos = strpos($text, $pf);
+    if ($pos !== false) {
+        $text = substr_replace($text, '', $pos, strlen($pf));
     }
 
     // Return it
@@ -2610,19 +2653,20 @@ function ddtt_highlight_string( $text ) {
  * @param int $bytes
  * @return string
  */
-function ddtt_format_bytes( $bytes ) { 
-    $bytes = floatval( $bytes );
-    if ( $bytes >= 1099511627776 ) {
-        $bytes = number_format( $bytes / 1099511627776, 2 ) . ' TB';
-    } elseif ( $bytes >= 1073741824 ) {
-        $bytes = number_format( $bytes / 1073741824, 2 ) . ' GB';
-    } elseif ( $bytes >= 1048576 ) {
-        $bytes = number_format( $bytes / 1048576, 2 ) . ' MB';
-    } elseif ( $bytes >= 1024 ) {
-        $bytes = number_format( $bytes / 1024, 2 ) . ' KB';
-    } elseif ( $bytes > 1 ) {
+function ddtt_format_bytes($bytes)
+{
+    $bytes = floatval($bytes);
+    if ($bytes >= 1099511627776) {
+        $bytes = number_format($bytes / 1099511627776, 2) . ' TB';
+    } elseif ($bytes >= 1073741824) {
+        $bytes = number_format($bytes / 1073741824, 2) . ' GB';
+    } elseif ($bytes >= 1048576) {
+        $bytes = number_format($bytes / 1048576, 2) . ' MB';
+    } elseif ($bytes >= 1024) {
+        $bytes = number_format($bytes / 1024, 2) . ' KB';
+    } elseif ($bytes > 1) {
         $bytes = $bytes . ' bytes';
-    } elseif ( $bytes == 1 ) {
+    } elseif ($bytes == 1) {
         $bytes = $bytes . ' byte';
     } else {
         $bytes = '0 bytes';
@@ -2639,14 +2683,15 @@ function ddtt_format_bytes( $bytes ) {
  * @param boolean $full
  * @return string
  */
-function ddtt_time_elapsed_string( $datetime, $full = false ) {
+function ddtt_time_elapsed_string($datetime, $full = false)
+{
     $now = new DateTime;
-    $ago = new DateTime( $datetime );
-    $diff = $now->diff( $ago );
+    $ago = new DateTime($datetime);
+    $diff = $now->diff($ago);
 
     // Calculate total days and weeks
     $days = $diff->days;
-    $weeks = floor( $days / 7 );
+    $weeks = floor($days / 7);
     $remainingDays = $days % 7;
 
     $string = [
@@ -2659,24 +2704,24 @@ function ddtt_time_elapsed_string( $datetime, $full = false ) {
         's' => 'second',
     ];
 
-    if ( $weeks > 0 ) {
-        $string[ 'w' ] = $weeks . ' ' . ( $weeks > 1 ? 'weeks' : 'week' );
+    if ($weeks > 0) {
+        $string['w'] = $weeks . ' ' . ($weeks > 1 ? 'weeks' : 'week');
         $diff->d = $remainingDays;
     }
 
-    foreach ( $string as $k => &$v ) {
-        if ( isset( $diff->$k ) && $diff->$k ) {
-            $v = $diff->$k . ' ' . $v . ( $diff->$k > 1 ? 's' : '' );
+    foreach ($string as $k => &$v) {
+        if (isset($diff->$k) && $diff->$k) {
+            $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
         } else {
-            unset( $string[ $k ] );
+            unset($string[$k]);
         }
     }
 
-    if ( !$full ) {
-        $string = array_slice( $string, 0, 1 );
+    if (!$full) {
+        $string = array_slice($string, 0, 1);
     }
 
-    return $string ? implode( ', ', $string ) . ' ago' : 'just now';
+    return $string ? implode(', ', $string) . ' ago' : 'just now';
 } // End ddtt_time_elapsed_string()
 
 
@@ -2688,19 +2733,20 @@ function ddtt_time_elapsed_string( $datetime, $full = false ) {
  * @param string $msg
  * @return void
  */
-function ddtt_admin_notice( $type, $msg ) {
+function ddtt_admin_notice($type, $msg)
+{
     // Add the params to an array
-    $args = [ 
-        'type' => $type, 
+    $args = [
+        'type' => $type,
         'msg' => $msg
     ];
 
     // Set the class
-    $class = 'notice notice-'.$args[ 'type' ];
+    $class = 'notice notice-' . $args['type'];
 
     // Echo
     /* Translators: 1: class, 2: message */
-    printf( '<div id="message" class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), wp_kses_post( $args[ 'msg' ] ) );
+    printf('<div id="message" class="%1$s"><p>%2$s</p></div>', esc_attr($class), wp_kses_post($args['msg']));
 } // End ddtt_admin_notice()
 
 
@@ -2710,45 +2756,46 @@ function ddtt_admin_notice( $type, $msg ) {
  * @param string $slug
  * @return string
  */
-function ddtt_plugin_card( $slug ) {
+function ddtt_plugin_card($slug)
+{
     // Set the args
-    $args = [ 
-        'slug' => $slug, 
+    $args = [
+        'slug' => $slug,
         'fields' => [
             'last_updated' => true,
             'tested' => true,
             'active_installs' => true
         ]
     ];
-    
+
     // Fetch the plugin info from the wp repository
     $response = wp_remote_post(
         'http://api.wordpress.org/plugins/info/1.0/',
         [
             'body' => [
                 'action' => 'plugin_information',
-                'request' => serialize( (object)$args )
+                'request' => serialize((object)$args)
             ]
         ]
     );
 
     // If there is no error, continue
-    if ( !is_wp_error( $response ) ) {
+    if (!is_wp_error($response)) {
 
         // Unserialize
-        $returned_object = unserialize( wp_remote_retrieve_body( $response ) );   
-        if ( $returned_object ) {
-            
+        $returned_object = unserialize(wp_remote_retrieve_body($response));
+        if ($returned_object) {
+
             // Last Updated
             $last_updated = $returned_object->last_updated;
-            $last_updated = ddtt_time_elapsed_string( $last_updated );
+            $last_updated = ddtt_time_elapsed_string($last_updated);
 
             // Compatibility
             $compatibility = $returned_object->tested;
 
             // Add incompatibility class
             global $wp_version;
-            if ( $compatibility == $wp_version ) {
+            if ($compatibility == $wp_version) {
                 $is_compatible = '<span class="compatibility-compatible"><strong>Compatible</strong> with your version of WordPress</span>';
             } else {
                 $is_compatible = '<span class="compatibility-untested">Untested with your version of WordPress</span>';
@@ -2759,132 +2806,136 @@ function ddtt_plugin_card( $slug ) {
 
             // Check if this plugin is installed
             $is_installed = false;
-            foreach ( $plugins as $key => $plugin ) {
-                if ( $plugin[ 'TextDomain' ] == $slug ) {
+            foreach ($plugins as $key => $plugin) {
+                if ($plugin['TextDomain'] == $slug) {
                     $is_installed = $key;
                 }
             }
 
             // Check if it is also active
             $is_active = false;
-            if ( $is_installed && is_plugin_active( $is_installed ) ) {
+            if ($is_installed && is_plugin_active($is_installed)) {
                 $is_active = true;
             }
 
             // Check if the plugin is already active
-            if ( $is_active ) {
+            if ($is_active) {
                 $install_link = 'role="link" aria-disabled="true"';
                 $php_notice = '';
                 $install_text = 'Active';
 
-            // Check if the plugin is installed but not active
-            } elseif ( $is_installed ) {
-                $install_link = 'href="'.admin_url( 'plugins.php' ).'"';
+                // Check if the plugin is installed but not active
+            } elseif ($is_installed) {
+                $install_link = 'href="' . admin_url('plugins.php') . '"';
                 $php_notice = '';
                 $install_text = 'Go to Activate';
 
-            // Check for php requirement
-            } elseif ( phpversion() < $returned_object->requires_php ) {
+                // Check for php requirement
+            } elseif (phpversion() < $returned_object->requires_php) {
                 $install_link = 'role="link" aria-disabled="true"';
-                $php_notice = '<div class="php-incompatible"><em><strong>Requires PHP Version '.$returned_object->requires_php.'</strong> — You are currently on Version '.phpversion().'</em></div>';
+                $php_notice = '<div class="php-incompatible"><em><strong>Requires PHP Version ' . $returned_object->requires_php . '</strong> — You are currently on Version ' . phpversion() . '</em></div>';
                 $install_text = 'Incompatible';
 
-            // If we're good to go, add the link
+                // If we're good to go, add the link
             } else {
 
                 // Get the admin url for the plugin install page
-                if ( is_multisite() ) {
-                    $admin_url = network_admin_url( 'plugin-install.php' );
+                if (is_multisite()) {
+                    $admin_url = network_admin_url('plugin-install.php');
                 } else {
-                    $admin_url = admin_url( 'plugin-install.php' );
+                    $admin_url = admin_url('plugin-install.php');
                 }
 
                 // Vars
-                $install_link = 'href="'.$admin_url.'?s='.esc_attr( $returned_object->name ).'&tab=search&type=term"';
+                $install_link = 'href="' . $admin_url . '?s=' . esc_attr($returned_object->name) . '&tab=search&type=term"';
                 $php_notice = '';
                 $install_text = 'Get Now';
             }
-            
+
             // Short Description
-            $pos = strpos( $returned_object->sections[ 'description' ], '.');
-            $desc = substr( $returned_object->sections[ 'description' ], 0, $pos + 1 );
+            $pos = strpos($returned_object->sections['description'], '.');
+            $desc = substr($returned_object->sections['description'], 0, $pos + 1);
 
             // Rating
-            $rating = ddtt_get_five_point_rating( 
-                $returned_object->ratings[1], 
-                $returned_object->ratings[2], 
-                $returned_object->ratings[3], 
-                $returned_object->ratings[4], 
-                $returned_object->ratings[5] 
+            $rating = ddtt_get_five_point_rating(
+                $returned_object->ratings[1],
+                $returned_object->ratings[2],
+                $returned_object->ratings[3],
+                $returned_object->ratings[4],
+                $returned_object->ratings[5]
             );
 
             // Link guts
-            $link_guts = 'href="https://wordpress.org/plugins/'.esc_attr( $slug ).'/" target="_blank" aria-label="More information about '.$returned_object->name.' '.$returned_object->version.'" data-title="'.$returned_object->name.' '.$returned_object->version.'"';
-            ?>
+            $link_guts = 'href="https://wordpress.org/plugins/' . esc_attr($slug) . '/" target="_blank" aria-label="More information about ' . $returned_object->name . ' ' . $returned_object->version . '" data-title="' . $returned_object->name . ' ' . $returned_object->version . '"';
+?>
             <style>
-            .plugin-card {
-                float: none !important;
-                margin-left: 0 !important;
-            }
-            .plugin-card .ws_stars {
-                display: inline-block;
-            }
-            .php-incompatible {
-                padding: 12px 20px;
-                background-color: #D1231B;
-                color: #FFFFFF;
-                border-top: 1px solid #dcdcde;
-                overflow: hidden;
-            }
-            #wpbody-content .plugin-card .plugin-action-buttons a.install-now[aria-disabled="true"] {
-                color: #CBB8AD !important;
-                border-color: #CBB8AD !important;
-            }
-            .plugin-action-buttons {
-                list-style: none !important;   
-            }
+                .plugin-card {
+                    float: none !important;
+                    margin-left: 0 !important;
+                }
+
+                .plugin-card .ws_stars {
+                    display: inline-block;
+                }
+
+                .php-incompatible {
+                    padding: 12px 20px;
+                    background-color: #D1231B;
+                    color: #FFFFFF;
+                    border-top: 1px solid #dcdcde;
+                    overflow: hidden;
+                }
+
+                #wpbody-content .plugin-card .plugin-action-buttons a.install-now[aria-disabled="true"] {
+                    color: #CBB8AD !important;
+                    border-color: #CBB8AD !important;
+                }
+
+                .plugin-action-buttons {
+                    list-style: none !important;
+                }
             </style>
-            <div class="plugin-card plugin-card-<?php echo esc_attr( $slug ); ?>">
+            <div class="plugin-card plugin-card-<?php echo esc_attr($slug); ?>">
                 <div class="plugin-card-top">
                     <div class="name column-name">
                         <h3>
-                            <a <?php echo wp_kses_post( $link_guts ); ?>>
-                                <?php echo esc_html( $returned_object->name ); ?> 
-                                <img src="<?php echo esc_url( DDTT_PLUGIN_IMG_PATH ).esc_attr( $slug  ); ?>.png" class="plugin-icon" alt="<?php echo esc_html( $returned_object->name ); ?> Thumbnail">
+                            <a <?php echo wp_kses_post($link_guts); ?>>
+                                <?php echo esc_html($returned_object->name); ?>
+                                <img src="<?php echo esc_url(DDTT_PLUGIN_IMG_PATH) . esc_attr($slug); ?>.png" class="plugin-icon" alt="<?php echo esc_html($returned_object->name); ?> Thumbnail">
                             </a>
                         </h3>
                     </div>
                     <div class="action-links">
                         <ul class="plugin-action-buttons">
-                            <li><a class="install-now button" data-slug="<?php echo esc_attr( $slug ); ?>" <?php echo wp_kses_post( $install_link ); ?> aria-label="<?php echo esc_attr( $install_text );?>" data-name="<?php echo esc_html( $returned_object->name ); ?> <?php echo esc_html( $returned_object->version ); ?>"><?php echo esc_attr( $install_text );?></a></li>
-                            <li><a <?php echo wp_kses_post( $link_guts ); ?>>More Details</a></li>
+                            <li><a class="install-now button" data-slug="<?php echo esc_attr($slug); ?>" <?php echo wp_kses_post($install_link); ?> aria-label="<?php echo esc_attr($install_text); ?>" data-name="<?php echo esc_html($returned_object->name); ?> <?php echo esc_html($returned_object->version); ?>"><?php echo esc_attr($install_text); ?></a></li>
+                            <li><a <?php echo wp_kses_post($link_guts); ?>>More Details</a></li>
                         </ul>
                     </div>
                     <div class="desc column-description">
-                        <p><?php echo wp_kses_post( $desc ); ?></p>
-                        <p class="authors"> <cite>By <?php echo wp_kses_post( $returned_object->author ); ?></cite></p>
+                        <p><?php echo wp_kses_post($desc); ?></p>
+                        <p class="authors"> <cite>By <?php echo wp_kses_post($returned_object->author); ?></cite></p>
                     </div>
                 </div>
                 <div class="plugin-card-bottom">
                     <div class="vers column-rating">
-                        <div class="star-rating"><span class="screen-reader-text"><?php echo esc_attr( abs( $rating ) ); ?> star rating based on <?php echo absint( $returned_object->num_ratings ); ?> ratings</span>
-                            <?php echo wp_kses_post( ddtt_convert_to_stars( abs( $rating ) ) ); ?>
-                        </div>					
-                        <span class="num-ratings" aria-hidden="true">(<?php echo absint( $returned_object->num_ratings ); ?>)</span>
+                        <div class="star-rating"><span class="screen-reader-text"><?php echo esc_attr(abs($rating)); ?> star rating based on <?php echo absint($returned_object->num_ratings); ?> ratings</span>
+                            <?php echo wp_kses_post(ddtt_convert_to_stars(abs($rating))); ?>
+                        </div>
+                        <span class="num-ratings" aria-hidden="true">(<?php echo absint($returned_object->num_ratings); ?>)</span>
                     </div>
                     <div class="column-updated">
-                        <strong>Last Updated:</strong> <?php echo esc_html( $last_updated ); ?>
+                        <strong>Last Updated:</strong> <?php echo esc_html($last_updated); ?>
                     </div>
-                    <div class="column-downloaded" data-downloads="<?php echo esc_html( number_format( $returned_object->downloaded ) ); ?>">
-                        <?php echo esc_html( number_format( $returned_object->active_installs ) ); ?>+ Active Installs
+                    <div class="column-downloaded" data-downloads="<?php echo esc_html(number_format($returned_object->downloaded)); ?>">
+                        <?php echo esc_html(number_format($returned_object->active_installs)); ?>+ Active Installs
                     </div>
                     <div class="column-compatibility">
-                        <?php echo wp_kses_post( $is_compatible ); ?>				
+                        <?php echo wp_kses_post($is_compatible); ?>
                     </div>
                 </div>
-                <?php echo wp_kses_post( $php_notice ); ?>
+                <?php echo wp_kses_post($php_notice); ?>
             </div>
-            <?php
+<?php
         }
     }
 } // End ddtt_plugin_card()
@@ -2896,37 +2947,38 @@ function ddtt_plugin_card( $slug ) {
  * @param int|float $r
  * @return string
  */
-function ddtt_convert_to_stars( $r ) {
+function ddtt_convert_to_stars($r)
+{
     $f = '<div class="star star-full" aria-hidden="true"></div>';
     $h = '<div class="star star-half" aria-hidden="true"></div>';
     $e = '<div class="star star-empty" aria-hidden="true"></div>';
-    
-    $stars = $e.$e.$e.$e.$e;
-    if ( $r > 4.74 ) {
-        $stars = $f.$f.$f.$f.$f;
-    } elseif ( $r > 4.24 && $r < 4.75 ) {
-        $stars = $f.$f.$f.$f.$h;
-    } elseif ( $r > 3.74 && $r < 4.25 ) {
-        $stars = $f.$f.$f.$f.$e;
-    } elseif ( $r > 3.24 && $r < 3.75 ) {
-        $stars = $f.$f.$f.$h.$e;
-    } elseif ( $r > 2.74 && $r < 3.25 ) {
-        $stars = $f.$f.$f.$e.$e;
-    } elseif ( $r > 2.24 && $r < 2.75 ) {
-        $stars = $f.$f.$h.$e.$e;
-    } elseif ( $r > 1.74 && $r < 2.25 ) {
-        $stars = $f.$f.$e.$e.$e;
-    } elseif ( $r > 1.24 && $r < 1.75 ) {
-        $stars = $f.$h.$e.$e.$e;
-    } elseif ( $r > 0.74 && $r < 1.25 ) {
-        $stars = $f.$e.$e.$e.$e;
-    } elseif ( $r > 0.24 && $r < 0.75 ) {
-        $stars = $h.$e.$e.$e.$e;
+
+    $stars = $e . $e . $e . $e . $e;
+    if ($r > 4.74) {
+        $stars = $f . $f . $f . $f . $f;
+    } elseif ($r > 4.24 && $r < 4.75) {
+        $stars = $f . $f . $f . $f . $h;
+    } elseif ($r > 3.74 && $r < 4.25) {
+        $stars = $f . $f . $f . $f . $e;
+    } elseif ($r > 3.24 && $r < 3.75) {
+        $stars = $f . $f . $f . $h . $e;
+    } elseif ($r > 2.74 && $r < 3.25) {
+        $stars = $f . $f . $f . $e . $e;
+    } elseif ($r > 2.24 && $r < 2.75) {
+        $stars = $f . $f . $h . $e . $e;
+    } elseif ($r > 1.74 && $r < 2.25) {
+        $stars = $f . $f . $e . $e . $e;
+    } elseif ($r > 1.24 && $r < 1.75) {
+        $stars = $f . $h . $e . $e . $e;
+    } elseif ($r > 0.74 && $r < 1.25) {
+        $stars = $f . $e . $e . $e . $e;
+    } elseif ($r > 0.24 && $r < 0.75) {
+        $stars = $h . $e . $e . $e . $e;
     } else {
         $stars = $stars;
     }
 
-    return '<div class="ws_stars">'.$stars.'</div>';
+    return '<div class="ws_stars">' . $stars . '</div>';
 } // End ddtt_convert_to_stars()
 
 
@@ -2940,19 +2992,20 @@ function ddtt_convert_to_stars( $r ) {
  * @param int|float $r5
  * @return float
  */
-function ddtt_get_five_point_rating ( $r1, $r2, $r3, $r4, $r5 ) {
+function ddtt_get_five_point_rating($r1, $r2, $r3, $r4, $r5)
+{
     // Calculate them on a 5-point rating system
-    $r5b = round( $r5 * 5, 0 );
-    $r4b = round( $r4 * 4, 0 );
-    $r3b = round( $r3 * 3, 0 );
-    $r2b = round( $r2 * 2, 0 );
+    $r5b = round($r5 * 5, 0);
+    $r4b = round($r4 * 4, 0);
+    $r3b = round($r3 * 3, 0);
+    $r2b = round($r2 * 2, 0);
     $r1b = $r1;
-    
-    $total = round( $r1 + $r2 + $r3 + $r4 + $r5, 0 );
-    if ( $total == 0 ) {
+
+    $total = round($r1 + $r2 + $r3 + $r4 + $r5, 0);
+    if ($total == 0) {
         $r = 0;
     } else {
-        $r = round( ( $r1b + $r2b + $r3b + $r4b + $r5b ) / $total, 2 );
+        $r = round(($r1b + $r2b + $r3b + $r4b + $r5b) / $total, 2);
     }
 
     return $r;
@@ -2964,9 +3017,10 @@ function ddtt_get_five_point_rating ( $r1, $r2, $r3, $r4, $r5 ) {
  *
  * @return string
  */
-function ddtt_get_latest_plugin_version() {
+function ddtt_get_latest_plugin_version()
+{
     // Set the args
-    $args = [ 'slug' => DDTT_TEXTDOMAIN ];
+    $args = ['slug' => DDTT_TEXTDOMAIN];
 
     // Fetch the plugin info from the WordPress repository
     $response = wp_remote_post(
@@ -2974,22 +3028,22 @@ function ddtt_get_latest_plugin_version() {
         [
             'body' => [
                 'action' => 'plugin_information',
-                'request' => serialize( (object) $args )
+                'request' => serialize((object) $args)
             ]
         ]
     );
 
     // Check for errors in the response
-    if ( is_wp_error( $response ) ) {
+    if (is_wp_error($response)) {
         return DDTT_VERSION;
     }
 
     // Attempt to unserialize the response body
-    $response_body = wp_remote_retrieve_body( $response );
-    $returned_object = @unserialize( $response_body );
+    $response_body = wp_remote_retrieve_body($response);
+    $returned_object = @unserialize($response_body);
 
     // If parsing fails or the returned object is invalid, fallback to DDTT_VERSION, it's not important to check for updates since WP will do it anyway
-    if ( !$returned_object || !isset( $returned_object->version ) ) {
+    if (!$returned_object || !isset($returned_object->version)) {
         return DDTT_VERSION;
     }
 
@@ -3003,27 +3057,28 @@ function ddtt_get_latest_plugin_version() {
  *
  * @return array
  */
-function ddtt_get_latest_php_version( $major_only = false ) {
+function ddtt_get_latest_php_version($major_only = false)
+{
     // Get the latest releases from php.net
-    $response = wp_remote_get( 'https://www.php.net/releases/?json' );
+    $response = wp_remote_get('https://www.php.net/releases/?json');
 
     // Make sure we got a response
-    if ( is_array( $response ) && !is_wp_error( $response ) ) {
+    if (is_array($response) && !is_wp_error($response)) {
 
         // Grab the json content
-        $json = $response[ 'body' ];
+        $json = $response['body'];
 
         // Decode it
-        $php_releases = json_decode( $json );
+        $php_releases = json_decode($json);
 
         // Store the latest major release (ie 8.x)
         $latest_major = 0;
 
         // Iter the releases
-        foreach ( $php_releases as $major_version => $release ) {
+        foreach ($php_releases as $major_version => $release) {
 
             // Only retrieve if the version is later than the stored version
-            if ( $major_version > $latest_major ) {
+            if ($major_version > $latest_major) {
                 $latest_major = $major_version;
             } else {
                 continue;
@@ -3031,7 +3086,7 @@ function ddtt_get_latest_php_version( $major_only = false ) {
         }
 
         // Get what we need
-        if ( $major_only ) {
+        if ($major_only) {
             return $latest_major;
         } else {
             return $php_releases->$latest_major->version;
@@ -3047,24 +3102,25 @@ function ddtt_get_latest_php_version( $major_only = false ) {
  * @param mixed $string
  * @return boolean
  */
-function ddtt_is_serialized_array( $string ) {
+function ddtt_is_serialized_array($string)
+{
     // Check if the string is empty or not a string
-    if ( !is_string( $string ) || empty( $string ) ) {
+    if (!is_string($string) || empty($string)) {
         return false;
     }
 
     // Check if the string is a serialized format
-    $trimmed = trim( $string );
-    if ( $trimmed === 'b:0;' ) {
+    $trimmed = trim($string);
+    if ($trimmed === 'b:0;') {
         return true;
     }
 
-    if ( preg_match( '/^(a|O|s|i|d|b|C):/i', $trimmed ) && preg_match( '/[;}]/', substr( $trimmed, -1 ) ) ) {
+    if (preg_match('/^(a|O|s|i|d|b|C):/i', $trimmed) && preg_match('/[;}]/', substr($trimmed, -1))) {
         try {
             // Try to unserialize the string
-            $result = unserialize( $trimmed );
-            return ( $result !== false || $string === 'b:0;' );
-        } catch ( Exception $e ) {
+            $result = unserialize($trimmed);
+            return ($result !== false || $string === 'b:0;');
+        } catch (Exception $e) {
             // Catch and handle any exceptions
             return false;
         }
@@ -3080,8 +3136,9 @@ function ddtt_is_serialized_array( $string ) {
  * @param mixed $string
  * @return boolean
  */
-function ddtt_is_serialized_object( $string ) {
-    return ( is_string( $string ) && preg_match( '/^O:\d+:"[^"]+":\d+:{.*}$/s', $string ) );
+function ddtt_is_serialized_object($string)
+{
+    return (is_string($string) && preg_match('/^O:\d+:"[^"]+":\d+:{.*}$/s', $string));
 } // End ddtt_is_serialized_object()
 
 
@@ -3092,108 +3149,107 @@ function ddtt_is_serialized_object( $string ) {
  * @param   boolean $submenu_as_parent
  * @return  string|null
  */
-function ddtt_get_admin_menu_item_url( $menu_item_file, $menu = null, $submenu = null, $submenu_as_parent = true ) {
-	if ( is_null( $menu ) && is_null( $submenu ) ) {
+function ddtt_get_admin_menu_item_url($menu_item_file, $menu = null, $submenu = null, $submenu_as_parent = true)
+{
+    if (is_null($menu) && is_null($submenu)) {
         global $menu, $submenu;
     }
 
-	$admin_is_parent = false;
-	$item = '';
-	$submenu_item = '';
-	$url = '';
+    $admin_is_parent = false;
+    $item = '';
+    $submenu_item = '';
+    $url = '';
 
-	// Check if top-level menu item
-	foreach( $menu as $key => $menu_item ) {
-		if ( array_keys( $menu_item, $menu_item_file, true ) ) {
-			$item = $menu[ $key ];
-		}
+    // Check if top-level menu item
+    foreach ($menu as $key => $menu_item) {
+        if (array_keys($menu_item, $menu_item_file, true)) {
+            $item = $menu[$key];
+        }
 
-		if ( $submenu_as_parent && ! empty( $submenu_item ) ) {
-			$menu_hook = get_plugin_page_hook( $submenu_item[2], $item[2] );
-			$menu_file = $submenu_item[2];
+        if ($submenu_as_parent && ! empty($submenu_item)) {
+            $menu_hook = get_plugin_page_hook($submenu_item[2], $item[2]);
+            $menu_file = $submenu_item[2];
 
-			if ( false !== ( $pos = strpos( $menu_file, '?' ) ) )
-				$menu_file = substr( $menu_file, 0, $pos );
-			if ( ! empty( $menu_hook ) || ( ( 'index.php' != $submenu_item[2] ) && file_exists( WP_PLUGIN_DIR.'/'.$menu_file ) && ! file_exists( ABSPATH.'/'.DDTT_ADMIN_URL.'/'.$menu_file ) ) ) {
-				$admin_is_parent = true;
-				$url = 'admin.php?page=' . $submenu_item[2];
-			} else {
-				$url = $submenu_item[2];
-			}
-		}
+            if (false !== ($pos = strpos($menu_file, '?')))
+                $menu_file = substr($menu_file, 0, $pos);
+            if (! empty($menu_hook) || (('index.php' != $submenu_item[2]) && file_exists(WP_PLUGIN_DIR . '/' . $menu_file) && ! file_exists(ABSPATH . '/' . DDTT_ADMIN_URL . '/' . $menu_file))) {
+                $admin_is_parent = true;
+                $url = 'admin.php?page=' . $submenu_item[2];
+            } else {
+                $url = $submenu_item[2];
+            }
+        } elseif (! empty($item[2]) && current_user_can($item[1])) {
+            $menu_hook = get_plugin_page_hook($item[2], 'admin.php');
+            $menu_file = $item[2];
 
-		elseif ( ! empty( $item[2] ) && current_user_can( $item[1] ) ) {
-			$menu_hook = get_plugin_page_hook( $item[2], 'admin.php' );
-			$menu_file = $item[2];
+            if (false !== ($pos = strpos($menu_file, '?')))
+                $menu_file = substr($menu_file, 0, $pos);
+            if (! empty($menu_hook) || (('index.php' != $item[2]) && file_exists(WP_PLUGIN_DIR . '/' . $menu_file) && ! file_exists(ABSPATH . '/' . DDTT_ADMIN_URL . '/' . $menu_file))) {
+                $admin_is_parent = true;
+                $url = 'admin.php?page=' . $item[2];
+            } else {
+                $url = $item[2];
+            }
+        }
+    }
 
-			if ( false !== ( $pos = strpos( $menu_file, '?' ) ) )
-				$menu_file = substr( $menu_file, 0, $pos );
-			if ( ! empty( $menu_hook ) || ( ( 'index.php' != $item[2] ) && file_exists( WP_PLUGIN_DIR.'/'.$menu_file ) && ! file_exists( ABSPATH.'/'.DDTT_ADMIN_URL.'/'.$menu_file ) ) ) {
-				$admin_is_parent = true;
-				$url = 'admin.php?page=' . $item[2];
-			} else {
-				$url = $item[2];
-			}
-		}
-	}
+    // Check if sub-level menu item
+    if (!$item) {
+        $sub_item = '';
+        foreach ($submenu as $top_file => $submenu_items) {
 
-	// Check if sub-level menu item
-	if ( !$item ) {
-		$sub_item = '';
-		foreach( $submenu as $top_file => $submenu_items ) {
+            // Reindex $submenu_items
+            $submenu_items = array_values($submenu_items);
 
-			// Reindex $submenu_items
-			$submenu_items = array_values( $submenu_items );
+            foreach ($submenu_items as $key => $submenu_item) {
+                if (array_keys($submenu_item, $menu_item_file)) {
+                    $sub_item = $submenu_items[$key];
+                    break;
+                }
+            }
 
-			foreach( $submenu_items as $key => $submenu_item ) {
-				if ( array_keys( $submenu_item, $menu_item_file ) ) {
-					$sub_item = $submenu_items[ $key ];
-					break;
-				}
-			}					
+            if (! empty($sub_item))
+                break;
+        }
 
-			if ( ! empty( $sub_item ) )
-				break;
-		}
+        // Get top-level parent item
+        foreach ($menu as $key => $menu_item) {
+            if (array_keys($menu_item, $top_file, true)) {
+                $item = $menu[$key];
+                break;
+            }
+        }
 
-		// Get top-level parent item
-		foreach( $menu as $key => $menu_item ) {
-			if ( array_keys( $menu_item, $top_file, true ) ) {
-				$item = $menu[ $key ];
-				break;
-			}
-		}
+        // If the $menu_item_file parameter doesn't match any menu item, return false
+        if (! $sub_item)
+            return false;
 
-		// If the $menu_item_file parameter doesn't match any menu item, return false
-		if ( ! $sub_item )
-			return false;
+        // Get URL
+        $menu_file = $item[2];
 
-		// Get URL
-		$menu_file = $item[2];
+        if (false !== ($pos = strpos($menu_file, '?')))
+            $menu_file = substr($menu_file, 0, $pos);
 
-		if ( false !== ( $pos = strpos( $menu_file, '?' ) ) )
-			$menu_file = substr( $menu_file, 0, $pos );
+        // Handle current for post_type=post|page|foo pages, which won't match $self.
+        $menu_hook = get_plugin_page_hook($sub_item[2], $item[2]);
 
-		// Handle current for post_type=post|page|foo pages, which won't match $self.
-		$menu_hook = get_plugin_page_hook( $sub_item[2], $item[2] );
+        $sub_file = $sub_item[2];
+        if (false !== ($pos = strpos($sub_file, '?')))
+            $sub_file = substr($sub_file, 0, $pos);
 
-		$sub_file = $sub_item[2];
-		if ( false !== ( $pos = strpos( $sub_file, '?' ) ) )
-			$sub_file = substr($sub_file, 0, $pos);
-
-		if ( ! empty( $menu_hook ) || ( ( 'index.php' != $sub_item[2] ) && file_exists( WP_PLUGIN_DIR."/$sub_file" ) && ! file_exists( ABSPATH.'/'.DDTT_ADMIN_URL.'/'.$sub_file ) ) ) {
-			// If admin.php is the current page or if the parent exists as a file in the plugins or admin dir
-			if ( ( ! $admin_is_parent && file_exists( WP_PLUGIN_DIR."/$menu_file" ) && ! is_dir( WP_PLUGIN_DIR."/{$item[2]}" ) ) || file_exists( $menu_file ) )
-				$url = add_query_arg( array( 'page' => $sub_item[2] ), $item[2] );
-			else
-				$url = add_query_arg( array( 'page' => $sub_item[2] ), 'admin.php' );
-		} else {
-			$url = $sub_item[2];
-		}
-	}
+        if (! empty($menu_hook) || (('index.php' != $sub_item[2]) && file_exists(WP_PLUGIN_DIR . "/$sub_file") && ! file_exists(ABSPATH . '/' . DDTT_ADMIN_URL . '/' . $sub_file))) {
+            // If admin.php is the current page or if the parent exists as a file in the plugins or admin dir
+            if ((! $admin_is_parent && file_exists(WP_PLUGIN_DIR . "/$menu_file") && ! is_dir(WP_PLUGIN_DIR . "/{$item[2]}")) || file_exists($menu_file))
+                $url = add_query_arg(array('page' => $sub_item[2]), $item[2]);
+            else
+                $url = add_query_arg(array('page' => $sub_item[2]), 'admin.php');
+        } else {
+            $url = $sub_item[2];
+        }
+    }
 
     // Return the url
-	return esc_url( $url );
+    return esc_url($url);
 } // End ddtt_get_admin_menu_item_url()
 
 
@@ -3205,21 +3261,21 @@ function ddtt_get_admin_menu_item_url( $menu_item_file, $menu = null, $submenu =
  * @param boolean $invert
  * @return string
  */
-function ddtt_strip_tags_content( $text, $tags = '', $invert = false ) {
+function ddtt_strip_tags_content($text, $tags = '', $invert = false)
+{
     // Search
-    preg_match_all('/<(.+?)[\s]*\/?[\s]*>/si', trim( $tags ), $matches );
-    $tags = array_unique( $matches[1] );
+    preg_match_all('/<(.+?)[\s]*\/?[\s]*>/si', trim($tags), $matches);
+    $tags = array_unique($matches[1]);
 
-    if ( is_array( $tags ) && count( $tags ) > 0 ) {
+    if (is_array($tags) && count($tags) > 0) {
 
-        if ( $invert == false ) {
-            return preg_replace( '@<(?!(?:'. implode( '|', $tags ) .')\b)(\w+)\b.*?>.*?</\1>@si', '', $text );
+        if ($invert == false) {
+            return preg_replace('@<(?!(?:' . implode('|', $tags) . ')\b)(\w+)\b.*?>.*?</\1>@si', '', $text);
         } else {
-            return preg_replace( '@<('. implode( '|', $tags ) .')\b.*?>.*?</\1>@si', '', $text );
+            return preg_replace('@<(' . implode('|', $tags) . ')\b.*?>.*?</\1>@si', '', $text);
         }
-
-    } elseif ( $invert == false ) {
-        return preg_replace( '@<(\w+)\b.*?>.*?</\1>@si', '', $text );
+    } elseif ($invert == false) {
+        return preg_replace('@<(\w+)\b.*?>.*?</\1>@si', '', $text);
     }
 
     return $text;
@@ -3232,17 +3288,18 @@ function ddtt_strip_tags_content( $text, $tags = '', $invert = false ) {
  * @param boolean $delete_all
  * @return void
  */
-function ddtt_delete_autodrafts( $delete_all = false ) {
+function ddtt_delete_autodrafts($delete_all = false)
+{
     // Just older than 7 days
-    if ( !$delete_all ) {
+    if (!$delete_all) {
         wp_delete_auto_drafts();
-        
-    // Delete all
+
+        // Delete all
     } else {
         global $wpdb;
-        $old_posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'auto-draft'" );
-        foreach ( (array) $old_posts as $delete ) {
-            wp_delete_post( $delete, true );
+        $old_posts = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_status = 'auto-draft'");
+        foreach ((array) $old_posts as $delete) {
+            wp_delete_post($delete, true);
         }
     }
 
@@ -3257,14 +3314,15 @@ function ddtt_delete_autodrafts( $delete_all = false ) {
  * @param string $dir
  * @return array
  */
-function ddtt_get_all_php_filepaths( $dir ) {
+function ddtt_get_all_php_filepaths($dir)
+{
     $paths = [];
     $fileinfos = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator( $dir )
+        new RecursiveDirectoryIterator($dir)
     );
-    foreach( $fileinfos as $pathname => $fileinfo ) {
-        if ( !$fileinfo->isFile() ) continue;
-        if ( !str_ends_with( $pathname, '.php' ) ) continue;
+    foreach ($fileinfos as $pathname => $fileinfo) {
+        if (!$fileinfo->isFile()) continue;
+        if (!str_ends_with($pathname, '.php')) continue;
         $paths[] = $pathname;
     }
     return $paths;
@@ -3277,19 +3335,20 @@ function ddtt_get_all_php_filepaths( $dir ) {
  * @param string $plugin_dir
  * @return array
  */
-function ddtt_scan_plugin_for_hooks( $plugin_dir ) {
+function ddtt_scan_plugin_for_hooks($plugin_dir)
+{
     // Store the hooks here
     $hooks = [];
-  
+
     // Get the files in an array (your own function that works fine)
-    $files = ddtt_get_all_php_filepaths( $plugin_dir );
-    if ( !empty( $files ) ) {
+    $files = ddtt_get_all_php_filepaths($plugin_dir);
+    if (!empty($files)) {
 
         // Loop through all PHP files in the plugin directory
-        foreach ( $files as $file ) {
+        foreach ($files as $file) {
 
             // Get the content of the file as a single string
-            $content = file_get_contents( $file );
+            $content = file_get_contents($file);
 
             // Patterns
             $patterns = [
@@ -3298,40 +3357,40 @@ function ddtt_scan_plugin_for_hooks( $plugin_dir ) {
             ];
 
             // Iter each pattern
-            foreach ( $patterns as $source => $pattern ) {
+            foreach ($patterns as $source => $pattern) {
 
                 // Search
-                preg_match_all( $pattern, $content, $matches, PREG_SET_ORDER );
+                preg_match_all($pattern, $content, $matches, PREG_SET_ORDER);
 
                 // Iter the matches
-                foreach ( $matches as $match ) {
+                foreach ($matches as $match) {
 
                     // Gravity Forms
-                    if ( $source == 'gforms' ) {
+                    if ($source == 'gforms') {
                         $hook_type = 'gf_apply_filters';
-                        $hook_name = $match[1].'_{'.$match[2].'}';
+                        $hook_name = $match[1] . '_{' . $match[2] . '}';
                         // dpr( $match );
 
-                    // Normal
+                        // Normal
                     } else {
                         $hook_type = $match[1];
                         $hook_name = $match[3];
                     }
-                    
+
                     // Find line number of match
-                    $lineNumber = substr_count( substr( $content, 0, strpos( $content, $match[0] ) ), "\n" ) + 1;
+                    $lineNumber = substr_count(substr($content, 0, strpos($content, $match[0])), "\n") + 1;
 
                     // Check if the hook is already in the list
                     $hookExists = false;
-                    foreach ( $hooks as $existingHook ) {
-                        if ( $existingHook['name'] === $hook_name && $existingHook['file'] === $file && $existingHook['line'] === $lineNumber ) {
+                    foreach ($hooks as $existingHook) {
+                        if ($existingHook['name'] === $hook_name && $existingHook['file'] === $file && $existingHook['line'] === $lineNumber) {
                             $hookExists = true;
                             break;
                         }
                     }
 
                     // Collect the data
-                    if ( !$hookExists ) {
+                    if (!$hookExists) {
                         $hooks[] = [
                             'type' => $hook_type,
                             'name' => $hook_name,
@@ -3343,7 +3402,7 @@ function ddtt_scan_plugin_for_hooks( $plugin_dir ) {
             }
         }
     }
-  
+
     // Return the hooks
     return $hooks;
 } // End ddtt_scan_plugin_for_hooks()
@@ -3355,15 +3414,16 @@ function ddtt_scan_plugin_for_hooks( $plugin_dir ) {
  * @param string $value
  * @return string
  */
-function ddtt_convert_php_eol_to_string( $value = PHP_EOL ) {
+function ddtt_convert_php_eol_to_string($value = PHP_EOL)
+{
     $eol = [
         '0d0a' => '\r\n',
         '0a'   => '\n',
         '0a0d' => '\n\r',
         '0d'   => '\r'
     ];
-    $hex = bin2hex( $value );
-    return isset( $eol[ $hex ] ) ? $eol[ $hex ] : $value;
+    $hex = bin2hex($value);
+    return isset($eol[$hex]) ? $eol[$hex] : $value;
 } // End ddtt_convert_php_eol_to_string()
 
 
@@ -3373,15 +3433,16 @@ function ddtt_convert_php_eol_to_string( $value = PHP_EOL ) {
  * @param string $file
  * @return string
  */
-function ddtt_get_eol_char( $eol ) {
+function ddtt_get_eol_char($eol)
+{
     $eol_types = [
         '\r\n' => "\r\n",
         '\n\r' => "\n\r",
         '\n'   => "\n",
         '\r'   => "\r"
     ];
-    if ( isset( $eol_types[ $eol ] ) ) {
-        return $eol_types[ $eol ];
+    if (isset($eol_types[$eol])) {
+        return $eol_types[$eol];
     }
     return PHP_EOL;
 } // End ddtt_get_php_eol()
@@ -3393,7 +3454,8 @@ function ddtt_get_eol_char( $eol ) {
  * @param string $file
  * @return array
  */
-function ddtt_get_file_eol( $file_contents, $incl_code = true ) {
+function ddtt_get_file_eol($file_contents, $incl_code = true)
+{
     $types = [
         '\r\n' => "/(?<!\n)\r\n(?!\r)/",
         '\n\r' => "/(?<!\r)\n\r(?!\n)/",
@@ -3401,9 +3463,9 @@ function ddtt_get_file_eol( $file_contents, $incl_code = true ) {
         '\r'   => "/\r(?!\n)/"
     ];
     $found = [];
-    foreach ( $types as $type => $regex ) {
-        if ( preg_match( $regex, $file_contents ) ) {
-            $found[] = ( $incl_code ) ? '<code class="hl">'.$type.'</code>' : $type;
+    foreach ($types as $type => $regex) {
+        if (preg_match($regex, $file_contents)) {
+            $found[] = ($incl_code) ? '<code class="hl">' . $type . '</code>' : $type;
         }
     }
     return $found;
@@ -3415,53 +3477,54 @@ function ddtt_get_file_eol( $file_contents, $incl_code = true ) {
  *
  * @return array
  */
-function ddtt_get_plugins_data() {
+function ddtt_get_plugins_data()
+{
     // Store the final plugins data here, and add current timestamp
-    $plugins_data = [ 'last_cached' => time() ];
+    $plugins_data = ['last_cached' => time()];
 
     // Store the plugins for all sites here
     $plugins = [];
 
     // If on the network, let's get all the sites plugins, not just the local
-    if ( is_multisite() ) {
+    if (is_multisite()) {
 
         // Get the network active plugins
-        $network_active = get_site_option( 'active_sitewide_plugins' );
+        $network_active = get_site_option('active_sitewide_plugins');
 
         // Add them to the active array
-        foreach ( $network_active as $na_key => $na ) {
-            $plugins[ $na_key ][] = 'network';
+        foreach ($network_active as $na_key => $na) {
+            $plugins[$na_key][] = 'network';
         }
 
         // Get all the sites
         global $wpdb;
-        $subsites = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE archived = '0' AND deleted = '0' AND spam = '0' ORDER BY blog_id" );
+        $subsites = $wpdb->get_results("SELECT blog_id, domain, path FROM $wpdb->blogs WHERE archived = '0' AND deleted = '0' AND spam = '0' ORDER BY blog_id");
 
         // Iter the sites
-        if ( $subsites && !empty( $subsites ) ) {
-            foreach( $subsites as $subsite ) {
+        if ($subsites && !empty($subsites)) {
+            foreach ($subsites as $subsite) {
 
                 // Get the plugins
-                $site_active = get_blog_option( $subsite->blog_id, 'active_plugins' );
+                $site_active = get_blog_option($subsite->blog_id, 'active_plugins');
 
                 // Iter each plugin
-                foreach ( $site_active as $p_path ) {
-                    
+                foreach ($site_active as $p_path) {
+
                     // Add the site
-                    $plugins[ $p_path ][] = $subsite->blog_id;
+                    $plugins[$p_path][] = $subsite->blog_id;
                 }
             }
         }
 
-    // If not on multisite network
+        // If not on multisite network
     } else {
 
         // Get the active plugins
-        $site_active = get_option( 'active_plugins' );
+        $site_active = get_option('active_plugins');
 
         // Iter each plugin
-        foreach ( $site_active as $site ) {
-            $plugins[ $site ] = 'local';
+        foreach ($site_active as $site) {
+            $plugins[$site] = 'local';
         }
     }
 
@@ -3469,11 +3532,11 @@ function ddtt_get_plugins_data() {
     $all = get_plugins();
 
     // Iter each
-    foreach ( $all as $k => $a ) {
+    foreach ($all as $k => $a) {
 
         // Add the non-active plugins
-        if ( !array_key_exists( $k, $plugins ) ) {
-            $plugins[ $k ] = false;
+        if (!array_key_exists($k, $plugins)) {
+            $plugins[$k] = false;
         }
     }
 
@@ -3481,46 +3544,46 @@ function ddtt_get_plugins_data() {
     $sorted_plugins = [];
 
     // Get the full info for the plugins
-    foreach ( $plugins as $key => $p ) {      
-        
+    foreach ($plugins as $key => $p) {
+
         // Make sure the plugin exists
-        if ( isset( $all[ $key ] ) ) {
+        if (isset($all[$key])) {
 
             // Get the plugin name
-            $name = $all[ $key ][ 'Name' ];
+            $name = $all[$key]['Name'];
 
             // Add to sorted array
-            $sorted_plugins[ $name ] = [
+            $sorted_plugins[$name] = [
                 'path' => $key,
-                'p'    => !$p ? [] : ( !is_array( $p ) ? [ $p ] : $p )
+                'p'    => !$p ? [] : (!is_array($p) ? [$p] : $p)
             ];
         }
     }
 
     // Get the full info for the plugins
-    foreach ( $sorted_plugins as $name => $args ) {
+    foreach ($sorted_plugins as $name => $args) {
 
         // Set the key/path
-        $key = $args[ 'path' ];
-        $p = $args[ 'p' ];
-        
+        $key = $args['path'];
+        $p = $args['p'];
+
         // Make sure the plugin exists
-        if ( isset( $all[ $key ] ) ) {
+        if (isset($all[$key])) {
 
             // Check if the plugin has a Plugin URL
-            if ( $all[ $key ][ 'PluginURI' ] && $all[ $key ][ 'PluginURI' ] != '' ) {
-                $url = $all[ $key ][ 'PluginURI' ];
-            } elseif ( $all[ $key ][ 'AuthorURI' ] && $all[ $key ][ 'AuthorURI' ] != '' ) {
-                $url = $all[ $key ][ 'AuthorURI' ];
+            if ($all[$key]['PluginURI'] && $all[$key]['PluginURI'] != '') {
+                $url = $all[$key]['PluginURI'];
+            } elseif ($all[$key]['AuthorURI'] && $all[$key]['AuthorURI'] != '') {
+                $url = $all[$key]['AuthorURI'];
             } else {
                 $url = false;
             }
 
             // Add author to name
-            if ( $all[ $key ][ 'Author' ] && $all[ $key ][ 'Author' ] != '' ) {
-                $author_name = $all[ $key ][ 'Author' ];
-            } elseif ( $all[ $key ][ 'AuthorName' ] && $all[ $key ][ 'AuthorName' ] != '' ) {
-                $author_name = $all[ $key ][ 'AuthorName' ];
+            if ($all[$key]['Author'] && $all[$key]['Author'] != '') {
+                $author_name = $all[$key]['Author'];
+            } elseif ($all[$key]['AuthorName'] && $all[$key]['AuthorName'] != '') {
+                $author_name = $all[$key]['AuthorName'];
             }
 
             // Get the last updated date and tested up to version
@@ -3528,8 +3591,8 @@ function ddtt_get_plugins_data() {
             $old_class = '';
             $compatibility = '';
             $incompatible_class = '';
-            $args = [ 
-                'slug'   => $all[ $key ][ 'TextDomain' ], 
+            $args = [
+                'slug'   => $all[$key]['TextDomain'],
                 'fields' => [
                     'last_updated' => true,
                     'tested'       => true
@@ -3540,24 +3603,24 @@ function ddtt_get_plugins_data() {
                 [
                     'body' => [
                         'action'  => 'plugin_information',
-                        'request' => serialize( (object)$args )
+                        'request' => serialize((object)$args)
                     ]
                 ]
             );
-            if ( !is_wp_error( $response ) ) {
-                $returned_object = unserialize( wp_remote_retrieve_body( $response ) );
-                if ( $returned_object ) {
-                    
+            if (!is_wp_error($response)) {
+                $returned_object = unserialize(wp_remote_retrieve_body($response));
+                if ($returned_object) {
+
                     // Last Updated
-                    if ( $name != 'Hello Dolly' ) {
-                        if ( isset( $returned_object->last_updated ) && $last_updated = $returned_object->last_updated ) {
-                            $last_updated = ddtt_time_elapsed_string( $last_updated );
-                        
+                    if ($name != 'Hello Dolly') {
+                        if (isset($returned_object->last_updated) && $last_updated = $returned_object->last_updated) {
+                            $last_updated = ddtt_time_elapsed_string($last_updated);
+
                             // Add old class if more than 11 months old
-                            $earlier = new DateTime( $last_updated );
-                            $today = new DateTime( gmdate( 'Y-m-d' ) );
-                            $diff = $today->diff( $earlier )->format("%a");
-                            if ( $diff >= 335 ) {
+                            $earlier = new DateTime($last_updated);
+                            $today = new DateTime(gmdate('Y-m-d'));
+                            $diff = $today->diff($earlier)->format("%a");
+                            if ($diff >= 335) {
                                 $old_class = ' warning';
                             }
 
@@ -3566,7 +3629,7 @@ function ddtt_get_plugins_data() {
 
                             // Add incompatibility class
                             global $wp_version;
-                            if ( $compatibility < $wp_version ) {
+                            if ($compatibility < $wp_version) {
                                 $incompatible_class = ' warning';
                             }
                         }
@@ -3578,50 +3641,49 @@ function ddtt_get_plugins_data() {
             }
 
             // Get the folder size
-            if ( !function_exists( 'get_dirsize' ) ) {
-                require_once ABSPATH.WPINC.'/ms-functions.php';
+            if (!function_exists('get_dirsize')) {
+                require_once ABSPATH . WPINC . '/ms-functions.php';
             }
 
             // Strip the path to get the folder
-            $p_parts = explode( '/', $key );
+            $p_parts = explode('/', $key);
             $folder = $p_parts[0];
-            
+
             // Get the path of a directory.
-            $directory = get_home_path().DDTT_PLUGINS_URL.'/'.$folder.'/';
-            if ( !is_dir( $directory ) ) {
+            $directory = get_home_path() . DDTT_PLUGINS_URL . '/' . $folder . '/';
+            if (!is_dir($directory)) {
                 $bytes = 'Unknown';
                 $last_modified = 'Directory does not exist or is not accessible';
-
             } else {
                 // Get the size of directory in bytes.
-                $bytes = get_dirsize( $directory );
+                $bytes = get_dirsize($directory);
 
                 // Get the last modified date and convert to developer's timezone
-                if ( $name != 'Hello Dolly' ) {
-                    $utc_time = gmdate( 'Y-m-d H:i:s', filemtime( $directory ) );
-                    $dt = new DateTime( $utc_time, new DateTimeZone( 'UTC' ) );
-                    $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
-                    $last_modified = $dt->format( 'F j, Y g:i A T' );
+                if ($name != 'Hello Dolly') {
+                    $utc_time = gmdate('Y-m-d H:i:s', filemtime($directory));
+                    $dt = new DateTime($utc_time, new DateTimeZone('UTC'));
+                    $dt->setTimezone(new DateTimeZone(get_option('ddtt_dev_timezone', wp_timezone_string())));
+                    $last_modified = $dt->format('F j, Y g:i A T');
                 } else {
                     $last_modified = '';
                 }
             }
 
             // If plugin is active or on multisite
-            if ( !empty( $p ) ) {
-                    
+            if (!empty($p)) {
+
                 // If on multisite
-                if ( is_multisite() ) {
+                if (is_multisite()) {
 
                     // If network activated
-                    if ( in_array( 'network', $p ) ) {
+                    if (in_array('network', $p)) {
                         $is_active = 'Network';
 
-                    // If on this site
-                    } elseif ( ( !is_network_admin() && in_array( get_current_blog_id(), $p ) ) || is_network_admin() ) {
+                        // If on this site
+                    } elseif ((!is_network_admin() && in_array(get_current_blog_id(), $p)) || is_network_admin()) {
                         $is_active = 'Local Only';
 
-                    // If not on this site
+                        // If not on this site
                     } else {
                         $is_active = 'No';
                     }
@@ -3629,23 +3691,23 @@ function ddtt_get_plugins_data() {
                     $is_active = 'Yes';
                 }
 
-            // If inactive and not on network
+                // If inactive and not on network
             } else {
                 $is_active = 'No';
             }
 
             // If on multisite network
-            if ( is_network_admin() ) {
-                if ( !empty( $p ) ) {
+            if (is_network_admin()) {
+                if (!empty($p)) {
                     $site_names = [];
-                    if ( in_array( 'network', $p ) ) {
+                    if (in_array('network', $p)) {
                         $site_names[] = 'Network Active';
                     } else {
-                        foreach ( $p as $site_id ) {
-                            $site_names[] = 'ID:'.$site_id.' - '.get_blog_details( $site_id )->blogname;
+                        foreach ($p as $site_id) {
+                            $site_names[] = 'ID:' . $site_id . ' - ' . get_blog_details($site_id)->blogname;
                         }
                     }
-                    $site_names = implode( '<br>', $site_names );
+                    $site_names = implode('<br>', $site_names);
                 } else {
                     $site_names = 'None';
                 }
@@ -3654,14 +3716,14 @@ function ddtt_get_plugins_data() {
             }
 
             // Save data for transient
-            $plugins_data[ $key ] = [
+            $plugins_data[$key] = [
                 'is_active'          => $is_active,
                 'name'               => $name,
                 'author'             => $author_name,
                 'url'                => $url,
-                'description'        => $all[ $key ][ 'Description' ],
+                'description'        => $all[$key]['Description'],
                 'site_names'         => $site_names,
-                'version'            => $all[ $key ][ 'Version' ],
+                'version'            => $all[$key]['Version'],
                 'old_class'          => $old_class,
                 'last_updated'       => $last_updated,
                 'incompatible_class' => $incompatible_class,
@@ -3669,11 +3731,11 @@ function ddtt_get_plugins_data() {
                 'folder_size'        => $bytes,
                 'last_modified'      => $last_modified
             ];
-        }           
+        }
     }
 
     // Set transient for 1 day
-    set_transient( DDTT_GO_PF.'plugins_data', $plugins_data, DAY_IN_SECONDS );
+    set_transient(DDTT_GO_PF . 'plugins_data', $plugins_data, DAY_IN_SECONDS);
 
     // Return it
     return $plugins_data;
@@ -3687,46 +3749,47 @@ function ddtt_get_plugins_data() {
  * @param integer $port
  * @return array|false
  */
-function ddtt_check_ssl_cert_expiration( $domain, $port = 443 ) {
+function ddtt_check_ssl_cert_expiration($domain, $port = 443)
+{
     // Create a stream context with SSL settings
-    $context = stream_context_create( [
+    $context = stream_context_create([
         "ssl" => [
             "capture_peer_cert" => true
         ]
-    ] );
+    ]);
 
     // Open a socket connection to the domain
     $socket = @stream_socket_client(
-        "ssl://$domain:$port", 
-        $errno, 
-        $errstr, 
-        30, 
-        STREAM_CLIENT_CONNECT, 
+        "ssl://$domain:$port",
+        $errno,
+        $errstr,
+        30,
+        STREAM_CLIENT_CONNECT,
         $context
     );
 
-    if ( !$socket ) {
+    if (!$socket) {
         return "Unable to connect to $domain: $errstr ($errno)";
     }
 
     // Retrieve the certificate from the context
-    $params = stream_context_get_params( $socket );
-    $cert = $params[ 'options' ][ 'ssl' ][ 'peer_certificate' ];
+    $params = stream_context_get_params($socket);
+    $cert = $params['options']['ssl']['peer_certificate'];
 
     // Get certificate details
-    $cert_info = openssl_x509_parse( $cert );
+    $cert_info = openssl_x509_parse($cert);
 
     // Close the socket connection
-    fclose( $socket );
+    fclose($socket);
 
-    if ( !$cert_info ) {
+    if (!$cert_info) {
         return "Unable to parse SSL certificate";
     }
 
     // Extract and format expiration date
-    $validTo = $cert_info[ 'validTo_time_t' ];
-    if ( $validTo ) {
-        $expiration_date = gmdate( 'Y-m-d H:i:s', $validTo );
+    $validTo = $cert_info['validTo_time_t'];
+    if ($validTo) {
+        $expiration_date = gmdate('Y-m-d H:i:s', $validTo);
         $is_active = $validTo > time();
 
         return [
@@ -3746,10 +3809,11 @@ function ddtt_check_ssl_cert_expiration( $domain, $port = 443 ) {
  * @param integer|null $timeout
  * @return array
  */
-function ddtt_check_url_status_code( $url ) {
+function ddtt_check_url_status_code($url)
+{
     // Add the home url
-    if ( str_starts_with( $url, '/' ) ) {
-        $link = home_url().$url;
+    if (str_starts_with($url, '/')) {
+        $link = home_url() . $url;
     } else {
         $link = $url;
     }
@@ -3768,16 +3832,16 @@ function ddtt_check_url_status_code( $url ) {
     $text = '';
 
     // Check the link
-    $response = wp_safe_remote_get( $link, $http_request_args );
-    if ( !is_wp_error( $response ) ) {
-        $code = wp_remote_retrieve_response_code( $response );
-        if ( $code !== 200 ) {
-            $body = wp_remote_retrieve_body( $response );
-            if ( !is_wp_error( $body ) ) {
-                $decoded = json_decode( $body, true );
-                if ( isset( $decoded[ 'data' ][ 'status' ] ) && $decoded[ 'message' ] ) {
-                    $code = $decoded[ 'data' ][ 'status' ];
-                    $text = '. '.$decoded[ 'message' ];
+    $response = wp_safe_remote_get($link, $http_request_args);
+    if (!is_wp_error($response)) {
+        $code = wp_remote_retrieve_response_code($response);
+        if ($code !== 200) {
+            $body = wp_remote_retrieve_body($response);
+            if (!is_wp_error($body)) {
+                $decoded = json_decode($body, true);
+                if (isset($decoded['data']['status']) && $decoded['message']) {
+                    $code = $decoded['data']['status'];
+                    $text = '. ' . $decoded['message'];
                 }
             }
             $error = $text;
@@ -3854,7 +3918,7 @@ function ddtt_check_url_status_code( $url ) {
         508 => 'Loop Detected', // WebDAV; RFC 5842
         510 => 'Not Extended', // RFC 2774
         511 => 'Network Authentication Required', // RFC 6585
-        
+
         // Unofficial codes
         103 => 'Checkpoint',
         218 => 'This is fine', // Apache Web Server
@@ -3894,7 +3958,7 @@ function ddtt_check_url_status_code( $url ) {
     // Filter status
     $status = [
         'code' => $code,
-        'text' => isset( $codes[ $code ] ) ? $codes[ $code ].$text : $error.$text,
+        'text' => isset($codes[$code]) ? $codes[$code] . $text : $error . $text,
     ];
 
     // Return the array
