@@ -28,7 +28,7 @@ $email = $user->user_email;
             <td><strong><?php echo wp_kses_post( ddtt_get_function_example( "ddtt_is_dev" ) ); ?></strong></td>
             <td><strong><?php echo wp_kses_post( ddtt_highlight_string( 'if ( ddtt_is_dev() ) { ... }' ) ); ?></strong>
             <p class="field-desc break"><span class="highlight-variable">$email</span>: returns the developer emails
-            <br><span class="highlight-variable">$array:</span>: only works if <code>$email</code> is <code>true</code>, returns the emails as an <code>Array</code> or <code>String</code>. Default is <code>String</code>.</p></td>
+            <br><span class="highlight-variable">$array</span>: only works if <code>$email</code> is <code>true</code>, returns the emails as an <code>Array</code> or <code>String</code>. Default is <code>String</code>.</p></td>
         </tr>
         <tr>
             <td>Wrap <code class="hl">print_r</code> in &#60;pre&#62; tags &#60;/pre&#62;,<br>Displays only to devs (or specified user),<br>Display TRUE OR FALSE instead of 1 and <em>nothing</em>,<br>Easily add left margin</td>
@@ -57,7 +57,7 @@ $email = $user->user_email;
             <td>Add text, arrays, or objects to <code class="hl">debug.log</code></td>
             <td><strong><?php echo wp_kses_post( ddtt_get_function_example( "ddtt_write_log" ) ); ?></strong></td>
             <td><strong><?php echo wp_kses_post( ddtt_highlight_string( 'ddtt_write_log( "Test 1" );' ) ); ?></strong>
-            <p class="field-desc break"><span class="highlight-variable">$prefix</span>: if <code>true</code>, adds "DDTT_LOG: " to beginning of line. Yan use your own <code>String</code> as a prefix or <code>false</code> to remove.
+            <p class="field-desc break"><span class="highlight-variable">$prefix</span>: if <code>true</code>, adds "DDTT_LOG: " to beginning of line. You can use your own <code>String</code> as a prefix or <code>false</code> to remove.
             <br><span class="highlight-variable">$backtrace</span>: include file and line number the function is called on.
             <br><span class="highlight-variable">$full_stacktrace</span>: include the full stack trace of where the function is called.</p></td>
         </tr>

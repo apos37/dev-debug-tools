@@ -363,10 +363,11 @@ function ddtt_get( $qs_param, $comparison = '!=', $equal_to = '', $nonce_action 
 /**
  * Define user email and check for it
  * 
- * @param string $email
- * @return bool
+ * @param bool $email
+ * @param bool $array
+ * @return mixed
  */
-function ddtt_is_dev( $email = false, $array = false ){
+function ddtt_is_dev( $email = false, $array = false ) {
     // Option
     $option = DDTT_GO_PF.'dev_email';
 
@@ -412,8 +413,9 @@ function ddtt_is_dev( $email = false, $array = false ){
  * Only display on front end if current user is dev
  *
  * @param array|string|bool $array
- * @param int|array $user_id
- * @param bool|int $left_margin
+ * @param int|array|null $user_id
+ * @param bool|int|string|null $left_margin
+ * @param bool $write_bool
  * @return void
  */
 
@@ -436,9 +438,11 @@ function ddtt_print_r( $var, $user_id = null, $left_margin = null, $write_bool =
 
     // Add a margin
     if ( is_numeric( $left_margin ) ) {
+        $margin = $left_margin . 'px';
+    } elseif ( is_string( $left_margin ) ) {
         $margin = $left_margin;
-    } elseif ( $left_margin == true ) {
-        $margin = 200;
+    } elseif ( $left_margin === true ) {
+        $margin = '200px';
     } else {
         $margin = 0;
     }
@@ -453,7 +457,7 @@ function ddtt_print_r( $var, $user_id = null, $left_margin = null, $write_bool =
     }
 
     // Return the array
-    echo '<pre style="margin-left: '.esc_attr( $margin ).'px; overflow-x: unset;">'; wp_kses_post( print_r( $var ) ); echo '</pre>';
+    echo '<pre style="margin-left: '.esc_attr( $margin ).'; overflow-x: unset;">'; wp_kses_post( print_r( $var ) ); echo '</pre>';
 } // End ddtt_print_r()
 
 // Allow shortcut
@@ -487,7 +491,7 @@ function ddtt_var_dump_to_string( $var ) {
 
 /**
  * Check if we are on a specific website
- * May use partial words, such as "eri-wi" for eri-wi.org
+ * May use partial words, such as "example" for example.com
  *
  * @param string $site_to_check
  * @return bool

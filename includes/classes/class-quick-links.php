@@ -12,7 +12,9 @@ if ( !defined( 'ABSPATH' ) ) {
 /**
  * Initiate the class
  */
-new DDTT_QUICK_LINKS;
+add_action( 'init', function() {
+    (new DDTT_QUICK_LINKS())->init();
+}, 20 );
 
 
 /**
@@ -37,20 +39,20 @@ class DDTT_QUICK_LINKS {
 
 
     /**
-	 * Constructor
+	 * Load on init
 	 */
-	public function __construct() {
+	public function init() {
 
         // Add User ID column with a link to debug the user's meta
-        if ( get_option( DDTT_GO_PF.'ql_user_id' ) == '1' ) {
+        if ( $this->is_enabled( 'user' ) ) {
             add_filter( 'manage_users_columns', [ $this, 'user_column' ] );
             add_action( 'admin_head-users.php',  [ $this, 'user_column_style' ] );
             add_action( 'manage_users_custom_column', [ $this, 'user_column_content' ], 999, 3 );
         }
 
         // Add a link to debug the post or page's meta next to the Post ID
-        if ( get_option( DDTT_GO_PF.'ql_post_id' ) == '1' ) {
-            add_action( 'init', [ $this, 'admin_columns' ] );
+        if ( $this->is_enabled( 'post' ) ) {
+            $this->admin_columns();
         }
 
         // Add a link to comments
@@ -73,7 +75,23 @@ class DDTT_QUICK_LINKS {
             // Add feed actions after gform is loaded
             add_action( 'gform_loaded', [ $this, 'gf_load_feed_quick_link'], 5 );
         }
-	} // End __construct()
+	} // End init()
+
+
+    /**
+     * Check if the menu item is enabled to use this option
+     *
+     * @param string $meta_type
+     * @return boolean
+     */
+    public function is_enabled( $meta_type ) {
+        $menu_items_to_show = ddtt_plugin_menu_items_to_include();
+        if ( get_option( DDTT_GO_PF.'ql_' . $meta_type . '_id' ) == '1' && in_array( $meta_type . 'meta', $menu_items_to_show ) ) {
+            return true;
+        } else {
+            return false;
+        }
+    } // End is_enabled()
 
 
     /**
@@ -136,11 +154,12 @@ class DDTT_QUICK_LINKS {
         // Available post types
         $post_types = get_post_types( 
             [ 
-               'public'   => true, 
+               'public' => true, 
             //    '_builtin' => false 
             ], 
             'names'
         );
+
         $post_types = apply_filters( 'ddtt_quick_link_post_types', $post_types );
 
         // Add to all post types

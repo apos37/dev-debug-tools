@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.0.3
+Stable tag: 2.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -74,6 +74,9 @@ You can get there directly by going to `https://yourdomain.com/wp-admin/admin.ph
 = Where can I get further support? =
 Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 
+== Demo ==
+https://youtu.be/l45T__AIHME
+
 == Screenshots ==
 1. Settings page
 2. Activated plugins with warnings
@@ -87,6 +90,21 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 10. Check API statuses
 
 == Changelog ==
+= 2.0.4 =
+* Update: Added option on settings to choose which menu items you want to include to minimize clutter
+* Fix: Recommended plugin missing thumbnail
+* Tweak: Added additional constants to redact on WP-CONFIG viewer
+* Tweak: Updated ddtt_print_r() to accept string or int left_margin
+* Tweak: Added additional admin bar item labels to condensed version
+
+= 2.0.3.1 =
+* Update: Added a demo video link to the readme
+* Fix: Link back to plugin from admin bar showing blank page instead of settings tab
+* Fix: Settings > Centering tool column height changed to row height
+* Fix: Centering tool jquery not found in some instances
+* Fix: IP addresses found in custom user meta section not being redacted
+* Fix: Hide Meta Keys with Prefixes on User Meta and Post Meta tabs not allowing to leave blank after using it
+
 = 2.0.3 =
 * Fix: Error regarding sprintf() requiring X number of parameters, not enough given (props @venutius for pointing it out)
 * Tweak: Updated Plugin Support help link on Easy Reader to just go to general support page instead of trying to search for the error which rarely comes up with anything

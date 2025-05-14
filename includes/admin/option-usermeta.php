@@ -96,13 +96,17 @@ if ( $s ) {
 }
 
 // Are we hiding meta keys with a prefix
-$hide_pf = ddtt_get( 'hide_pf' );
-if ( $hide_pf ) {
-    update_option( DDTT_GO_PF.'user_meta_hide_pf', $hide_pf );
+$hide_pf = '';
+if ( isset( $_GET[ 'hide_pf' ] ) ) {
+    $hide_pf = sanitize_text_field( $_GET[ 'hide_pf' ] );
     ddtt_remove_qs_without_refresh( 'hide_pf' );
 } else {
-    $hide_pf = get_option( DDTT_GO_PF.'user_meta_hide_pf' );
+    $hide_pf = get_option( DDTT_GO_PF.'user_meta_hide_pf', '' );
 }
+update_option( DDTT_GO_PF.'user_meta_hide_pf', $hide_pf );
+
+// Are we redacting some info
+$is_redacting = !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1;
 ?>
 
 <?php
@@ -707,13 +711,34 @@ if ( $user ) {
                 }
 
                 // Are we redacting?
-                if ( !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1 ) {
-
-                    // Check if the value is an ip address
-                    if ( preg_match( '/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/', $value ) ) {
-                        $value = str_replace( $value, '<div class="redact">'.$value.'</div>', $value );
+                if ( $is_redacting ) {
+                    $display_value = $value; // Safe copy for redaction
+                    $redacted_serialized = preg_replace_callback(
+                        '/\b(?:\d{1,3}\.){3}\d{1,3}\b/',
+                        function( $matches ) {
+                            return '<div class="redact">' . esc_html( $matches[0] ) . '</div>';
+                        },
+                        $display_value
+                    );
+                
+                    $unserialized = @unserialize( $value );
+                
+                    if ( is_array( $unserialized ) || is_object( $unserialized ) ) {
+                        // Redact IPs in unserialized array
+                        $redacted_array = $unserialized;
+                        array_walk_recursive( $redacted_array, function( &$item ) {
+                            if ( filter_var( $item, FILTER_VALIDATE_IP ) ) {
+                                $item = '<div class="redact">' . esc_html( $item ) . '</div>';
+                            }
+                        });
+                
+                        // Show both redacted string and redacted array
+                        $value = $redacted_serialized . '<br><code><pre>' . print_r( $redacted_array, true ) . '</pre></code>';
+                    } else {
+                        // Plain string, just show redacted
+                        $value = $redacted_serialized;
                     }
-                }
+                }                                    
 
                 // Check if serialized array
                 if ( ( ddtt_is_serialized_array( $value ) || ddtt_is_serialized_object( $value ) ) && !empty( unserialize( $value ) ) ) {

@@ -41,6 +41,7 @@ class DDTT_GLOBAL_OPTIONS {
             'dev_email',
             'dev_timezone',
             'menu_type',
+            'menu_items',
             'view_sensitive_info',
             'php_eol',
             'test_number',

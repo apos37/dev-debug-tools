@@ -135,11 +135,12 @@ echo '<a class="button button-primary" href="https://wordpress.org/support/plugi
 
 <?php if ( ddtt_get_domain() != 'playground.wordpress.net' ) { ?>
     <br><br>
-    <h2><?php echo esc_html__( 'Try My Other Plugins', 'admin-help-docs' ); ?></h2>
+    <h2><?php echo esc_html__( 'Try Our Other Plugins', 'admin-help-docs' ); ?></h2>
     <div class="wp-list-table widefat plugin-install">
         <div id="the-list">
-            <?php ddtt_plugin_card( 'admin-help-docs' ); ?>
+            <?php ddtt_plugin_card( 'simple-maintenance-redirect' ); ?>
             <?php ddtt_plugin_card( 'clear-cache-everywhere' ); ?>
+            <?php ddtt_plugin_card( 'admin-help-docs' ); ?>
             <?php ddtt_plugin_card( 'broken-link-notifier' ); ?>
             <?php ddtt_plugin_card( 'eri-file-library' ); ?>
             <?php if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) { ?>

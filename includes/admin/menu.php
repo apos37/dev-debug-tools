@@ -88,6 +88,7 @@ class DDTT_MENU {
 
             // Get the menu items
             $menu_items = ddtt_plugin_menu_items();
+            $menu_items_to_show = ddtt_plugin_menu_items_to_include();
 
             // Skip if multisite
             $multisite_skip = [
@@ -115,6 +116,11 @@ class DDTT_MENU {
 
                 // Skip subpages if not dev
                 if ( isset( $menu_item[2] ) && $menu_item[2] == true && !ddtt_is_dev() ) {
+                    continue;
+                }
+
+                // Skip if we are hiding it
+                if ( !empty( $menu_items_to_show ) && !in_array( $key, $menu_items_to_show ) ) {
                     continue;
                 }
 
@@ -297,3 +303,21 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
         return $items;
     }
 } // End menu_items()
+
+
+/**
+ * Plugin menu items / tabs to include
+ *
+ * @return array
+ */
+function ddtt_plugin_menu_items_to_include() {
+    $menu_items_to_show = get_option( DDTT_GO_PF.'menu_items' );
+    if ( !empty( $menu_items_to_show ) ) {
+        $menu_items = [ 'settings' ];
+        $menu_items = array_merge( $menu_items, array_keys( $menu_items_to_show ) );
+        $menu_items[] = 'about';
+    } else {
+        $menu_items = array_keys( ddtt_plugin_menu_items() );
+    }
+    return $menu_items;
+} // End ddtt_plugin_menu_items_to_include()

@@ -5,13 +5,14 @@
 
 
 // Get the active tab
-$tab = ddtt_get( 'tab' ) ?? 'debug';
+$tab = ddtt_get( 'tab' ) ?? 'settings';
 
 // Include the admin page CSS
 include DDTT_PLUGIN_ADMIN_PATH.'css/style.php';
 
 // Get the tabs
 $menu_items = ddtt_plugin_menu_items();
+$menu_items_to_show = ddtt_plugin_menu_items_to_include();
 
 // Header separator
 $sep = '|';
@@ -280,6 +281,10 @@ if ( $tab !== 'changelog' ) {
                         if ( isset( $menu_item[3] ) && $menu_item[3] == true ) {
                             continue;
                         }
+                        if ( !empty( $menu_items_to_show ) && !in_array( $key, $menu_items_to_show ) ) {
+                            continue;
+                        }
+                        
                         $slug = $key;
                         $name = $menu_item[0];
                         if ( $slug == 'changelog' ) {
@@ -308,13 +313,18 @@ if ( $tab !== 'changelog' ) {
     <div class="tab-content">
         <?php
         foreach ( $menu_items as $key => $menu_item ) {
+            if ( !in_array( $key, $menu_items_to_show ) ) {
+                continue;
+            }
+
             if ( $tab === $key ) { 
                 include 'option-'.$key.'.php';
             }
         }
 
         // What to do if there is no tab?
-        if ( !ddtt_get( 'tab' ) || !array_key_exists( ddtt_get( 'tab' ), $menu_items ) ) {
+        $tab = ddtt_get( 'tab' );
+        if ( !$tab || !in_array( $tab, $menu_items_to_show ) ) {
             wp_safe_redirect( ddtt_plugin_options_path( 'settings' ) );
         }
         ?>

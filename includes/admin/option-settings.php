@@ -164,6 +164,39 @@
                 'default' => 'Tabs'
             ]; ?>
             <?php echo wp_kses( ddtt_options_tr( 'menu_type', 'Menu Type', 'select', '', $menu_types ), $allowed_html ); ?>
+
+            <?php
+            // Get the tabs
+            $menu_items = ddtt_plugin_menu_items();
+
+            // Store the tab options here
+            $tab_options = [];
+
+            // Iter the roles
+            foreach ( $menu_items as $key => $menu_item ) {
+                if (
+                    ( is_network_admin() && in_array( $key, $multisite_skip ) ) ||
+                    ( !ddtt_is_dev() && ( $menu_item[2] ?? false ) ) ||
+                    ( $menu_item[3] ?? false ) ||
+                    in_array( $key, [ 'settings', 'changelog', 'about' ], true )
+                ) {
+                    continue;
+                }
+
+                // Add the option's label and value
+                $tab_options[] = [
+                    'label'   => $menu_item[0],
+                    'value'   => $key,
+                    'checked' => true
+                ];
+            }
+
+            // Set the args
+            $menu_tabs_args = [
+                'options' => $tab_options,
+                'class'   => DDTT_GO_PF.'tabs_checkbox',
+            ]; ?>
+            <?php echo wp_kses( ddtt_options_tr( 'menu_items', 'Menu Items to Include', 'checkboxes', '', $menu_tabs_args ), $allowed_html ); ?>
             
         </table>
 
@@ -187,7 +220,7 @@
 
                 <?php echo wp_kses( ddtt_options_tr( 'centering_tool_width', 'Centering Tool Column Width', 'text', 'Centering Tool is found on admin bar in front-end.', [ 'width' => '10rem', 'default' => '100px' ] ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'centering_tool_height', 'Centering Tool Column Height', 'text', 'Centering Tool is found on admin bar in front-end.', [ 'width' => '10rem', 'default' => '50px' ] ), $allowed_html ); ?>
+                <?php echo wp_kses( ddtt_options_tr( 'centering_tool_height', 'Centering Tool Row Height', 'text', 'Centering Tool is found on admin bar in front-end.', [ 'width' => '10rem', 'default' => '50px' ] ), $allowed_html ); ?>
 
                 <?php echo wp_kses( ddtt_options_tr( 'stop_heartbeat', 'Stop Heartbeat', 'checkbox', 'Helpful to resolve 503 INTERNAL ERRORS.' ), $allowed_html ); ?>
 
@@ -195,9 +228,13 @@
 
                 <?php echo wp_kses( ddtt_options_tr( 'change_curl_timeout', 'cURL Timeout Seconds', 'text', '<br>Change # of seconds here to 30 or 120 for testing. Default is 5 seconds.', [ 'width' => '10rem', 'default' => 5 ] ), $allowed_html ); ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'ql_user_id', 'Add User IDs with Quick Debug Links to User Admin List Page', 'checkbox' ), $allowed_html ); ?>
+                <?php if ( in_array( 'usermeta', $menu_items_to_show ) ) {
+                    echo wp_kses( ddtt_options_tr( 'ql_user_id', 'Add User IDs with Quick Debug Links to User Admin List Page', 'checkbox' ), $allowed_html ); 
+                } ?>
 
-                <?php echo wp_kses( ddtt_options_tr( 'ql_post_id', 'Add Post/Page IDs with Quick Debug Links to Admin List Pages', 'checkbox', 'Use the <code>ddtt_quick_link_post_types</code> filter from <a href="'.ddtt_plugin_options_path( 'hooks' ).'#ddtt_quick_link_post_types">Hooks</a> tab to customize which post types are included.' ), $allowed_html ); ?>
+                <?php if ( in_array( 'postmeta', $menu_items_to_show ) ) {
+                    echo wp_kses( ddtt_options_tr( 'ql_post_id', 'Add Post/Page IDs with Quick Debug Links to Admin List Pages', 'checkbox', 'Use the <code>ddtt_quick_link_post_types</code> filter from <a href="'.ddtt_plugin_options_path( 'hooks' ).'#ddtt_quick_link_post_types">Hooks</a> tab to customize which post types are included.' ), $allowed_html ); 
+                } ?>
 
                 <?php echo wp_kses( ddtt_options_tr( 'ql_comment_id', 'Add Debug Columns (Comment ID, Comment Type, and Karma) and Quick Debug Links to Comment Admin List Page', 'checkbox' ), $allowed_html ); ?>
 
@@ -453,6 +490,7 @@
             </table>
 
             <p class="submit"><input type="submit" class="button button-primary" value="Save Changes"></p>
+
         </div>
     </form>
 <?php } ?>

@@ -868,9 +868,8 @@ function ddtt_get_error_reporting_constants($return_e_all = false)
  *
  * @return int|float
  */
-function ddtt_get_max_log_filesize()
-{
-    $megabytes = get_option(DDTT_GO_PF . 'max_log_size', 2);
+function ddtt_get_max_log_filesize() {
+    $megabytes = get_option( DDTT_GO_PF . 'max_log_size', 2 );
     $bytes = $megabytes * 1024 * 1024;
     return apply_filters('ddtt_debug_log_max_filesize', $bytes);
 } // End ddtt_get_max_log_filesize()
@@ -886,8 +885,7 @@ function ddtt_get_max_log_filesize()
  * @param boolean $log
  * @return string
  */
-function ddtt_view_file_contents($path, $log = false)
-{
+function ddtt_view_file_contents($path, $log = false) {
     // Initialize the WP_Filesystem
     if (!function_exists('WP_Filesystem')) {
         require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -1989,18 +1987,18 @@ function ddtt_view_activity_file_contents($path, $highlight_args, $ip_address_li
     $results = '';
 
     // Check if the file exists
-    if ($file) {
+    if ( $file ) {
 
         // Get the file size
-        $file_size = $wp_filesystem->size($file);
+        $file_size = $wp_filesystem->size( $file );
         $max_filesize = ddtt_get_max_log_filesize();
         $offset = $file_size <= $max_filesize ? 0 : $max_filesize;
 
         // Get the file
-        $string = $wp_filesystem->get_contents($file, $offset);
+        $string = $wp_filesystem->get_contents( $file, $offset );
 
         // Separate each line in the file into an array item
-        $lines = explode(PHP_EOL, $string);
+        $lines = explode( PHP_EOL, $string );
 
         // Start the line count
         $line_count = 0;
@@ -2566,6 +2564,8 @@ function ddtt_highlight_file2($filename, $return = false)
             'DB_USER',
             'DB_NAME',
             'DB_PASSWORD',
+            'DB_HOST',
+            'DB_HOST_SLAVE',
             'AUTH_KEY',
             'SECURE_AUTH_KEY',
             'LOGGED_IN_KEY',
@@ -2574,7 +2574,8 @@ function ddtt_highlight_file2($filename, $return = false)
             'SECURE_AUTH_SALT',
             'LOGGED_IN_SALT',
             'NONCE_SALT',
-            'WP_CACHE_KEY_SALT'
+            'WP_CACHE_KEY_SALT',
+            'WPE_APIKEY'
         ];
 
         // Iter the globals

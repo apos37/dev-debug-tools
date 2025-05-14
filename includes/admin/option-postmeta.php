@@ -375,13 +375,14 @@ if ( $searched && ( !$post_id || $post_id == 0 || !get_post_status( $post_id ) )
 }
 
 // Are we hiding meta keys with a prefix
-$hide_pf = ddtt_get( 'hide_pf' );
-if ( $hide_pf ) {
-    update_option( DDTT_GO_PF.'post_meta_hide_pf', $hide_pf );
+$hide_pf = '';
+if ( isset( $_GET[ 'hide_pf' ] ) ) {
+    $hide_pf = sanitize_text_field( $_GET[ 'hide_pf' ] );
     ddtt_remove_qs_without_refresh( 'hide_pf' );
 } else {
-    $hide_pf = get_option( DDTT_GO_PF.'post_meta_hide_pf' );
+    $hide_pf = get_option( DDTT_GO_PF.'post_meta_hide_pf', '' );
 }
+update_option( DDTT_GO_PF.'post_meta_hide_pf', $hide_pf );
 
 // Are we redacting some info
 $is_redacting = !get_option( DDTT_GO_PF.'view_sensitive_info' ) || get_option( DDTT_GO_PF.'view_sensitive_info' ) != 1;
