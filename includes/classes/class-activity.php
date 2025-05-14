@@ -1054,7 +1054,7 @@ class DDTT_ACTIVITY {
         }
 
         $post = get_post( $post_id );
-        if ( $post->post_status == 'auto-draft' || $post->post_type == 'revision' ) {
+        if ( $post->post_status == 'auto-draft' || $post->post_type == 'revision' || $post->post_type == 'customize_changeset' ) {
             return;
         }
     
@@ -1090,7 +1090,7 @@ class DDTT_ACTIVITY {
         if ( !$post ) {
             return;
         }
-        if ( $post->post_type == 'revision' ) {
+        if ( $post->post_type == 'revision' || $post->post_type == 'customize_changeset' ) {
             return;
         }
 

@@ -90,6 +90,9 @@ https://youtu.be/l45T__AIHME
 10. Check API statuses
 
 == Changelog ==
+= 2.0.4.1 = // TODO:
+* Tweak: Added customize_changeset post type to ignore list on Activity Log (which happens when you Publish on the Customizer)
+
 = 2.0.4 =
 * Update: Added option on settings to choose which menu items you want to include to minimize clutter
 * Fix: Recommended plugin missing thumbnail
