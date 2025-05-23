@@ -311,6 +311,9 @@ class DDTT_LOGS {
                         // Debug log
                         if ( $dl == 'debug_log' ) {
                             $keyword = $hl[ 'keyword' ];
+                            if ( is_array( $keyword ) ) {
+                                $keyword = implode( ',', $keyword );
+                            }
                             if ( $hl[ 'column' ] == 'type' ) {
                                 $col = '&c=t';
                             } elseif ( $hl[ 'column' ] == 'path' ) {

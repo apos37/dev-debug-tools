@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.0.4
+Stable tag: 2.0.4.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -90,7 +90,12 @@ https://youtu.be/l45T__AIHME
 10. Check API statuses
 
 == Changelog ==
-= 2.0.4.1 = // TODO:
+= 2.0.4.2 =
+* Fix: Warning: array to string conversion on class-logs.php
+* Fix: Cornerstone icon missing from admin bar when condensed
+
+= 2.0.4.1 =
+* Fix: Changelog redirecting to settings tab
 * Tweak: Added customize_changeset post type to ignore list on Activity Log (which happens when you Publish on the Customizer)
 
 = 2.0.4 =

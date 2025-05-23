@@ -313,9 +313,8 @@ function ddtt_plugin_menu_items( $slug = null, $desc = false ) {
 function ddtt_plugin_menu_items_to_include() {
     $menu_items_to_show = get_option( DDTT_GO_PF.'menu_items' );
     if ( !empty( $menu_items_to_show ) ) {
-        $menu_items = [ 'settings' ];
+        $menu_items = [ 'settings', 'debug', 'about', 'changelog', 'pw', 'pw-reset' ];
         $menu_items = array_merge( $menu_items, array_keys( $menu_items_to_show ) );
-        $menu_items[] = 'about';
     } else {
         $menu_items = array_keys( ddtt_plugin_menu_items() );
     }
