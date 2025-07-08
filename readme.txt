@@ -91,7 +91,7 @@ https://youtu.be/l45T__AIHME
 
 == Changelog ===
 = 2.1.1 =
-* Update: Added By column on plugins tab and plugins page
+* Update: Added an "Added By" column on plugins tab and plugins page
 
 = 2.1.0 =
 * Update: Removed feedback form on About tab since it was underutilized

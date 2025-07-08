@@ -66,8 +66,9 @@ jQuery( $ => {
                             const displayElem = cell.find( '.added-by-display' );
                             const currentText = displayElem.text().trim().toLowerCase();
 
-                            if ( currentText === 'unknown' || displayElem.find('em').length ) {
+                            if ( currentText === 'unknown' || displayElem.find( 'em' ).length ) {
                                 displayElem.html( newHtml );
+                                cell.find( '.added-by-input' ).val( user_id );
                             }
                         } );
                     } else {
