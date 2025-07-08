@@ -96,15 +96,13 @@ body #wpbody-content .plugin-card .plugin-action-buttons a.button.install-now[ar
 
 <br><br>
 <h3>Plugin Support</h3>
-<br><img class="admin_helpbox_title" src="<?php echo esc_url( DDTT_PLUGIN_IMG_PATH ); ?>discord.png" width="auto" height="100">
-<p>If you need assistance with this plugin or have suggestions for improving it, please join the Discord server below.</p>
-<?php /* translators: 1: Text for the button (default: Join Our Support Server) */
-echo '<a class="button button-primary" href="'.esc_url( DDTT_DISCORD_SUPPORT_URL ).'" target="_blank">'.esc_html( __( 'Join Our Support Server', 'dev-debug-tools' ) ).' »</a><br>'; ?>
-
-<br>
-<p>Or if you would rather get support on WordPress.org, you can do so here:</p>
-<?php /* translators: 1: Text for the button (default: WordPress.org Plugin Support Page) */
-echo '<a class="button button-primary" href="https://wordpress.org/support/plugin/dev-debug-tools/" target="_blank">'.esc_html( __( 'WordPress.org Plugin Support Page', 'dev-debug-tools' ) ).' »</a><br>'; ?>
+<?php
+echo '<a class="button button-primary" href="'.esc_url( DDTT_GUIDE_URL ).'" target="_blank">'.esc_html( __( 'How-To Guide', 'dev-debug-tools' ) ).' »</a><br><br>';
+echo '<a class="button button-primary" href="'.esc_url( DDTT_DOCS_URL ).'" target="_blank">'.esc_html( __( 'Developer Docs', 'dev-debug-tools' ) ).' »</a><br><br>';
+echo '<a class="button button-primary" href="'.esc_url( DDTT_SUPPORT_URL ).'" target="_blank">'.esc_html( __( 'Website Support Forum', 'dev-debug-tools' ) ).' »</a><br><br>';
+echo '<a class="button button-primary" href="'.esc_url( DDTT_DISCORD_URL ).'" target="_blank">'.esc_html( __( 'Discord Support Server', 'dev-debug-tools' ) ).' »</a><br><br>'; 
+echo '<a class="button button-primary" href="https://wordpress.org/support/plugin/dev-debug-tools/" target="_blank">'.esc_html( __( 'WordPress.org Plugin Support Page', 'dev-debug-tools' ) ).' »</a><br>';
+?>
 
 <br><br><br>
 <h3>Like This Plugin?</h3>
@@ -112,35 +110,13 @@ echo '<a class="button button-primary" href="https://wordpress.org/support/plugi
 <?php /* translators: 1: Text for the button (default: Rate and Review on WordPress.org) */
 echo '<a class="button button-primary" href="https://wordpress.org/support/plugin/dev-debug-tools/reviews/" target="_blank">'.esc_html( __( 'Rate and Review on WordPress.org', 'dev-debug-tools' ) ).' »</a><br>'; ?>
 
-
-<?php if ( ddtt_get_domain() != 'playground.wordpress.net' ) { ?>
-    <br><br><br>
-    <h3>How Can We Improve?</h3>
-    <div id="feedback-form">
-        <div class="form-group">
-            <label for="message" style="display: block;">If there was one thing you would change about this plugin, what would it be?</label> 
-            <br><textarea id="feedback-message" name="message" class="form-control input-message" rows="6" style="width: 40rem; height: 10rem;" placeholder="Your feedback..."></textarea><br>
-        </div>
-        <?php 
-        $nonce = wp_create_nonce( DDTT_GO_PF.'feedback' );
-        $user = get_userdata( get_current_user_id() ); 
-        $display_name = $user->display_name; 
-        $email = $user->user_email; 
-        ?>
-        <button class="button button-secondary submit" data-nonce="<?php echo esc_attr( $nonce ); ?>" data-name="<?php echo esc_attr( $display_name ); ?>" data-email="<?php echo esc_attr( $email ); ?>" disabled>Send Feedback</button>
-        <div id="feedback-sending">Sending</div>
-        <div id="feedback-result"></div>
-    </div>
-<?php } ?>
-
 <?php if ( ddtt_get_domain() != 'playground.wordpress.net' ) { ?>
     <br><br>
-    <h2><?php echo esc_html__( 'Try Our Other Plugins', 'admin-help-docs' ); ?></h2>
+    <h2><?php echo esc_html__( 'Try Our Other Plugins', 'dev-debug-tools' ); ?></h2>
     <div class="wp-list-table widefat plugin-install">
         <div id="the-list">
             <?php ddtt_plugin_card( 'simple-maintenance-redirect' ); ?>
             <?php ddtt_plugin_card( 'clear-cache-everywhere' ); ?>
-            <?php ddtt_plugin_card( 'admin-help-docs' ); ?>
             <?php ddtt_plugin_card( 'broken-link-notifier' ); ?>
             <?php ddtt_plugin_card( 'eri-file-library' ); ?>
             <?php if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) { ?>

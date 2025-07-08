@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.0.4.2
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -72,7 +72,7 @@ You have to enable them on the Developer Debug Tools settings first. Once they a
 You can get there directly by going to `https://yourdomain.com/wp-admin/admin.php?page=dev-debug-tools`. Be sure to bookmark it next time like the instructions say to do!
 
 = Where can I get further support? =
-Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
+We recommend using our [website support forum](https://pluginrx.com/support/plugin/dev-debug-tools/) as the primary method for requesting features and getting help. You can also reach out via our [Discord support server](https://discord.gg/3HnzNEJVnR) or the [WordPress.org support forum](https://wordpress.org/support/plugin/dev-debug-tools/), but please note that WordPress.org doesn’t always notify us of new posts, so it’s not ideal for time-sensitive issues.
 
 == Demo ==
 https://youtu.be/l45T__AIHME
@@ -89,7 +89,15 @@ https://youtu.be/l45T__AIHME
 9. Database table records
 10. Check API statuses
 
-== Changelog ==
+== Changelog ===
+= 2.1.1 =
+* Update: Added By column on plugins tab and plugins page
+
+= 2.1.0 =
+* Update: Removed feedback form on About tab since it was underutilized
+* Update: New support links
+* Fix: Admins listed in the online users dropdown not lining up correctly
+
 = 2.0.4.2 =
 * Fix: Warning: array to string conversion on class-logs.php
 * Fix: Cornerstone icon missing from admin bar when condensed

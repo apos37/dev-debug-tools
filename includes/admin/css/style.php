@@ -601,6 +601,9 @@ if ( $current_screen->id == $options_page ) {
     .col-path {
         width: auto !important;
     }
+    .col-added {
+        width: 7rem !important;
+    }
     .warning {
         background: red;
         font-weight: bold;
@@ -620,6 +623,42 @@ if ( $current_screen->id == $options_page ) {
     }
     .size-large {
         font-weight: bold;
+    }
+    .added-by-display .edit-added-by {
+        display: none;
+    }
+    tr:hover .added-by-display .edit-added-by {
+        display: block !important;
+    }
+    .added-by-edit .save-added-by {
+        display: block !important;
+    }
+    .added-by-input {
+        width: 6.5rem !important;
+    }
+    input.apply-to-all {
+        width: 16px;
+        height: 16px;
+        border-radius: 20%;
+        background-color: <?php echo esc_attr( $bg_secondary ); ?>;
+        border: 1px solid <?php echo esc_attr( $bg_accent ); ?>;
+        vertical-align: middle;
+        -webkit-appearance: none;
+        outline: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    input.apply-to-all:checked {
+        background-color: <?php echo esc_attr( $bg_accent ); ?>;
+    }
+    input.apply-to-all:checked:before {
+        content: '\2713';
+        color: <?php echo esc_attr( $text_accent ); ?>;
+        font-size: 12px;
+        font-weight: bold;
+        margin: 1px 0 0 -3px !important;
+        display: inline-block;
+        line-height: 1;
     }
     
 

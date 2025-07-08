@@ -1,15 +1,15 @@
 <?php
 /**
  * Plugin Name:         Developer Debug Tools
- * Plugin URI:          https://github.com/apos37/dev-debug-tools
+ * Plugin URI:          https://pluginrx.com/plugin/dev-debug-tools/
  * Description:         WordPress debugging and testing tools for developers
- * Version:             2.0.4.2
+ * Version:             2.1.1
  * Requires at least:   5.9
  * Tested up to:        6.8
  * Requires PHP:        7.4
  * Author:              PluginRx
  * Author URI:          https://pluginrx.com/
- * Support URI:         https://discord.gg/3HnzNEJVnR
+ * Discord URI:         https://discord.gg/3HnzNEJVnR
  * Text Domain:         dev-debug-tools
  * License:             GPLv2 or later
  * License URI:         http://www.gnu.org/licenses/gpl-2.0.txt
@@ -35,7 +35,7 @@ $plugin_data = get_file_data( __FILE__, [
     'textdomain'   => 'Text Domain',
     'author'       => 'Author',
     'author_uri'   => 'Author URI',
-    'support_uri'  => 'Support URI',
+    'discord_uri'  => 'Discord URI',
 ] );
 
 
@@ -74,7 +74,10 @@ define( 'DDTT_TEXTDOMAIN', $plugin_data[ 'textdomain' ] );
 define( 'DDTT_AUTHOR', $plugin_data[ 'author' ] );
 define( 'DDTT_AUTHOR_EMAIL', 'apos37@pm.me' );
 define( 'DDTT_AUTHOR_URL', $plugin_data[ 'author_uri' ] );
-define( 'DDTT_DISCORD_SUPPORT_URL', $plugin_data[ 'support_uri' ] );
+define( 'DDTT_GUIDE_URL', DDTT_AUTHOR_URL . 'guide/plugin/' . DDTT_TEXTDOMAIN . '/' );
+define( 'DDTT_DOCS_URL', DDTT_AUTHOR_URL . 'docs/plugin/' . DDTT_TEXTDOMAIN . '/' );
+define( 'DDTT_SUPPORT_URL', DDTT_AUTHOR_URL . 'support/plugin/' . DDTT_TEXTDOMAIN . '/' );
+define( 'DDTT_DISCORD_URL', $plugin_data[ 'discord_uri' ] );
 
 // Fetch site url only once
 $site_url = site_url( '/' );

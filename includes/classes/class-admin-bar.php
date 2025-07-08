@@ -608,6 +608,7 @@ class DDTT_ADMIN_BAR {
                 $other_admin_bar_labels = [
                     'new-content',
                     'cceverywhere_adminbar_btn',
+                    'a11ytoolkit',
                     'duplicate-post',
                     'gform-forms'
                 ];

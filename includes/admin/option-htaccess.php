@@ -510,7 +510,7 @@ $allow_code_tag = [
                 <li>You can still modify them or add some snippets that aren't listed here by <a href="<?php echo esc_url( ddtt_plugin_options_path( 'hooks' ) ); ?>">hooking into the snippets array</a>.</li>
              </p>
             </ul>
-            <p style="font-size: 1rem;"><strong>Heads up!</strong> <em>This feature is under testing and might not work perfectly on all sites, especially those with heavily modified <?php echo esc_attr( $filename ); ?> files. Proceed with caution: back up your site and test thoroughly. If you encounter issues, please let us know on our <a href="<?php echo esc_url( DDTT_DISCORD_SUPPORT_URL ); ?>">Discord Support Server</a> so we can improve it for everyone.</em></p>
+            <p style="font-size: 1rem;"><strong>Heads up!</strong> <em>This feature is under testing and might not work perfectly on all sites, especially those with heavily modified <?php echo esc_attr( $filename ); ?> files. Proceed with caution: back up your site and test thoroughly. If you encounter issues, please let us know on our <a href="<?php echo esc_url( DDTT_DISCORD_URL ); ?>">Discord Support Server</a> so we can improve it for everyone.</em></p>
             <hr />
             <br>
             <table class="form-table">

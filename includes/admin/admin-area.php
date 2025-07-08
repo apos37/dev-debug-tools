@@ -28,7 +28,7 @@ class DDTT_ADMIN_AREA {
      * @var array
      */
     private $recommended_plugins = [
-        'admin-help-docs',
+        'dev-debug-tools',
         'another-show-hooks',
         'aryo-activity-log',
         'asgaros-forum',
@@ -76,7 +76,7 @@ class DDTT_ADMIN_AREA {
 
         // Add plugins to featured plugins list
         add_filter( 'install_plugins_tabs', [ $this, 'add_plugins_tab' ] );
-        add_action( 'install_plugins_dev_debug_tools', [ $this, 'render_add_plugins_tab' ] );
+        add_action( 'install_plugins_dev_debug_tools', [ $this, 'render_add_plugins_tab' ] );        
 
         // Add columns to plugins page
         if ( !get_option( DDTT_GO_PF.'plugins_page_data' ) || get_option( DDTT_GO_PF.'plugins_page_data' ) != 1 ) {
@@ -130,15 +130,42 @@ class DDTT_ADMIN_AREA {
      * @return array
      */
     public function plugin_row_meta( $links, $file ) {
-        // Only apply to this plugin
-        if ( DDTT_TEXTDOMAIN.'/'.DDTT_TEXTDOMAIN.'.php' == $file ) {
+        $text_domain = DDTT_TEXTDOMAIN;
+        if ( $text_domain . '/' . $text_domain . '.php' == $file ) {
             
             // Add extra links
             if ( !get_option( DDTT_GO_PF.'hide_plugin' ) ) {
-                $row_meta = [
-                    // 'docs' => '<a href="'.esc_url( DDTT_AUTHOR_URL.'wordpress-developer-debug-tools/' ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Website Link', 'dev-debug-tools' ).'">'.esc_html__( 'Website', 'dev-debug-tools' ).'</a>',
-                    'discord' => '<a href="'.esc_url( DDTT_DISCORD_SUPPORT_URL ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Support on Discord', 'dev-debug-tools' ).'">'.esc_html__( 'Discord Support', 'dev-debug-tools' ).'</a>'
+                $guide_url = DDTT_GUIDE_URL;
+                $docs_url = DDTT_DOCS_URL;
+                $support_url = DDTT_SUPPORT_URL;
+                $plugin_name = DDTT_NAME;
+
+                $our_links = [
+                    'guide' => [
+                        // translators: Link label for the plugin's user-facing guide.
+                        'label' => __( 'How-To Guide', 'dev-debug-tools' ),
+                        'url'   => $guide_url
+                    ],
+                    'docs' => [
+                        // translators: Link label for the plugin's developer documentation.
+                        'label' => __( 'Developer Docs', 'dev-debug-tools' ),
+                        'url'   => $docs_url
+                    ],
+                    'support' => [
+                        // translators: Link label for the plugin's support page.
+                        'label' => __( 'Support', 'dev-debug-tools' ),
+                        'url'   => $support_url
+                    ],
                 ];
+
+                $row_meta = [];
+                foreach ( $our_links as $key => $link ) {
+                    // translators: %1$s is the link label, %2$s is the plugin name.
+                    $aria_label = sprintf( __( '%1$s for %2$s', 'dev-debug-tools' ), $link[ 'label' ], $plugin_name );
+                    $row_meta[ $key ] = '<a href="' . esc_url( $link[ 'url' ] ) . '" target="_blank" aria-label="' . esc_attr( $aria_label ) . '">' . esc_html( $link[ 'label' ] ) . '</a>';
+                }
+
+                // Add the links
                 return array_merge( $links, $row_meta );
             } else {
                 $links[1] = 'By Aneg73';
@@ -258,6 +285,7 @@ class DDTT_ADMIN_AREA {
         $columns[ 'main_file' ] = 'Main File';
         $columns[ 'file_size' ] = 'File Size';
         $columns[ 'modified' ] = 'Last Modified';
+        $columns[ 'added_by' ] = 'Added By';
         return $columns;
     } // End plugins_column()
 
@@ -351,6 +379,36 @@ class DDTT_ADMIN_AREA {
             $dt->setTimezone( new DateTimeZone( get_option( 'ddtt_dev_timezone', wp_timezone_string() ) ) );
             $last_modified = $dt->format( 'F j, Y g:i A T' );
             echo esc_html( $last_modified );
+        }
+
+        // Added By
+        if ( 'added_by' === $column_name ) {
+            $added_by = get_option( 'ddtt_plugins_added_by', [ ] );
+
+            if ( ! empty( $added_by )
+                && is_array( $added_by )
+                && isset( $added_by[ 'plugins' ][ $plugin_file ] )
+            ) {
+                $user_id = absint( $added_by[ 'plugins' ][ $plugin_file ] );
+                $display_name = '';
+
+                if ( $user_id > 0 ) {
+                    $user = get_user_by( 'ID', $user_id );
+                    if ( $user ) {
+                        $display_name = $user->display_name;
+                    } elseif ( isset( $added_by[ 'user_ids' ][ $user_id ] ) ) {
+                        $display_name = $added_by[ 'user_ids' ][ $user_id ];
+                    }
+                }
+
+                if ( $display_name !== '' ) {
+                    echo '<span>' . esc_html( $display_name ) . '</span>';
+                } else {
+                    echo '<em>' . __( 'Unknown', 'dev-debug-tools' ) . '</em>';
+                }
+            } else {
+                echo '<em>' . __( 'Unknown', 'dev-debug-tools' ) . '</em>';
+            }
         }
     } // End plugins_column_content()
 

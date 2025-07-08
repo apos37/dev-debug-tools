@@ -503,6 +503,10 @@ class DDTT_ONLINE_USERS {
         #wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'online-users-li-total {
             border-top: 1px solid #A7AAAD;
         }
+        #wp-admin-bar-'.esc_attr( DDTT_GO_PF ).'online-users .ab-sub-wrapper .ab-item:has(span) {
+            display: flex;
+            align-items: center;
+        }
         </style>';
     } // End admin_bar()
 

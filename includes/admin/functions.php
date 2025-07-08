@@ -2866,6 +2866,8 @@ function ddtt_plugin_card($slug)
                 $returned_object->ratings[5]
             );
 
+            $active_installs = $returned_object->active_installs ? number_format( $returned_object->active_installs ) . '+' : '<10';
+
             // Link guts
             $link_guts = 'href="https://wordpress.org/plugins/' . esc_attr($slug) . '/" target="_blank" aria-label="More information about ' . $returned_object->name . ' ' . $returned_object->version . '" data-title="' . $returned_object->name . ' ' . $returned_object->version . '"';
 ?>
@@ -2928,7 +2930,7 @@ function ddtt_plugin_card($slug)
                         <strong>Last Updated:</strong> <?php echo esc_html($last_updated); ?>
                     </div>
                     <div class="column-downloaded" data-downloads="<?php echo esc_html(number_format($returned_object->downloaded)); ?>">
-                        <?php echo esc_html(number_format($returned_object->active_installs)); ?>+ Active Installs
+                        <?php echo esc_html($active_installs); ?> Active Installs
                     </div>
                     <div class="column-compatibility">
                         <?php echo wp_kses_post($is_compatible); ?>
@@ -3478,38 +3480,37 @@ function ddtt_get_file_eol($file_contents, $incl_code = true)
  *
  * @return array
  */
-function ddtt_get_plugins_data()
-{
+function ddtt_get_plugins_data() {
     // Store the final plugins data here, and add current timestamp
-    $plugins_data = ['last_cached' => time()];
+    $plugins_data = [ 'last_cached' => time() ];
 
     // Store the plugins for all sites here
     $plugins = [];
 
     // If on the network, let's get all the sites plugins, not just the local
-    if (is_multisite()) {
+    if ( is_multisite() ) {
 
         // Get the network active plugins
-        $network_active = get_site_option('active_sitewide_plugins');
+        $network_active = get_site_option( 'active_sitewide_plugins' );
 
         // Add them to the active array
-        foreach ($network_active as $na_key => $na) {
-            $plugins[$na_key][] = 'network';
+        foreach ( $network_active as $na_key => $na ) {
+            $plugins[ $na_key ][] = 'network';
         }
 
         // Get all the sites
         global $wpdb;
-        $subsites = $wpdb->get_results("SELECT blog_id, domain, path FROM $wpdb->blogs WHERE archived = '0' AND deleted = '0' AND spam = '0' ORDER BY blog_id");
+        $subsites = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE archived = '0' AND deleted = '0' AND spam = '0' ORDER BY blog_id" );
 
         // Iter the sites
-        if ($subsites && !empty($subsites)) {
-            foreach ($subsites as $subsite) {
+        if ( $subsites && !empty( $subsites ) ) {
+            foreach ( $subsites as $subsite ) {
 
                 // Get the plugins
-                $site_active = get_blog_option($subsite->blog_id, 'active_plugins');
+                $site_active = get_blog_option( $subsite->blog_id, 'active_plugins' );
 
                 // Iter each plugin
-                foreach ($site_active as $p_path) {
+                foreach ( $site_active as $p_path ) {
 
                     // Add the site
                     $plugins[$p_path][] = $subsite->blog_id;
@@ -3521,23 +3522,24 @@ function ddtt_get_plugins_data()
     } else {
 
         // Get the active plugins
-        $site_active = get_option('active_plugins');
+        $site_active = get_option( 'active_plugins' );
 
         // Iter each plugin
-        foreach ($site_active as $site) {
-            $plugins[$site] = 'local';
+        foreach ( $site_active as $site ) {
+            $plugins[ $site ] = 'local';
         }
     }
 
     // Get all the plugins full info
     $all = get_plugins();
+    $added_by = get_option( DDTT_GO_PF . 'plugins_added_by', [] );
 
     // Iter each
-    foreach ($all as $k => $a) {
+    foreach ( $all as $k => $a ) {
 
         // Add the non-active plugins
-        if (!array_key_exists($k, $plugins)) {
-            $plugins[$k] = false;
+        if ( !array_key_exists( $k, $plugins ) ) {
+            $plugins[ $k ] = false;
         }
     }
 
@@ -3545,7 +3547,7 @@ function ddtt_get_plugins_data()
     $sorted_plugins = [];
 
     // Get the full info for the plugins
-    foreach ($plugins as $key => $p) {
+    foreach ( $plugins as $key => $p ) {
 
         // Make sure the plugin exists
         if (isset($all[$key])) {
@@ -3716,6 +3718,12 @@ function ddtt_get_plugins_data()
                 $site_names = '';
             }
 
+            // Get the plugin added by
+            $plugin_added_by = '';
+            if ( isset( $added_by[ $key ] ) && !empty( $added_by[ $key ] ) ) {
+                $plugin_added_by = absint( $added_by[ $key ] );
+            }
+
             // Save data for transient
             $plugins_data[$key] = [
                 'is_active'          => $is_active,
@@ -3730,7 +3738,8 @@ function ddtt_get_plugins_data()
                 'incompatible_class' => $incompatible_class,
                 'compatibility'      => $compatibility,
                 'folder_size'        => $bytes,
-                'last_modified'      => $last_modified
+                'last_modified'      => $last_modified,
+                'added_by'           => $plugin_added_by,
             ];
         }
     }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Feedback class
+ * Settings class
  */
 
 // Exit if accessed directly.
