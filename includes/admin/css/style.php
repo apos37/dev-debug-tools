@@ -400,6 +400,21 @@ if ( $current_screen->id == $options_page ) {
         height: 30px;
         margin-bottom: 2px;
     }
+    input[type="checkbox"][disabled] {
+        position: relative;
+        opacity: 0.15;
+        cursor: not-allowed;
+    }
+    input[type="checkbox"][disabled]::after {
+        content: '✕';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate( -50%, -50% );
+        font-size: 18px;
+        color: #FFF;
+        pointer-events: none;
+    }
 
     /* Input fields */
     .toplevel_page_<?php echo esc_attr( DDTT_TEXTDOMAIN ); ?> input[type=text],

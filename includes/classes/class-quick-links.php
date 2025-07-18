@@ -102,6 +102,7 @@ class DDTT_QUICK_LINKS {
      */
     public function user_column( $columns ) {
         $columns[ strtolower( DDTT_PF ).'user_id' ] = __( 'ID', 'dev-debug-tools' );
+        $columns[ strtolower( DDTT_PF ).'user_registered' ] = __( 'Registered', 'dev-debug-tools' );
         return $columns;
     } // End user_column()
 
@@ -140,6 +141,15 @@ class DDTT_QUICK_LINKS {
             } else {
                 return $user_id;
             }
+
+        // Return the date
+        } elseif ( $column_name == strtolower( DDTT_PF ).'user_registered' ) {
+            $user = get_userdata( $user_id );
+            if ( $user && !empty( $user->user_registered ) && $user->user_registered !== '0000-00-00 00:00:00' ) {
+                return esc_html( mysql2date( get_option( 'date_format' ), $user->user_registered ) );
+            }
+            return __( 'Unknown', 'dev-debug-tools' );
+
         }
         return $value;
     } // End user_column_content()

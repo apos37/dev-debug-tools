@@ -4,7 +4,7 @@ Tags: debug, developer, testing, wp-config, htaccess
 Requires at least: 5.9
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.1.1
+Stable tag: 2.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -90,6 +90,12 @@ https://youtu.be/l45T__AIHME
 10. Check API statuses
 
 == Changelog ===
+= 2.1.2 =
+* Update: Added Bulk Delete option to Site Options tab (props @venutius for feature request)
+* Tweak: Changed 2nd column of Site Options tab to include more information
+* Update: Added new meta key for last online to users for a more permanent tracking to show in users admin list table
+* Tweak: Updated condensed version of admin bar to hide all ab-labels
+
 = 2.1.1 =
 * Update: Added an "Added By" column on plugins tab and plugins page
 

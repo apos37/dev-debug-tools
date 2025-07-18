@@ -3977,5 +3977,145 @@ function ddtt_check_url_status_code($url)
 
 
 /**
+ * Detect option sources in plugins, mu-plugins, and themes
+ *
+ * @return array
+ */
+function ddtt_detect_option_sources() {
+    $sources = [];
+
+    $paths = [
+        'core'      => ABSPATH,
+        'theme'     => get_theme_root(),
+        'plugin'    => WP_PLUGIN_DIR,
+        'mu-plugin' => WPMU_PLUGIN_DIR
+    ];
+
+    foreach ( $paths as $type => $base_path ) { // Loop 1: core, theme, plugin, mu-plugin
+        if ( !is_dir( $base_path ) ) {
+            continue;
+        }
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator( $base_path, RecursiveDirectoryIterator::SKIP_DOTS )
+        );
+
+        foreach ( $iterator as $file ) { // Loop 2: Each file within the base_path
+            if ( $file->getExtension() !== 'php' ) {
+                continue;
+            }
+
+            $file_path = $file->getPathname();
+
+            // Skip non-core areas when scanning core
+            if ( $type === 'core' ) {
+                // Only allow wp-admin and wp-includes
+                if (
+                    strpos( $file_path, 'wp-content' ) !== false ||
+                    (
+                        strpos( $file_path, 'wp-admin' ) === false &&
+                        strpos( $file_path, 'wp-includes' ) === false
+                    )
+                ) {
+                    continue;
+                }
+            }
+
+            $contents = file_get_contents( $file_path );
+            if ( !$contents ) {
+                continue;
+            }
+
+            // Match option usage
+            if ( preg_match_all( '/(?:get|add|update|delete|register)_option\s*\(\s*[\'"]([^\'"]+)[\'"]/', $contents, $matches ) ) {
+                foreach ( $matches[1] as $option ) {
+                    if ( !isset( $sources[ $option ] ) ) {
+                        if ( $type === 'core' ) {
+                            $sources[ $option ] = 'Core (WordPress)';
+                        } else {
+                            $rel_path = str_replace( $base_path . '/', '', $file_path );
+                            $rel_path_parts = explode( '/', $rel_path );
+                            $slug = $rel_path_parts[0];
+                            $full_name = ddtt_get_plugin_or_theme_name( $type, $slug, $base_path );
+                            $sources[ $option ] = ucfirst( $type ) . ': ' . $full_name;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return $sources;
+} // End ddtt_detect_option_sources()
+
+
+/**
+ * Get the plugin or theme name from its slug
+ *
+ * @param string $type 'plugin', 'mu-plugin', 'theme', or 'core'
+ * @param string $slug The slug of the plugin or theme
+ * @param string $base_path The base path to search in
+ * @return string The name of the plugin or theme, or 'Core (WordPress)' for core
+ */
+function ddtt_get_plugin_or_theme_name( string $type, string $slug, string $base_path ): string {
+    if ( $type === 'plugin' ) {
+        $plugin_dir = trailingslashit( $base_path ) . $slug;   
+        if ( is_dir( $plugin_dir ) ) {
+            $plugin_files = glob( $plugin_dir . '/*.php' );
+            if ( $plugin_files ) {
+                foreach ( $plugin_files as $file ) {
+                    $data = get_plugin_data( $file );
+                    if ( ! empty( $data['Name'] ) ) {
+                        return $data['Name'];
+                    }
+                }
+            }
+        } elseif ( is_file( $plugin_dir . '.php' ) ) {
+            $data = get_plugin_data( $plugin_dir . '.php' );
+            if ( ! empty( $data['Name'] ) ) {
+                return $data['Name'];
+            }
+        }
+        return $slug;
+    }
+
+    if ( $type === 'mu-plugin' ) {
+        $file = trailingslashit( $base_path ) . $slug . '.php';
+        if ( file_exists( $file ) ) {
+            $data = get_plugin_data( $file );
+            if ( ! empty( $data['Name'] ) ) {
+                return $data['Name'];
+            }
+        }
+
+        $mu_dir = trailingslashit( $base_path ) . $slug;
+        if ( is_dir( $mu_dir ) ) {
+            $php_files = glob( $mu_dir . '/*.php' );
+            foreach ( $php_files as $file ) {
+                $data = get_plugin_data( $file );
+                if ( ! empty( $data['Name'] ) ) {
+                    return $data['Name'];
+                }
+            }
+        }
+
+        return $slug;
+    }
+
+    if ( $type === 'theme' ) {
+        $themes = wp_get_themes();
+        foreach ( $themes as $key => $theme ) {
+            if ( $key === $slug || $theme->get_stylesheet() === $slug || $theme->get_template() === $slug ) {
+                return $theme->get( 'Name' );
+            }
+        }
+        return $slug;
+    }
+
+    return 'Core (WordPress)';
+} // End ddtt_get_plugin_or_theme_name()
+
+
+/**
  * THE END
  */

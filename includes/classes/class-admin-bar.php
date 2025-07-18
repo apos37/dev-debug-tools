@@ -608,7 +608,6 @@ class DDTT_ADMIN_BAR {
                 $other_admin_bar_labels = [
                     'new-content',
                     'cceverywhere_adminbar_btn',
-                    'a11ytoolkit',
                     'duplicate-post',
                     'gform-forms'
                 ];
@@ -620,11 +619,13 @@ class DDTT_ADMIN_BAR {
                         }';
                     }
 
-                    echo '#wp-admin-bar-'.esc_attr( $o ).' .ab-item .ab-label {
-                        display: none;
-                    }';
+                    // echo '#wp-admin-bar-'.esc_attr( $o ).' .ab-item .ab-label {
+                    //     display: none;
+                    // }';
                 }
-
+                echo '#wp-admin-bar-root-default li .ab-item .ab-label {
+                    display: none;
+                }';
 
                 // Remove online users text
                 echo '

@@ -53,7 +53,7 @@ class DDTT_ONLINE_USERS {
         // User column
         add_filter( 'manage_users_columns', [ $this, 'user_column' ] );
         add_action( 'admin_head-users.php', [ $this, 'user_column_style' ] );
-        add_action( 'manage_users_custom_column', [ $this, 'user_column_content' ], 10, 3 );
+        add_action( 'manage_users_custom_column', [ $this, 'user_column_content' ], 999, 3 );
 
         // Shortcode
         add_shortcode( 'online_users_count', [ $this, 'shortcode' ] );
@@ -154,7 +154,7 @@ class DDTT_ONLINE_USERS {
         $logged_in_users = get_transient( 'users_status' );
         
         // If no users are online
-        if ( empty( $logged_in_users ) ){
+        if ( empty( $logged_in_users ) ) {
             // If requesting a count return 0, if requesting user data return false.
             return ( $return == 'count' ) ? 0 : false; 
         }
@@ -241,7 +241,8 @@ class DDTT_ONLINE_USERS {
             }
 
             // Set this transient to expire 15 minutes after it is created
-            set_transient( 'users_status', $logged_in_users, $this->seconds ); 
+            set_transient( 'users_status', $logged_in_users, $this->seconds );
+            update_user_meta( $user->ID, 'ddtt_last_online', time() );
         }
     } // End users_status_init()
 
@@ -267,13 +268,15 @@ class DDTT_ONLINE_USERS {
      * @param int $id
      * @return int|false
      */
-    public function user_last_online( $id ) {
+    public function user_last_online( $id, $also_check_user_meta = false ) {
         // Get the active users from the transient
         $logged_in_users = get_transient( 'users_status' ); 
         
         // Determine if the user has ever been logged in (and return their last active date if so)
         if ( isset( $logged_in_users[ $id ][ 'last' ] ) ) {
             return $logged_in_users[ $id ][ 'last' ];
+        } elseif ( $also_check_user_meta ) {
+            return get_user_meta( $id, 'ddtt_last_online', true );
         } else {
             return false;
         }
@@ -543,19 +546,14 @@ class DDTT_ONLINE_USERS {
      */
     public function user_column_content( $value, $column_name, $user_id ) {
         if ( $column_name == 'online_status' ) {
-            // Start the var
-            $output = '';
-        
-            if ( $this->is_user_online( $user_id ) ){
-                $output .= '<strong style="color: green;">Online Now</strong>';
+            if ( $this->is_user_online( $user_id ) ) {
+                return '<strong style="color: green;">Online Now</strong>';
             } else {
                 $last_seen = ddtt_convert_timezone( $this->user_last_online( $user_id ), 'M j, Y @ g:ia' );
-                $output .= ( $this->user_last_online( $user_id ) ) ? '<small>Last Seen: <br /><em>'.$last_seen.'</em></small>' : '';
+                return ( $this->user_last_online( $user_id ) ) ? '<small>Last Online: <br /><em>'.$last_seen.'</em></small>' : '';
             }
-        
-            // Return it
-            return $output;
         }
+        return $value;
     } // End column_content()
     
 
