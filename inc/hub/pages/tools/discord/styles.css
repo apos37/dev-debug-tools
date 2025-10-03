@@ -1,0 +1,8 @@
+#ddtt-discord-message-response {
+    margin-top: 1rem !important;
+}
+
+#ddtt-settings-section {
+    border-left: 4px solid transparent;
+    transition: border-color 0.5s ease;
+}

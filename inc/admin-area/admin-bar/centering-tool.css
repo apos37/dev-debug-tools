@@ -1,0 +1,78 @@
+div#ddtt-ct-top {
+    height: 25px;
+    transition: height 300ms;
+    width: 100%;
+    position: fixed;
+    top: 30px;
+    left: 0;
+    right: 0%;
+    z-index: 9999;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+/* Table container */
+.ddtt-ct-table {
+    display: table;
+    width: auto;
+    border-left: 1px dotted #000;
+}
+
+/* Row container */
+.ddtt-ct-row {
+    display: table-row;
+}
+
+/* Default cell container */
+.ddtt-ct-cell {
+    display: table-cell;
+    border-right: 1px dotted #000;
+    border-bottom: 1px dotted #000;
+}
+
+/* Center column - red line down the middle */
+.ddtt-ct-cell.ddtt-ct-center {
+    position: relative;
+    width: 2px !important;
+}
+
+/* Red line for the center column */
+.ddtt-ct-cell.ddtt-ct-center::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 100%;
+    background-color: red; /* Red line */
+    transform: translateX(-50%);
+}
+
+/* Responsive Design for smaller screens */
+@media only screen and (max-width: 641px) {
+    div#ddtt-ct-top {
+        top: 0 !important;
+    }
+}
+
+/* Options */
+#wp-admin-bar-ddtt-centering-tool-default li .ab-item {
+    padding-bottom: 5px !important;
+}
+
+#wp-admin-bar-ddtt-centering-tool-default label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+#wp-admin-bar-ddtt-centering-tool-default input {
+    background: white;
+    color: black;
+    line-height: 1.5;
+    border-radius: 2px;
+    padding: 0 5px;
+    margin-left: 10px;
+    width: 60px;
+}

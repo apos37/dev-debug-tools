@@ -1,0 +1,7 @@
+.ddtt-highlight-variable {
+    white-space: nowrap !important;
+}
+
+.ddtt-expired-transient {
+    border-left: 4px solid var(--color-error) !important;
+}

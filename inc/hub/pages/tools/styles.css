@@ -1,0 +1,393 @@
+/* Tools Dashboard */
+
+#ddtt-tools-section {
+    margin: 2rem 0;
+    padding: 0 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    color: var(--color-text-primary, #222);
+}
+
+#ddtt-tools-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem 2rem;
+}
+
+#ddtt-tools-section li {
+    background: var(--color-bg-alt, #f9f9f9);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.3s ease;
+}
+
+#ddtt-tools-section li:hover,
+#ddtt-tools-section li:focus-within {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#ddtt-tools-section a {
+    position: relative;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--color-link, #1e73be);
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 0.3rem;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.25s ease, color 0.25s ease;
+}
+
+.ddtt-external-icon {
+    font-family: 'Dashicons';
+    font-size: 22px;
+    font-weight: normal !important;
+    margin-left: 0.25em;
+    vertical-align: top;
+    color: var(--color-link, #1e73be);
+}
+
+#ddtt-tools-section a:hover,
+#ddtt-tools-section a:focus {
+    color: var(--color-link-hover, #155d8b);
+    border-color: var(--color-link-hover, #155d8b);
+    outline: none;
+}
+
+#ddtt-tools-section p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--color-text-secondary, #555);
+    margin: 0;
+}
+
+.ddtt-grid-sortable {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.ddtt-tool-item {
+    position: relative;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 1.2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    cursor: move;
+}
+
+.ddtt-favorite-tool {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: var(--color-bg-alt2);
+    font-size: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.3s ease;
+}
+
+.ddtt-favorite-tool.favorited {
+    color: red;
+}
+
+.ddtt-sortable-placeholder {
+    background: #f0f0f0;
+    border: 2px dashed #bbb;
+    min-height: 60px;
+}
+
+.ddtt-toggle-wrapper {
+    margin-top: 1rem;
+}
+
+.ddtt-tool-item.disabled .ddtt-tool-link {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+
+/* Log File Info */
+
+.ddtt-file-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.ddtt-file-data {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+}
+
+.ddtt-file-data span {
+    white-space: nowrap;
+}
+
+.ddtt-file-data .ddtt-separator {
+    color: var(--color-border);
+}
+
+span.ddtt-file-data-label {
+    color: var(--color-text-secondary);
+}
+
+#ddtt-file-notice {
+    border: 1px solid var(--color-border);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    background: var(--color-code-block-bg);
+    color: var(--color-text-primary);
+}
+
+#ddtt-file-notice.ddtt-error {
+    background: var(--color-error);
+    color: white;
+}
+
+#ddtt-file-notice.ddtt-warning {
+    background: var(--color-warning);
+    color: black;
+}
+
+#ddtt-file-previewer {
+    border-color: var(--color-warning) !important;
+}
+
+
+/* Loading */
+#ddtt-backups-loading {
+    display: flex;
+    gap: 1rem;
+    font-style: italic;
+}
+
+
+/* Help Popup */
+
+.ddtt-has-help-dialog {
+    position: relative;
+}
+
+#ddtt-hub .ddtt-button.ddtt-help-toggle {
+    font-size: 0.73rem !important;
+}
+
+.ddtt-help-content {
+    position: absolute;
+    top: 24px;
+    left: 14px;
+    background: var(--color-bg-main);
+    border: 1px solid #ccc;
+    padding: 20px;
+    width: 500px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 1);
+    z-index: 10;
+    font-size: 14px;
+    line-height: 1.4;
+    border-radius: 4px;
+    user-select: text;
+}
+
+.ddtt-help-content--open {
+    display: block;
+}
+
+.ddtt-help-content[hidden] {
+    display: none;
+}
+
+.ddtt-help-search-links {
+    display: block;
+}
+
+.ddtt-help-close {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    user-select: none;
+}
+
+.ddtt-help-close:hover,
+.ddtt-help-close:focus {
+    color: var(--color-text-primary);
+    outline: none;
+}
+
+.ddtt-help-darken {
+    position: relative;
+}
+
+.ddtt-help-darken::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    z-index: 10;
+    border-radius: inherit;
+}
+
+.ddtt-help-content .dashicons {
+    vertical-align: bottom;
+    font-size: 18px;
+    text-decoration: none;
+    margin-left: 7px;
+    font-weight: normal;
+}
+
+.ddtt-help-body code {
+    padding: 1px 6px;
+}
+
+#ddtt-hub .ddtt-button.ddtt-help-toggle.missing-help {
+    background: black;
+}
+
+
+/* Snippets Manager */
+
+#ddtt-snippet-manager .ddtt-table code {
+    background-color: var(--color-bg-alt2) !important;
+    white-space: nowrap;
+}
+
+#ddtt-snippet-manager .ddtt-table td:last-child code {
+    margin-bottom: 1rem;
+    display: block;
+    width: fit-content;
+}
+
+#ddtt-snippet-manager .ddtt-table th {
+    text-align: center;
+}
+
+#ddtt-snippet-manager .ddtt-table td:nth-child(2),
+#ddtt-snippet-manager .ddtt-table td:nth-child(3),
+#ddtt-snippet-manager .ddtt-table td:nth-child(3) {
+    width: 50px;
+    text-align: center;
+}
+
+#ddtt-snippet-manager .ddtt-table th:nth-child(2),
+#ddtt-snippet-manager .ddtt-table td:nth-child(2),
+#ddtt-snippet-manager .ddtt-table th:nth-child(3),
+#ddtt-snippet-manager .ddtt-table td:nth-child(3),
+#ddtt-snippet-manager .ddtt-table th:nth-child(4),
+#ddtt-snippet-manager .ddtt-table td:nth-child(4) {
+    width: 50px;
+    text-align: center;
+}
+
+#ddtt-snippet-manager .ddtt-table th:nth-child(5),
+#ddtt-snippet-manager .ddtt-table td:nth-child(5) {
+    width: 170px;
+}
+
+span.ddtt-snippet-detected {
+    background: var(--color-success); 
+    white-space: nowrap;
+    color: black;
+    font-weight: bold;
+    padding: 4px 10px;
+    display: inline-block;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.snippet-code code:focus {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+.ddtt-snippet-item {
+    position: relative;
+}
+
+.ddtt-delete-snippet {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #c00;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+
+.ddtt-snippet-item.ddtt-new-snippet {
+    height: 85px;
+    background: var(--color-bg-alt);
+}
+
+.ddtt-new-snippet #ddtt-add-snippet {
+    all: unset;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-size: 3rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.ddtt-new-snippet #ddtt-add-snippet::before {
+    content: "+";
+    color: var(--color-text-secondary);
+}
+
+.ddtt-new-snippet-inputs {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.ddtt-new-snippet-inputs textarea {
+    width: 100%;
+}
+
+.ddtt-new-snippet-buttons {
+    text-align: right;
+    gap: 0.5rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.ddtt-help-body .added-by {
+    font-style: italic;
+    margin-bottom: 0;
+}

@@ -1,0 +1,17 @@
+#ddtt-gforms-finder-icon {
+    float: left;
+    width: 26px !important;
+    height: 30px !important;
+    background-repeat: no-repeat;
+    background-position: 0 6px;
+    background-size: 20px;
+}
+
+#wp-admin-bar-ddtt-gf-found a.ab-item[href="#"] {
+    pointer-events: none;
+    cursor: default;
+}
+
+#wp-admin-bar-ddtt-gf-found.hover a.ab-item[href="#"] {
+    color: #f0f0f1 !important;
+}

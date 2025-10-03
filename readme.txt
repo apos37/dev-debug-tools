@@ -1,36 +1,44 @@
 === Developer Debug Tools ===
 Contributors: apos37, venutius
-Tags: debug, developer, testing, wp-config, htaccess
+Tags: debug, developer, testing, logs, config
 Requires at least: 5.9
 Tested up to: 6.8
-Requires PHP: 7.4
-Stable tag: 2.1.2
+Requires PHP: 8.0
+Stable tag: 3.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 Lots of debugging and testing tools for developers.
 
 == Description ==
-The "Developer Debug Tools" WordPress plugin is a powerhouse for developers and site administrators! It's a comprehensive toolkit that helps you identify, troubleshoot, and resolve issues in your WordPress site, making debugging a breeze.
+The "Developer Debug Tools" WordPress plugin is a powerhouse for developers and site administrators! It's a FREE comprehensive toolkit that helps you identify, troubleshoot, and resolve issues in your WordPress site, making debugging a breeze. No premium version available.
 
 This plugin offers a suite of features to aid in debugging, including, but not limited to:
 
-* Viewing and clearing `debug.log` and other error logs
-* Debug log Easy Reader combines duplicate lines and breaks down each error in an easy to read format
-* Viewing and updating `wp-config.php` and `.htaccess` files
-* Viewing and editing user meta and post meta
-* Viewing detailed info on post types and taxonomies
-* Quick links for debugging users, posts, pages and comments
-* Clearing all taxonomy terms from a given post
-* Clearing all or expired transients easily
-* Finding which posts and pages shortcodes are used on
-* Seeing whom is online with their roles
-* Activity logging such as when user meta, post meta, site settings, plugins and themes are updated or when bots crawl the site
-* Discord notifications of fatal errors, user page loads, and user logins
-* Viewing your database tables and entries at a glance without worry
-* Enhancements to the admin bar such as condensing/removing items and seeing user/post info at a glance
-* Viewing helpful information such php.ini values, php configs, scheduled cron jobs, site options, global variables, server metrics and more
-* Access to a handful of additional functions and hooks that you can use for debugging
+* Dashboard with **important site information and server metrics**
+* **Enhanced log viewer** for `debug.log`, error logs, custom logs, and an activity log
+* **Config file** viewers and editors for `wp-config.php` and `.htaccess` files
+* **Meta Data** viewer and editor for users, posts, tax terms, comments, and media
+* **Database Table records** viewer
+* **Site Options** viewer and editor
+* **Globals** viewer
+* **Defined Constants** viewer
+* **Transients, Cookies, and Sessions** management
+* **REST API** viewer and status checker
+* **Post Types and Taxonomies** viewers
+* **Auto-Draft** viewer and clearer
+* **Shortcode Finder**
+* **Cron Jobs** viewer
+* **PHP Info** and **php.ini** viewers
+* **Discord Notifications** of fatal errors and when users with certain roles log in
+* **Discord Messenger** for testing connections with Discord
+* **See who's online** and **last online** dates
+* **Heartbeat Monitor** for testing WP Heartbeat API sitewide
+* **Plugins Page Enhancements** with addt plugin data and notes feature
+* **Security Options** for hiding the plugin and password protection to any admin page
+* **Admin Bar Tools** such as seeing Post ID/type/status, User ID, an interactive centering tool, and more
+* **Quick Debug Links** for debugging users, posts, and comments
+* **Gravity Forms** integrations
 
 With "Developer Debug Tools", you can:
 
@@ -47,29 +55,31 @@ This plugin is a must-have for any WordPress developer or site administrator who
 1. Install the plugin from your website's plugin directory, or upload the plugin to your plugins folder. 
 2. Activate it.
 3. Go to Developer Debug Tools in your admin menu.
-4. Enter your account email address as a "Developer Email Address" to view the rest of the tools.
 
 == Frequently Asked Questions ==
 = Should I backup my wp-config.php and .htaccess files before using the tools to add/remove snippets?
-Yes! It is always best to back these files up when making updates to them.
+Yes! It is always best to back these files up when making updates to them. You can do so on the config file pages or all together with your functions.php in a zip file from the dashboard.
 
 = Can I use this plugin on a live website? =
 Yes, but you should always make a backup of your site before using functionality that makes changes to your core files or database.
 
-= My site broke when updating my wp-config.php or .htaccess. How do I revert back to my original? =
-The originals are stored in your root folder and renamed with the date and time from which they were replaced. For example, the `wp-config.php` file will have been renamed to `wp-config-2022-08-22-15-25-46.php` and replaced with a new file. Simply log into your FTP or File Manager (from your host), rename the current file to something else such as `wp-config-BROKEN.php` (just in case you need it), and then rename the version you want to revert back to as `wp-config.php`. If everything looks good, then you can either delete this file or send a copy of it to me so I can figure out what went wrong. You can do so in the Discord server mentioned below.
+= My site broke when updating my wp-config.php or .htaccess from your plugin. How do I revert back to my original? =
+The file editors have been improved to include a code/lint checker and other checks to ensure that they include certain working pieces. However, nothing is full-proof, so in the case that something happens, a backup is automatically stored in the same folders as the originals before being saved. The backups are named with the date and time from which they were replaced. For example, the `wp-config.php` file will have been renamed to `wp-config-2022-08-22-15-25-46.php` and replaced with a new file. Simply log into your FTP or File Manager (from your host), rename the current file to something else such as `wp-config-BROKEN.php` (just in case you need it), and then rename the version you want to revert back to as `wp-config.php`. If everything looks good, then you can either delete the broken file or send a copy of it to PluginRx so we can figure out what went wrong.
 
 = Why can't I edit a username for a user? =
 Some hosts will not allow you to update a user's username directly from WP. In order to do so, you'll have to update it in your database directly.
 
 = Where is the centering tool? =
-Viewable only on the front-end, there is a link on the admin bar that shows `+Off`. Click on it and it will add a transparent bar with lines on it at the top of the page underneath the admin bar. If you click on the centering bar it will expand all the way down the page. Click on it again and it will minimize back to the top. You can click on the `+On` link from the admin bar to make it go away.
+Viewable only on the front-end, there is a link on the admin bar that shows `+ Off`. Click on it and it will add a semi-transparent bar with lines on it at the top of the page underneath the admin bar. If you click on this bar it will expand all the way down the page. Click on it again and it will minimize back to the top. You can click on the `+ On` link from the admin bar to make it go away.
 
 = Where are the quick debug links? =
-You have to enable them on the Developer Debug Tools settings first. Once they are enabled, an "ID" column will be added to the user and/or post admin list pages. Next to the user or post's ID you will see a lightning bolt icon. Clicking on the lightning bolt will redirect you to the User Meta or Post Meta tab on our plugin where you can view and edit all of the meta easily.
+You have to enable them on the Developer Debug Tools settings first. Once they are enabled, an "ID" column will be added to the user and/or post admin list pages. Next to the user or post's ID you will see a lightning bolt icon. Clicking on the lightning bolt will redirect you to the User Meta or Post Meta tab on our plugin where you can view and edit all of the meta easily. Links are also added to the user profile and post edit screens.
 
 = I hid the plugin, now I can't find it! =
-You can get there directly by going to `https://yourdomain.com/wp-admin/admin.php?page=dev-debug-tools`. Be sure to bookmark it next time like the instructions say to do!
+You can get there directly by going to `https://yourdomain.com/wp-admin/admin.php?page=dev-debug-dashboard`. Be sure to bookmark it next time like the instructions say to do!
+
+= I password-protected the plugin and forgot my password, how can I reset it? =
+If you password-protected your `options.php` page like you should have (included by default), then you will need to log in directly to your database and clear the password manually (`{prefix}_options` table > delete key `ddtt_pass`). We used to have a forgot password option that would email a reset link to the devs, but it's easy to intercept that email with various email logging plugins if you have access to the admin area of your site.
 
 = Where can I get further support? =
 We recommend using our [website support forum](https://pluginrx.com/support/plugin/dev-debug-tools/) as the primary method for requesting features and getting help. You can also reach out via our [Discord support server](https://discord.gg/3HnzNEJVnR) or the [WordPress.org support forum](https://wordpress.org/support/plugin/dev-debug-tools/), but please note that WordPress.org doesn’t always notify us of new posts, so it’s not ideal for time-sensitive issues.
@@ -78,18 +88,40 @@ We recommend using our [website support forum](https://pluginrx.com/support/plug
 https://youtu.be/l45T__AIHME
 
 == Screenshots ==
-1. Settings page
-2. Activated plugins with warnings
-3. View, filter, and clear debug.log file
-4. View wp-config.php file
-5. Some of the snippets you can add/remove from your wp-config.php file
-6. View .htaccess file
-7. Cron jobs
-8. View and update a user's meta
-9. Database table records
-10. Check API statuses
+1. Dashboard
+2. Tools page: enable/disable, sort, favorite
+3. Debug Log viewer using Easy Reader
+4. Post Meta viewer and editor
+5. Config file viewer and editor
+6. Database table records viewer
+7. Post Type viewer
+8. Shortcode finder
+9. Online users settings in light mode and admin bar drop down
+10. Admin bar centering tool
 
-== Changelog ===
+== Changelog ==
+= 3.0.0 =
+* Major update: rewrote the plugin for better performance, UI and UX
+* Fixes: Fixed a number of bugs throughout
+* Update: Added a light mode option by toggling the bug icon in the header
+* Update: More customization on almost every page
+* Update: Most pages now remember your last results
+* Update: Cleaned up the admin menu, moved tools to a dedicated Tools section
+* Update: Changed navigation tabs to a drop down in the top-right corner
+* Update: Added a dashboard with versions, server metrics, environment info, quick download of important files, and an issues check
+* Update: New Tools dashboard allows you to disable tool scripts you aren't using
+* Update: Moved all Plugins tab data to WP Plugins page with options to enable/disable each, plus added a notes feature
+* Update: Removed tools - Plugins, Error Types, Error Suppressing, Functions.php, Media Library, Domain, Regex, Available Functions/Hooks
+* Update: Combined different Error Logs, Activity Logs, and custom logs into a Logs section
+* Update: Combined User Meta and Post Meta into a new Meta Data section, added Term Meta, Comment Meta, Media Meta
+* Update: WP-CONFIG and HTACCESS tools now have improved snippets area, raw editors, magic cleaners and a code/lint checker
+* Update: Testing tool is now a built-in HTML/PHP editor
+* Update: Improved security for password protected pages
+* Update: New tools and options - Discord Messenger (Tool), Hearbeat Monitor (Settings > Heartbeat)
+* Update: Added an optional log count indicator to the admin bar
+* Update: Deprecated functions: ddtt_increase_test_number(), ddtt_get_current_url(), ddtt_get()
+* Update: Improved help guide and developer documentation on our website
+
 = 2.1.2 =
 * Update: Added Bulk Delete option to Site Options tab (props @venutius for feature request)
 * Tweak: Changed 2nd column of Site Options tab to include more information

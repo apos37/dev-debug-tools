@@ -1,0 +1,46 @@
+/* Options */
+
+#ddtt_lookup {
+    width: 200px;
+    max-width: 100%;
+}
+
+
+/* Other */
+
+.ddtt-source-label { font-weight: bold; }
+.ddtt-type-plugin .ddtt-source-label { color: #007c91; /* darker cyan for contrast */ }
+.ddtt-type-mu-plugin .ddtt-source-label { color: #e07b00; /* deep amber */ }
+.ddtt-type-theme .ddtt-source-label { color: #8e44ad; /* deep purple */ }
+.ddtt-type-unknown .ddtt-source-label { color: #c0392b; /* brick red */ }
+
+#ddtt-hub .bulk-delete-link.disable {
+    color: white;
+    background-color: #f44336; /* red */
+    border-color: #f44336;
+    border-radius: 6px;
+    padding: 6px 12px;
+    text-decoration: none;
+}
+
+.ddtt-edit-mode {
+    background-color: var(--color-error) !important;
+    color: white !important;
+}
+
+.ddtt-edit-mode h3 {
+    color: white !important;
+    border-color: #ccc !important;
+}
+
+.ddtt-edit-mode-only {
+    display: none;
+}
+
+.ddtt-edit-mode .ddtt-edit-mode-only {
+    display: table-cell;
+}
+
+#ddtt_bulk_delete_submit {
+    margin-top: 1rem;
+}

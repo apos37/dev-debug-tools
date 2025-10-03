@@ -1,0 +1,158 @@
+#ddtt-hub-content.dev-debug-welcome {
+    padding: 100px;
+    font-size: 1.2em;
+}
+
+#ddtt-hub-content.dev-debug-welcome h1 {
+    font-size: 2.5em;
+    margin-bottom: 0;
+}
+
+#ddtt-hub-content.dev-debug-welcome h1 {
+    background: var(--color-page-title-bg);
+    font-style: italic;
+    font-size: 2rem;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 0;
+    font-family: 'Michroma', sans-serif;
+}
+
+#ddtt-hub-content.dev-debug-welcome h2 {
+    background: transparent;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    font-weight: 700;
+    border-bottom: 2px solid var(--color-border);
+    padding-left: 0;
+    border-radius: 0;
+    padding-bottom: 0.25rem;
+    font-family: 'Poppins', 'Montserrat', 'Segoe UI', 'Helvetica Neue', sans-serif;
+    font-style: normal;
+    margin-bottom: 2rem;
+}
+
+#ddtt-hub-content.dev-debug-welcome .ddtt-welcome-message {
+    font-size: 1.2rem;
+    margin-top: 3rem;
+    margin-bottom: 6rem;
+}
+
+#ddtt-hub-content.dev-debug-welcome .ddtt-welcome-steps p {
+    line-height: 2;
+    margin-bottom: 1rem;
+    font-size: 1.2em;
+}
+
+#ddtt-hub-content.dev-debug-welcome .ddtt-section-content {
+    padding: 0 !important;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: none;
+    margin: 6rem 0;
+}
+
+#ddtt-hub-content.dev-debug-welcome .ddtt-welcome-final-message {
+    font-size: 1.2rem;
+    margin-top: 4rem;
+    font-weight: 600;
+    font-style: italic;
+}
+
+#ddtt-hub-content.dev-debug-welcome .ddtt-welcome-step {
+    display: block;
+    color: var(--color-link);
+}
+
+#ddtt-hub-content.dev-debug-welcome .ddtt-welcome-desc {
+    display: block;
+    font-style: italic;
+    font-size: 1rem;
+}
+
+#ddtt-hub-content.dev-debug-welcome #ddtt-welcome-complete-button {
+    font-size: 1.37rem;
+    padding: 1rem 2rem;
+    background: var(--color-success);
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+#ddtt-hub-content.dev-debug-welcome .ddtt-settings-row {
+    gap: 2rem;
+}
+
+#ddtt-hub-content.dev-debug-welcome .ddtt-settings-label {
+    flex: 0 0 300px;
+}
+
+/* Success Screen Styles */
+
+.ddtt-overlay {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ddtt-overlay.ddtt-dark-mode {
+  background: #2D2D2D;
+}
+
+.ddtt-success-screen {
+  text-align: center;
+  font-size: 22px;
+  animation: fadeInScale 0.4s ease forwards;
+  color: #1d1d1d;
+}
+
+.ddtt-overlay.ddtt-dark-mode .ddtt-success-screen h2,
+.ddtt-overlay.ddtt-dark-mode .ddtt-success-screen .ddtt-second-message {
+  color: #dcdcdc;
+}
+
+@keyframes fadeInScale {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.ddtt-checkmark {
+  width: 80px;
+  height: 80px;
+  display: inline-block;
+}
+
+.ddtt-checkmark svg {
+  width: 100%;
+  height: 100%;
+}
+
+.checkmark-circle {
+  stroke: #28a745;
+  stroke-width: 4;
+  stroke-miterlimit: 10;
+  stroke-dasharray: 176;
+  stroke-dashoffset: 176;
+  animation: circle-stroke 0.6s ease-out forwards;
+}
+
+.checkmark-check {
+  stroke: #28a745;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: check-stroke 0.3s ease-out forwards 0.6s;
+}
+
+@keyframes circle-stroke {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes check-stroke {
+  to { stroke-dashoffset: 0; }
+}

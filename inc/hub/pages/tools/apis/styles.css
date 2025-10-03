@@ -1,0 +1,35 @@
+.ddtt-apis .ddtt-table {
+    table-layout: fixed;
+}
+
+.ddtt-apis .ddtt-table tr th:nth-child(2),
+.ddtt-apis .ddtt-table tr td:nth-child(2) {
+    width: 100px;
+    text-align: center;
+}
+
+.ddtt-apis .ddtt-table tr th:nth-child(3),
+.ddtt-apis .ddtt-table tr td:nth-child(3) {
+    width: 300px;
+    text-align: center;
+}
+
+.ddtt-apis .ddtt-table tr th:last-child,
+.ddtt-apis .ddtt-table tr td:last-child {
+    width: 200px;
+    max-width: 200px;
+    text-align: right;
+}
+
+.ddtt-highlight-variable {
+    white-space: nowrap !important;
+}
+
+.ddtt-action-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.ddtt-apis .ddtt-table code pre {
+    width: fit-content;
+}

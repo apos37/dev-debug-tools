@@ -1,0 +1,9 @@
+.ddtt-cron-job-action {
+    margin-bottom: 1rem;
+    padding: 20px;
+    background-color: var(--color-code-block-bg);
+    border-left: 3px solid var(--color-border);
+    font-size: 0.85em;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}

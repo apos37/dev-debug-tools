@@ -1,0 +1,25 @@
+#ddtt-defined-constant-value-table {
+    margin-top: 3rem;
+}
+
+#ddtt-defined-constant-value-tbody .ddtt-table-code pre {
+    line-height: revert;
+}
+
+#ddtt-defined-constant-value-thead th:first-child:not([colspan="3"]) {
+    width: 100px;
+}
+
+#ddtt-defined-constant-value-thead th:nth-child(2):not([colspan="3"]) {
+    width: 300px;
+}
+
+#ddtt-constant-search-form {
+    display: flex;
+    gap: 8px;
+}
+
+.ddtt-filter-section {
+    display: flex;
+    justify-content: space-between;
+}

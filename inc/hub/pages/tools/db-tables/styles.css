@@ -1,0 +1,59 @@
+#ddtt-constant-search-form {
+    display: flex;
+    gap: 8px;
+}
+
+.ddtt-filter-section {
+    display: flex;
+    justify-content: space-between;
+}
+
+.ddtt-info-box {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.ddtt-info-box-label {
+    margin-right: 5px;
+    opacity: 0.5;
+}
+
+.ddtt-info-box-content {
+    display: flex;
+    align-items: center;
+}
+
+.ddtt-info-box-separator {
+    opacity: 0.5;
+}
+
+#ddtt-record-value-table-cont {
+    margin-top: 3rem;
+    /* overflow-x: auto; */
+    white-space: nowrap;
+    overflow: auto;
+    /* height: 80vh; */
+    max-height: 100vh;
+}
+
+#ddtt-record-value-table {
+    margin-top: 0 !important;
+}
+
+#ddtt-record-value-table tfoot {
+    background-color: var(--color-bg-alt2);
+}
+
+.ddtt-pagination {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2rem;
+    align-items: center;
+    justify-content: center;
+}
+
+#ddtt-records-pagination .ddtt-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}

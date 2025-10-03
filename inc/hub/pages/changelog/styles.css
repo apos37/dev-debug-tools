@@ -1,0 +1,57 @@
+#ddtt-log-section {
+    margin: 2rem 0;
+    padding: 0 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    color: var(--color-text-primary);
+}
+
+#ddtt-log-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem 2rem;
+}
+
+.ddtt-log-item {
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.3s ease;
+}
+
+.ddtt-log-item:hover,
+.ddtt-log-item:focus-within {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.ddtt-changelog-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: 0.3rem;
+}
+
+.ddtt-changelog-body ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    list-style-type: disc;
+}
+
+.ddtt-changelog-body li {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary, #555);
+    margin-bottom: 0.4rem;
+    line-height: 1.4;
+}
+
+.ddtt-version-in-progress {
+    color: var(--color-warning, #ff9800);
+    font-weight: bold;
+}

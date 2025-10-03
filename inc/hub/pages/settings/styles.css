@@ -1,0 +1,20 @@
+.ddtt-settings-row.type-checkboxes .ddtt-toggle-group {
+    column-count: 3;
+    column-gap: 12px;
+    width: 100%;
+    display: block !important;
+}
+
+.ddtt-settings-row.type-checkboxes .ddtt-toggle-wrapper {
+    display: block;
+    break-inside: avoid;
+    margin-bottom: 12px;
+}
+
+.ddtt-settings-row.type-checkboxes {
+    margin-top: 3rem !important;
+}
+
+#online_users_discord_enable {
+    margin-top: 3rem !important;
+}

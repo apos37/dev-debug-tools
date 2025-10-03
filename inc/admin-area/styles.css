@@ -1,0 +1,10 @@
+/* Log Counter on Admin Menu */
+.ddtt-error-count {
+    margin-left: 4px !important;
+}
+
+/* Columns */
+.column-ddtt_user_id { width: 5%; }
+.column-ddtt_user_registered { width: 15%; }
+.column-ddtt_post_id { width: 5%; }
+.column-ddtt_comment_id { width: 5%; }

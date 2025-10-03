@@ -1,0 +1,8 @@
+#wpadminbar #wp-admin-bar-site-name .ab-sub-wrapper {
+    max-height: 400px;
+    overflow-y: auto !important;
+}
+
+#wpadminbar #wp-admin-bar-site-name .ab-sub-wrapper ul:last-of-type {
+    padding-bottom: 10px;
+}

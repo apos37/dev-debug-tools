@@ -1,0 +1,18 @@
+.dev-debug-tools #qm-fatal {
+    border: 2px solid var(--color-border) !important;
+    box-shadow: 0 0 10px 2px var(--color-error);
+    background: var(--color-bg-main) !important;
+}
+
+.dev-debug-tools #qm-fatal h2 {
+    background: var(--color-page-title-bg) !important;
+}
+
+.dev-debug-tools #qm-fatal code {
+    background-color: var(--color-bg-alt2);
+    color: var(--color-text-primary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9rem;
+}

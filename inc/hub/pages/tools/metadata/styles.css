@@ -1,0 +1,202 @@
+/* Tabs */
+
+.ddtt-tab-link .ddtt-metadata-count-indicator {
+    position: absolute;
+    top: -10px;
+    right: -6px;
+}
+
+
+/* Table */
+
+.ddtt-tool-metadata .ddtt-table th:first-child,
+.ddtt-meta-key-row td:first-child {
+    width: 300px;
+}
+
+.ddtt-tool-metadata .ddtt-table th:last-child {
+    width: 120px;
+    text-align: right;
+}
+
+.ddtt-meta-key-row td:last-child {
+    width: 120px;
+    text-align: right;
+}
+
+#ddtt-hub .ddtt-button.ddtt-meta-action-button {
+    font-size: 0.73rem;
+}
+
+button.ddtt-button.ddtt-meta-action-button[data-action="delete"] {
+    background: var(--color-error) !important;
+}
+
+#ddtt-hub .ddtt-button.ddtt-meta-action-button:disabled, 
+#ddtt-hub .ddtt-button.ddtt-meta-action-button[disabled] {
+    opacity: 0.2;
+}
+
+/* General Info */
+
+.ddtt-metadata-info-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 15px;
+    border: 1px solid var(--color-border);
+    background: var(--color-code-block-bg);
+    border-radius: 6px;
+}
+
+.ddtt-metadata-image {
+    flex-shrink: 0;
+    width: auto;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 6px;
+}
+
+.ddtt-metadata-image img {
+    height: 200px;
+    width: auto;
+    display: block;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.ddtt-metadata-details {
+    flex: 1;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    color: var(--color-text-primary);
+}
+
+.ddtt-metadata-details h4 {
+    margin-top: 0;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.ddtt-metadata-details p {
+    margin: 4px 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+}
+
+.ddtt-placeholder-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    width: 200px;
+    background-color: var(--color-bg-alt2);
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    position: relative;
+}
+
+.ddtt-placeholder-image::before {
+    content: "\f03e"; /* Example: Font Awesome image icon */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 24px;
+    margin-right: 6px;
+}
+
+.ddtt-placeholder-image span {
+    display: inline-block;
+}
+
+
+/* Custom Meta */
+
+.ddtt-title-addnew {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.ddtt-button#ddtt-add-new-meta {
+    font-size: 0.73rem !important;
+}
+
+.ddtt-header-actions-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--color-border);
+    margin: 1em 0;
+    padding-bottom: 0.25rem;
+}
+
+#ddtt-hub .ddtt-header-actions-wrapper h3 {
+    margin: 0;
+    padding: 0;
+    border-bottom: 0;
+}
+
+.ddtt-table-actions {
+    display: flex;
+    gap: 1em;
+}
+
+.ddtt-hide-transients tr.transient,
+.ddtt-hide-ui-settings tr.ui-setting {
+    display: none;
+}
+
+.ddtt-meta-key-row.active td:nth-child(2) {
+    font-weight: bold;
+    color: var(--color-success);
+}
+
+.ddtt-meta-key-row.inactive td:nth-child(2) {
+    color: var(--color-error);
+}
+
+
+/* Taxonomies */
+
+#ddtt-metadata-taxonomies-section td:nth-child(2) li {
+    list-style: none;
+}
+
+#ddtt-metadata-taxonomies-section td:nth-child(2) li::marker {
+    content: '';
+}
+
+#ddtt-metadata-taxonomies-section .tagadd {
+    background: var(--color-button);
+    color: var(--color-button-text);
+}
+
+#ddtt-metadata-taxonomies-section .tagadd:hover {
+    background: var(--color-button-hover);
+}
+
+
+/* Sidebar */
+
+#ddtt-metadata-types {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+#ddtt-metadata-search,
+#ddtt-metadata-filter {
+    width: 100%;
+    font-size: 1rem;
+    padding: 6px 12px;
+    margin-bottom: 1rem;
+}
+
+.dev-debug-tools .ddtt-settings-sidebar select:disabled {
+    cursor: not-allowed;
+    opacity: 0.25;
+}

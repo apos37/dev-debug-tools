@@ -1,0 +1,268 @@
+/* Title Section */
+
+#ddtt-page-title-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+#ddtt-page-title-right,
+#ddtt-download-backups-cont {
+    display: flex;
+    gap: 2rem;
+}
+
+#ddtt-download-backups-cont button {
+    display: flex !important;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ddtt-download-content-message {
+    font-style: italic;
+    padding: 5px 0;
+    color: var(--color-text-secondary);
+}
+
+#ddtt-debug-info {
+    background: var(--color-bg-main);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.ddtt-debug-info-label {
+    background: #1B1B1B;
+    padding: 8px 10px;
+    font-weight: bold;
+    color: white;
+    width: 100%;
+    text-align: center;
+    border-radius: 6px 6px 0 0;
+    box-sizing: border-box;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.ddtt-debug-info-value {
+    padding: 6px 10px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    box-sizing: border-box;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    font-weight: bold;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#ddtt-debug-info.enabled .ddtt-debug-info-value {
+    background: var(--color-success);
+    color: #000000
+}
+
+#ddtt-debug-info.disabled .ddtt-debug-info-value {
+    background: var(--color-error);
+    color: #ffffff;
+}
+
+
+/* Blocks */
+
+#ddtt-block-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.ddtt-dashboard-block {
+    background-color: var(--color-bg-main);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ddtt-dashboard-block ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ddtt-dashboard-block li {
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.ddtt-dashboard-block li:first-child {
+    border-top: none;
+}
+
+.ddtt-dashboard-block li strong {
+    flex-shrink: 0;
+    width: 160px;
+    font-weight: 600;
+}
+
+.ddtt-dashboard-block li span {
+    opacity: 0.8;
+    text-align: right;
+    display: inline-block;
+    max-width: calc(100% - 160px - 1rem);
+    word-wrap: break-word;
+}
+
+
+/* Tooltips */
+
+#ddtt-hub .tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+#ddtt-hub .tooltiptext {
+    visibility: hidden;
+    background-color: var(--color-bg-tooltip);
+    color: var(--color-tooltip-text);
+    text-align: center;
+    padding: 5px 8px;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#ddtt-hub .tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+#ddtt-hub .warning-symbol {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: var(--color-warning);
+    border-radius: 50%;
+    margin-left: 4px;
+}
+
+
+/* Issues Table */
+
+#ddtt-check-issues-button {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+}
+
+.ddtt-issues-table tr td {
+    vertical-align: middle;
+}
+
+.ddtt-issues-table tr td:not(:last-child) {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+#ddtt-hub .accordion-header {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    color: var(--color-link);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+#ddtt-hub button.accordion-header .accordion-icon {
+    display: inline-block;
+    margin-right: 8px;
+    transition: transform 0.3s ease;
+    color: var(--color-text-secondary);
+}
+
+#ddtt-hub .accordion-header.open .accordion-icon {
+    transform: rotate(90deg);
+}
+
+#ddtt-hub .accordion-header:hover strong {
+    text-decoration: underline;
+}
+
+#ddtt-hub .accordion-body {
+    margin-top: 1rem;
+    font-size: 13px;
+}
+
+.ddtt-issues-table tr .ddtt-issue-found {
+    font-weight: bold;
+}
+
+.ddtt-issues-table tr[data-issue-severity="warning"] .ddtt-issue-found {
+    color: var(--color-warning);
+}
+
+.ddtt-issues-table tr[data-issue-severity="error"] .ddtt-issue-found {
+    color: var(--color-error);
+}
+
+.ddtt-issues-table tr[data-issue-severity="info"] .ddtt-issue-found {
+    color: var(--color-info);
+}
+
+.ddtt-issues-table tr .ddtt-issue-good {
+    color: var(--color-success);
+}
+
+.ddtt-issues-table tr .ddtt-issue-result .ddtt-loading-msg {
+    font-style: italic;
+    color: var(--color-text-secondary);
+}
+
+.ddtt-issues-table .ddtt-button {
+    white-space: nowrap;
+}
+
+
+/* Support Section */
+
+#ddtt-support-section {
+    font-size: 0.95rem;
+}
+
+#ddtt-support-section ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+}
+
+#ddtt-support-section ul li {
+    margin: 0;
+}

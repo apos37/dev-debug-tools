@@ -1,0 +1,109 @@
+.ddtt-php-info a:link {
+    color: var(--color-link);
+}
+
+.ddtt-php-info table {
+    background-color: var(--color-bg-main);
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+.ddtt-php-info table:first-child {
+    margin-top: 0 !important;
+}
+
+.ddtt-php-info table:not(:first-child) {
+    margin-top: 2rem !important;
+}
+
+.ddtt-php-info table tr:hover td {
+    background-color: var(--color-bg-alt) !important;
+}
+
+.ddtt-php-info .center {
+    text-align: center;
+}
+
+.ddtt-php-info .center table {
+    margin: 1em auto;
+    text-align: left;
+}
+
+.ddtt-php-info .center th {
+    text-align: center !important;
+}
+
+.ddtt-php-info td,
+.ddtt-php-info th {
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+    vertical-align: baseline;
+    padding: 10px 20px;
+}
+
+.ddtt-php-info tr td:last-child,
+.ddtt-php-info tr th:last-child {
+    border-right: none;
+}
+
+.ddtt-php-info tr:last-child td {
+    border-bottom: none;
+}
+
+.ddtt-php-info th {
+    position: sticky;
+    top: 0;
+    background: inherit;
+}
+
+.ddtt-php-info h1 {
+    font-size: 150%;
+    margin-top: 3rem !important;
+}
+
+.ddtt-php-info h2 {
+    text-align: left;
+    margin-top: 4rem !important;
+}
+
+.ddtt-php-info .p {
+    text-align: left;
+}
+
+.ddtt-php-info .h {
+    background-color: var(--color-bg-alt2);
+    font-weight: bold;
+}
+
+.ddtt-php-info .e {
+    width: 300px;
+    font-weight: bold;
+}
+
+.ddtt-php-info .v {
+    max-width: 300px;
+    overflow-x: auto;
+    word-wrap: break-word;
+}
+
+.ddtt-php-info .v i {
+    color: var(--color-text-primary);
+}
+
+.ddtt-php-info img {
+    float: right;
+    border: 0;
+}
+
+.ddtt-php-info hr {
+    width: 100%;
+    background-color: var(--color-border);
+    border: 0;
+    height: 1px;
+    margin-top: 3rem !important;
+}

@@ -1,0 +1,4 @@
+.ddtt-dark-mode .ddtt-type-plugin .ddtt-source-label { color: #00bcd4; /* cyan */ }
+.ddtt-dark-mode .ddtt-type-mu-plugin .ddtt-source-label { color: #ff9800; /* orange */ }
+.ddtt-dark-mode .ddtt-type-theme .ddtt-source-label { color: #ba68c8; /* purple */ }
+.ddtt-dark-mode .ddtt-type-unknown .ddtt-source-label { color: #ef5350; /* red */ }

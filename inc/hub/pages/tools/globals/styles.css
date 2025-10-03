@@ -1,0 +1,11 @@
+#ddtt-global-variable-value-table {
+    margin-top: 3rem;
+}
+
+#ddtt-global-variable-value-tbody .ddtt-table-code pre {
+    line-height: revert;
+}
+
+#ddtt-global-variable-value-thead th:first-child:not([colspan="2"]) {
+    width: 300px;
+}

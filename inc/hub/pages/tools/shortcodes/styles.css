@@ -1,0 +1,37 @@
+.ddtt-shortcodes .ddtt-table {
+    table-layout: fixed;
+}
+
+.ddtt-shortcodes:not(#ddtt-search-results-section) .ddtt-table tr th:last-child,
+.ddtt-shortcodes:not(#ddtt-search-results-section) .ddtt-table tr td:last-child {
+    width: 100px;
+    max-width: 100px;
+    text-align: right;
+}
+
+.ddtt-shortcodes .ddtt-table tr th:last-child {
+    padding-right: 34px;
+}
+
+.ddtt-highlight-variable {
+    white-space: nowrap !important;
+}
+
+.ddtt-action-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.ddtt-shortcodes .ddtt-table code pre {
+    width: fit-content;
+}
+
+.ddtt-shortcodes h4 {
+    margin-top: 3rem;
+}
+
+#ddtt-search-results-shortcode code {
+    font-size: inherit;
+    display: inline-block;
+    padding: 10px;
+}
