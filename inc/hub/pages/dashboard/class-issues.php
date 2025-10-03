@@ -86,9 +86,9 @@ class Issues {
         $site_domain = wp_parse_url( home_url(), PHP_URL_HOST );
         $admin_domain = substr( strrchr( $admin_email, '@' ), 1 );
         if ( $site_domain && $admin_domain && $site_domain !== $admin_domain ) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     } // End admin_email_domain_mismatch()
     
 
