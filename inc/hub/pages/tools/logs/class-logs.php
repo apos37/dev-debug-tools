@@ -600,21 +600,26 @@ class Logs {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-                    if ( !empty( $parsed_items) ) {
+                <?php
+                    if ( ! empty( $parsed_items ) ) {
                         foreach ( $parsed_items as $item ) {
+
+                            // Ensure group_class exists and has highlight_args
+                            $group_class = isset( $item[ 'group_class' ] ) ? $item[ 'group_class' ] : '';
+                            $bg_color    = isset( $highlight_args[ $group_class ][ 'bg_color' ] ) ? $highlight_args[ $group_class ][ 'bg_color' ] : '';
+                            $font_color  = isset( $highlight_args[ $group_class ][ 'font_color' ] ) ? $highlight_args[ $group_class ][ 'font_color' ] : '';
                             ?>
-                            <tr class="ddtt-item-activity-<?php echo esc_attr( $item[ 'activity_class' ] ); ?> ddtt-item-group-<?php echo esc_attr( $item[ 'group_class' ] ); ?>" style="background-color: <?php echo esc_attr( $highlight_args[ $item[ 'group_class' ] ][ 'bg_color' ] ); ?>; color: <?php echo esc_attr( $highlight_args[ $item[ 'group_class' ] ][ 'font_color' ] ); ?>;">
-                                <td><?php echo esc_attr( $item[ 'line_num' ] ); ?></td>
-                                <td><?php echo esc_html( $item[ 'datetime' ] ); ?></td>
-                                <td><?php echo wp_kses_post( $item[ 'activity' ] ); ?></td>
-                                <td><?php echo wp_kses_post( $item[ 'user_performing' ] ); ?></td>
-                                <td><?php echo wp_kses_post( $item[ 'notes' ] ); ?></td>
+                            <tr class="ddtt-item-activity-<?php echo esc_attr( isset( $item[ 'activity_class' ] ) ? $item[ 'activity_class' ] : '' ); ?> ddtt-item-group-<?php echo esc_attr( $group_class ); ?>" style="background-color: <?php echo esc_attr( $bg_color ); ?>; color: <?php echo esc_attr( $font_color ); ?>;">
+                                <td><?php echo esc_attr( isset( $item[ 'line_num' ] ) ? $item[ 'line_num' ] : '' ); ?></td>
+                                <td><?php echo esc_html( isset( $item[ 'datetime' ] ) ? $item[ 'datetime' ] : '' ); ?></td>
+                                <td><?php echo wp_kses_post( isset( $item[ 'activity' ] ) ? $item[ 'activity' ] : '' ); ?></td>
+                                <td><?php echo wp_kses_post( isset( $item[ 'user_performing' ] ) ? $item[ 'user_performing' ] : '' ); ?></td>
+                                <td><?php echo wp_kses_post( isset( $item[ 'notes' ] ) ? $item[ 'notes' ] : '' ); ?></td>
                             </tr>
                             <?php
                         }
                     }
-                    ?>
+                ?>
                 </tbody>
             </table>
         </div>
@@ -1368,8 +1373,8 @@ class Logs {
     /**
      * Prevent cloning and unserializing
      */
-    private function __clone() {}
-    private function __wakeup() {}
+    public function __clone() {}
+    public function __wakeup() {}
 
 }
 

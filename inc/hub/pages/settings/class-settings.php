@@ -988,7 +988,7 @@ class Settings {
             esc_attr( $value ),
             esc_attr( $pattern ),
             esc_attr( $placeholder ),
-            wp_kses_post( $args[ 'html' ] )
+            wp_kses_post( isset( $args[ 'html' ] ) ? $args[ 'html' ] : '' )
         );
     } // End render_field_text()
 
@@ -1007,7 +1007,7 @@ class Settings {
             esc_attr( $key ),
             esc_attr( $value ),
             esc_attr( $placeholder ),
-            wp_kses_post( $args[ 'html' ] )
+            wp_kses_post( isset( $args[ 'html' ] ) ? $args[ 'html' ] : '' )
         );
     } // End render_field_number()
 
@@ -1128,7 +1128,7 @@ class Settings {
             </div>',
 			esc_attr( $key ),
 			checked( $value, 1, false ),
-			wp_kses_post( $args[ 'html' ] )
+			wp_kses_post( isset( $args[ 'html' ] ) ? $args[ 'html' ] : '' )
 		);
     } // End render_field_checkbox()
 
@@ -1374,7 +1374,7 @@ class Settings {
             esc_attr( $key ),
             esc_attr( $onclick ),
             esc_html( $args[ 'label' ] ),
-            wp_kses_post( $args[ 'html' ] )
+            wp_kses_post( isset( $args[ 'html' ] ) ? $args[ 'html' ] : '' )
         );
     } // End render_field_button()
 
@@ -1798,8 +1798,8 @@ class Settings {
     /**
      * Prevent cloning and unserializing
      */
-    private function __clone() {}
-    private function __wakeup() {}
+    public function __clone() {}
+    public function __wakeup() {}
 
 }
 

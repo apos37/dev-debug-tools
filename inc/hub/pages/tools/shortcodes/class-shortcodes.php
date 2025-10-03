@@ -383,8 +383,8 @@ class Shortcodes {
     /**
      * Prevent cloning and unserializing
      */
-    private function __clone() {}
-    private function __wakeup() {}
+    public function __clone() {}
+    public function __wakeup() {}
     
 }
 
