@@ -823,77 +823,95 @@ class Logs {
                 </thead>
                 <tbody>
                     <?php
-                    foreach ( $parsed_errors as $error ) {
-                        $display_stack = '';
-                        if ( $error[ 'stack' ] ) {
-                            $abspath = untrailingslashit( ABSPATH );
-                            $error[ 'stack' ] = str_replace( $abspath, '', $error[ 'stack' ] );
-                            $display_stack = Helpers::truncate_string( $error[ 'stack' ] );
-                        }
-                        ?>
-                        <tr class="ddtt-error-type-<?php echo esc_attr( $error[ 'class' ] ); ?> ddtt-has-help-dialog" style="background-color: <?php echo esc_attr( $highlight_args[ $error[ 'class' ] ][ 'bg_color' ] ); ?>; color: <?php echo esc_attr( $highlight_args[ $error[ 'class' ] ][ 'font_color' ] ); ?>;">
-                            <td><?php echo esc_attr( $error[ 'line_num' ] ); ?></td>
-                            <td><?php echo esc_html( $error[ 'datetime' ] ); ?></td>
-                            <td><?php echo esc_html( $error[ 'type' ] ); ?></td>
-                            <td>
-                                <div class="ddtt-log-error-message"><?php echo wp_kses_post( $error[ 'message' ] ); ?></div>
-                                <?php if ( $error[ 'help' ] && is_array( $error[ 'help' ] ) ) : ?>
-                                    <div class="ddtt-log-error-help">
-                                        <button type="button" class="ddtt-button ddtt-help-toggle<?php echo ( empty( $error[ 'help' ] ) ) ? ' missing-help' : ''; ?>" aria-expanded="false" aria-controls="ddtt-help-content-<?php echo esc_attr( $error[ 'line_num' ] ); ?>">
-                                            <?php echo esc_html__( 'Help me with this error', 'dev-debug-tools' ); ?>
-                                        </button>
-                                        <div id="ddtt-help-content-<?php echo esc_attr( $error[ 'line_num' ] ); ?>" class="ddtt-help-content" hidden>
-                                            <button type="button" class="ddtt-help-close" aria-label="Close help">&times;</button>
-                                            <?php if ( ! empty( $error[ 'help' ] ) ) : ?>
-                                                <p><?php echo esc_html( $error[ 'help' ][ 'desc' ] ); ?></p>
-                                                <p>
-                                                    <a href="<?php echo esc_url( $error[ 'help' ][ 'link' ] ); ?>" target="_blank" rel="noopener noreferrer">
-                                                        <?php echo esc_html__( 'Learn more', 'dev-debug-tools' ); ?>
-                                                        <span class="dashicons dashicons-external"></span>
-                                                    </a>
-                                                </p>
-                                            <?php else : ?>
-                                                <p><?php echo wp_kses_post(
-                                                    sprintf(
-                                                        /* translators: %s: link HTML */
-                                                        __( 'No specific help available for this error. You may add your own help notes using the %s hook. Otherwise, try searching online:', 'dev-debug-tools' ),
-                                                        '"<a href="https://pluginrx.com/docs/plugin/dev-debug-tools/#ddtt_help_map_debug_log" target="_blank" rel="noopener noreferrer">ddtt_help_map_debug_log</a>"'
-                                                    ) ); 
-                                                ?></p>
-                                            <?php endif; ?>
-                                            <?php
-                                            foreach ( $error_help_search_options as $option_data ) {
-                                                $search_url = str_replace( '{string}', urlencode( $error[ 'message' ] ), $option_data[ 'url' ] );
-                                                echo '<a class="ddtt-help-search-links" href="' . esc_url( $search_url ) . '" target="_blank" rel="noopener noreferrer">'
-                                                    . esc_html( $option_data[ 'label' ] )
-                                                    . ' <span class="dashicons dashicons-external"></span>'
-                                                    . '</a>';
-                                            }
-                                            ?>
+                    if ( ! empty( $parsed_errors ) ) {
+                        foreach ( $parsed_errors as $error ) {
+
+                            $display_stack = '';
+
+                            if ( isset( $error[ 'stack' ] ) && $error[ 'stack' ] ) {
+                                $abspath = untrailingslashit( ABSPATH );
+                                $error[ 'stack' ] = str_replace( $abspath, '', $error[ 'stack' ] );
+                                $display_stack = Helpers::truncate_string( $error[ 'stack' ] );
+                            }
+
+                            // Safe highlight colors
+                            $error_class = isset( $error[ 'class' ] ) ? $error[ 'class' ] : '';
+                            $bg_color    = isset( $highlight_args[ $error_class ][ 'bg_color' ] ) ? $highlight_args[ $error_class ][ 'bg_color' ] : '';
+                            $font_color  = isset( $highlight_args[ $error_class ][ 'font_color' ] ) ? $highlight_args[ $error_class ][ 'font_color' ] : '';
+                            ?>
+                            <tr class="ddtt-error-type-<?php echo esc_attr( $error_class ); ?> ddtt-has-help-dialog" style="background-color: <?php echo esc_attr( $bg_color ); ?>; color: <?php echo esc_attr( $font_color ); ?>;">
+                                <td><?php echo esc_attr( isset( $error[ 'line_num' ] ) ? $error[ 'line_num' ] : '' ); ?></td>
+                                <td><?php echo esc_html( isset( $error[ 'datetime' ] ) ? $error[ 'datetime' ] : '' ); ?></td>
+                                <td><?php echo esc_html( isset( $error[ 'type' ] ) ? $error[ 'type' ] : '' ); ?></td>
+                                <td>
+                                    <div class="ddtt-log-error-message"><?php echo wp_kses_post( isset( $error[ 'message' ] ) ? $error[ 'message' ] : '' ); ?></div>
+
+                                    <?php if ( isset( $error[ 'help' ] ) && is_array( $error[ 'help' ] ) ) : ?>
+                                        <div class="ddtt-log-error-help">
+                                            <button type="button" class="ddtt-button ddtt-help-toggle<?php echo ( empty( $error[ 'help' ] ) ) ? ' missing-help' : ''; ?>" aria-expanded="false" aria-controls="ddtt-help-content-<?php echo esc_attr( isset( $error[ 'line_num' ] ) ? $error[ 'line_num' ] : '' ); ?>">
+                                                <?php echo esc_html__( 'Help me with this error', 'dev-debug-tools' ); ?>
+                                            </button>
+                                            <div id="ddtt-help-content-<?php echo esc_attr( isset( $error[ 'line_num' ] ) ? $error[ 'line_num' ] : '' ); ?>" class="ddtt-help-content" hidden>
+                                                <button type="button" class="ddtt-help-close" aria-label="Close help">&times;</button>
+                                                <?php if ( ! empty( $error[ 'help' ] ) ) : ?>
+                                                    <p><?php echo esc_html( isset( $error[ 'help' ][ 'desc' ] ) ? $error[ 'help' ][ 'desc' ] : '' ); ?></p>
+                                                    <p>
+                                                        <a href="<?php echo esc_url( isset( $error[ 'help' ][ 'link' ] ) ? $error[ 'help' ][ 'link' ] : '#' ); ?>" target="_blank" rel="noopener noreferrer">
+                                                            <?php echo esc_html__( 'Learn more', 'dev-debug-tools' ); ?>
+                                                            <span class="dashicons dashicons-external"></span>
+                                                        </a>
+                                                    </p>
+                                                <?php else : ?>
+                                                    <p><?php echo wp_kses_post(
+                                                        sprintf(
+                                                            /* translators: %s: link HTML */
+                                                            __( 'No specific help available for this error. You may add your own help notes using the %s hook. Otherwise, try searching online:', 'dev-debug-tools' ),
+                                                            '"<a href="https://pluginrx.com/docs/plugin/dev-debug-tools/#ddtt_help_map_debug_log" target="_blank" rel="noopener noreferrer">ddtt_help_map_debug_log</a>"'
+                                                        )
+                                                    ); ?></p>
+                                                <?php endif; ?>
+
+                                                <?php
+                                                if ( isset( $error_help_search_options ) && is_array( $error_help_search_options ) ) {
+                                                    foreach ( $error_help_search_options as $option_data ) {
+                                                        $search_url = str_replace( '{string}', urlencode( isset( $error[ 'message' ] ) ? $error[ 'message' ] : '' ), isset( $option_data[ 'url' ] ) ? $option_data[ 'url' ] : '#' );
+                                                        echo '<a class="ddtt-help-search-links" href="' . esc_url( $search_url ) . '" target="_blank" rel="noopener noreferrer">'
+                                                            . esc_html( isset( $option_data[ 'label' ] ) ? $option_data[ 'label' ] : '' )
+                                                            . ' <span class="dashicons dashicons-external"></span>'
+                                                            . '</a>';
+                                                    }
+                                                }
+                                                ?>
+                                            </div>
                                         </div>
-                                    </div>
+                                    <?php endif; ?>
+
+                                    <?php if ( isset( $error[ 'source' ] ) && $error[ 'source' ] ) : ?>
+                                        <div class="ddtt-log-error-source"><?php echo esc_html( $error[ 'source' ] ); ?></div>
+                                    <?php endif; ?>
+
+                                    <?php if ( isset( $error[ 'file' ] ) && $error[ 'file' ] ) : ?>
+                                        <div class="ddtt-log-error-file"><?php echo esc_html__( 'File: ', 'dev-debug-tools' ) . wp_kses_post( Helpers::maybe_redact( $error[ 'file' ], true ) ); ?></div>
+                                    <?php endif; ?>
+
+                                    <?php if ( isset( $error[ 'line' ] ) && $error[ 'line' ] ) : ?>
+                                        <div class="ddtt-log-error-line"><?php echo esc_html__( 'Line: ', 'dev-debug-tools' ) . esc_html( $error[ 'line' ] ); ?></div>
+                                    <?php endif; ?>
+
+                                    <?php if ( $display_stack ) : ?>
+                                        <div class="ddtt-log-error-stack"><pre><?php echo wp_kses_post( $display_stack ); ?></pre></div>
+                                    <?php endif; ?>
+                                </td>
+
+                                <?php if ( isset( $combine_errors ) && $combine_errors ) : ?>
+                                    <td class="ddtt-log-error-count-td"><div class="ddtt-log-error-count">x <?php echo esc_html( isset( $error[ 'count' ] ) ? $error[ 'count' ] : '' ); ?></div></td>
                                 <?php endif; ?>
-                                <?php if ( $error[ 'source' ] ) : ?>
-                                    <div class="ddtt-log-error-source"><?php echo esc_html( $error[ 'source' ] ); ?></div>
-                                <?php endif; ?>
-                                <?php if ( $error[ 'file' ] ) : ?>
-                                    <div class="ddtt-log-error-file"><?php echo esc_html__( 'File: ', 'dev-debug-tools' ) . wp_kses_post( Helpers::maybe_redact( $error[ 'file' ], true ) ); ?></div>
-                                <?php endif; ?>
-                                <?php if ( $error[ 'line' ] ) : ?>
-                                    <div class="ddtt-log-error-line"><?php echo esc_html__( 'Line: ', 'dev-debug-tools' ) . esc_html( $error[ 'line' ] ); ?></div>
-                                <?php endif; ?>
-                                <?php if ( $display_stack ) : ?>
-                                    <div class="ddtt-log-error-stack"><pre><?php echo wp_kses_post( $display_stack ); ?></pre></div>
-                                <?php endif; ?>
-                            </td>
-                            <?php if ( $combine_errors ) : ?>
-                                <td class="ddtt-log-error-count-td"><div class="ddtt-log-error-count">x <?php echo esc_html( $error[ 'count' ] ); ?></div></td>
-                            <?php endif; ?>
-                        </tr>
-                        <?php
+                            </tr>
+                            <?php
+                        }
                     }
                     ?>
-                </tbody>
+                    </tbody>
             </table>
         </div>
         <?php

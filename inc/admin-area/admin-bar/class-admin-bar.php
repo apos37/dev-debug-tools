@@ -890,12 +890,18 @@ class AdminBar {
                 $prefs = $this->centering_tool_defaults;
             }
 
-            $width_value = (int) str_replace( [ 'px', 'rem' ], '', $prefs[ 'cell-width' ] );
-            $width_unit = str_replace( $width_value, '', $prefs[ 'cell-width' ] ); // Get unit part (px or rem)
-            $height_value = (int) str_replace( [ 'px', 'rem' ], '', $prefs[ 'cell-height' ] );
+            // Parse width and height values safely
+            $width_value  = isset( $prefs[ 'cell-width' ] ) ? (int) str_replace( [ 'px', 'rem' ], '', $prefs[ 'cell-width' ] ) : 1;
+            $width_unit   = isset( $prefs[ 'cell-width' ] ) ? str_replace( $width_value, '', $prefs[ 'cell-width' ] ) : 'px';
+            $height_value = isset( $prefs[ 'cell-height' ] ) ? (int) str_replace( [ 'px', 'rem' ], '', $prefs[ 'cell-height' ] ) : 1;
 
-            $num_columns = floor( $prefs[ 'screen-width' ] / $width_value );
-            $num_rows = floor( $prefs[ 'screen-height' ] / $height_value );
+            // Ensure screen dimensions exist and are numeric
+            $screen_width  = isset( $prefs[ 'screen-width' ] ) ? (float) $prefs[ 'screen-width' ] : 0;
+            $screen_height = isset( $prefs[ 'screen-height' ] ) ? (float) $prefs[ 'screen-height' ] : 0;
+
+            // Calculate number of columns and rows safely
+            $num_columns = $width_value > 0 ? floor( $screen_width / $width_value ) : 0;
+            $num_rows    = $height_value > 0 ? floor( $screen_height / $height_value ) : 0;
 
 
             /**
