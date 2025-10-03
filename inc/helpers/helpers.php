@@ -30,10 +30,10 @@ class Helpers {
                     }
                 }
 
-                if ( ! empty( $developer_ids ) ) {
-                    update_option( 'ddtt_developers', array_values( array_unique( $developer_ids ) ) );
-                    delete_option( 'ddtt_dev_email' );
-                }
+                // if ( ! empty( $developer_ids ) ) {
+                //     update_option( 'ddtt_developers', array_values( array_unique( $developer_ids ) ) );
+                //     delete_option( 'ddtt_dev_email' );
+                // }
 
                 if ( $return_emails ) {
                     return $email_array;

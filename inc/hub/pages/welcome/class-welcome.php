@@ -222,6 +222,9 @@ class Welcome {
             }
         }
 
+        // Clear the old dev email option
+        delete_option( 'ddtt_dev_email' );
+
         // Disable the what's new notice since we just set up
         update_option( 'ddtt_last_viewed_version', Bootstrap::version() );
 
