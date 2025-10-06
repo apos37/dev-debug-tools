@@ -31,7 +31,8 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-#ddtt-tools-section a {
+#ddtt-tools-section a,
+#ddtt-tools-section span.ddtt-tool-link {
     position: relative;
     font-weight: 600;
     font-size: 1.1rem;
@@ -41,6 +42,18 @@
     margin-bottom: 0.3rem;
     border-bottom: 2px solid transparent;
     transition: border-color 0.25s ease, color 0.25s ease;
+}
+
+#ddtt-tools-section span.ddtt-tool-link {
+    color: var(--color-text-primary);
+}
+
+.ddtt-tool-no-access {
+    font-size: 0.9rem;
+    font-style: italic;
+    margin-top: 1rem;
+    display: block;
+    color: var(--color-error);
 }
 
 .ddtt-external-icon {
@@ -82,6 +95,9 @@
     padding: 1.2rem;
     border-radius: 0.5rem;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.ddtt-is-dev .ddtt-tool-item {
     cursor: move;
 }
 

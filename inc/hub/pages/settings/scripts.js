@@ -361,6 +361,41 @@ jQuery( function( $ ) {
 
 
     /**
+     * Handle the Import Settings
+     */
+    $( document ).on( 'click', '#ddtt_import_settings_upload', function ( e ) {
+        e.preventDefault();
+
+        var $input = $( '#ddtt_import_settings' );
+        var file = $input[ 0 ].files[ 0 ];
+        if ( ! file ) {
+            return;
+        }
+
+        $( this ).addClass( 'ddtt-loading-msg' ).prop( 'disabled', true ).text( ddtt_settings.i18n.importing );
+
+        var reader = new FileReader();
+        reader.onload = function ( e ) {
+            var fileContents = e.target.result;
+            var jsonData = fileContents;
+
+            $.post( ajaxurl, {
+                action: 'ddtt_settings_import',
+                nonce: ddtt_settings.nonce,
+                jsonData: jsonData
+            }, function ( response ) {
+                if ( response.success ) {
+                    DevDebugTools.Helpers.reload_page();
+                } else {
+                    alert( 'Import failed: ' + ( response.data || 'Unknown error.' ) );
+                }
+            } );
+        };
+        reader.readAsText( file );
+    } );
+
+
+    /**
      * Refresh Admin Bar Menu Links
      */
     $( document ).on( 'click', '#ddtt-refresh-admin-bar-menu-links', function( e ) {

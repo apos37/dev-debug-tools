@@ -18,18 +18,21 @@ class Settings {
      */
     public static function sections() : array {
         $sections = [
-            'general'      => __( 'General', 'dev-debug-tools' ),
-            'logging'      => __( 'Logging', 'dev-debug-tools' ),
-            'config_files' => __( 'Config Files', 'dev-debug-tools' ),
-            'metadata'     => __( 'Metadata', 'dev-debug-tools' ),
-            'heartbeat'    => __( 'Heartbeat', 'dev-debug-tools' ),
-            'online_users' => __( 'Online Users', 'dev-debug-tools' ),
-            'admin_bar'    => __( 'Admin Bar', 'dev-debug-tools' ),
-            'admin_areas'  => __( 'Admin Area', 'dev-debug-tools' ),
+            'general' => __( 'General', 'dev-debug-tools' ),
         ];
 
         if ( Helpers::is_dev() ) {
-            $sections[ 'security' ] = __( 'Security', 'dev-debug-tools' );
+            $dev_only = [
+                'logging'      => __( 'Logging', 'dev-debug-tools' ),
+                'config_files' => __( 'Config Files', 'dev-debug-tools' ),
+                'metadata'     => __( 'Metadata', 'dev-debug-tools' ),
+                'heartbeat'    => __( 'Heartbeat', 'dev-debug-tools' ),
+                'online_users' => __( 'Online Users', 'dev-debug-tools' ),
+                'admin_bar'    => __( 'Admin Bar', 'dev-debug-tools' ),
+                'admin_areas'  => __( 'Admin Area', 'dev-debug-tools' ),
+                'security'     => __( 'Security', 'dev-debug-tools' ),
+            ];
+            $sections = array_merge( $sections, $dev_only );
         }
 
         return $sections;
@@ -44,52 +47,60 @@ class Settings {
      * @return array
      */
     public static function general_options() : array {
-        $current_time = time();
-        $time_format_choices = [
-            'n/j/Y g:i a T' => wp_date( 'n/j/Y g:i a T', $current_time ) . ' (n/j/Y g:i a T)',
-            'n/j/Y H:i T' => wp_date( 'n/j/Y H:i T', $current_time ) . ' (n/j/Y H:i T)',
-            'F j, Y g:i a T'  => wp_date( 'F j, Y g:i a T', $current_time ) . ' (F j, Y g:i a T)',
-            'F j, Y G:i T'    => wp_date( 'F j, Y G:i T', $current_time ) . ' (F j, Y G:i T)',
-            'Y-m-d H:i:s'     => wp_date( 'Y-m-d H:i:s', $current_time ) . ' (Y-m-d H:i:s)',
-            'm/d/Y g:i a'     => wp_date( 'm/d/Y g:i a', $current_time ) . ' (m/d/Y g:i a)',
-            'm/d/Y H:i'       => wp_date( 'm/d/Y H:i', $current_time ) . ' (m/d/Y H:i)',
-            'D, M j, Y g:i a' => wp_date( 'D, M j, Y g:i a', $current_time ) . ' (D, M j, Y g:i a)',
-            'D, M j, Y H:i'   => wp_date( 'D, M j, Y H:i', $current_time ) . ' (D, M j, Y H:i)',
-        ];
+        $fields = [ 
+            'developers' => [ 
+                'title'   => __( 'Developer Accounts', 'dev-debug-tools' ), 
+                'desc'    => __( 'Add user accounts that should see errors, receive fatal error notifications, and have access to special features.', 'dev-debug-tools' ), 
+                'type'    => 'devs', 
+                'default' => get_option( 'admin_email' ), 
+            ], 
+        ]; 
 
-        return [
-            'general' => [
-                'label' => false,
-                'fields' => [
-                    'developers' => [
-                        'title'     => __( 'Developer Accounts', 'dev-debug-tools' ),
-                        'desc'      => __( 'Add user accounts that should see errors, receive fatal error notifications, and have access to special features.', 'dev-debug-tools' ),
-                        'type'      => 'devs',
-                        'default'   => get_option( 'admin_email' ),
-                    ],
-                    'dev_timezone' => [
-                        'title'     => __( 'Developer Timezone', 'dev-debug-tools' ),
-                        'desc'      => __( 'Changes the timezone on Debug Log viewer and other areas in the plugin. Default is what the site uses.', 'dev-debug-tools' ),
-                        'type'      => 'select',
-                        'choices'   => timezone_identifiers_list(),
-                        'default'   => get_option( 'timezone_string', 'UTC' ),
-                    ],
-                    'dev_timeformat' => [
-                        'title'   => __( 'Developer Time Format', 'dev-debug-tools' ),
-                        'desc'    => __( 'Changes the time format on Debug Log viewer and other areas in the plugin.', 'dev-debug-tools' ),
-                        'type'    => 'select',
-                        'choices' => $time_format_choices,
-                        'default' => get_option( 'time_format', 'F j, Y g:i a T' ),
-                    ],
-                    'open_nav_new_tab' => [
-                        'title'     => __( 'Open Nav Links in New Tab', 'dev-debug-tools' ),
-                        'desc'      => __( 'When navigating to a different page in the plugin from the dropdown navigation at the top right of the page, open the link in a new tab.', 'dev-debug-tools' ),
-                        'type'      => 'checkbox',
-                        'default'   => false,
-                    ],
-                ]
-            ]
-        ];
+        if ( Helpers::is_dev() ) { 
+            $current_time = time(); 
+
+            $time_format_choices = [ 
+                'n/j/Y g:i a T'  => wp_date( 'n/j/Y g:i a T', $current_time ) . ' ( n/j/Y g:i a T )', 
+                'n/j/Y H:i T'    => wp_date( 'n/j/Y H:i T', $current_time ) . ' ( n/j/Y H:i T )', 
+                'F j, Y g:i a T' => wp_date( 'F j, Y g:i a T', $current_time ) . ' ( F j, Y g:i a T )', 
+                'F j, Y G:i T'   => wp_date( 'F j, Y G:i T', $current_time ) . ' ( F j, Y G:i T )', 
+                'Y-m-d H:i:s'    => wp_date( 'Y-m-d H:i:s', $current_time ) . ' ( Y-m-d H:i:s )', 
+                'm/d/Y g:i a'    => wp_date( 'm/d/Y g:i a', $current_time ) . ' ( m/d/Y g:i a )', 
+                'm/d/Y H:i'      => wp_date( 'm/d/Y H:i', $current_time ) . ' ( m/d/Y H:i )', 
+                'D, M j, Y g:i a'=> wp_date( 'D, M j, Y g:i a', $current_time ) . ' ( D, M j, Y g:i a )', 
+                'D, M j, Y H:i'  => wp_date( 'D, M j, Y H:i', $current_time ) . ' ( D, M j, Y H:i )', 
+            ]; 
+
+            $fields[ 'dev_timezone' ] = [ 
+                'title'   => __( 'Developer Timezone', 'dev-debug-tools' ), 
+                'desc'    => __( 'Changes the timezone on Debug Log viewer and other areas in the plugin. Default is what the site uses.', 'dev-debug-tools' ), 
+                'type'    => 'select', 
+                'choices' => timezone_identifiers_list(), 
+                'default' => get_option( 'timezone_string', 'UTC' ), 
+            ]; 
+
+            $fields[ 'dev_timeformat' ] = [ 
+                'title'   => __( 'Developer Time Format', 'dev-debug-tools' ), 
+                'desc'    => __( 'Changes the time format on Debug Log viewer and other areas in the plugin.', 'dev-debug-tools' ), 
+                'type'    => 'select', 
+                'choices' => $time_format_choices, 
+                'default' => get_option( 'time_format', 'F j, Y g:i a T' ), 
+            ]; 
+
+            $fields[ 'open_nav_new_tab' ] = [ 
+                'title'   => __( 'Open Nav Links in New Tab', 'dev-debug-tools' ), 
+                'desc'    => __( 'When navigating to a different page in the plugin from the dropdown navigation at the top right of the page, open the link in a new tab.', 'dev-debug-tools' ), 
+                'type'    => 'checkbox', 
+                'default' => false, 
+            ]; 
+        } 
+
+        return [ 
+            'general' => [ 
+                'label'  => false, 
+                'fields' => $fields, 
+            ], 
+        ]; 
     } // End general_options()
 
 
@@ -163,7 +174,7 @@ class Settings {
                         'title'      => __( 'Debug Log Path', 'dev-debug-tools' ),
                         'desc'       => __( 'The path to the debug.log file. This is usually in the wp-content directory.', 'dev-debug-tools' ),
                         'type'       => 'path',
-                        'default'    => ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG !== true ) ? WP_DEBUG_LOG : WP_CONTENT_DIR . '/debug.log',
+                        'default'    => Helpers::get_default_debug_log_path( true ),
                     ],
                     'error_log_path' => [
                         'title'      => __( 'Error Log Path', 'dev-debug-tools' ),
@@ -833,19 +844,34 @@ class Settings {
                 ]
             ],
             'reset' => [
-                'label' => __( 'Reset Plugin Data', 'dev-debug-tools' ),
+                'label' => __( 'Plugin Data', 'dev-debug-tools' ),
                 'fields' => [
+                    'export_settings' => [
+                        'title'  => __( "Export All Plugin Data", 'dev-debug-tools' ),
+                        'desc'   => __( "This action will download the current plugin settings as a JSON file to keep as a backup or use on a different site.", 'dev-debug-tools' ),
+                        'type'   => 'download',
+                        'label'  => __( 'Download JSON File', 'dev-debug-tools' ),
+                        'ignore' => true
+                    ],
+                    'import_settings' => [
+                        'title'     => __( 'Import Plugin Data', 'dev-debug-tools' ),
+                        'desc'      => __( 'Use this form to import plugin settings using a JSON file. Use the JSON schema provided in the download above. You may modify the JSON file to only import specific settings. Note that existing settings will be overwritten.', 'dev-debug-tools' ),
+                        'type'      => 'upload',
+                        'filetypes' => [ 'json' ],
+                        'ignore'    => true
+                    ],
                     'remove_data_on_uninstall' => [
-                        'title'     => __( 'Remove All Plugin Data on Uninstall', 'dev-debug-tools' ),
-                        'desc'      => __( 'When you uninstall the plugin, all settings and data will be permanently deleted. This action cannot be undone.', 'dev-debug-tools' ),
-                        'type'      => 'checkbox',
-                        'default'   => false,
+                        'title'   => __( 'Remove All Plugin Data on Uninstall', 'dev-debug-tools' ),
+                        'desc'    => __( 'When you uninstall the plugin, all settings and data will be permanently deleted. This action cannot be undone.', 'dev-debug-tools' ),
+                        'type'    => 'checkbox',
+                        'default' => false,
                     ],
                     'reset_plugin_data_now' => [
-                        'title' => __( "Reset All Plugin Data Now", 'dev-debug-tools' ),
-                        'desc'  => __( "This action will clear all plugin data for the current site to start fresh with default settings. It will also remove old option keys no longer in use from previous versions. This action cannot be undone.", 'dev-debug-tools' ),
-                        'type'  => 'button',
-                        'label' => __( 'Reset All Plugin Data', 'dev-debug-tools' ),
+                        'title'  => __( "Reset All Plugin Data Now", 'dev-debug-tools' ),
+                        'desc'   => __( "This action will clear all plugin data for the current site to start fresh with default settings. It will also remove old option keys no longer in use from previous versions. This action cannot be undone.", 'dev-debug-tools' ),
+                        'type'   => 'button',
+                        'label'  => __( 'Reset All Plugin Data', 'dev-debug-tools' ),
+                        'ignore' => true
                     ],
                 ]
             ],
@@ -859,6 +885,7 @@ class Settings {
      * @var string
      */
     private $nonce = 'ddtt_save_settings_nonce';
+    private static $download_nonce = 'ddtt_download_settings_nonce';
     private $reset_nonce = 'ddtt_reset_all_plugin_data_nonce';
 
 
@@ -884,6 +911,7 @@ class Settings {
      * Constructor
      */
     private function __construct() {
+        add_action( 'ddtt_header_notices', [ $this, 'render_header_notices' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
         add_action( 'wp_ajax_ddtt_user_select', [ $this, 'ajax_user_select' ] );
         add_action( 'wp_ajax_nopriv_ddtt_user_select', '__return_false' );
@@ -893,7 +921,27 @@ class Settings {
         add_action( 'wp_ajax_nopriv_ddtt_save_settings', '__return_false' );
         add_action( 'wp_ajax_ddtt_reset_all_plugin_data', [ $this, 'ajax_reset_all_plugin_data' ] );
         add_action( 'wp_ajax_nopriv_ddtt_reset_all_plugin_data', '__return_false' );
+        $this->handle_downloads();
+        add_action( 'wp_ajax_ddtt_settings_import', [ $this, 'ajax_settings_import' ] );
+        add_action( 'wp_ajax_nopriv_ddtt_settings_import', '__return_false' );
     } // End __construct()
+    
+
+    /**
+     * Render header notices
+     *
+     * This method is called to render notices in the header.
+     * It checks for deleted options and displays a notice if any were deleted.
+     */
+    public function render_header_notices() {
+        if ( AdminMenu::get_current_page_slug() !== 'dev-debug-settings' ) {
+            return;
+        }
+
+        if ( $import_data = get_transient( 'ddtt_settings_imported_successfully' ) ) {
+            Helpers::render_notice( sprintf( __( '%1$s settings imported successfully.', 'dev-debug-tools' ), esc_attr( $import_data[ 'count' ] ) ), 'success' );
+        }
+    } // End render_header_notices()
 
 
     /**
@@ -922,7 +970,7 @@ class Settings {
             }
 
         // Get the user details for the selected IDs
-        } else {
+        } elseif ( ! empty( $value ) && is_array( $value ) ) {
             $values = [];
             foreach ( $value as $id ) {
                 $user = get_user_by( 'ID', $id );
@@ -1247,12 +1295,7 @@ class Settings {
 
         // Check if the path exists
         if ( $value ) {
-            if ( strpos( $value, ABSPATH ) !== 0 ) {
-                $path = wp_normalize_path( ABSPATH . ltrim( $value, '/' ) );
-            } else {
-                $path = wp_normalize_path( $value );
-            }
-            $path_exists = file_exists( $path ) && is_readable( $path );
+            $path_exists = Helpers::path_exists( $value );
             $class = $path_exists ? ' ddtt-status-verified' : ' ddtt-status-failed';
             $label = $path_exists ? __( 'Verified', 'dev-debug-tools' ) : __( 'Failed', 'dev-debug-tools' );
         } else {
@@ -1418,6 +1461,41 @@ class Settings {
         </form>
         <?php
     } // End render_field_search()
+
+
+    /**
+     * Render a download field.
+     *
+     * @param string $key The key of the option.
+     * @param array $args The arguments for the field.
+     */
+    public static function render_field_download( $key, $args ) {
+        // Start form.
+        printf(
+            '<form id="%1$s_form" method="post">',
+            esc_attr( $key )
+        );
+
+        // Add nonce field.
+        wp_nonce_field( 'ddtt_setting_download_' . $key, self::$download_nonce );
+
+        // Hidden fields.
+        printf(
+            '<input type="hidden" name="ddtt_download_setting" value="%s">',
+            esc_attr( $key )
+        );
+
+        // Submit button.
+        printf(
+            '<button id="%1$s" type="submit" class="ddtt-button">%2$s</button> %3$s',
+            esc_attr( $key ),
+            esc_html( $args[ 'label' ] ),
+            wp_kses_post( isset( $args[ 'html' ] ) ? $args[ 'html' ] : '' )
+        );
+
+        // End form.
+        echo '</form>';
+    } // End render_field_download()
     
 
     /**
@@ -1560,6 +1638,7 @@ class Settings {
                 'resetting'     => __( 'Removing all plugin data now', 'dev-debug-tools' ),
                 'resetSuccess'  => __( 'All done! Reloading', 'dev-debug-tools' ),
                 'startTyping'   => __( 'Start typing a user\'s name.', 'dev-debug-tools' ),
+                'importing'     => __( 'Importing', 'dev-debug-tools' ),
             ]
         ] );
     } // End enqueue_assets()
@@ -1793,6 +1872,176 @@ class Settings {
         Cleanup::run();
         wp_send_json_success( [ 'message' => __( 'All plugin data has been reset.', 'dev-debug-tools' ) ] );
     } // End ajax_reset_all_plugin_data()
+
+
+    /**
+     * Handle download buttons
+     */
+    public function handle_downloads() {
+        if ( ! is_admin() || ! current_user_can( 'manage_options' ) || ! Helpers::is_dev() ) {
+            return;
+        }
+
+        if ( ! isset( $_POST[ 'ddtt_download_setting' ] ) ) {
+            return;
+        }
+
+        $action = sanitize_text_field( wp_unslash( $_POST[ 'ddtt_download_setting' ] ) );
+
+        if ( $action === 'ddtt_export_settings' ) {
+
+            check_admin_referer( 'ddtt_setting_download_' . $action, self::$download_nonce );
+
+            // Get all plugin settings
+            $all_options = Cleanup::get_all_options( false );
+
+            // Keys we do NOT want to export
+            $exclude_keys = [
+                'developers',
+                'dev_access_only',
+                'hide_plugin',
+                'enable_pass',
+                'debug_log_path',
+                'error_log_path',
+                'admin_error_log_path',
+                'plugins',
+                'plugin_sizes',
+                'plugin_installers',
+                'last_selected_table',
+                'last_defined_constant',
+                'last_global_variable',
+                'last_selected_post_type',
+                'last_selected_taxonomy',
+                'last_viewed_version',
+                'metadata_last_lookups',
+                'htaccess_last_modified',
+                'wpconfig_last_modified',
+                'total_error_count',
+                'admin_menu_items',
+                'deleted_site_options',
+                'test_mode',
+                'reset_plugin_data_now',
+                'enable_curl_timeout'
+            ];
+
+            $data = [
+                'site_url' => get_site_url(),
+            ];
+
+            foreach ( $all_options as $group => $options ) {
+                if ( ! is_array( $options ) ) {
+                    continue;
+                }
+
+                foreach ( $options as $option ) {
+
+                    if ( in_array( $option, $exclude_keys, true ) ) {
+                        continue;
+                    }
+
+                    $option_name = 'ddtt_' . $option;
+
+                    // Use a sentinel to detect truly missing options
+                    $value = get_option( $option_name, '__missing__' );
+
+                    // Only include if the option actually exists in the DB
+                    if ( $value !== '__missing__' ) {
+                        $data[ $group ][ $option ] = $value;
+                    }
+                }
+            }
+
+            // Encode and send
+            $export_data = wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+            $filename    = 'ddtt-settings-export-' . gmdate( 'Y-m-d' ) . '.json';
+
+            // Force download headers
+            header( 'Content-Description: File Transfer' );
+            header( 'Content-Type: application/json; charset=utf-8' );
+            header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+            header( 'Expires: 0' );
+            header( 'Cache-Control: must-revalidate' );
+            header( 'Pragma: public' );
+            header( 'Content-Length: ' . strlen( $export_data ) );
+
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- direct JSON output
+            echo $export_data;
+            exit;
+        }
+    } // End handle_downloads()
+    
+
+    /**
+     * AJAX handler for settings import.
+     *
+     * @return void
+     */
+    public function ajax_settings_import() {
+        check_ajax_referer( $this->nonce, 'nonce' );
+        if ( ! current_user_can( 'manage_options' ) && ! Helpers::is_dev() ) {
+            wp_send_json_error( 'unauthorized' );
+        }
+
+        $file_data = isset( $_POST[ 'jsonData' ] ) ? wp_unslash( $_POST[ 'jsonData' ] ) : null; // phpcs:ignore
+
+        if ( ! $file_data ) {
+            wp_send_json_error( 'No file data.' );
+        }
+
+        $import = json_decode( $file_data, true );
+        if ( ! is_array( $import ) || empty( $import ) ) {
+            wp_send_json_error( 'Invalid JSON data.' );
+        }
+
+        // Current site URL
+        $current_site_url = get_site_url();
+
+        // If export contains a 'site_url', use it to replace old URLs
+        $old_site_url = isset( $import[ 'site_url' ] ) ? $import[ 'site_url' ] : $current_site_url;
+
+
+        // Update the settings
+        $successful_updates = 0;
+        $options_updated = [];
+        foreach ( $import as $group => $options ) {
+            if ( ! is_array( $options ) ) {
+                continue;
+            }
+
+            foreach ( $options as $option => $value ) {
+                $option_key = 'ddtt_' . $option;
+
+                // Replace old site URL with current site URL in string values
+                if ( is_string( $value ) ) {
+                    $value = str_replace( $old_site_url, $current_site_url, $value );
+                }
+                // Optionally, recursively replace in arrays
+                elseif ( is_array( $value ) ) {
+                    array_walk_recursive( $value, function( &$item ) use ( $old_site_url, $current_site_url ) {
+                        if ( is_string( $item ) ) {
+                            $item = str_replace( $old_site_url, $current_site_url, $item );
+                        }
+                    });
+                }
+
+                // Add or update the option
+                if ( get_option( $option_key, '__notset' ) === '__notset' ) {
+                    add_option( $option_key, $value );
+                } else {
+                    update_option( $option_key, $value );
+                }
+
+                $successful_updates++;
+                $options_updated[] = $option_key;
+            }
+        }
+
+        // Set transient to show admin notice
+        set_transient( 'ddtt_settings_imported_successfully', [ 'count' => $successful_updates ], 30 );
+        set_transient( 'ddtt_settings_imported', [ 'count' => $successful_updates, 'updated' => $options_updated ], 12 * HOUR_IN_SECONDS );
+
+        wp_send_json_success();
+    } // End ajax_settings_import()
 
 
     /**

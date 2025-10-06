@@ -14,6 +14,9 @@ class SiteWide {
      */
     public function __construct() {
 
+        // Add body class
+        add_action( 'admin_body_class', [ $this, 'body_class' ] );
+
         // User logins to Discord
         if ( get_option( 'ddtt_online_users_discord_enable', false ) ) {
             add_action( 'wp_login', [ $this, 'send_login_to_discord' ], 10, 2 );
@@ -34,6 +37,21 @@ class SiteWide {
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets' ] );
 
     } // End __construct()
+
+
+    /**
+     * Add custom body class for devs
+     *
+     * @param string $classes Existing body classes.
+     * 
+     * @return string
+     */
+    public function body_class( $classes ) : string {
+        if ( Helpers::is_dev() ) {
+            $classes .= ' ddtt-is-dev';
+        }
+        return $classes;
+    } // End body_class()
 
 
     /**

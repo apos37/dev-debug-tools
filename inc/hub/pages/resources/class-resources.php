@@ -78,6 +78,7 @@ class Resources {
         }
 
         wp_localize_script( 'ddtt-page-resources', 'ddtt_resources', [
+            'isDev' => Helpers::is_dev(),
             'nonce' => wp_create_nonce( $this->nonce ),
             'i18n' => [
                 'removeResource'     => __( 'Remove Resource', 'dev-debug-tools' ),

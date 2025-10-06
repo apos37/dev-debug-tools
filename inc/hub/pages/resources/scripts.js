@@ -5,6 +5,12 @@ DevDebugTools.Helpers.log_localization( 'ddtt_resources' );
 // Now start jQuery
 jQuery( document ).ready( function( $ ) {
 
+    ////////////////////////////////// DEV ONLY //////////////////////////////////
+    if ( ! ddtt_resources.isDev ) {
+        return;
+    }
+
+
     /**
      * Sortable
      */

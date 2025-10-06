@@ -11,7 +11,7 @@ $highlight_args = $current_subsection == 'activity' ? Activity_Log::highlight_ar
 
 <div id="ddtt-page-title-section">
     <div id="ddtt-page-title-left">
-        <h2 id="ddtt-page-title"><?php echo esc_html( $sections[ $current_subsection ][ 'label' ] ); ?></h2>
+        <h2 id="ddtt-page-title"><?php echo esc_html( isset( $sections[ $current_subsection ][ 'label' ] ) ? $sections[ $current_subsection ][ 'label' ] : __( 'Log Viewer', 'dev-debug-tools' ) ); ?></h2>
         <br>
         <?php
         foreach ( $sections as $section_key => $section_data ) {
@@ -35,7 +35,7 @@ $highlight_args = $current_subsection == 'activity' ? Activity_Log::highlight_ar
             }
         }
 
-        echo '<a href="' . esc_url( Bootstrap::page_url( 'settings&s=logging' ) ) . '" ' . esc_html( $data_attr ) . ' class="ddtt-tab-link">' . esc_html__( 'Settings', 'dev-debug-tools' ) . '</a>';
+        echo '<a href="' . esc_url( Bootstrap::page_url( 'settings&s=logging' ) ) . '" class="ddtt-tab-link">' . esc_html__( 'Settings', 'dev-debug-tools' ) . '</a>';
         ?>
         <a href="#" class="ddtt-rerender-content" title="<?php esc_attr_e( 'Refresh Log Viewer', 'dev-debug-tools' ); ?>"><span class="dashicons dashicons-update"></span></a>
     </div>

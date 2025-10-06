@@ -40,3 +40,7 @@
 #wp-admin-bar-ddtt-online-users-total .ab-item {
     opacity: 0.73;
 }
+
+#wp-admin-bar-ddtt-online-users .ddtt-online-user.dev {
+    padding-right: 14px;
+}

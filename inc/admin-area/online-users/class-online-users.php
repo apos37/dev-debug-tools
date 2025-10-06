@@ -47,7 +47,7 @@ class OnlineUsers {
         add_action( 'init', [ $this, 'track_activity' ] );
 
         // Admin bar menu
-        add_action( 'admin_bar_menu', [ $this, 'admin_bar' ], 100 );
+        add_action( 'admin_bar_menu', [ $this, 'admin_bar' ], 9999999 );
 
         // User column
         add_filter( 'manage_users_columns', [ $this, 'user_column' ] );
@@ -209,8 +209,10 @@ class OnlineUsers {
             $title        = $user->display_name . ' — ' . $role_display;
 
             // Add dev icon if applicable
+            $class = 'ddtt-online-user';
             if ( Helpers::is_dev( $user->ID ) ) {
-                $title .= ' <img src="' . esc_attr( Helpers::icon( 14, 14 ) ) . '" alt="Dev" style="vertical-align:middle; margin-left:3px;" />';
+                $class .= ' dev';
+                $title .= ' <img src="' . esc_attr( Helpers::icon( 14, 14 ) ) . '" alt="Dev" style="vertical-align:middle; margin-left:3px; margin-top:-2px;" />';
             }
 
             if ( empty( $link_template ) ) {
@@ -224,6 +226,9 @@ class OnlineUsers {
                 'parent' => 'ddtt-online-users',
                 'title'  => wp_kses_post( $title ),
                 'href'   => esc_url( $link ),
+                'meta'   => [
+                    'class' => $class,
+                ],
             ] );
         }
 

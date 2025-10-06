@@ -3,6 +3,8 @@ namespace Apos37\DevDebugTools;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+$is_dev = Helpers::is_dev();
+
 // Check if WP_DEBUG is enabled
 $wp_debug = defined( 'WP_DEBUG' ) && WP_DEBUG;
 
@@ -39,7 +41,9 @@ $opcache_enabled = function_exists( 'opcache_get_status' ) && opcache_get_status
 $opcache_status = $opcache_enabled ? __( 'Enabled', 'dev-debug-tools' ) : __( 'Disabled', 'dev-debug-tools' );
 
 // Get the issues
-$issues = (new Issues())->get();
+if ( $is_dev ) {
+    $issues = (new Issues())->get();
+}
 
 // Support
 $base_url  = Bootstrap::author_uri();
@@ -76,15 +80,17 @@ $our_links = [
         <code class="ddtt-code"><strong>ABSPATH:</strong> <?php echo wp_kses( Helpers::maybe_redact( ABSPATH ), [ 'i' => [ 'class' => [] ] ] ); ?></code>
     </div>
     <div id="ddtt-page-title-right">
-        <div id="ddtt-download-backups-cont">
-            <form class="ddtt-download-form" method="post">
-                <?php wp_nonce_field( 'ddtt_dashboard_nonce_action', 'ddtt_dashboard_nonce_field' ); ?>
-                <button class="ddtt-button" type="submit" name="ddtt-download-important-files" title="Zip file with: wp-config.php, .htaccess, functions.php">
-                    <span class="dashicons dashicons-media-archive"></span>
-                    <span class="button-label"><?php esc_html_e( 'Download Important Files', 'dev-debug-tools' ); ?></span>
-                </button>
-            </form>
-        </div>
+        <?php if ( $is_dev ) : ?>
+            <div id="ddtt-download-backups-cont">
+                <form class="ddtt-download-form" method="post">
+                    <?php wp_nonce_field( 'ddtt_dashboard_nonce_action', 'ddtt_dashboard_nonce_field' ); ?>
+                    <button class="ddtt-button" type="submit" name="ddtt-download-important-files" title="Zip file with: wp-config.php, .htaccess, functions.php">
+                        <span class="dashicons dashicons-media-archive"></span>
+                        <span class="button-label"><?php esc_html_e( 'Download Important Files', 'dev-debug-tools' ); ?></span>
+                    </button>
+                </form>
+            </div>
+        <?php endif; ?>
         <div id="ddtt-debug-info" class="<?php echo esc_html( $wp_debug ? 'enabled' : 'disabled' ); ?>">
             <span class="ddtt-debug-info-label"><?php esc_html_e( 'WP_DEBUG:', 'dev-debug-tools' ); ?></span>
             <span class="ddtt-debug-info-value"><?php echo esc_html( $wp_debug ? 'Enabled' : 'Disabled' ); ?></span>
@@ -229,39 +235,41 @@ $our_links = [
     </div>
 </section>
 
-<section id="ddtt-issues-section" class="ddtt-section-content">
-    <h3 class="ddtt-issues-title"><?php esc_html_e( 'Check for Site Issues', 'dev-debug-tools' ); ?></h3>
-    <button id="ddtt-check-issues-button" class="ddtt-button">
-        <span class="dashicons dashicons-update"></span>
-        <span class="button-label"><?php esc_html_e( 'Check Now', 'dev-debug-tools' ); ?></span>
-    </button>
-    <table class="ddtt-table ddtt-issues-table">
-        <thead>
-            <tr>
-                <th><?php esc_html_e( 'Issue to Check', 'dev-debug-tools' ); ?></th>
-                <th style="width: 200px;"><?php esc_html_e( 'Result', 'dev-debug-tools' ); ?></th>
-                <th style="width: 300px; text-align: right;"><?php esc_html_e( 'Actions', 'dev-debug-tools' ); ?></th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ( $issues as $key => $issue ) : ?>
-                <tr data-issue-key="<?php echo esc_attr( $key ); ?>" data-issue-severity="<?php echo esc_attr( $issue[ 'severity' ] ); ?>">
-                    <td>
-                        <button class="accordion-header" aria-expanded="false" aria-controls="<?php echo esc_attr( $key ); ?>" id="header-<?php echo esc_attr( $key ); ?>">
-                            <span class="dashicons dashicons-arrow-right-alt accordion-icon" aria-hidden="true"></span>
-                            <strong><?php echo esc_html( $issue[ 'label' ] ); ?></strong>
-                        </button>
-                        <div class="accordion-body" id="<?php echo esc_attr( $key ); ?>" role="region" aria-labelledby="header-<?php echo esc_attr( $key ); ?>" hidden>
-                            <?php echo wp_kses_post( $issue[ 'details' ] ); ?>
-                        </div>
-                    </td>
-                    <td class="ddtt-issue-result"></td>
-                    <td style="text-align: right;"></td>
+<?php if ( $is_dev ) : ?>
+    <section id="ddtt-issues-section" class="ddtt-section-content">
+        <h3 class="ddtt-issues-title"><?php esc_html_e( 'Check for Site Issues', 'dev-debug-tools' ); ?></h3>
+        <button id="ddtt-check-issues-button" class="ddtt-button">
+            <span class="dashicons dashicons-update"></span>
+            <span class="button-label"><?php esc_html_e( 'Check Now', 'dev-debug-tools' ); ?></span>
+        </button>
+        <table class="ddtt-table ddtt-issues-table">
+            <thead>
+                <tr>
+                    <th><?php esc_html_e( 'Issue to Check', 'dev-debug-tools' ); ?></th>
+                    <th style="width: 200px;"><?php esc_html_e( 'Result', 'dev-debug-tools' ); ?></th>
+                    <th style="width: 300px; text-align: right;"><?php esc_html_e( 'Actions', 'dev-debug-tools' ); ?></th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</section>
+            </thead>
+            <tbody>
+                <?php foreach ( $issues as $key => $issue ) : ?>
+                    <tr data-issue-key="<?php echo esc_attr( $key ); ?>" data-issue-severity="<?php echo esc_attr( $issue[ 'severity' ] ); ?>">
+                        <td>
+                            <button class="accordion-header" aria-expanded="false" aria-controls="<?php echo esc_attr( $key ); ?>" id="header-<?php echo esc_attr( $key ); ?>">
+                                <span class="dashicons dashicons-arrow-right-alt accordion-icon" aria-hidden="true"></span>
+                                <strong><?php echo esc_html( $issue[ 'label' ] ); ?></strong>
+                            </button>
+                            <div class="accordion-body" id="<?php echo esc_attr( $key ); ?>" role="region" aria-labelledby="header-<?php echo esc_attr( $key ); ?>" hidden>
+                                <?php echo wp_kses_post( $issue[ 'details' ] ); ?>
+                            </div>
+                        </td>
+                        <td class="ddtt-issue-result"></td>
+                        <td style="text-align: right;"></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </section>
+<?php endif; ?>
 
 <section id="ddtt-support-section" class="ddtt-section ddtt-support">
     <h3 class="ddtt-support-title"><?php esc_html_e( 'Need Help?', 'dev-debug-tools' ); ?></h3>

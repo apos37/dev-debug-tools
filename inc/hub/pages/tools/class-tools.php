@@ -109,8 +109,9 @@ class Tools {
         }
 
         wp_localize_script( "ddtt-page-tools", 'ddtt_tools', [
-            'nonce' => wp_create_nonce( $this->nonce ),
-            'i18n' => [
+            'is_dev' => Helpers::is_dev(),
+            'nonce'  => wp_create_nonce( $this->nonce ),
+            'i18n'   => [
                 'disableTool' => __( 'Disable Tool', 'dev-debug-tools' ),
                 'enableTool'  => __( 'Enable Tool', 'dev-debug-tools' ),
             ]

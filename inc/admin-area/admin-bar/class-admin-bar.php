@@ -49,7 +49,7 @@ class AdminBar {
     public function __construct() {
 
         // Customize the admin bar menu
-        add_action( 'admin_bar_menu', [ $this, 'admin_bar' ], 99999 );
+        add_action( 'admin_bar_menu', [ $this, 'admin_bar' ], 9999998 );
 
         // Store the admin menu options on plugin changes
         add_action( 'admin_init', [ $this, 'maybe_store_admin_menu_options' ] );

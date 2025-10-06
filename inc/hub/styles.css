@@ -236,6 +236,12 @@ body.dev-debug-tools {
     margin-top: 20px;
 }
 
+@media screen and (max-width: 1420px) {
+    .ddtt-sections-with-sidebar {
+        flex-wrap: wrap;
+    }
+}
+
 .ddtt-sections-with-sidebar .ddtt-section-content {
     flex: 1 1 auto;
     min-width: 0;

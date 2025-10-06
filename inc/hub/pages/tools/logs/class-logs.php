@@ -19,27 +19,24 @@ class Logs {
     public static function sections() : array {
         $tabs = [];
 
-        $debug_log_override = get_option( 'ddtt_debug_log_path' );
-        if ( empty( $debug_log_override ) && WP_DEBUG_LOG === true ) {
-            $debug_log_override = ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG !== true ) ? WP_DEBUG_LOG : WP_CONTENT_DIR . '/debug.log';
-        }
-        if ( ( ! empty( $debug_log_override ) && is_string( $debug_log_override ) ) ) {
+        $debug_log_override = sanitize_text_field( get_option( 'ddtt_debug_log_path', Helpers::get_default_debug_log_path( true ) ) );
+        if ( ( ! empty( $debug_log_override ) && is_string( $debug_log_override ) ) && Helpers::path_exists( $debug_log_override ) ) {
             $tabs[ 'debug' ] = [
                 'label' => __( 'Debug Log', 'dev-debug-tools' ),
                 'lines' => self::get_total_lines( self::get_path( 'debug' )[ 'abs' ] ),
             ];
         }
 
-        $error_log_override = get_option( 'ddtt_error_log_path' );
-        if ( ! empty( $error_log_override ) && is_string( $error_log_override ) ) {
+        $error_log_override = sanitize_text_field( get_option( 'ddtt_error_log_path', 'error_log' ) );
+        if ( ! empty( $error_log_override ) && is_string( $error_log_override ) && Helpers::path_exists( $error_log_override ) ) {
             $tabs[ 'error' ] = [
                 'label' => __( 'Error Log', 'dev-debug-tools' ),
                 'lines' => self::get_total_lines( self::get_path( 'error' )[ 'abs' ] ),
             ];
         }
 
-        $admin_error_log_override = get_option( 'ddtt_admin_error_log_path' );
-        if ( ! empty( $admin_error_log_override ) && is_string( $admin_error_log_override ) ) {
+        $admin_error_log_override = sanitize_text_field( get_option( 'ddtt_admin_error_log_path', 'wp-admin/error_log' ) );
+        if ( ! empty( $admin_error_log_override ) && is_string( $admin_error_log_override ) && Helpers::path_exists( $admin_error_log_override ) ) {
             $tabs[ 'admin-error' ] = [
                 'label' => __( 'Admin Error Log', 'dev-debug-tools' ),
                 'lines' => self::get_total_lines( self::get_path( 'admin-error' )[ 'abs' ] ),

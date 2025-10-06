@@ -83,6 +83,20 @@ class Helpers {
 
 
     /**
+     * Check if current user is admin only (not a developer)
+     *
+     * @param int|null $user_id Optional user ID, defaults to current user.
+     * @return bool
+     */
+    public static function is_admin_only( $user_id = null ) : bool {
+        if ( is_null( $user_id ) ) {
+            $user_id = get_current_user_id();
+        }
+        return ( current_user_can( 'administrator' ) && ! self::is_dev( $user_id ) );
+    } // End is_admin_only()
+
+
+    /**
      * Check if current user has access (developer or admin)
      *
      * @return bool
@@ -2023,6 +2037,50 @@ class Helpers {
             return substr( $pathname, strlen( $abspath ) );
         }
     } // End relative_pathname()
+
+
+    /**
+     * Get the default debug log path
+     *
+     * @return string
+     */
+    public static function get_default_debug_log_path( $relative = false ) : string {
+        if ( defined( 'WP_DEBUG_LOG' ) && is_string( WP_DEBUG_LOG ) && WP_DEBUG_LOG !== '' ) {
+            $log_path = wp_normalize_path( WP_DEBUG_LOG );
+        } else {
+            $log_path = wp_normalize_path( WP_CONTENT_DIR . '/debug.log' );
+        }
+        if ( ! $relative ) {
+            return $log_path;
+        }
+        return str_replace( untrailingslashit( ABSPATH ) . '/', '', $log_path );
+    } // End get_default_debug_log_path()
+
+
+    /**
+     * Check if a filesystem path exists and is readable
+     *
+     * @param string $value The filesystem path to check.
+     * @return bool True if the path exists and is readable, false otherwise.
+     */
+    public static function path_exists( $path ) : bool {
+        global $wp_filesystem;
+        if ( ! function_exists( 'request_filesystem_credentials' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+        if ( ! WP_Filesystem() || ! is_object( $wp_filesystem ) ) {
+            return false;
+        }
+
+        // Normalize path — if it's not absolute, prepend ABSPATH.
+        if ( strpos( $path, ABSPATH ) !== 0 ) {
+            $path = wp_normalize_path( ABSPATH . ltrim( $path, '/' ) );
+        } else {
+            $path = wp_normalize_path( $path );
+        }
+
+        return $wp_filesystem->exists( $path ) && $wp_filesystem->is_readable( $path );
+    } // End path_exists()
 
 
     /**

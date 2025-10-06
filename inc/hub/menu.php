@@ -244,6 +244,8 @@ class AdminMenu {
         // Hidden pages
         $hidden_pages = [ 'welcome' ];
 
+        $is_dev = Helpers::is_dev();
+
         foreach ( self::pages() as $slug => $label ) {
             if ( ! in_array( $slug, $hidden_pages ) ) {
                 $parent_slug = 'dev-debug-dashboard';
@@ -261,7 +263,7 @@ class AdminMenu {
             );
 
             // If we're on the tools page, add any favorited tools as submenus
-            if ( $slug === 'tools' ) {
+            if ( $slug === 'tools' && $is_dev ) {
                 $favorited_tools = filter_var_array( get_option( 'ddtt_favorite_tools', [] ), FILTER_SANITIZE_SPECIAL_CHARS );
                 if ( ! empty( $favorited_tools ) && is_array( $favorited_tools ) ) {
 
@@ -371,6 +373,14 @@ class AdminMenu {
             $page_file = Bootstrap::path( 'inc/hub/pages/welcome/page-welcome.php' );
             if ( file_exists( $page_file ) ) {
                 $page_url = Bootstrap::page_url( 'welcome' );
+                wp_safe_redirect( $page_url );
+            }
+        }
+
+        if ( $slug === 'tools' && ! Helpers::is_dev() ) {
+            $tool_slug = self::current_tool_slug();
+            if ( $tool_slug !== '' ) {
+                $page_url = Bootstrap::page_url( 'tools' );
                 wp_safe_redirect( $page_url );
             }
         }
@@ -609,9 +619,11 @@ class AdminMenu {
                 'resources' => [ 'name' => __( 'Resources', 'dev-debug-tools' ) ],
                 'settings'  => [ 'name' => __( 'Settings', 'dev-debug-tools' ) ],
                 'changelog' => [ 'name' => __( 'Changelog', 'dev-debug-tools' ) ],
-            ],
-            'Tools' => self::$tools,
+            ]
         ];
+        if ( Helpers::is_dev() ) { 
+            $sections[ 'Tools' ] = self::$tools; 
+        } 
 
         echo '<select id="ddtt-nav-dropdown">';
 
@@ -873,7 +885,7 @@ class AdminMenu {
 
         // scripts.js
         $pages_with_sortable = [ 'resources', 'tools' ];
-        if ( in_array( $slug, $pages_with_sortable, true ) ) {
+        if ( in_array( $slug, $pages_with_sortable, true ) && Helpers::is_dev() ) {
             $page_deps = [ 'jquery', 'jquery-ui-sortable' ];
         } else {
             $page_deps = [ 'jquery' ];

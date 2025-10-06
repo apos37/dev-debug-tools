@@ -6,6 +6,87 @@ DevDebugTools.Helpers.log_localization( 'ddtt_tools' );
 jQuery( document ).ready( function( $ ) {
 
     /**
+     * Help button
+     */
+    $( document ).on( 'click', function( e ) {
+        var $target = $( e.target );
+        var openClass = 'ddtt-help-content--open';
+
+        // Toggle help popup on button click
+        if ( $target.is( '.ddtt-help-toggle' ) ) {
+            // preventDefault if the element is an anchor tag
+            if ( $target.is( 'a' ) ) {
+                e.preventDefault();
+            }
+
+            var btn = $target;
+            var contentId = btn.attr( 'aria-controls' );
+            var $content = $( '#' + contentId );
+            var isOpen = btn.attr( 'aria-expanded' ) === 'true';
+
+            btn.attr( 'aria-expanded', ! isOpen );
+            if ( $content.length ) {
+                if ( isOpen ) {
+                    $content.prop( 'hidden', true ).removeClass( openClass );
+
+                    // Remove darken class from table
+                    btn.closest( 'table' ).removeClass( 'ddtt-help-darken' );
+                } else {
+                    // Close any other open popups
+                    $( '.ddtt-help-content.' + openClass ).each( function() {
+                        var $otherContent = $( this );
+                        $otherContent.prop( 'hidden', true ).removeClass( openClass );
+                        var $otherBtn = $( '[aria-controls="' + $otherContent.attr( 'id' ) + '"]' );
+                        if ( $otherBtn.length ) {
+                            $otherBtn.attr( 'aria-expanded', 'false' );
+                            $otherBtn.closest( 'table' ).removeClass( 'ddtt-help-darken' );
+                        }
+                    });
+
+                    $content.prop( 'hidden', false ).addClass( openClass );
+
+                    // Add darken class to table containing the clicked button
+                    btn.closest( 'table' ).addClass( 'ddtt-help-darken' );
+                }
+            }
+            return;
+        }
+
+        // Close popup if click outside open help content or toggle button
+        if ( $target.closest( '.ddtt-has-help-dialog' ).length === 0 ) {
+            $( '.ddtt-help-content.' + openClass ).each( function() {
+                var $content = $( this );
+                $content.prop( 'hidden', true ).removeClass( openClass );
+                var $btn = $( '[aria-controls="' + $content.attr( 'id' ) + '"]' );
+                if ( $btn.length ) {
+                    $btn.attr( 'aria-expanded', 'false' );
+                    $btn.closest( 'table' ).removeClass( 'ddtt-help-darken' );
+                }
+            } );
+        }
+
+        // Close popup on close button click
+        if ( $target.is( '.ddtt-help-close' ) ) {
+            var $content = $target.closest( '.ddtt-help-content' );
+            if ( $content.length ) {
+                $content.prop( 'hidden', true ).removeClass( openClass );
+                var $btn = $( '[aria-controls="' + $content.attr( 'id' ) + '"]' );
+                if ( $btn.length ) {
+                    $btn.attr( 'aria-expanded', 'false' );
+                    $btn.closest( 'table' ).removeClass( 'ddtt-help-darken' );
+                }
+            }
+        }
+    } );
+
+
+    /////////////////// TOOL MANAGEMENT (DEV ONLY) ///////////////////
+    if ( ! ddtt_tools.is_dev ) {
+        return;
+    }
+
+
+    /**
      * Sortable
      */
     $( '#ddtt-tools-grid' ).sortable( {
@@ -160,83 +241,5 @@ jQuery( document ).ready( function( $ ) {
             nonce: ddtt_tools.nonce
         } );
     } );
-
-
-    /**
-     * Help button
-     */
-    $( document ).on( 'click', function( e ) {
-        var $target = $( e.target );
-        var openClass = 'ddtt-help-content--open';
-
-        // Toggle help popup on button click
-        if ( $target.is( '.ddtt-help-toggle' ) ) {
-            // preventDefault if the element is an anchor tag
-            if ( $target.is( 'a' ) ) {
-                e.preventDefault();
-            }
-
-            var btn = $target;
-            var contentId = btn.attr( 'aria-controls' );
-            var $content = $( '#' + contentId );
-            var isOpen = btn.attr( 'aria-expanded' ) === 'true';
-
-            btn.attr( 'aria-expanded', ! isOpen );
-            if ( $content.length ) {
-                if ( isOpen ) {
-                    $content.prop( 'hidden', true ).removeClass( openClass );
-
-                    // Remove darken class from table
-                    btn.closest( 'table' ).removeClass( 'ddtt-help-darken' );
-                } else {
-                    // Close any other open popups
-                    $( '.ddtt-help-content.' + openClass ).each( function() {
-                        var $otherContent = $( this );
-                        $otherContent.prop( 'hidden', true ).removeClass( openClass );
-                        var $otherBtn = $( '[aria-controls="' + $otherContent.attr( 'id' ) + '"]' );
-                        if ( $otherBtn.length ) {
-                            $otherBtn.attr( 'aria-expanded', 'false' );
-                            $otherBtn.closest( 'table' ).removeClass( 'ddtt-help-darken' );
-                        }
-                    });
-
-                    $content.prop( 'hidden', false ).addClass( openClass );
-
-                    // Add darken class to table containing the clicked button
-                    btn.closest( 'table' ).addClass( 'ddtt-help-darken' );
-                }
-            }
-            return;
-        }
-
-        // Close popup if click outside open help content or toggle button
-        if ( $target.closest( '.ddtt-has-help-dialog' ).length === 0 ) {
-            $( '.ddtt-help-content.' + openClass ).each( function() {
-                var $content = $( this );
-                $content.prop( 'hidden', true ).removeClass( openClass );
-                var $btn = $( '[aria-controls="' + $content.attr( 'id' ) + '"]' );
-                if ( $btn.length ) {
-                    $btn.attr( 'aria-expanded', 'false' );
-                    $btn.closest( 'table' ).removeClass( 'ddtt-help-darken' );
-                }
-            } );
-        }
-
-        // Close popup on close button click
-        if ( $target.is( '.ddtt-help-close' ) ) {
-            var $content = $target.closest( '.ddtt-help-content' );
-            if ( $content.length ) {
-                $content.prop( 'hidden', true ).removeClass( openClass );
-                var $btn = $( '[aria-controls="' + $content.attr( 'id' ) + '"]' );
-                if ( $btn.length ) {
-                    $btn.attr( 'aria-expanded', 'false' );
-                    $btn.closest( 'table' ).removeClass( 'ddtt-help-darken' );
-                }
-            }
-        }
-    } );
-
-
-
 
 } );
