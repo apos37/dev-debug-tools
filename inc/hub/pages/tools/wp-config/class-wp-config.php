@@ -729,7 +729,7 @@ class WpConfig {
         }
 
         // --- 4. Requiring once wp-settings.php ---
-        if ( ! preg_match( '/require_once\s*\(\s*ABSPATH\s*\.\s*[\'"]wp-settings\.php[\'"]\s*\)\s*;/', $content ) ) {
+        if ( ! preg_match( '/require_once\s*(?:\(\s*)?ABSPATH\s*\.\s*[\'"]wp-settings\.php[\'"]\s*(?:\))?\s*;/', $content ) ) {
             $errors[] = __( 'Missing require_once for wp-settings.php.', 'dev-debug-tools' );
         }
 
