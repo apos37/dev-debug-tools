@@ -224,6 +224,12 @@ span.ddtt-file-data-label {
     user-select: text;
 }
 
+#ddtt-log-easy .ddtt-table tr:last-child .ddtt-help-content {
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 8px;
+}
+
 .ddtt-help-content--open {
     display: block;
 }

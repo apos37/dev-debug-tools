@@ -298,6 +298,42 @@ class Help {
                 'link' => 'https://www.php.net/manual/en/migration84.deprecated.php'
             ],
 
+            // WordPress database error: Unknown column
+            '/WordPress database error Unknown column \'[^\']+\' in \'SELECT\'/' => [
+                'desc' => __( 'A database query referenced a column that does not exist. This can occur if a plugin or theme expects a column that was not created, was deleted, or has a typo. Verify the database schema and ensure all required columns exist.', 'dev-debug-tools' ),
+                'link' => 'https://developer.wordpress.org/reference/classes/wpdb/'
+            ],
+
+            // Deprecated variable parsing in strings
+            '/Using \$([a-zA-Z_]\w*) in strings is deprecated, use \{\$\\1\} instead/' => [
+                'desc' => __( 'Using $var directly inside strings is deprecated. Wrap variables in braces like {$var} to avoid ambiguity and ensure correct parsing.', 'dev-debug-tools' ),
+                'link' => 'https://www.php.net/manual/en/language.types.string.php#language.types.string.parsing'
+            ],
+
+            // Deprecated: strpos() null argument
+            '/strpos\(\): Passing null to parameter #1 \(\$haystack\) of type string is deprecated/' => [
+                'desc' => __( 'The first argument of strpos() must be a string. Passing null is deprecated. Ensure the variable is a string before calling strpos(), or cast it to string.', 'dev-debug-tools' ),
+                'link' => 'https://www.php.net/manual/en/function.strpos.php'
+            ],
+
+            // Deprecated: str_replace() null argument
+            '/str_replace\(\): Passing null to parameter #3 \(\$subject\) of type array\|string is deprecated/' => [
+                'desc' => __( 'The third argument of str_replace() must be a string or array. Passing null is deprecated. Ensure the variable is properly initialized as a string or array before calling str_replace().', 'dev-debug-tools' ),
+                'link' => 'https://www.php.net/manual/en/function.str-replace.php'
+            ],
+
+            // Deprecated: mb_convert_encoding() with HTML entities
+            '/mb_convert_encoding\(\): Handling HTML entities via mbstring is deprecated; use htmlspecialchars, htmlentities, or mb_encode_numericentity\/mb_decode_numericentity instead/' => [
+                'desc' => __( 'Using mb_convert_encoding() to handle HTML entities is deprecated. Use htmlspecialchars(), htmlentities(), or mb_encode_numericentity()/mb_decode_numericentity() instead to properly handle HTML entities.', 'dev-debug-tools' ),
+                'link' => 'https://www.php.net/manual/en/function.mb-convert-encoding.php'
+            ],
+
+            // Deprecated: explode() null argument
+            '/explode\(\): Passing null to parameter #2 \(\$string\) of type string is deprecated/' => [
+                'desc' => __( 'The second argument of explode() must be a string. Passing null is deprecated. Ensure the variable is initialized as a string before calling explode().', 'dev-debug-tools' ),
+                'link' => 'https://www.php.net/manual/en/function.explode.php'
+            ],
+
         ];
 
 

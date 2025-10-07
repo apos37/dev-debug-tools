@@ -436,13 +436,13 @@ class Logs {
 
         $line_count = self::get_total_lines( $file );
         $file_size = filesize( $file );
+        $file_size = $file_size !== false ? Helpers::format_bytes( $file_size ) : __( 'Unknown', 'dev-debug-tools' );
         $last_modified = filemtime( $file );
-        
 
         return [
             [
                 'label' => __( 'Line Count', 'dev-debug-tools' ),
-                'value' => $line_count,
+                'value' => number_format( $line_count ),
             ],
             [
                 'label' => __( 'File Size', 'dev-debug-tools' ),
@@ -833,15 +833,20 @@ class Logs {
 
                             // Safe highlight colors
                             $error_class = isset( $error[ 'class' ] ) ? $error[ 'class' ] : '';
-                            $bg_color    = isset( $highlight_args[ $error_class ][ 'bg_color' ] ) ? $highlight_args[ $error_class ][ 'bg_color' ] : '';
-                            $font_color  = isset( $highlight_args[ $error_class ][ 'font_color' ] ) ? $highlight_args[ $error_class ][ 'font_color' ] : '';
+                            $bg_color    = isset( $highlight_args[ $error_class ][ 'bg_color' ] ) ? 'background-color: ' . $highlight_args[ $error_class ][ 'bg_color' ] . ';' : '';
+                            $font_color  = isset( $highlight_args[ $error_class ][ 'font_color' ] ) ? 'color: ' . $highlight_args[ $error_class ][ 'font_color' ] . ';' : '';
                             ?>
-                            <tr class="ddtt-error-type-<?php echo esc_attr( $error_class ); ?> ddtt-has-help-dialog" style="background-color: <?php echo esc_attr( $bg_color ); ?>; color: <?php echo esc_attr( $font_color ); ?>;">
+                            <tr class="ddtt-error-type-<?php echo esc_attr( $error_class ); ?> ddtt-has-help-dialog" style="<?php echo esc_attr( $bg_color ); ?><?php echo esc_attr( $font_color ); ?>">
                                 <td><?php echo esc_attr( isset( $error[ 'line_num' ] ) ? $error[ 'line_num' ] : '' ); ?></td>
                                 <td><?php echo esc_html( isset( $error[ 'datetime' ] ) ? $error[ 'datetime' ] : '' ); ?></td>
                                 <td><?php echo esc_html( isset( $error[ 'type' ] ) ? $error[ 'type' ] : '' ); ?></td>
                                 <td>
-                                    <div class="ddtt-log-error-message"><?php echo wp_kses_post( isset( $error[ 'message' ] ) ? $error[ 'message' ] : '' ); ?></div>
+                                    <div class="ddtt-log-error-message-wrapper">
+                                        <div class="ddtt-log-error-message">
+                                            <?php echo wp_kses_post( isset( $error[ 'message' ] ) ? $error[ 'message' ] : '' ); ?>
+                                        </div>
+                                        <span class="ddtt-copy-icon dashicons dashicons-admin-page"></span>
+                                    </div>
 
                                     <?php if ( isset( $error[ 'help' ] ) && is_array( $error[ 'help' ] ) ) : ?>
                                         <div class="ddtt-log-error-help">
@@ -888,7 +893,7 @@ class Logs {
                                     <?php endif; ?>
 
                                     <?php if ( isset( $error[ 'file' ] ) && $error[ 'file' ] ) : ?>
-                                        <div class="ddtt-log-error-file"><?php echo esc_html__( 'File: ', 'dev-debug-tools' ) . wp_kses_post( Helpers::maybe_redact( $error[ 'file' ], true ) ); ?></div>
+                                        <div class="ddtt-log-error-file"><?php echo esc_html__( 'File: ', 'dev-debug-tools' ) . wp_kses_post( Helpers::maybe_redact( $error[ 'file' ], true, true ) ); ?></div>
                                     <?php endif; ?>
 
                                     <?php if ( isset( $error[ 'line' ] ) && $error[ 'line' ] ) : ?>
@@ -1307,6 +1312,8 @@ class Logs {
             'nonce'      => wp_create_nonce( $this->nonce ),            
             'i18n'       => [
                 'loading' => __( 'Please wait. Loading log', 'dev-debug-tools' ),
+                'copy'    => __( 'Double-click to copy', 'dev-debug-tools' ),
+                'copied'  => __( 'Copied to clipboard', 'dev-debug-tools' ),
             ],
         ] );
     } // End enqueue_assets()

@@ -3,7 +3,7 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://pluginrx.com/plugin/dev-debug-tools/
  * Description:         WordPress debugging and testing tools for developers
- * Version:             3.0.0.1
+ * Version:             3.0.0.2
  * Requires at least:   5.9
  * Tested up to:        6.8
  * Requires PHP:        8.0

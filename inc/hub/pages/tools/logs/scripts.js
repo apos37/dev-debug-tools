@@ -126,4 +126,53 @@ jQuery( document ).ready( function( $ ) {
         }
     } );
 
+
+    /**
+     * Copy log error message on double-click
+     */
+    $( document ).on( 'click', '.ddtt-copy-icon', function( e ) {
+        e.stopPropagation();
+        const messageEl = $( this ).siblings( '.ddtt-log-error-message' );
+        const text = messageEl.text().replace(/\s+$/gm, '').trim();
+
+        if ( navigator.clipboard && navigator.clipboard.writeText ) {
+            navigator.clipboard.writeText( text ).then( function() {
+                showTooltip( e.pageX, e.pageY, ddtt_logs.i18n.copied );
+            } );
+        } else {
+            showTooltip( e.pageX, e.pageY, 'Clipboard API not supported' );
+        }
+    } );
+
+    function showTooltip( x, y, message, duration = 1000 ) {
+        const tooltip = $( '<div>' )
+            .text( message )
+            .css({
+                position: 'absolute',
+                top: y + 10 + 'px',
+                left: x + 10 + 'px',
+                background: '#333',
+                color: '#fff',
+                padding: '5px 10px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                zIndex: 9999,
+                pointerEvents: 'none',
+                opacity: 0,
+                transition: 'opacity 0.3s'
+            })
+            .appendTo( 'body' );
+
+        requestAnimationFrame( function() {
+            tooltip.css( 'opacity', 1 );
+        } );
+
+        setTimeout( function() {
+            tooltip.css( 'opacity', 0 );
+            setTimeout( function() {
+                tooltip.remove();
+            }, 300 );
+        }, duration );
+    }
+
 } );

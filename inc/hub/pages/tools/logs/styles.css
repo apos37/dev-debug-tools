@@ -126,6 +126,34 @@
     max-width: 100%;
 }
 
+.ddtt-log-error-message-wrapper {
+    position: relative;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+}
+
+.ddtt-log-error-message-wrapper .ddtt-log-error-message {
+    padding-right: 30px; /* space for the icon */
+}
+
+.ddtt-copy-icon {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--color-bg-main);
+    transform: rotate(90deg);
+    user-select: none;
+    transition: color 0.2s;
+    opacity: 0.73;
+}
+
+.ddtt-copy-icon:hover {
+    opacity: 1;
+}
+
 .ddtt-note-prefix {
     font-size: 0.7rem;
     background: var(--color-bg-main);

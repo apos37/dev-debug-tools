@@ -34,7 +34,7 @@ pre.ddtt_print_r {
     user-select: none;
     vertical-align: top;
     margin: 1px 0 -1px 2px;
-    padding: 0 5px;
+    padding: 0 5px !important;
     height: 18px;
     border-radius: 9px;
     line-height: 1.6;

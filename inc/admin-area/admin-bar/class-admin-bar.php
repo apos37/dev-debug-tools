@@ -197,7 +197,7 @@ class AdminBar {
         $indicator_class = $total_lines > 0 ? ' ddtt-log-count-indicator' : '';
         $wp_admin_bar->add_node( [
             'id'    => 'ddtt-logs',
-            'title' => '<span class="ab-icon" style="background-image:url(' . esc_attr( $icon_url ) . ') !important; background-size:contain; background-repeat:no-repeat; width: 16px; height: 16px; margin-top: 8px;"></span> <span class="ddtt-log-count' . $indicator_class . '" title="' . esc_attr__( 'Total Log Entries', 'dev-debug-tools' ) . '">' . $total_lines . '</span>',
+            'title' => '<span class="ab-icon" style="background-image:url(' . esc_attr( $icon_url ) . ') !important; background-size:contain; background-repeat:no-repeat; width: 16px; height: 16px; margin-top: 8px;"></span> <span class="ddtt-log-count' . $indicator_class . '" title="' . esc_attr__( 'Total Log Entries', 'dev-debug-tools' ) . '" style="padding 0 5px !important;">' . $total_lines . '</span>',
             'href'  => Bootstrap::tool_url( 'logs' ),
             'meta'  => [
                 'menu_title' => __( 'View Debug Logs', 'dev-debug-tools' ),
@@ -344,10 +344,12 @@ class AdminBar {
                     libxml_use_internal_errors( true );
                     $dom = new \DOMDocument();
 
-                    // Wrap fragment so DOM can parse it
-                    $fragment = '<div>' . $original_html . '</div>';
-                    // convert encoding for safety
-                    $dom->loadHTML( mb_convert_encoding( $fragment, 'HTML-ENTITIES', 'UTF-8' ) );
+                    // decode entities first
+                    $fragment = html_entity_decode( $original_html, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+                    $fragment = mb_decode_numericentity( $fragment, [ 0x0, 0x2FFFF, 0, 0xFFFF ], 'UTF-8' );
+
+                    $fragment = '<div>' . $fragment . '</div>';
+                    $dom->loadHTML( $fragment, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
 
                     $div = $dom->getElementsByTagName( 'div' )->item(0);
                     if ( $div ) {
@@ -456,7 +458,13 @@ class AdminBar {
 
                 // After your icon / CSS handling
                 if ( ! empty( $visible_text ) ) {
-                    $node->meta[ 'class' ] = trim( ( $node->meta[ 'class' ] ?? '' ) . ' ddtt-has-text-label' );
+                    $classes = isset( $node->meta[ 'class' ] ) ? explode( ' ', $node->meta[ 'class' ] ) : [];
+                    
+                    if ( ! in_array( 'ddtt-has-text-label', $classes, true ) ) {
+                        $classes[] = 'ddtt-has-text-label';
+                    }
+
+                    $node->meta[ 'class' ] = implode( ' ', $classes );
                 }
             }
 
@@ -469,6 +477,7 @@ class AdminBar {
         #wp-toolbar .ddtt-has-text-label .ab-icon { margin-right: 0 !important; }
         #wp-toolbar .ddtt-has-text-label .ab-count { margin-left: 6px !important; }
         #wp-toolbar .ddtt-has-css-icon .ab-item:before { margin-right: 0 !important; }
+        #wp-toolbar #wp-admin-bar-tco-main .tco-admin-bar-logo.ab-item { margin-right: 0 !important; }
         #wp-toolbar li .ab-label { display: none; }
         #wp-admin-bar-my-account .display-name { display: none; }
         #wp-admin-bar-comments .ab-icon, #wp-admin-bar-duplicate-post .ab-icon { margin-right: 0 !important; }

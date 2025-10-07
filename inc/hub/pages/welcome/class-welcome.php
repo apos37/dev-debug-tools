@@ -15,19 +15,6 @@ class Welcome {
      * @return array
      */
     public static function settings() : array {
-        $current_time = time();
-        $time_format_choices = [
-            'n/j/Y g:i a T' => wp_date( 'n/j/Y g:i a T', $current_time ) . ' (n/j/Y g:i a T)',
-            'n/j/Y H:i T' => wp_date( 'n/j/Y H:i T', $current_time ) . ' (n/j/Y H:i T)',
-            'F j, Y g:i a T'  => wp_date( 'F j, Y g:i a T', $current_time ) . ' (F j, Y g:i a T)',
-            'F j, Y G:i T'    => wp_date( 'F j, Y G:i T', $current_time ) . ' (F j, Y G:i T)',
-            'Y-m-d H:i:s'     => wp_date( 'Y-m-d H:i:s', $current_time ) . ' (Y-m-d H:i:s)',
-            'm/d/Y g:i a'     => wp_date( 'm/d/Y g:i a', $current_time ) . ' (m/d/Y g:i a)',
-            'm/d/Y H:i'       => wp_date( 'm/d/Y H:i', $current_time ) . ' (m/d/Y H:i)',
-            'D, M j, Y g:i a' => wp_date( 'D, M j, Y g:i a', $current_time ) . ' (D, M j, Y g:i a)',
-            'D, M j, Y H:i'   => wp_date( 'D, M j, Y H:i', $current_time ) . ' (D, M j, Y H:i)',
-        ];
-
         return [
             'general' => [
                 'label' => __( 'Set-Up', 'dev-debug-tools' ),
@@ -49,7 +36,7 @@ class Welcome {
                         'title'   => __( 'Developer Time Format', 'dev-debug-tools' ),
                         'desc'    => __( 'Changes the time format on Debug Log viewer and other areas in the plugin.', 'dev-debug-tools' ),
                         'type'    => 'select',
-                        'choices' => $time_format_choices,
+                        'choices' => Helpers::get_time_format_choices(),
                         'default' => get_option( 'time_format', 'F j, Y g:i a T' ),
                     ],
                     'dev_access_only' => [

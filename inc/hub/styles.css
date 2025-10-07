@@ -104,7 +104,7 @@ body.dev-debug-tools {
 }
 
 #ddtt-hub section h3:not(:first-child) {
-    margin-top: 4rem;
+    margin-top: 4rem !important;
 }
 
 .ddtt-test-mode #ddtt-header-version::after {
@@ -927,6 +927,10 @@ body.dev-debug-tools {
 
 .ddtt-table tbody:last-child tr:last-child td:last-child {
     border-bottom-right-radius: 5px;
+}
+
+#ddtt-hub .ddtt-value-full {
+    display: none;
 }
 
 #ddtt-hub .view-less {

@@ -814,7 +814,7 @@ class Helpers {
      * @param string $string The string to potentially redact.
      * @return string The original or redacted string.
      */
-    public static function maybe_redact( $string, $abspath_only = false ) : string {
+    public static function maybe_redact( $string, $abspath_only = false, $remove_redacted = false ) : string {
         // If sensitive info viewing is allowed, return as-is
         if ( filter_var( get_option( 'ddtt_view_sensitive_info' ), FILTER_VALIDATE_BOOLEAN ) ) {
             return $string;
@@ -825,6 +825,9 @@ class Helpers {
             $abspath = untrailingslashit( ABSPATH );
 
             if ( strpos( $string, $abspath ) === 0 ) {
+                if ( $remove_redacted ) {
+                    return substr( $string, strlen( $abspath ) );
+                }
                 return '<i class="ddtt-redact">' . $abspath . '</i>' . substr( $string, strlen( $abspath ) );
             }
 
@@ -1685,7 +1688,7 @@ class Helpers {
         if ( strlen( $stripped_string ) > $length ) {
             $short_text = esc_html( substr( $stripped_string, 0, $length ) ) . $suffix;
 
-            $display_value = '<div class="ddtt-value-wrapper"><div class="ddtt-value-preview">' . $short_text . ' <a href="#" class="view-more">' . __( 'View More', 'dev-debug-tools' ) . '</a></div><div class="ddtt-value-full" style="display:none;">' . wp_kses_post( $original_string ) . ' <a href="#" class="view-less">' . __( 'View Less', 'dev-debug-tools' ) . '</a></div></div>';
+            $display_value = '<div class="ddtt-value-wrapper"><div class="ddtt-value-preview">' . $short_text . ' <a href="#" class="view-more">' . __( 'View More', 'dev-debug-tools' ) . '</a></div><div class="ddtt-value-full">' . wp_kses_post( $original_string ) . ' <a href="#" class="view-less">' . __( 'View Less', 'dev-debug-tools' ) . '</a></div></div>';
         } else {
             $display_value = wp_kses_post( $original_string );
         }
@@ -2105,6 +2108,43 @@ class Helpers {
         // Return the latest login timestamp
         return max( $timestamps );
     } // End get_session_token_login()
+
+
+    /**
+     * Get the time format choices with current time examples
+     *
+     * @return array
+     */
+    public static function get_time_format_choices() {
+        $current_time = time();
+        $dev_timezone_string = sanitize_text_field( get_option( 'ddtt_dev_timezone', get_option( 'timezone_string', 'UTC' ) ) );
+
+        try {
+            $dev_timezone = new \DateTimeZone( $dev_timezone_string );
+        } catch ( \Exception $e) {
+            $dev_timezone = new \DateTimeZone( 'UTC' );
+        }
+
+        $time_format_choices = [
+            'n/j/Y g:i a T'  => wp_date( 'n/j/Y g:i a T', $current_time, $dev_timezone ) . ' ( n/j/Y g:i a T )',
+            'n/j/Y H:i T'    => wp_date( 'n/j/Y H:i T', $current_time, $dev_timezone ) . ' ( n/j/Y H:i T )',
+            'F j, Y g:i a T' => wp_date( 'F j, Y g:i a T', $current_time, $dev_timezone ) . ' ( F j, Y g:i a T )',
+            'F j, Y G:i T'   => wp_date( 'F j, Y G:i T', $current_time, $dev_timezone ) . ' ( F j, Y G:i T )',
+            'Y-m-d H:i:s'    => wp_date( 'Y-m-d H:i:s', $current_time, $dev_timezone ) . ' ( Y-m-d H:i:s )',
+            'm/d/Y g:i a'    => wp_date( 'm/d/Y g:i a', $current_time, $dev_timezone ) . ' ( m/d/Y g:i a )',
+            'm/d/Y H:i'      => wp_date( 'm/d/Y H:i', $current_time, $dev_timezone ) . ' ( m/d/Y H:i )',
+            'D, M j, Y g:i a'=> wp_date( 'D, M j, Y g:i a', $current_time, $dev_timezone ) . ' ( D, M j, Y g:i a )',
+            'D, M j, Y H:i'  => wp_date( 'D, M j, Y H:i', $current_time, $dev_timezone ) . ' ( D, M j, Y H:i )',
+        ];
+
+
+        /**
+         * Filter the date format choices used in Dev Debug Tools.
+         */
+        $time_format_choices = apply_filters( 'ddtt_time_format_choices', $time_format_choices );
+
+        return $time_format_choices;
+    } // End get_time_format_choices()
 
 
     /**

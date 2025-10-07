@@ -37,7 +37,7 @@ $highlight_args = $current_subsection == 'activity' ? Activity_Log::highlight_ar
 
         echo '<a href="' . esc_url( Bootstrap::page_url( 'settings&s=logging' ) ) . '" class="ddtt-tab-link">' . esc_html__( 'Settings', 'dev-debug-tools' ) . '</a>';
         ?>
-        <a href="#" class="ddtt-rerender-content" title="<?php esc_attr_e( 'Refresh Log Viewer', 'dev-debug-tools' ); ?>"><span class="dashicons dashicons-update"></span></a>
+        <a href="#" class="ddtt-rerender-content" title="<?php esc_attr_e( 'Refresh Log Viewer!', 'dev-debug-tools' ); ?>"><span class="dashicons dashicons-update"></span></a>
     </div>
 </div>
 
