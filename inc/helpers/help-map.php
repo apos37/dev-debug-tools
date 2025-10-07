@@ -202,6 +202,18 @@ class Help {
                 'link' => 'https://www.php.net/manual/en/language.types.declarations.php#language.types.declarations.return'
             ],
 
+            // Deprecated implicit nullable parameter
+            '/Implicitly marking parameter \$(\w+) as nullable is deprecated/' => [
+                'desc' => __( 'A function or method parameter is implicitly nullable. Explicitly declare the parameter with a nullable type using the ? type hint (e.g., ?string $param).', 'dev-debug-tools' ),
+                'link' => 'https://www.php.net/manual/en/migration74.deprecated.php'
+            ],
+
+            // Cannot access offset of type string on string
+            '/Uncaught TypeError: Cannot access offset of type string on string/' => [
+                'desc' => __( 'Attempted to use array-style indexing on a string. Ensure the variable is an array before accessing its offset.', 'dev-debug-tools' ),
+                'link' => 'https://www.php.net/manual/en/language.types.array.php'
+            ],
+
             // Undefined method
             '/Call to undefined method ([^(]+)\(\)/' => [
                 'desc' => __( 'A method was called on a class that does not exist. Check class definition and method name spelling.', 'dev-debug-tools' ),
@@ -219,7 +231,6 @@ class Help {
                 'desc' => __( 'Code attempted to call a private method from outside its defining class. Change the method visibility to public/protected if it should be accessible, or call it from within the class itself.', 'dev-debug-tools' ),
                 'link' => 'https://www.php.net/manual/en/language.oop5.visibility.php'
             ],
-
 
             // Division by zero
             '/Division by zero/' => [
@@ -273,6 +284,18 @@ class Help {
             '/WordPress database error Table \'[^\']+\' doesn\'t exist/' => [
                 'desc' => __( 'A database query failed because the specified table does not exist. This can happen if a plugin did not create its tables properly, or if the database is missing/corrupted. Try reinstalling or repairing the plugin, or manually creating the required tables.', 'dev-debug-tools' ),
                 'link' => 'https://developer.wordpress.org/advanced-administration/repair-database/'
+            ],
+
+            // fgets() read failure (directory instead of file)
+            '/fgets\(\): Read of \d+ bytes failed with errno=\d+ Is a directory/' => [
+                'desc' => __( 'The fgets() function attempted to read from a directory instead of a file. Verify that the provided path points to a valid readable file, not a directory.', 'dev-debug-tools' ),
+                'link' => 'https://www.php.net/manual/en/function.fgets.php'
+            ],
+
+            // Deprecated constant
+            '/Constant ([A-Z_]+) is deprecated/' => [
+                'desc' => __( 'A constant used in the code has been deprecated. Review the PHP migration guide for alternatives or remove its usage if no longer needed.', 'dev-debug-tools' ),
+                'link' => 'https://www.php.net/manual/en/migration84.deprecated.php'
             ],
 
         ];

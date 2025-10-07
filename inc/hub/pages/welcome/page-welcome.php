@@ -22,7 +22,7 @@ $settings = Welcome::settings();
             <?php
             printf(
                 /* translators: Plugin Version */
-                esc_html__( 'Thank you for installing our plugin! Version %s comes with a variety of new features and improvements to enhance your debugging and testing experience. Let\'s get started!', 'dev-debug-tools' ),
+                esc_html__( 'Thank you for installing our plugin. Version %s comes with a variety of new features and improvements to enhance your debugging and testing experience. Let\'s get started!', 'dev-debug-tools' ),
                 esc_html( Bootstrap::version() )
             );
             ?>

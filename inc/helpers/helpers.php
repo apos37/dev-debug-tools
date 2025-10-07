@@ -2106,4 +2106,64 @@ class Helpers {
         return max( $timestamps );
     } // End get_session_token_login()
 
+
+    /**
+     * Get the Must-Use Plugins directory path
+     *
+     * @return string
+     */
+    public static function get_mu_plugins_dir() : string {
+        return wp_normalize_path( WP_CONTENT_DIR . '/mu-plugins/' );
+    } // End get_mu_plugins_dir()
+
+
+    /**
+     * Remove the old MU plugins
+     * 
+     * @return bool True if the action was successful, false otherwise.
+     */
+    public static function remove_mu_plugins() : bool {
+        if ( ! function_exists( 'WP_Filesystem' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+
+        global $wp_filesystem;
+        if ( ! WP_Filesystem() ) {
+            Helpers::write_log( __( 'Failed to initialize WP_Filesystem.', 'dev-debug-tools' ) );
+            return false;
+        }
+
+        $filenames = [
+            '000-set-debug-level.php',
+            '000-suppress-errors.php',
+        ];
+
+        $dir = self::get_mu_plugins_dir();
+        $success = true;
+
+        foreach ( $filenames as $filename ) {
+            $file_path = wp_normalize_path( trailingslashit( $dir ) . $filename );
+
+            if ( $wp_filesystem->exists( $file_path ) ) {
+                if ( $wp_filesystem->delete( $file_path ) ) {
+                    Helpers::write_log(
+                        /* translators: %s: MU plugin name */
+                        sprintf( __( '"%s" must-use plugin has been removed.', 'dev-debug-tools' ), $filename )
+                    );
+                } else {
+                    Helpers::write_log(
+                        /* translators: 1: MU plugin name, 2: directory path */
+                        sprintf( __( '"%1$s" must-use plugin could not be deleted. Please remove the "%1$s" file from "%2$s" via FTP or File Manager.', 'dev-debug-tools' ),
+                            $filename,
+                            $dir
+                        )
+                    );
+                    $success = false;
+                }
+            }
+        }
+
+        return $success;
+    } // End remove_mu_plugins()
+
 }

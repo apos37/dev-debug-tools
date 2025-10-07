@@ -5,6 +5,94 @@ DevDebugTools.Helpers.log_localization( 'ddtt_welcome' );
 // Now start jQuery
 jQuery( document ).ready( function( $ ) {
 
+
+    /**
+     * User Select Field
+     */
+    $( '.ddtt-users-field' ).each( function() {
+        let container = $( this );
+        let fieldId   = container.data( 'field' );
+        let hidden    = $( '#' + fieldId );
+        let current   = JSON.parse( hidden.val() || '[]' );
+
+        let chipsContainer = container.find( '.ddtt-users-selected' );
+        let input          = container.find( '.ddtt-users-input' );
+        let dropdown       = container.find( '.ddtt-user-dropdown' );
+        
+        // If dropdown doesn't exist yet, create it
+        if ( ! dropdown.length ) {
+            dropdown = $( '<div class="ddtt-user-dropdown" style="display:none;"></div>' );
+            container.append( dropdown );
+        }
+
+        function renderChips() {
+            chipsContainer.empty();
+            current.forEach( function( user ) {
+                let chip = $( '<span class="ddtt-user-chip">' + user.text + '<span class="ddtt-remove-user">×</span></span>' );
+                chip.find( '.ddtt-remove-user' ).on( 'click', function() {
+                    current = current.filter( function( u ) {
+                        return u.id !== user.id;
+                    } );
+                    renderChips();
+                    hidden.val( JSON.stringify( current ) );
+                } );
+                chipsContainer.append( chip );
+            } );
+        }
+
+        renderChips();
+
+        function searchUsers( term ) {
+            if ( term.length < 1 ) {
+                dropdown.hide();
+                return;
+            }
+
+            $.ajax( {
+                url      : ajaxurl,
+                dataType : 'json',
+                data     : {
+                    action  : 'ddtt_user_select',
+                    nonce   : ddtt_welcome.settings_nonce,
+                    q       : term,
+                    exclude : current.map( u => u.id )
+                },
+                success: function( data ) {
+                    dropdown.empty();
+                    if ( data.length === 0 ) {
+                        dropdown.hide();
+                        return;
+                    }
+
+                    data.forEach( function( user ) {
+                        let option = $( '<div class="ddtt-user-option">' + user.text + '</div>' );
+                        option.on( 'click', function() {
+                            current.push( user );
+                            renderChips();
+                            hidden.val( JSON.stringify( current ) );
+                            input.val( '' );
+                            dropdown.hide();
+                        } );
+                        dropdown.append( option );
+                    } );
+
+                    dropdown.show();
+                }
+            } );
+        }
+
+        input.on( 'input', function() {
+            searchUsers( $( this ).val() );
+        } );
+
+        $( document ).on( 'click', function( e ) {
+            if ( ! container.is( e.target ) && container.has( e.target ).length === 0 ) {
+                dropdown.hide();
+            }
+        } );
+    } );
+
+
     /**
      * Toggle dark mode for the welcome screen.
      */
@@ -189,93 +277,6 @@ jQuery( document ).ready( function( $ ) {
                         // $( this ).remove();
                     } );
             } )
-    } );
-
-
-    /**
-     * User Select Field
-     */
-    $( '.ddtt-users-field' ).each( function() {
-        let container = $( this );
-        let fieldId   = container.data( 'field' );
-        let hidden    = $( '#' + fieldId );
-        let current   = JSON.parse( hidden.val() || '[]' );
-
-        let chipsContainer = container.find( '.ddtt-users-selected' );
-        let input          = container.find( '.ddtt-users-input' );
-        let dropdown       = container.find( '.ddtt-user-dropdown' );
-        
-        // If dropdown doesn't exist yet, create it
-        if ( ! dropdown.length ) {
-            dropdown = $( '<div class="ddtt-user-dropdown" style="display:none;"></div>' );
-            container.append( dropdown );
-        }
-
-        function renderChips() {
-            chipsContainer.empty();
-            current.forEach( function( user ) {
-                let chip = $( '<span class="ddtt-user-chip">' + user.text + '<span class="ddtt-remove-user">×</span></span>' );
-                chip.find( '.ddtt-remove-user' ).on( 'click', function() {
-                    current = current.filter( function( u ) {
-                        return u.id !== user.id;
-                    } );
-                    renderChips();
-                    hidden.val( JSON.stringify( current.map( u => u.id ) ) );
-                } );
-                chipsContainer.append( chip );
-            } );
-        }
-
-        renderChips();
-
-        function searchUsers( term ) {
-            if ( term.length < 1 ) {
-                dropdown.hide();
-                return;
-            }
-
-            $.ajax( {
-                url      : ajaxurl,
-                dataType : 'json',
-                data     : {
-                    action  : 'ddtt_user_select',
-                    nonce   : ddtt_welcome.settings_nonce,
-                    q       : term,
-                    exclude : current.map( u => u.id )
-                },
-                success: function( data ) {
-                    dropdown.empty();
-                    if ( data.length === 0 ) {
-                        dropdown.hide();
-                        return;
-                    }
-
-                    data.forEach( function( user ) {
-                        let option = $( '<div class="ddtt-user-option">' + user.text + '</div>' );
-                        option.on( 'click', function() {
-                            current.push( user );
-                            renderChips();
-                            hidden.val( JSON.stringify( current.map( u => u.id ) ) );
-                            input.val( '' );
-                            dropdown.hide();
-                        } );
-                        dropdown.append( option );
-                    } );
-
-                    dropdown.show();
-                }
-            } );
-        }
-
-        input.on( 'input', function() {
-            searchUsers( $( this ).val() );
-        } );
-
-        $( document ).on( 'click', function( e ) {
-            if ( ! container.is( e.target ) && container.has( e.target ).length === 0 ) {
-                dropdown.hide();
-            }
-        } );
     } );
 
 } );

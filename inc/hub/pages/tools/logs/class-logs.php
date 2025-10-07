@@ -397,7 +397,7 @@ class Logs {
             return 0;
         }
 
-        if ( ! is_readable( $file_path ) ) {
+        if ( ! is_readable( $file_path ) || ! is_file( $file_path ) ) {
             return 0;
         }
 
@@ -675,7 +675,7 @@ class Logs {
 
                 // Match error type
                 preg_match( '/PHP(.*?)\:/s', $first, $type_match );
-                if ( $type_match[1] ) {
+                if ( isset( $type_match[1] ) && $type_match[1] ) {
                     $type = $type_match[1];
                 } elseif ( strpos( $message, 'DDTT LOG:' ) !== false ) {
                     $ignore_help_btn = true;

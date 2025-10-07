@@ -195,7 +195,14 @@ class Welcome {
                 case 'devs':
                     if ( is_string( $value ) ) {
                         $decoded = json_decode( $value, true );
-                        $value   = is_array( $decoded ) ? array_map( 'intval', $decoded ) : [];
+                        if ( is_array( $decoded ) ) {
+                            // Extract the 'id' from each object and cast to int
+                            $value = array_map( function( $item ) {
+                                return isset( $item[ 'id' ] ) ? intval( $item[ 'id' ] ) : 0;
+                            }, $decoded );
+                        } else {
+                            $value = [];
+                        }
                     } elseif ( is_array( $value ) ) {
                         $value = array_map( 'intval', $value );
                     } else {
@@ -207,6 +214,8 @@ class Welcome {
                     $value = sanitize_text_field( $value );
                     break;
             }
+
+            // TODO: FOR SOME REASON THE WELCOME IS SAVING ALL AS VALUE OF 1, IT IS UPDATING WITH JUST IDS
 
             // Add or update the option
             if ( get_option( $option_key, '__notset' ) === '__notset' ) {
@@ -227,6 +236,9 @@ class Welcome {
         if ( version_compare( $last_viewed_version, '3.0.0', '<' ) ) {
             delete_option( 'ddtt_dev_email' );
         }
+
+        // Attempt to remove the MU plugins if they exist
+        Helpers::remove_mu_plugins();
 
         // Disable the what's new notice since we just set up
         update_option( 'ddtt_last_viewed_version', Bootstrap::version() );
