@@ -159,18 +159,14 @@ class Plugins {
         add_filter( 'manage_plugins_columns', [ $this, 'add_columns' ] );
         add_action( 'manage_plugins_custom_column', [ $this, 'render_column' ], 10, 3 );
         
-        // Make columns sortable for size and last modified
+        // Size and last modified
         if ( get_option( 'ddtt_plugins_page_size', true ) || 
              get_option( 'ddtt_plugins_page_last_modified', true ) ) {
             add_filter( 'manage_plugins_sortable_columns', [ $this, 'register_sortable_columns' ] );
             add_action( 'pre_current_active_plugins', [ $this, 'prepare_plugin_sorting' ] );
-        }
-
-        // Update plugin sizes when plugins are activated, updated or deleted
-        if ( get_option( 'ddtt_plugins_page_size', true ) ) {
-            add_action( 'upgrader_process_complete', [ $this , 'update_plugin_size_bulk' ], 10, 2 );
-            add_action( 'activated_plugin', [ $this, 'update_plugin_size' ] );
-            add_action( 'delete_plugin', [ $this, 'remove_plugin_size' ], 10, 1 );
+            add_action( 'upgrader_process_complete', [ $this , 'update_plugin_data_bulk' ], 10, 2 );
+            add_action( 'activated_plugin', [ $this, 'update_plugin_data' ] );
+            add_action( 'delete_plugin', [ $this, 'remove_plugin_data' ], 10, 1 );
         }
 
         // Update installer name
@@ -398,7 +394,7 @@ class Plugins {
     public function render_column( $column_name, $plugin_file, $plugin_data ) {
         switch ( $column_name ) {
             case 'ddtt_size':
-                $this->render_size( $plugin_file );
+                $this->render_size( $plugin_file, $plugin_data );
                 break;
 
             case 'ddtt_path':
@@ -406,7 +402,7 @@ class Plugins {
                 break;
 
             case 'ddtt_last_modified':
-                $this->render_last_modified( $plugin_file );
+                $this->render_last_modified( $plugin_file, $plugin_data );
                 break;
 
             case 'ddtt_installed_by':
@@ -449,14 +445,10 @@ class Plugins {
         }
 
         // Attach size and last modified info to each plugin row
-        $sizes = $this->get_plugin_sizes();
+        $data = $this->get_plugin_data();
         foreach ( $wp_list_table->items as $file => &$plugin ) {
-            $plugin[ 'plugin_size' ] = $sizes[ $file ] ?? 0;
-
-            $plugin_dir   = trailingslashit( WP_PLUGIN_DIR ) . dirname( $file );
-            $last_mod     = Helpers::folder_last_modified( $plugin_dir );
-            $last_stamp   = $last_mod ? strtotime( $last_mod ) : 0;
-            $plugin[ 'plugin_last_mod' ] = $last_stamp;
+            $plugin[ 'plugin_size' ] = $data[ $file ][ 'size' ] ?? 0;
+            $plugin[ 'plugin_last_mod' ] = $data[ $file ][ 'last_modified' ] ?? 0;
         }
 
         // Handle sorting
@@ -489,29 +481,60 @@ class Plugins {
 
 
     /**
-     * Get stored plugin sizes.
+     * Fetch stored plugin data to store
      *
      * @return array
      */
-    private function get_plugin_sizes() {
-        $sizes = get_option( 'ddtt_plugin_sizes', [] );
-        if ( ! is_array( $sizes ) ) {
-            $sizes = [];
+    private function get_plugin_data( $plugin_file = null ) {
+        $data = get_option( 'ddtt_plugin_data', [] );
+        if ( ! is_array( $data ) ) {
+            $data = [];
         }
 
-        // Ensure all active plugins are in the cache
-        if ( function_exists( 'get_plugins' ) ) {
-            $all_plugins = get_plugins();
-            foreach ( $all_plugins as $file => $data ) {
-                if ( ! isset( $sizes[ $file ] ) ) {
-                    $sizes[ $file ] = $this->calculate_plugin_size( $file );
-                }
+        if ( ! is_null( $plugin_file ) && isset( $data[ $plugin_file ] ) ) {
+            return $data[ $plugin_file ];
+        }
+
+        if ( ! function_exists( 'get_plugins' ) ) {
+            return $plugin_file ? [] : $data;
+        }
+
+        $all_plugins = get_plugins();
+        $has_changes = false;
+
+        foreach ( $all_plugins as $file => $info ) {
+            // Size cache
+            if ( ! isset( $data[ $file ][ 'size' ] ) ) {
+                $data[ $file ][ 'size' ] = $this->calculate_plugin_size( $file );
+                $has_changes = true;
             }
-            update_option( 'ddtt_plugin_sizes', $sizes, false );
+
+            // Last updated cache
+            if ( ! isset( $data[ $file ][ 'updated' ] ) ) {
+                $plugin_dir = trailingslashit( WP_PLUGIN_DIR ) . dirname( $file );
+                $last_mod   = Helpers::folder_last_modified( $plugin_dir );
+                $data[ $file ][ 'updated' ] = ( $last_mod && strpos( $last_mod, 'Directory does not exist' ) === false )
+                    ? $last_mod
+                    : false;
+                $has_changes = true;
+            }
+
+            // If we’re fetching just one plugin, return early
+            if ( $plugin_file && $file === $plugin_file ) {
+                if ( $has_changes ) {
+                    update_option( 'ddtt_plugin_data', $data, false );
+                }
+                return $data[ $file ];
+            }
         }
 
-        return $sizes;
-    } // End get_plugin_sizes()
+        // Only update option if something actually changed
+        if ( $has_changes ) {
+            update_option( 'ddtt_plugin_data', $data, false );
+        }
+
+        return $data;
+    } // End get_plugin_data()
 
 
     /**
@@ -530,15 +553,35 @@ class Plugins {
 
 
     /**
+     * Refresh data for a plugin.
+     *
+     * @return array
+     */
+    private function refresh_plugin_entry( &$data, $plugin_file ) {
+        if ( ! isset( $data[ $plugin_file ] ) ) {
+            $data[ $plugin_file ] = [];
+        }
+
+        $data[ $plugin_file ][ 'size' ] = $this->calculate_plugin_size( $plugin_file );
+
+        $plugin_dir = trailingslashit( WP_PLUGIN_DIR ) . dirname( $plugin_file );
+        $last_mod   = Helpers::folder_last_modified( $plugin_dir );
+        $data[ $plugin_file ][ 'updated' ] = ( $last_mod && strpos( $last_mod, 'Directory does not exist' ) === false )
+            ? $last_mod
+            : false;
+    } // End refresh_plugin_entry()
+
+
+    /**
      * Update the stored size for a specific plugin.
      *
      * @param string $plugin_file
      */
-    public function update_plugin_size( $plugin_file ) {
-        $sizes = $this->get_plugin_sizes();
-        $sizes[ $plugin_file ] = $this->calculate_plugin_size( $plugin_file );
-        update_option( 'ddtt_plugin_sizes', $sizes, false );
-    } // End update_plugin_size()
+    public function update_plugin_data( $plugin_file = null ) {
+        $data = $this->get_plugin_data();
+        $this->refresh_plugin_entry( $data, $plugin_file );
+        update_option( 'ddtt_plugin_data', $data, false );
+    } // End update_plugin_data()
 
 
     /**
@@ -547,28 +590,31 @@ class Plugins {
      * @param WP_Upgrader $upgrader
      * @param array       $hook_extra
      */
-    public function update_plugin_size_bulk( $upgrader, $hook_extra ) {
-        if ( isset( $hook_extra[ 'plugins' ] ) && is_array( $hook_extra[ 'plugins' ] ) ) {
-            foreach ( $hook_extra[ 'plugins' ] as $plugin_file ) {
-                $this->update_plugin_size( $plugin_file );
-            }
+    public function update_plugin_data_bulk( $upgrader, $hook_extra ) {
+        if ( empty( $hook_extra[ 'plugins' ] ) || ! is_array( $hook_extra[ 'plugins' ] ) ) {
+            return;
         }
-    } // End update_plugin_size_bulk()
+        $data = $this->get_plugin_data();
+        foreach ( $hook_extra[ 'plugins' ] as $plugin_file ) {
+            $this->refresh_plugin_entry( $data, $plugin_file );
+        }
+        update_option( 'ddtt_plugin_data', $data, false );
+    } // End update_plugin_data_bulk()
 
 
     /**
-     * Remove a plugin from the size cache when deleted.
+     * Remove a plugin from the data cache when deleted.
      *
      * @param string $plugin_file
      */
-    public function remove_plugin_size( $plugin_file ) {
-        $sizes = $this->get_plugin_sizes();
+    public function remove_plugin_data( $plugin_file ) {
+        $data = get_option( 'ddtt_plugin_data', [] );
 
-        if ( isset( $sizes[ $plugin_file ] ) ) {
-            unset( $sizes[ $plugin_file ] );
-            update_option( 'ddtt_plugin_sizes', $sizes, false );
+        if ( ! empty( $data ) && isset( $data[ $plugin_file ] ) ) {
+            unset( $data[ $plugin_file ] );
+            update_option( 'ddtt_plugin_data', $data, false );
         }
-    } // End remove_plugin_size()
+    } // End remove_plugin_data()
 
 
     /**
@@ -576,12 +622,19 @@ class Plugins {
      *
      * @param string $plugin_file
      */
-    protected function render_size( $plugin_file ) {
-        $sizes = $this->get_plugin_sizes();
-        $size_bytes = $sizes[ $plugin_file ] ?? 0;
+    protected function render_size( $plugin_file, $plugin_data ) {
+        $size_bytes = 0;
+        if ( isset( $plugin_data[ 'plugin_size' ] ) ) {
+            $size_bytes = $plugin_data[ 'plugin_size' ];
+        } else {
+            $stored_plugin_data = $this->get_plugin_data( $plugin_file );
+            if ( isset( $stored_plugin_data[ 'size' ] ) ) {
+                $size_bytes = $stored_plugin_data[ 'size' ];
+            }
+        }
 
         if ( $size_bytes === 0 ) {
-            echo esc_html__( '—', 'dev-debug-tools' );
+            echo '—';
             return;
         }
 
@@ -642,10 +695,16 @@ class Plugins {
      * Render Last Modified column content.
      *
      * @param string $plugin_file
+     * @param array  $plugin_data
      */
-    protected function render_last_modified( $plugin_file ) {
-        $plugin_dir = trailingslashit( WP_PLUGIN_DIR ) . dirname( $plugin_file );
-        $last_mod   = Helpers::folder_last_modified( $plugin_dir );
+    protected function render_last_modified( $plugin_file, $plugin_data ) {
+        $last_mod = false;
+        $stored_plugin_data = $this->get_plugin_data( $plugin_file );
+        if ( isset( $stored_plugin_data[ 'updated' ] ) ) {
+            $last_mod = $stored_plugin_data[ 'updated' ];
+        } elseif ( isset( $plugin_data[ 'plugin_last_mod' ] ) && ! empty( $plugin_data[ 'plugin_last_mod' ] ) ) {
+            $last_mod = Helpers::convert_date_format( $plugin_data[ 'plugin_last_mod' ] );
+        }
 
         if ( ! $last_mod || strpos( $last_mod, 'Directory does not exist' ) !== false ) {
             echo esc_html__( '—', 'dev-debug-tools' );
@@ -670,7 +729,13 @@ class Plugins {
             $class = ' ddtt-old';
         }
 
-        echo '<span class="ddtt-last-modified' . esc_attr( $class ) . '">' . esc_html( $last_mod ) . '</span>';
+        // Calculate how long ago
+        $time_ago = human_time_diff( $last_timestamp, current_time( 'timestamp' ) ) . ' ' . __( 'ago', 'dev-debug-tools' );
+
+        // Output span with data attribute
+        echo '<span class="ddtt-last-modified' . esc_attr( $class ) . '" data-time-ago="' . esc_attr( $time_ago ) . '">'
+            . esc_html( date_i18n( get_option( 'date_format' ), $last_timestamp ) )
+            . '</span>';
     } // End render_last_modified()
 
 

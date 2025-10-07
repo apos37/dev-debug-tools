@@ -88,7 +88,7 @@ body.dev-debug-tools {
     background: var(--color-page-title-bg);
     font-style: italic;
     font-size: 2rem;
-    padding: 20px;
+    padding: 20px !important;
     border-radius: 10px;
     margin: 0;
     font-family: 'Michroma', sans-serif;
