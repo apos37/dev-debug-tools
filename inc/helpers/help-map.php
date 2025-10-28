@@ -334,6 +334,48 @@ class Help {
                 'link' => 'https://www.php.net/manual/en/function.explode.php'
             ],
 
+            // Automatic updates starting
+            '/Automatic updates starting\.\.\./' => [
+                'desc' => __( 'WordPress automatic updates are beginning. This is a system notice indicating update processes have started.', 'dev-debug-tools' ),
+                'link' => 'https://wordpress.org/support/article/updating-wordpress/#automatic-background-updates'
+            ],
+
+            // Automatic updates complete
+            '/Automatic updates complete\./' => [
+                'desc' => __( 'WordPress automatic updates have finished. This confirms the update cycle completed successfully.', 'dev-debug-tools' ),
+                'link' => 'https://wordpress.org/support/article/updating-wordpress/#automatic-background-updates'
+            ],
+
+            // Generic: wp_enqueue_script() called incorrectly
+            '/wp_enqueue_script\(\).*called.*incorrectly/i' => [
+                'desc' => __( 'The wp_enqueue_script() function was used incorrectly. This typically occurs when scripts are enqueued too early or with invalid dependencies. Ensure scripts are enqueued during the proper WordPress action, such as wp_enqueue_scripts, admin_enqueue_scripts, or login_enqueue_scripts.', 'dev-debug-tools' ),
+                'link' => 'https://developer.wordpress.org/reference/functions/wp_enqueue_script/'
+            ],
+
+            // fopen(): Permission denied
+            '/fopen\([^)]+\): Failed to open stream: Permission denied/i' => [
+                'desc' => __( 'PHP failed to open the specified file because of insufficient permissions. Check that the file exists and that the web server/PHP process has read (and if writing, write) permissions for the file.', 'dev-debug-tools' ),
+                'link' => 'https://www.php.net/manual/en/function.fopen.php'
+            ],
+
+            // Implicit float-to-int precision loss
+            '/Implicit conversion from float [^)]+ to int loses precision/i' => [
+                'desc' => __( 'A float value is being implicitly converted to an integer, which causes a loss of precision. Cast the value explicitly using (int) if intentional, or ensure calculations stay in float context.', 'dev-debug-tools' ),
+                'link' => 'https://www.php.net/manual/en/language.types.type-juggling.php'
+            ],
+
+            // WordPress database error: Unknown column
+            '/WordPress database error Unknown column .* in .*/i' => [
+                'desc' => __( 'A database query is referencing a column that does not exist or is not properly joined in the SQL statement. Check for missing JOINs or incorrect table aliases in filters or custom queries.', 'dev-debug-tools' ),
+                'link' => 'https://developer.wordpress.org/reference/classes/wpdb/#custom-sql-queries'
+            ],
+
+            // Object of class WP_User could not be converted to int
+            '/Object of class WP_User could not be converted to int/i' => [
+                'desc' => __( 'A WP_User object was passed where an integer user ID was expected. Pass $user->ID instead of $user when calling functions that require a user ID.', 'dev-debug-tools' ),
+                'link' => 'https://developer.wordpress.org/reference/classes/wp_user/'
+            ],
+
         ];
 
 

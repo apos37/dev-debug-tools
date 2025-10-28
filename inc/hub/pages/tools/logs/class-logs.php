@@ -429,13 +429,13 @@ class Logs {
      * @param string $file The file path.
      * @return array
      */
-    public static function get_file_info( $file ) {
+    public static function get_file_info( $file, $file_size = null ) : array {
         if ( ! file_exists( $file ) ) {
             return [];
         }
 
         $line_count = self::get_total_lines( $file );
-        $file_size = filesize( $file );
+        $file_size = $file_size !== null ? $file_size : filesize( $file );
         $file_size = $file_size !== false ? Helpers::format_bytes( $file_size ) : __( 'Unknown', 'dev-debug-tools' );
         $last_modified = filemtime( $file );
 
@@ -465,8 +465,8 @@ class Logs {
      *
      * @param array $path The file path information.
      */
-    public static function render_file_info( $abs_path ) {
-        $file_data = self::get_file_info( $abs_path );
+    public static function render_file_info( $abs_path, $file_size = null ) {
+        $file_data = self::get_file_info( $abs_path, $file_size );
         if ( $file_data ) : 
             $last_key = array_key_last( $file_data );
             ?>
@@ -1222,8 +1222,25 @@ class Logs {
     public static function render_log( $subsection, $log_viewer_customizations = [] ) {
         $path = self::get_path( $subsection );
         $type = isset( $log_viewer_customizations[ 'type' ] ) ? sanitize_key( $log_viewer_customizations[ 'type' ] ) : 'easy';
+
+        $file_size = filesize( $path[ 'abs' ] );
+        $max_file_size_mb = get_option( 'ddtt_max_log_size', 10 ); // Default to 10 MB
+        $max_file_size = $max_file_size_mb * 1024 * 1024; // Convert to bytes
+        $file_size_mb = round( $file_size / 1024 / 1024, 2 );
+
+        if ( $max_file_size_mb > 0 && $file_size > $max_file_size ) {
+            echo '<p>';
+            echo esc_html__( 'The log file is too large to display.', 'dev-debug-tools' ) . ' ';
+            printf(
+                esc_html__( 'File size: %s MB. Maximum allowed: %s MB. You can change the maximum log size in the settings.', 'dev-debug-tools' ),
+                $file_size_mb,
+                $max_file_size_mb
+            );
+            echo '</p>';
+            return;
+        }
         ?>
-        <?php self::render_file_info( $path[ 'abs' ] ); ?>
+        <?php self::render_file_info( $path[ 'abs' ], $file_size ); ?>
 
         <div id="ddtt-log-pane" class="ddtt-log-pane-<?php echo esc_attr( $type ); ?>">
             <?php
@@ -1400,5 +1417,9 @@ class Logs {
 
 }
 
-
-Logs::instance();
+// Instantiate Logs only when running in admin and for users who can manage options
+// to avoid eager file access (e.g. fopen) on every page load in environments
+// where some files (like .htaccess) are intentionally unreadable by PHP.
+if ( is_admin() && current_user_can( 'manage_options' ) && Helpers::has_access() ) {
+    Logs::instance();
+}

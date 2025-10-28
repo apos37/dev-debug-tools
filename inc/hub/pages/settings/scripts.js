@@ -418,8 +418,10 @@ jQuery( function( $ ) {
             button.removeClass( 'ddtt-loading-msg ddtt-button-disabled' );
 
             if ( response.success ) {
+                console.log( 'Manual refresh successful:', response );
                 button.after(
-                    '<span class="ddtt-refresh-success" style="display:inline-flex; align-items:center; justify-content:center; width:1.5rem; height:1.5rem; background-color: var(--color-success); border-radius:50%; font-size:0.8rem; margin-left:15px;">✔</span>'
+                    '<span class="ddtt-refresh-success" style="display:inline-flex; align-items:center; justify-content:center; width:1.5rem; height:1.5rem; background-color: var(--color-success); border-radius:50%; font-size:0.8rem; margin-left:15px;">✔</span>' + 
+                    '<span class="ddtt-refresh-message" style="margin-top:5px; display: block; color: var(--color-success);">' + response.data.message + '</span>'
                 );
             } else {
                 console.log( 'Manual refresh failed:', response );

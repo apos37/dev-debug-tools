@@ -197,7 +197,7 @@ class OnlineUsers {
         // Parent node
         $wp_admin_bar->add_node( [
             'id'    => 'ddtt-online-users',
-            'title' => '<span class="ab-icon"></span><span class="ab-count">' . $count . '</span><span class="ab-label">' . $label . '</span>',
+            'title' => '<span class="ab-icon" style="height: 13px !important; width: 13px !important; padding: 0 !important;"></span><span class="ab-count">' . $count . '</span><span class="ab-label">' . $label . '</span>',
             'href'  => admin_url( 'users.php' ),
         ] );
 
@@ -212,7 +212,7 @@ class OnlineUsers {
             $class = 'ddtt-online-user';
             if ( Helpers::is_dev( $user->ID ) ) {
                 $class .= ' dev';
-                $title .= ' <img src="' . esc_attr( Helpers::icon( 14, 14 ) ) . '" alt="Dev" style="vertical-align:middle; margin-left:3px; margin-top:-2px;" />';
+                $title .= ' <img src="' . esc_attr( Helpers::icon( 14, 14 ) ) . '" alt="Dev" style="vertical-align:middle; margin-left:7px; margin-top:0px; height: 16px; width: 16px; display: inline-block;" />';
             }
 
             if ( empty( $link_template ) ) {
@@ -222,7 +222,7 @@ class OnlineUsers {
             }
 
             $wp_admin_bar->add_node( [
-                'id'     => 'online_user_' . esc_attr( $user->ID ),
+                'id'     => 'online-user-' . esc_attr( $user->ID ),
                 'parent' => 'ddtt-online-users',
                 'title'  => wp_kses_post( $title ),
                 'href'   => esc_url( $link ),

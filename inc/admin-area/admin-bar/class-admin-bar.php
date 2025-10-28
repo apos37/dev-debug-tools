@@ -566,6 +566,22 @@ class AdminBar {
 
 
     /**
+     * Check if a URL exists (returns 200-399)
+     * 
+     * @param string $url The URL to check.
+     * @return bool True if the URL exists, false otherwise.
+     */
+    private function url_exists( string $url ): bool {
+        $response = wp_remote_head( $url, [ 'timeout' => 2 ] );
+        if ( is_wp_error( $response ) ) {
+            return false;
+        }
+        $code = wp_remote_retrieve_response_code( $response );
+        return $code >= 200 && $code < 400;
+    } // End url_exists()
+
+
+    /**
      * Get the admin menu options
      * 
      * @return array The admin menu options.
@@ -576,13 +592,36 @@ class AdminBar {
             return [];
         }
 
+        $special_urls = [
+            'admin-help-docs'      => 'admin.php?page=admin-help-docs&tab=documentation',
+            'broken-link-notifier' => 'edit.php?post_type=broken-link-notifier',
+            'learndash-lms'        => 'edit.php?post_type=sfwd-courses',
+        ];
+        $special_urls = apply_filters( 'ddtt_admin_menu_special_urls', $special_urls );
+
+        $core_urls = [
+            'users.php'               => admin_url( 'users.php' ),
+            'upload.php'              => admin_url( 'upload.php' ),
+            'edit.php?post_type=page' => admin_url( 'edit.php?post_type=page' ),
+            'edit.php'                => admin_url( 'edit.php' ),
+            'edit-comments.php'       => admin_url( 'edit-comments.php' ),
+            'tools.php'               => admin_url( 'tools.php' ),
+            'options-general.php'     => admin_url( 'options-general.php' ),
+        ];
+
+        $already_added = [
+            'index.php',
+            'plugins.php',
+            'themes.php',
+        ];
+
         $admin_menu_items = [];
         foreach( $menu as $item ) {
             
             $slug = $item[2];
 
             // Skip separators and non-admin URLs
-            if ( $slug === null || $slug === '' || strpos( $slug, 'separator' ) !== false || strpos( $slug, 'http' ) === 0 || strpos( $slug, 'https' ) === 0 ) {
+            if ( $slug === null || $slug === '' || in_array( $slug, $already_added, true ) || strpos( $slug, 'separator' ) !== false || strpos( $slug, 'http' ) === 0 || strpos( $slug, 'https' ) === 0 ) {
                 continue;
             }
 
@@ -591,12 +630,24 @@ class AdminBar {
             $label = wp_strip_all_tags( $label ); 
             $label = html_entity_decode( $label );
             $label = trim( $label );
-            
-            $url = admin_url( $slug );
 
-            // LearnDash fix
-            if ( $label == 'LearnDash LMS' ) {
-                $url = 'admin.php?page=learndash_lms_overview';
+            if ( isset( $core_urls[ $slug ] ) ) {
+                $url = $core_urls[ $slug ];
+            } elseif ( isset( $special_urls[ $slug ] ) ) {
+                $url = admin_url( $special_urls[ $slug ] );
+            } elseif ( strpos( $slug, '.php' ) !== false || strpos( $slug, '?' ) !== false ) {
+                $url = admin_url( $slug );
+            } else {
+                $plugin_url = admin_url( 'admin.php?page=' . $slug );
+                $core_url   = admin_url( $slug );
+
+                if ( $this->url_exists( $plugin_url ) ) {
+                    $url = $plugin_url;
+                } elseif ( $this->url_exists( $core_url ) ) {
+                    $url = $core_url;
+                } else {
+                    continue; // skip broken link
+                }
             }
 
             $admin_menu_items[] = [
@@ -614,15 +665,15 @@ class AdminBar {
     /**
      * AJAX handler to refresh the admin bar menu links
      */
-    public function refresh_admin_bar_menu_links() {
+    public function ajax_refresh_admin_bar_menu_links() {
         check_ajax_referer( 'ddtt_save_settings_nonce', 'nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Unauthorized.', 'dev-debug-tools' ) ], 403 );
         }
 
         $this->clear_cached_admin_menu_options();
-        wp_send_json_success( [ 'updated' => true ] );
-    } // End refresh_admin_bar_menu_links()
+        wp_send_json_success( [ 'message' => __( 'Please refresh the page to take effect.', 'dev-debug-tools' ), 'updated' => true ] );
+    } // End ajax_refresh_admin_bar_menu_links()
 
 
     /**
@@ -631,32 +682,38 @@ class AdminBar {
      * @param WP_Admin_Bar $wp_admin_bar The WP_Admin_Bar instance, passed by reference.
      */
     private function render_post_details( $wp_admin_bar ) {
-        $post_id = get_the_ID();
-        if ( $post_id ) {
-            
-            $post_type     = get_post_type( $post_id );
-            $post_type_obj = get_post_type_object( $post_type );
-            if ( $post_type_obj ) {
-                $pt_name = sanitize_text_field( $post_type_obj->labels->singular_name ) . ' ' . __( 'ID', 'dev-debug-tools' );
-            } else {
-                $pt_name = '';
-            }
-
-            $post_status_obj = get_post_status_object( get_post_status( $post_id ) );
-            if ( $post_status_obj && isset( $post_status_obj->label ) ) {
-                $post_status = $post_status_obj->label;
-            } else {
-                $post_status = ucfirst( get_post_status( $post_id ) );
-            }
-
-            $post_info_title = $pt_name . ' ' . $post_id . ': (' . $post_status . ')';
-
+        if ( is_search() ) {
+            $post_info_title = __( 'Search Results Page', 'dev-debug-tools' );
+        } elseif ( is_404() ) {
+            $post_info_title = __( '404 Page', 'dev-debug-tools' );
         } else {
-            $post_info_title = __( 'Not Singular', 'dev-debug-tools' );
+            $post_id = get_the_ID();
+            if ( $post_id ) {
+                
+                $post_type     = get_post_type( $post_id );
+                $post_type_obj = get_post_type_object( $post_type );
+                if ( $post_type_obj ) {
+                    $pt_name = sanitize_text_field( $post_type_obj->labels->singular_name ) . ' ' . __( 'ID', 'dev-debug-tools' );
+                } else {
+                    $pt_name = '';
+                }
+
+                $post_status_obj = get_post_status_object( get_post_status( $post_id ) );
+                if ( $post_status_obj && isset( $post_status_obj->label ) ) {
+                    $post_status = $post_status_obj->label;
+                } else {
+                    $post_status = ucfirst( get_post_status( $post_id ) );
+                }
+
+                $post_info_title = $pt_name . ' ' . $post_id . ': (' . $post_status . ')';
+
+            } else {
+                $post_info_title = __( 'Not Singular', 'dev-debug-tools' );
+            }
         }
 
         $nonce = wp_create_nonce( 'ddtt_metadata_lookup' );
-        $url = Helpers::is_dev() ? Bootstrap::tool_url( 'metadata&s=post&lookup=' . $post_id . '&_wpnonce=' . $nonce ) : '';
+        $url = ( Helpers::is_dev() && $post_id ) ? Bootstrap::tool_url( 'metadata&s=post&lookup=' . $post_id . '&_wpnonce=' . $nonce ) : '';
 
         $wp_admin_bar->add_node( [
             'id'     => 'ddtt-admin-post-id',

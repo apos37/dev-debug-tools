@@ -176,7 +176,8 @@ class FileEditor {
             throw new \RuntimeException( "Class not found for file editor: " . esc_html( $this->class_name ) );
         }
 
-        $this->tool_slug = str_replace( [ '.php', '.' ], '', $this->filename );
+        $this->tool_slug = str_replace( [ '.php', '.', '-' ], '', $this->filename );
+
         $this->shortname = str_replace( '-', '', $this->tool_slug );
         $this->option_key = 'ddtt_' . $this->shortname . '_snippets';
 
@@ -223,7 +224,11 @@ class FileEditor {
     } // End instance()
 
 
-    // Getter for option key
+    /**
+     * Get the option key for storing snippets
+     *
+     * @return string
+     */
     public function get_option_key(): string {
         return $this->option_key;
     } // End get_option_key()
@@ -776,7 +781,7 @@ class FileEditor {
         <section id="ddtt-file-editor-section">
             <?php $this->render_file_info( $raw_contents ); ?>
 
-            <pre id="ddtt-current-view" class="ddtt-code-block" style="background: <?php echo esc_attr( $background ); ?>; color: <?php echo esc_attr( $text_quotes ); ?>;"><?php echo wp_kses_post( $formatted_content ); ?></pre>
+            <pre id="ddtt-current-view" class="ddtt-code-block" style="background: <?php echo esc_attr( $background ); ?>; color: <?php echo esc_attr( $text_quotes ); ?>; overflow-x: auto; overflow-y: hidden;"><?php echo wp_kses_post( $formatted_content ); ?></pre>
 
             <div id="ddtt-editor-errors"></div>
             <div id="ddtt-raw-editor-cont" style="display: none;">
@@ -1086,6 +1091,7 @@ class FileEditor {
         ] );
 
         if ( ! empty( $errors ) ) {
+            dwl( [ 'test' => '8', 'errors' => $errors ] );
             wp_send_json_error( [ 'errors' => $errors ] );
         } else {
             wp_send_json_success( [ 'errors' => [] ] );
@@ -1153,6 +1159,8 @@ class FileEditor {
             'update' => $update,
             'remove' => $remove,
         ] );
+
+        dwl( $lines );
 
         $temp_contents = implode( $eol, $lines );
 

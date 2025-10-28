@@ -121,6 +121,12 @@ class Settings {
                         'type'       => 'checkbox',
                         'default'    => true,
                     ],
+                    'max_log_size' => [
+                        'title'      => __( 'Max Log Size (MB)', 'dev-debug-tools' ),
+                        'desc'       => __( 'Set the maximum size for log files. When a log file exceeds this size, we will not attempt to load it. Set to 0 for unlimited size (not recommended).', 'dev-debug-tools' ),
+                        'type'       => 'number',
+                        'default'    => 10,
+                    ],
                     // 'log_user_url' => [
                     //     'title'      => __( 'Also Log User and URL With Errors', 'dev-debug-tools' ),
                     //     'desc'       => __( 'Adds an additional line to debug.log errors with the user ID, user display name, and url with query strings when a user error is triggered. This can add up quick, so use with caution and only temporarily.', 'dev-debug-tools' ),

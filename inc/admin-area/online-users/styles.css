@@ -1,6 +1,4 @@
 #wp-admin-bar-ddtt-online-users .ab-icon {
-    height: 5px;
-    width: 13px;
     margin-top: 9px;
     margin-right: 6px;
     background-color: green;
@@ -21,10 +19,6 @@
     height: 10px;
 }
 
-#wp-admin-bar-ddtt-online-users-li-total {
-    border-top: 1px solid #A7AAAD;
-}
-
 #wp-admin-bar-ddtt-online-users .ab-sub-wrapper .ab-item:has(span) {
     display: flex;
     align-items: center;
@@ -35,6 +29,7 @@
     border-top: 1px solid #A7AAAD;
     margin-top: 5px !important;
     padding-top: 5px !important;
+    margin-bottom: 5px !important;
 }
 
 #wp-admin-bar-ddtt-online-users-total .ab-item {
@@ -43,4 +38,10 @@
 
 #wp-admin-bar-ddtt-online-users .ddtt-online-user.dev {
     padding-right: 14px;
+    display: inline-flex;
+}
+
+#wp-admin-bar-ddtt-online-users-default li {
+    float: left !important;
+    width: 100%;
 }

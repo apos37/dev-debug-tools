@@ -29,7 +29,7 @@ jQuery( document ).ready( function( $ ) {
         };
 
         if ( key === 'menu' || key === 'submenu' ) {
-            data[key] = ddtt_globals[key];
+            data[ key ] = ddtt_globals[ key ];
         }
 
         $.post( ajaxurl, data, function( response ) {

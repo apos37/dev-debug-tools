@@ -96,7 +96,7 @@ class Globals {
         if ( $key === 'menu' || $key === 'submenu' ) {
             // Expect JS has passed these into a global variable
             $js_var_name = $key;
-            $var = isset( $_POST[ $js_var_name ] ) ? sanitize_text_field( wp_unslash( $_POST[ $js_var_name ] ) ) : [];
+            $var = isset( $_POST[ $js_var_name ] ) ? filter_var_array( wp_unslash( $_POST[ $js_var_name ] ), FILTER_SANITIZE_FULL_SPECIAL_CHARS ) : [];
         }
         // Otherwise, try $GLOBALS first
         elseif ( $key && isset( $GLOBALS[ $key ] ) ) {

@@ -44,7 +44,7 @@ class AdminMenu {
                 'description' => __( "View your database tables and their records.", 'dev-debug-tools' ),
                 'include_menu' => true,
             ],
-            'wp-config' => [
+            'wpconfig' => [
                 'name'        => __( "WP-CONFIG", 'dev-debug-tools' ),
                 'description' => __( "View and edit your <code>wp-config.php</code> file.", 'dev-debug-tools' ),
                 'include_menu' => true,
@@ -97,6 +97,11 @@ class AdminMenu {
             'auto-drafts' => [
                 'name'        => __( "Auto Drafts", 'dev-debug-tools' ),
                 'description' => __( "View and delete auto drafts from your posts.", 'dev-debug-tools' ),
+                'include_menu' => true,
+            ],
+            'signups' => [
+                'name'        => __( "Signups", 'dev-debug-tools' ),
+                'description' => __( "View and manage user signups.", 'dev-debug-tools' ),
                 'include_menu' => true,
             ],
             'server' => [
@@ -156,8 +161,8 @@ class AdminMenu {
      */
     private function file_editor_assets() : array {
         return [
-            'wp-config' => ABSPATH . 'wp-config.php',
-            'htaccess'  => ABSPATH . '.htaccess'
+            'wpconfig' => ABSPATH . 'wp-config.php',
+            'htaccess' => ABSPATH . '.htaccess'
         ];
     } // End file_editor_assets()
 
@@ -577,7 +582,7 @@ class AdminMenu {
         foreach ( $this->file_editor_assets() as $path ) {
             if ( file_exists( $path ) ) {
                 FileEditor::instance( $path );
-            }       
+            }
         }
     } // End instantiate_file_editor_assets()
 
@@ -937,7 +942,7 @@ class AdminMenu {
                 }
             }     
             
-            if ( $tool[ 'slug' ] === 'wp-config' || $tool[ 'slug' ] === 'htaccess' ) {
+            if ( $tool[ 'slug' ] === 'wpconfig' || $tool[ 'slug' ] === 'htaccess' ) {
                 wp_enqueue_style(
                     'ddtt-file-editor',
                     Bootstrap::url( 'inc/helpers/file-editor/styles.css' ),

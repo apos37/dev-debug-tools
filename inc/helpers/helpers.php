@@ -516,7 +516,7 @@ class Helpers {
         }
 
         if ( $incl_protocol ) {
-            $protocol = $parts[ 'scheme' ] ?? 'http';
+            $protocol = isset( $parts[ 'scheme' ] ) ? $parts[ 'scheme' ] : 'http';
             $domain = $protocol . '://' . $domain;
         }
 

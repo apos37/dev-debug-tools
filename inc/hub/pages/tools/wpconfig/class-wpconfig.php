@@ -734,22 +734,35 @@ class WpConfig {
         }
 
         // --- 5. Direct execution check ---
-        $output     = null;
+        $output = [];
         $return_var = null;
-        exec( "php " . escapeshellarg( $temp_file ) . " 2>&1", $output, $return_var );
-        if ( $return_var !== 0 ) {
+
+        if ( is_callable( 'exec' ) ) {
+            @exec( "php " . escapeshellarg( $temp_file ) . " 2>&1", $output, $return_var );
+        } else {
+            Helpers::write_log( 'exec() function is disabled; skipping PHP syntax check.' );
+        }
+
+        if ( ! empty( $output ) || ( isset( $return_var ) && $return_var !== 0 ) ) {
+            if ( ! is_array( $output ) ) {
+                $output = [ (string) $output ];
+            }
+
             $error_msg = implode( "\n", array_filter( $output ) );
-            $errors[] = [
-                'message' => $error_msg,
-                'line'    => preg_match( '/on line (\d+)/i', $error_msg, $matches ) ? intval( $matches[1] ) : null
-            ];
+            $line_num  = preg_match( '/on line (\d+)/i', $error_msg, $matches ) ? intval( $matches[1] ) : null;
+
+            if ( ! empty( $error_msg ) ) {
+                $errors[] = $line_num
+                    ? $error_msg . ' (line ' . $line_num . ')'
+                    : $error_msg;
+            }
         }
 
         // --- 6. Database connection check ---
         $db_name = $db_user = $db_password = $db_host = $table_prefix = null;
         foreach ( [ 'DB_NAME','DB_USER','DB_PASSWORD','DB_HOST' ] as $constant ) {
             if ( preg_match( "/define\(\s*['\"]{$constant}['\"]\s*,\s*['\"](.+?)['\"]\s*\)/i", $content, $matches ) ) {
-                ${strtolower($constant)} = $matches[1];
+                ${strtolower( $constant )} = $matches[1];
             }
         }
         if ( preg_match( '/\$table_prefix\s*=\s*[\'"]([^\'"]+)[\'"]\s*;/', $content, $matches ) ) {
@@ -902,15 +915,19 @@ class WpConfig {
         }
 
         // 3c. Add snippets above "stop editing" with comment and controlled blank lines
-        $add_lines    = [];
+        $add_lines = [];
         foreach ( $add as $snippet ) {
             if ( isset( $all_snippets[ $snippet[ 'key' ] ] ) ) {
                 // Use stripped label to avoid injecting HTML into code comments
                 $label = wp_strip_all_tags( $all_snippets[ $snippet[ 'key' ] ][ 'label' ] );
                 $add_lines[] = '/** ' . $label . ' */';
             }
-            $code = rtrim( $snippet[ 'code' ], ';' );
-            $add_lines[] = $code . ';';
+            $snippet_code = rtrim( $snippet[ 'code' ], ';' );
+            // Split by actual line breaks to preserve each line as a separate array element
+            $snippet_lines = preg_split("/\r\n|\n|\r/", $snippet_code);
+            foreach ( $snippet_lines as $line ) {
+                $add_lines[] = rtrim( $line, ';' ) . ';';
+            }
             $add_lines[] = ''; // Blank line after each snippet block
         }
 

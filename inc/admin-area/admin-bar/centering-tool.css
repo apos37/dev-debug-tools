@@ -65,14 +65,17 @@ div#ddtt-ct-top {
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    color: inherit !important;
 }
 
-#wp-admin-bar-ddtt-centering-tool-default input {
+#wp-admin-bar-ddtt-centering-tool-default input[type="number"],
+#wp-admin-bar-ddtt-centering-tool-default input[type="text"] {
     background: white;
     color: black;
     line-height: 1.5;
     border-radius: 2px;
-    padding: 0 5px;
+    padding: 0 5px !important;
     margin-left: 10px;
-    width: 60px;
+    width: 60px !important;
+    height: 25px !important;
 }
