@@ -299,6 +299,7 @@ class AdminBar {
             'comments',
             'updates',
             'blnotifier-notify',
+            'query-monitor'
         ] );
 
         $only_remove_ab_labels = apply_filters( 'ddtt_admin_bar_condensed_only_remove_ab_labels', [
@@ -478,7 +479,7 @@ class AdminBar {
         #wp-toolbar .ddtt-has-text-label .ab-count { margin-left: 6px !important; }
         #wp-toolbar .ddtt-has-css-icon .ab-item:before { margin-right: 0 !important; }
         #wp-toolbar #wp-admin-bar-tco-main .tco-admin-bar-logo.ab-item { margin-right: 0 !important; }
-        #wp-toolbar li .ab-label { display: none; }
+        #wp-toolbar li:not(#wp-admin-bar-query-monitor) > .ab-item > .ab-label { display: none; }
         #wp-admin-bar-my-account .display-name { display: none; }
         #wp-admin-bar-comments .ab-icon, #wp-admin-bar-duplicate-post .ab-icon { margin-right: 0 !important; }
         </style>';

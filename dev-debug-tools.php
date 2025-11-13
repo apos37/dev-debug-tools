@@ -3,7 +3,7 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://pluginrx.com/plugin/dev-debug-tools/
  * Description:         WordPress debugging and testing tools for developers
- * Version:             3.0.0.3
+ * Version:             3.0.0.4
  * Requires at least:   5.9
  * Tested up to:        6.8
  * Requires PHP:        8.0
@@ -37,7 +37,7 @@ final class Bootstrap {
         'hub/pages/resources/links.php'                  => 'dev',
         'admin-area/class-admin-area.php'                => 'admin',
         'hub/menu.php'                                   => 'dev',
-        'functions.php'                                  => 'dev',
+        'functions.php'                                  => 'all',
         'helpers/help-map.php'                           => 'dev',
         'helpers/error-messages.php'                     => 'all',
         'helpers/jokes.php'                              => 'dev',
@@ -45,7 +45,7 @@ final class Bootstrap {
         'admin-area/security/class-security.php'         => 'all',
         'shortcodes.php'                                 => 'dev',
         'site-wide/heartbeat/class-heartbeat.php'        => 'dev',
-        'admin-area/admin-bar/class-admin-bar.php'       => 'admin',
+        'admin-area/admin-bar/class-admin-bar.php'       => 'all',
         'admin-area/online-users/class-online-users.php' => 'all',
         'admin-area/plugins/class-plugins.php'           => 'admin',
         'site-wide/class-site-wide.php'                  => 'all',

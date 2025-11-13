@@ -1091,7 +1091,6 @@ class FileEditor {
         ] );
 
         if ( ! empty( $errors ) ) {
-            dwl( [ 'test' => '8', 'errors' => $errors ] );
             wp_send_json_error( [ 'errors' => $errors ] );
         } else {
             wp_send_json_success( [ 'errors' => [] ] );
@@ -1160,8 +1159,6 @@ class FileEditor {
             'remove' => $remove,
         ] );
 
-        dwl( $lines );
-
         $temp_contents = implode( $eol, $lines );
 
         // --- 4. Create the temp file ---
@@ -1216,7 +1213,7 @@ class FileEditor {
 
 
     /**
-     * Handle AJAX request to update the EOL type
+     * Handle AJAX request to load the previewer
      *
      * @return void
      */
@@ -1380,7 +1377,7 @@ class FileEditor {
 
 
     /**
-     * Handle AJAX request to update the EOL type
+     * Handle AJAX request to delete a backup file
      *
      * @return void
      */
@@ -1416,11 +1413,11 @@ class FileEditor {
         } else {
             wp_send_json_error( 'file_not_found' );
         }
-    } // End ajax_load_previewer()
+    } // End ajax_delete_backup_file()
 
 
     /**
-     * Handle AJAX request to update the EOL type
+     * Handle AJAX request to clear all backup files except the most recent one
      *
      * @return void
      */

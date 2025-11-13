@@ -204,6 +204,7 @@ class AdminMenu {
         add_action( 'admin_init', [ $this, 'instantiate_file_editor_assets' ] );
         add_filter( 'admin_title', [ $this, 'admin_title' ], 10, 2 );
         add_action( 'admin_body_class', [ $this, 'add_admin_body_class' ] );
+        add_action( 'current_screen', [ $this, 'maybe_remove_screen_options' ] );
         add_action( 'admin_head' , [ $this, 'preload_fonts' ] );
         add_action( 'admin_init', [ $this, 'discover_integrations' ] );
         add_action( 'admin_init', [ $this, 'require_integration_classes' ] );
@@ -252,11 +253,7 @@ class AdminMenu {
         $is_dev = Helpers::is_dev();
 
         foreach ( self::pages() as $slug => $label ) {
-            if ( ! in_array( $slug, $hidden_pages ) ) {
-                $parent_slug = 'dev-debug-dashboard';
-            } else {
-                $parent_slug = null;
-            }
+            $parent_slug = in_array( $slug, $hidden_pages, true ) ? '' : 'dev-debug-dashboard';
 
             add_submenu_page(
                 $parent_slug,
@@ -701,6 +698,21 @@ class AdminMenu {
         }
         return $classes;
     } // End add_admin_body_class()
+
+
+    /**
+     * Maybe remove screen options tab
+     *
+     * @param \WP_Screen $screen Current screen object.
+     * 
+     * @return void
+     */
+    public function maybe_remove_screen_options( $screen ) {
+        if ( isset( $screen->id ) && strpos( $screen->id, 'dev-debug-' ) !== false ) {
+            remove_all_actions( 'screen_options' );
+            add_filter( 'screen_options_show_screen', '__return_false' );
+        }
+    } // End maybe_remove_screen_options()
 
 
     /**

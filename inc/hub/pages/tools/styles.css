@@ -299,7 +299,7 @@ span.ddtt-file-data-label {
 
 #ddtt-snippet-manager .ddtt-table code {
     background-color: var(--color-bg-alt2) !important;
-    white-space: nowrap;
+    white-space: pre;
 }
 
 #ddtt-snippet-manager .ddtt-table td:last-child code {

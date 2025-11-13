@@ -924,6 +924,7 @@ class WpConfig {
             }
             $snippet_code = rtrim( $snippet[ 'code' ], ';' );
             // Split by actual line breaks to preserve each line as a separate array element
+            $snippet_code = str_replace( '<br>', "\n", $snippet_code );
             $snippet_lines = preg_split("/\r\n|\n|\r/", $snippet_code);
             foreach ( $snippet_lines as $line ) {
                 $add_lines[] = rtrim( $line, ';' ) . ';';
