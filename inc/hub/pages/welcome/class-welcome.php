@@ -120,7 +120,7 @@ class Welcome {
                     __( 'Thank you, %s! Initial setup is complete.', 'dev-debug-tools' ),
                     '<span class="ddtt-first-name">' . ( $first_name ? esc_html( $first_name ) : __( 'Developer', 'dev-debug-tools' ) ) . '</span>'
                 ),
-                'setupComplete2' => __( 'I will take you to the security settings so you can lock down your important info.', 'dev-debug-tools' ),
+                'setupComplete2' => __( "I'll take you to the security settings so you can lock down your important info.", 'dev-debug-tools' ),
             ]
         ] );
     } // End enqueue_assets()
@@ -202,8 +202,6 @@ class Welcome {
                     break;
             }
 
-            // TODO: FOR SOME REASON THE WELCOME IS SAVING ALL AS VALUE OF 1, IT IS UPDATING WITH JUST IDS
-
             // Add or update the option
             if ( get_option( $option_key, '__notset' ) === '__notset' ) {
                 add_option( $option_key, $value );
@@ -218,20 +216,117 @@ class Welcome {
             }
         }
 
-        // Clear the old dev email option
-        $last_viewed_version = get_option( 'ddtt_last_viewed_version', '0.0.0' );
-        if ( version_compare( $last_viewed_version, '3.0.0', '<' ) ) {
-            delete_option( 'ddtt_dev_email' );
-        }
-
         // Attempt to remove the MU plugins if they exist
         Helpers::remove_mu_plugins();
 
+        // Cleanup old options no longer needed
+        $this->cleanup_options();
+
         // Disable the what's new notice since we just set up
-        update_option( 'ddtt_last_viewed_version', Bootstrap::version() );
+        // update_option( 'ddtt_last_viewed_version', Bootstrap::version() );
 
         wp_send_json_success( [ 'updated' => $updated ] );
     } // End ajax_save_settings()
+
+
+    /**
+     * Cleanup old options no longer needed and reset ones that have changed.
+     *
+     * @return void
+     */
+    private function cleanup_options() : void {
+        /**
+         * Update options
+         */
+
+        // Activity option format changed from associative array to indexed array
+        $old_options = get_option( 'ddtt_activity', [] );
+        $new_options = [];
+        if ( is_array( $old_options ) ) {
+            foreach ( $old_options as $option_key => $option_value ) {
+                if ( intval( $option_value ) === 1 ) {
+                    $new_options[] = $option_key;
+                }
+            }
+        }
+        update_option( 'ddtt_activity', $new_options );
+
+        $keys_to_change = [
+            [ 'admin_bar_gf',        'admin_bar_gravity_form_finder' ],
+            [ 'admin_bar_post_info', 'admin_bar_post_id' ],
+            [ 'discord_webhook',     'discord_webhook_url' ],
+            [ 'discord_webhook',     'online_users_discord_webhook' ],
+        ];
+
+        foreach ( $keys_to_change as $pair ) {
+            $old_key = $pair[ 0 ];
+            $new_key = $pair[ 1 ];
+
+            $old_value = get_option( 'ddtt_' . $old_key, null );
+
+            if ( $old_value !== null ) {
+                update_option( 'ddtt_' . $new_key, $old_value );
+            }
+        }
+
+
+        /**
+         * Delete options
+         */
+        $old_options = [
+            'admin_bar_gf',
+            'admin_bar_my_account',
+            'admin_bar_post_info',
+            'admin_menu_links',
+            'centering_tool_cols',
+            'centering_tool_height',
+            'centering_tool_width',
+            'change_curl_timeout',
+            'color_comments',
+            'color_fx_vars',
+            'color_syntax',
+            'color_text_quotes',
+            'dev_email',
+            'disable_activity_counts',
+            'discord_ingore_devs',
+            'discord_login',
+            'discord_page_loads',
+            'discord_transient',
+            'eol_htaccess',
+            'eol_wpcnfg',
+            'error_constants',
+            'error_enable',
+            'error_uninstall',
+            'htaccess_last_updated',
+            'htaccess_og_replaced_date',
+            'log_user_url',
+            'log_viewer',
+            'max_log_size',
+            'media_per_page',
+            'menu_items',
+            'menu_type',
+            'online_users_seconds',
+            'online_users_show_last',
+            'php_eol',
+            'plugin_activated',
+            'plugin_activated_by',
+            'plugin_installed',
+            'post_meta_hide_pf',
+            'ql_gravity_forms',
+            'snippets',
+            'stop_heartbeat',
+            'suppress_errors_enable',
+            'suppressed_errors',
+            'test_number',
+            'user_meta_hide_pf',
+            'wpconfig_last_updated',
+            'wpconfig_og_replaced_date',
+        ];
+
+        foreach ( $old_options as $option ) {
+            delete_option( 'ddtt_' . $option );
+        }
+    } // End cleanup_old_options()
 
 
     /**

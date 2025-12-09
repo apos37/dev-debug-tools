@@ -316,6 +316,8 @@ class Cleanup {
             'discord_login',
             'discord_page_loads',
             'discord_transient',
+            'eol_htaccess',
+            'eol_wpcnfg',
             'error_constants',
             'error_enable',
             'error_uninstall',

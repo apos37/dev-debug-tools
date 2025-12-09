@@ -18,11 +18,13 @@ $current_tool_class = $current_tool_slug ? ' ddtt-tool-' . esc_attr( $current_to
 // What's new button
 $incl_changelog = '';
 $plugin_version = Bootstrap::version();
-if ( $current_page_slug !== 'dev-debug-changelog' ) {
-    $last_viewed_version = sanitize_text_field( get_option( 'ddtt_last_viewed_version' ) );
-    if ( ! $last_viewed_version || version_compare( $plugin_version, $last_viewed_version, '>' ) ) {
+$last_viewed_version = sanitize_text_field( get_option( 'ddtt_last_viewed_version' ) );
+if ( ! $last_viewed_version || version_compare( $plugin_version, $last_viewed_version, '>' ) ) {
+    if ( $current_page_slug !== 'dev-debug-changelog' ) {
         // Translators: %s is replaced with the current plugin version number.
         $incl_changelog = '<a class="see-whats-new" href="' . Bootstrap::admin_url( 'admin.php?page=dev-debug-changelog' ) . '">' . sprintf( __( 'See what\'s new in version %s! ✨', 'dev-debug-tools' ), esc_html( $plugin_version ) ) . '</a>';
+    } else {
+        update_option( 'ddtt_last_viewed_version', Bootstrap::version() );
     }
 }
 ?>

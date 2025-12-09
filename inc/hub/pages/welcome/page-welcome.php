@@ -22,7 +22,7 @@ $settings = Welcome::settings();
             <?php
             printf(
                 /* translators: Plugin Version */
-                esc_html__( 'Thank you for installing our plugin. Version %s comes with a variety of new features and improvements to enhance your debugging and testing experience. Let\'s get started!', 'dev-debug-tools' ),
+                esc_html__( 'Welcome to the latest version of our plugin! Version %s includes new features and enhancements to improve your debugging and testing workflow. Let’s dive in!', 'dev-debug-tools' ),
                 esc_html( Bootstrap::version() )
             );
             ?>
@@ -34,12 +34,12 @@ $settings = Welcome::settings();
 <div class="ddtt-welcome-steps">
     <p>
         <span class="ddtt-welcome-step"><strong><?php esc_html_e( 'Step 1:', 'dev-debug-tools' ); ?></strong> <?php esc_html_e( 'Configure Developer Settings', 'dev-debug-tools' ); ?></span>
-        <span class="ddtt-welcome-desc"><?php esc_html_e( 'Start by adding developer accounts and setting some preferences in the settings below.', 'dev-debug-tools' ); ?></span>
+        <span class="ddtt-welcome-desc"><?php esc_html_e( 'Begin by adding or updating developer accounts and configuring your preferences in the options below.', 'dev-debug-tools' ); ?></span>
     </p>
 
     <p>
         <span class="ddtt-welcome-step"><strong><?php esc_html_e( 'Step 2:', 'dev-debug-tools' ); ?></strong> <?php esc_html_e( 'Set Up Environment', 'dev-debug-tools' ); ?></span>
-        <span class="ddtt-welcome-desc"><?php esc_html_e( 'Go through the rest of the settings to configure your development environment.', 'dev-debug-tools' ); ?></span>
+        <span class="ddtt-welcome-desc"><?php esc_html_e( 'Go through the rest of the settings to configure your development environment.', 'dev-debug-tools' ); ?> <strong><?php esc_html_e( 'If you are upgrading from version 2.1.2 or earlier, please review your setup carefully as some behaviors have changed.', 'dev-debug-tools' ); ?></strong></span>
     </p>
 
     <p>

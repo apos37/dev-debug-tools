@@ -59,6 +59,17 @@ class AdminArea {
             add_action( 'pre_get_posts', [ $this, 'admin_search_include_ids' ] );
         }
 
+        // Display post/page slugs in admin list tables
+        if ( get_option( 'ddtt_page_slugs', true ) ) {
+            add_action( 'admin_init', function() {
+                $post_types = $this->post_types();
+                foreach ( $post_types as $post_type ) {
+                    add_filter( "manage_{$post_type}_posts_columns", [ $this, 'add_path_column' ] );
+                    add_action( "manage_{$post_type}_posts_custom_column", [ $this, 'render_path_column' ], 10, 2 );
+                }
+            } );
+        }
+
         // Enqueue admin area assets
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
 
@@ -148,6 +159,37 @@ class AdminArea {
      */
     public function post_types() {
         $post_types = get_post_types( [], 'names' );
+        
+        $exclude = [
+            'attachment',
+            'revision',
+            'nav_menu_item',
+            'custom_css',
+            'customize_changeset',
+            'oembed_cache',
+            'user_request',
+            'wp_block',
+            'wp_template',
+            'wp_template_part',
+            'wp_global_styles',
+            'wp_navigation',
+            'wp_font_family',
+            'wp_font_face',
+            'e-floating-buttons',
+            'elementor_library',
+            'elementor-hf',
+            'elementor_page',
+            'elementor_global',
+            'elementor_theme',
+            'elementor_icons',
+            'blnotifier-results',
+        ];
+        foreach( $exclude as $post_type ) {
+            if ( ( $key = array_search( $post_type, $post_types ) ) !== false ) {
+                unset( $post_types[ $key ] );
+            }
+        }
+
         $post_types = apply_filters( 'ddtt_quick_link_post_types', $post_types );
         return $post_types;
     } // End post_types()
@@ -301,6 +343,52 @@ class AdminArea {
         $query->set( 'p', intval( $search_string ) );
         $query->set( 's', '' );
     } // End admin_search_include_ids()
+
+
+    /**
+     * Add Path column to post/page admin pages
+     *
+     * @param array $columns
+     * @return array
+     */
+    public function add_path_column( $columns ) {
+        $columns[ 'ddtt_post_path' ] = 'Path';
+        return $columns;
+    } // End add_path_column()
+
+
+    /**
+     * Add the post/page Path column content
+     *
+     * @param string $column
+     * @param int $post_id
+     */
+    public function render_path_column( $column, $post_id ) {
+        if ( $column !== 'ddtt_post_path' ) {
+            return;
+        }
+
+        $post = get_post( $post_id );
+        $status = $post->post_status;
+
+        if ( $status === 'publish' || $status === 'private' ) {
+            $permalink = get_permalink( $post );
+        } else {
+            $permalink = get_preview_post_link( $post );
+        }
+
+        // Strip the domain to get the path + query
+        $parsed = wp_parse_url( $permalink );
+        $path = '';
+        if ( isset( $parsed[ 'path' ] ) ) {
+            $path .= $parsed[ 'path' ];
+        }
+        if ( isset( $parsed[ 'query' ] ) ) {
+            $path .= '?' . $parsed[ 'query' ];
+        }
+
+        echo '<code style="color:#555;">' . esc_html( $path ) . '</code>';
+    } // End render_path_column()
 
 
     /**

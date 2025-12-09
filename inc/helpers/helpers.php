@@ -2206,4 +2206,40 @@ class Helpers {
         return $success;
     } // End remove_mu_plugins()
 
+
+    /**
+     * Format a backtrace array into a readable string.
+     *
+     * @param array $backtrace The backtrace array.
+     * @return string The formatted backtrace.
+     */
+    public static function format_backtrace( $backtrace ) {
+        $output = '';
+        foreach ( $backtrace as $i => $frame ) {
+            $file = isset( $frame[ 'file' ] ) ? $frame[ 'file' ] : '[internal function]';
+            $line = isset( $frame[ 'line' ] ) ? $frame[ 'line' ] : '';
+            $function = isset( $frame[ 'function' ] ) ? $frame[ 'function' ] : '';
+            $class = isset( $frame[ 'class' ] ) ? $frame[ 'class' ] : '';
+            $type = isset( $frame[ 'type' ] ) ? $frame[ 'type' ] : '';
+            $args = isset( $frame[ 'args' ] ) ? array_map( function( $a ) {
+                if ( is_object( $a ) ) {
+                    return get_class( $a );
+                } elseif ( is_array( $a ) ) {
+                    return 'Array[ ' . count( $a ) . ' ]';
+                } elseif ( is_null( $a ) ) {
+                    return 'NULL';
+                } elseif ( is_bool( $a ) ) {
+                    return $a ? 'true' : 'false';
+                } elseif ( is_resource( $a ) ) {
+                    return 'Resource';
+                } else {
+                    return ( string ) $a;
+                }
+            }, $frame[ 'args' ] ) : [ ];
+            $args_str = implode( ', ', $args );
+            $output .= "#{$i} {$file}( {$line} ): {$class}{$type}{$function}( {$args_str} )\n";
+        }
+        return $output;
+    } // End format_backtrace()
+
 }

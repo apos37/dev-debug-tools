@@ -639,16 +639,20 @@ class AdminBar {
             } elseif ( strpos( $slug, '.php' ) !== false || strpos( $slug, '?' ) !== false ) {
                 $url = admin_url( $slug );
             } else {
-                $plugin_url = admin_url( 'admin.php?page=' . $slug );
-                $core_url   = admin_url( $slug );
-
-                if ( $this->url_exists( $plugin_url ) ) {
-                    $url = $plugin_url;
-                } elseif ( $this->url_exists( $core_url ) ) {
-                    $url = $core_url;
-                } else {
-                    continue; // skip broken link
+                $url = menu_page_url( $slug, false );
+                if ( ! $url ) {
+                    continue; // skip if WP can’t generate a page URL
                 }
+                // $plugin_url = admin_url( 'admin.php?page=' . $slug );
+                // $core_url   = admin_url( $slug );
+
+                // if ( $this->url_exists( $plugin_url ) ) {
+                //     $url = $plugin_url;
+                // } elseif ( $this->url_exists( $core_url ) ) {
+                //     $url = $core_url;
+                // } else {
+                //     continue; // skip broken link
+                // }
             }
 
             $admin_menu_items[] = [

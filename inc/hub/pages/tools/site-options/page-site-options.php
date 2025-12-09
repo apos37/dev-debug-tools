@@ -41,6 +41,103 @@ $tool_settings = SiteOptions::settings();
 
 <?php Settings::render_settings_section( $tool_settings ); ?>
 
+<?php
+global $wpdb;
+$blog_id = get_current_blog_id();
+$prefix = $wpdb->get_blog_prefix( $blog_id );
+$table = $prefix . 'options';
+
+$autoload_on = [ 'auto', 'on', 'yes', '1' ];
+$list = "'" . implode( "', '", $autoload_on ) . "'";
+
+$autoload_total = $wpdb->get_var(
+    "SELECT SUM( LENGTH( option_value ) )
+     FROM {$table}
+     WHERE autoload IN ( {$list} )"
+);
+
+$autoload_heavy = $wpdb->get_results(
+    "SELECT option_name, LENGTH( option_value ) AS bytes
+     FROM {$table}
+     WHERE autoload IN ( {$list} )
+     ORDER BY bytes DESC
+     LIMIT 20",
+    ARRAY_A
+);
+
+$autoload_status = '';
+$autoload_color  = '';
+
+if ( $autoload_total < 300000 ) {
+    $autoload_status = __( 'Healthy', 'dev-debug-tools' );
+    $autoload_color  = 'var(--color-success)';
+} elseif ( $autoload_total < 500000 ) {
+    $autoload_status = __( 'Moderate', 'dev-debug-tools' );
+    $autoload_color  = 'var(--color-warning)';
+} else {
+    $autoload_status = __( 'Heavy', 'dev-debug-tools' );
+    $autoload_color  = 'var(--color-error)';
+}
+?>
+
+<section id="ddtt-autoload-stats-section" class="ddtt-section-content">
+    <h3><?php echo esc_html__( 'Autoload Size Summary', 'dev-debug-tools' ); ?></h3>
+
+    <p>
+        <?php echo esc_html__( 'Total autoloaded size:', 'dev-debug-tools' ); ?>
+        <strong><?php echo esc_html( Helpers::format_bytes( ( int ) $autoload_total ) ); ?></strong>
+        (
+        <strong style="color: <?php echo esc_attr( $autoload_color ); ?>;">
+            <?php echo esc_html( $autoload_status ); ?>
+        </strong>
+        )
+    </p>
+
+    <table class="ddtt-table">
+        <thead>
+            <tr>
+                <th style="width: 300px;" ><?php echo esc_html__( 'Option Name', 'dev-debug-tools' ); ?></th>
+                <th style="width: 300px;"><?php echo esc_html__( 'Size', 'dev-debug-tools' ); ?></th>
+                <th><?php echo esc_html__( 'Status', 'dev-debug-tools' ); ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ( $autoload_heavy as $row ) : ?>
+                <?php
+                $key   = $row[ 'option_name' ];
+                $bytes = ( int ) $row[ 'bytes' ];
+
+                if ( $bytes < 40000 ) {
+                    $status = __( 'Healthy', 'dev-debug-tools' );
+                    $color  = 'var(--color-success)';
+                } elseif ( $bytes < 100000 ) {
+                    $status = __( 'Moderate', 'dev-debug-tools' );
+                    $color  = 'var(--color-warning)';
+                } else {
+                    $status = __( 'Heavy', 'dev-debug-tools' );
+                    $color  = 'var(--color-error)';
+                }
+                ?>
+                <tr>
+                    <td>
+                        <a class="ddtt-highlight-variable" href="#<?php echo esc_attr( $key ); ?>">
+                            <?php echo esc_html( $key ); ?>
+                        </a>
+                    </td>
+                    <td>
+                        <?php echo esc_html( Helpers::format_bytes( $bytes ) ); ?>
+                    </td>
+                    <td>
+                        <strong style="color: <?php echo esc_attr( $color ); ?>;">
+                            <?php echo esc_html( $status ); ?>
+                        </strong>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</section>
+
 <?php if ( ! empty( $single_option ) ) : ?>
 
     <section id="ddtt-tool-section" class="ddtt-single-option ddtt-section-content">
@@ -128,14 +225,16 @@ $tool_settings = SiteOptions::settings();
                         }
                     }
 
-                    /* translators: %s: Source label HTML, Group name, Autoload status */
+                    /* translators: %s: Source label HTML, Group name, Autoload status, Size */
                     $option_details = sprintf(
-                        '%1$s<br>%2$s %3$s<br>%4$s %5$s',
+                        '%1$s<br>%2$s %3$s<br>%4$s %5$s<br>%6$s %7$s',
                         '<span class="ddtt-source-label ddtt-type-' . esc_attr( $type ) . '">' . esc_html( $source ) . '</span>',
                         esc_html__( 'Group:', 'dev-debug-tools' ),
                         esc_html( $group ?: '—' ),
                         esc_html__( 'Autoload:', 'dev-debug-tools' ),
-                        esc_html( $autoload )
+                        esc_html( $autoload ),
+                        esc_html__( 'Size:', 'dev-debug-tools' ),
+                        esc_html( Helpers::format_bytes( $data['size'] ?? strlen( maybe_serialize( $value ) ) ) )
                     );
 
                     $formatted_value = Helpers::print_stored_value_to_table( $value );

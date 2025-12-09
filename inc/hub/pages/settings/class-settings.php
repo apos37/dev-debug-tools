@@ -133,6 +133,30 @@ class Settings {
                     //     'type'       => 'checkbox',
                     //     'default'    => false,
                     // ],
+                    'backtrace_deprecations' => [
+                        'title'      => __( 'Log Backtrace for Deprecations', 'dev-debug-tools' ),
+                        'desc'       => __( 'Log the backtrace for any deprecated function calls.', 'dev-debug-tools' ),
+                        'type'       => 'checkbox',
+                        'default'    => false,
+                    ],
+                    'backtrace_notices' => [
+                        'title'      => __( 'Log Backtrace for Notices', 'dev-debug-tools' ),
+                        'desc'       => __( 'Log the backtrace whenever a PHP notice occurs.', 'dev-debug-tools' ),
+                        'type'       => 'checkbox',
+                        'default'    => false,
+                    ],
+                    'backtrace_warnings' => [
+                        'title'      => __( 'Log Backtrace for Warnings', 'dev-debug-tools' ),
+                        'desc'       => __( 'Log the backtrace whenever a PHP warning occurs.', 'dev-debug-tools' ),
+                        'type'       => 'checkbox',
+                        'default'    => false,
+                    ],
+                    'backtrace_errors' => [
+                        'title'      => __( 'Log Backtrace for Errors', 'dev-debug-tools' ),
+                        'desc'       => __( 'Log the backtrace whenever a PHP error or user error occurs.', 'dev-debug-tools' ),
+                        'type'       => 'checkbox',
+                        'default'    => false,
+                    ],
                     'wp_mail_failure' => [
                         'title'      => __( 'Log WP Mail Failures', 'dev-debug-tools' ),
                         'desc'       => __( 'Log the details of any failed WP Mail attempts.', 'dev-debug-tools' ),
@@ -663,6 +687,12 @@ class Settings {
                     'ids_in_search' => [
                         'title'     => __( 'Include IDs in Admin List Table Searches', 'dev-debug-tools' ),
                         'desc'      => __( 'Allows searching by ID in the admin list tables.', 'dev-debug-tools' ),
+                        'type'      => 'checkbox',
+                        'default'   => true,
+                    ],
+                    'page_slugs' => [
+                        'title'     => __( 'Include Post/Page Slugs in Admin List Tables', 'dev-debug-tools' ),
+                        'desc'      => __( 'Displays the post/page slugs in the admin list tables.', 'dev-debug-tools' ),
                         'type'      => 'checkbox',
                         'default'   => true,
                     ],

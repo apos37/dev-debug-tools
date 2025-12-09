@@ -21,6 +21,18 @@ class SiteWide {
         if ( get_option( 'ddtt_online_users_discord_enable', false ) ) {
             add_action( 'wp_login', [ $this, 'send_login_to_discord' ], 10, 2 );
         }
+
+        // Backtrace logging
+        if ( get_option( 'ddtt_backtrace_deprecations', false ) ) {
+            add_action( 'deprecated_function_run', [ $this, 'log_deprecated_backtrace' ], 10, 1 );
+            add_action( 'deprecated_argument_run', [ $this, 'log_deprecated_backtrace' ], 10, 1 );
+        }
+        if ( get_option( 'ddtt_backtrace_notices', false ) ||
+             get_option( 'ddtt_backtrace_warnings', false ) ||
+             get_option( 'ddtt_backtrace_errors', false ) ) {
+
+            set_error_handler( [ $this, 'log_php_backtrace' ] );
+        }
         
         // WP Mail failure logging
         if ( get_option( 'ddtt_wp_mail_failure', false ) ) {
@@ -115,6 +127,78 @@ class SiteWide {
             DiscordWebhook::send( $webhook, $args );
         }
     } // End send_login_to_discord()
+
+
+    /**
+     * Format backtrace for logging
+     *
+     * @param array $backtrace The backtrace array.
+     * 
+     * @return string
+     */
+    public static function log_deprecated_backtrace( $function ) {
+        $backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS );
+        $formatted = Helpers::format_backtrace( $backtrace );
+        error_log( "{$backtrace} for deprecated function '{$function}':\n{$formatted}. You may disable backtraces for this type of error in the Developer Debug Log Settings." );
+    } // End log_deprecated_backtrace()
+
+
+    /**
+     * Log PHP backtrace for errors, warnings, and notices
+     *
+     * @param int    $errno   The level of the error raised.
+     * @param string $errstr  The error message.
+     * @param string $errfile The filename that the error was raised in.
+     * @param int    $errline The line number the error was raised at.
+     * 
+     * @return bool
+     */
+    public function log_php_backtrace( $errno, $errstr, $errfile, $errline ) {
+        $backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS );
+        array_shift( $backtrace );
+        $formatted = Helpers::format_backtrace( $backtrace );
+
+        switch ( $errno ) {
+
+            case E_NOTICE:
+            case E_USER_NOTICE:
+                if ( ! get_option( 'ddtt_backtrace_notices', false ) ) {
+                    return false;
+                }
+                $type = 'Notice';
+                break;
+
+            case E_WARNING:
+            case E_USER_WARNING:
+                if ( ! get_option( 'ddtt_backtrace_warnings', false ) ) {
+                    return false;
+                }
+                $type = 'Warning';
+                break;
+
+            case E_ERROR:
+            case E_USER_ERROR:
+            case E_CORE_ERROR:
+            case E_COMPILE_ERROR:
+                if ( ! get_option( 'ddtt_backtrace_errors', false ) ) {
+                    return false;
+                }
+                $type = 'Error';
+                break;
+
+            default:
+                return false;
+        }
+
+        // Append backtrace to the original error message
+        $backtrace = __( "Backtrace", 'dev-debug-tools' );
+        $errstr .= "\n" . $backtrace . ":\n" . $formatted;
+
+        // Log the message as a single line
+        error_log( "{$type} {$backtrace} for: '{$errstr}' in {$errfile}( {$errline} ).\nYou may disable backtraces for this type of error in the Developer Debug Log Settings." );
+
+        return false;
+    } // End log_php_backtrace()
 
 
     /**

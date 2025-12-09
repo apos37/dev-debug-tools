@@ -342,7 +342,8 @@ class SiteOptions {
                     'name' => 'Unknown'
                 ],
                 'autoload' => $option_autoload_status[ $name ] ?? 'unknown',
-                'group'    => $_option_groups[ $name ] ?? 'general', 
+                'group'    => $_option_groups[ $name ] ?? 'general',
+                'size'     => strlen( maybe_serialize( $value ) ),
             ];
         }
 

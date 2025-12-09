@@ -9,8 +9,8 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
     exit;
 }
 
-$remove_all = get_option( 'ddtt_remove_data_on_uninstall', false );
-if ( ! $remove_all ) {
+$ddtt_remove_all = get_option( 'ddtt_remove_data_on_uninstall', false );
+if ( ! $ddtt_remove_all ) {
     return;
 }
 
