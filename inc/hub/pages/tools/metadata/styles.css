@@ -6,6 +6,13 @@
     right: -6px;
 }
 
+/* Loading Message */
+
+.ddtt-loading-metadata-msg {
+    margin-top: 2rem !important;
+    display: block;
+}
+
 
 /* Table */
 

@@ -46,7 +46,7 @@ class Tools {
         $tool_links = array_merge( $tool_links, $unordered );
 
         /**
-         * Allow filtering of the resource links
+         * Allow filtering of the tool links
          */
         return apply_filters( 'ddtt_tool_links', $tool_links );
     } // End get_tool_links()

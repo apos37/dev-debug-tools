@@ -611,7 +611,11 @@ class Logs {
                                 <td><?php echo esc_html( isset( $item[ 'datetime' ] ) ? $item[ 'datetime' ] : '' ); ?></td>
                                 <td><?php echo wp_kses_post( isset( $item[ 'activity' ] ) ? $item[ 'activity' ] : '' ); ?></td>
                                 <td><?php echo wp_kses_post( isset( $item[ 'user_performing' ] ) ? $item[ 'user_performing' ] : '' ); ?></td>
-                                <td><?php echo wp_kses_post( isset( $item[ 'notes' ] ) ? $item[ 'notes' ] : '' ); ?></td>
+                                <td>
+                                    <div class="ddtt-log-activity-note">
+                                        <?php echo wp_kses_post( isset( $item[ 'notes' ] ) ? $item[ 'notes' ] : '' ); ?>
+                                    </div>
+                                </td>
                             </tr>
                             <?php
                         }

@@ -4,7 +4,7 @@ Tags: debug, developer, testing, logs, config
 Requires at least: 5.9
 Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 3.0.0.5
+Stable tag: 3.0.0.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -111,15 +111,16 @@ https://youtu.be/l45T__AIHME
 * Update: Added a dashboard with versions, server metrics, environment info, quick download of important files, and an issues check
 * Update: New Tools dashboard allows you to disable tool scripts you aren't using
 * Update: Moved all Plugins tab data to WP Plugins page with options to enable/disable each, plus added a notes feature
-* Update: Removed tools - Plugins, Error Types, Error Suppressing, Functions.php, Media Library, Domain, Regex, Available Functions/Hooks
+* Update: Removed tools/tabs - Plugins, Error Types, Error Suppressing, Functions.php, Media Library, Domain, Regex, Available Functions/Hooks
 * Update: Combined different Error Logs, Activity Logs, and custom logs into a Logs section
 * Update: Combined User Meta and Post Meta into a new Meta Data section, added Term Meta, Comment Meta, Media Meta
 * Update: WP-CONFIG and HTACCESS tools now have improved snippets area, raw editors, magic cleaners and a code/lint checker
 * Update: Testing tool is now a built-in HTML/PHP editor
 * Update: Improved security for password protected pages
-* Update: New tools and options - Discord Messenger (Tool), Hearbeat Monitor (Settings > Heartbeat)
+* Update: New tools and options - Discord Messenger (Tool), Signups (Tool), Hearbeat Monitor (Settings > Heartbeat)
 * Update: Added an optional log count indicator to the admin bar
-* Update: Deprecated functions: ddtt_increase_test_number(), ddtt_get_current_url(), ddtt_get()
+* Update: Deprecated hooks: ddtt_debug_log_help_col, ddtt_debug_log_max_filesize, ddtt_on_update_user_meta, ddtt_on_update_post_meta, ddtt_ignore_pages_for_discord_notifications
+* Update: Deprecated functions: ddtt_get(), ddtt_increase_test_number(), ddtt_get_current_url()
 * Update: Improved help guide and developer documentation on our website
 
 = 2.1.2 =

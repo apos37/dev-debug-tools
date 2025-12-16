@@ -14,7 +14,7 @@ jQuery( document ).ready( function( $ ) {
         const viewerSection = document.getElementById( 'ddtt-metadata-viewer-section' );
 
         viewerSection.classList.add( 'ddtt-loading' );
-        viewerSection.innerHTML = '<span class="ddtt-loading-msg">' + ddtt_metadata.i18n.loading + '</span>';
+        viewerSection.innerHTML = '<span class="ddtt-loading-metadata-msg ddtt-loading-msg">' + ddtt_metadata.i18n.loading + '</span>';
 
         const types = {};
         $( '#ddtt-metadata-types input[type=checkbox]' ).each( function() {

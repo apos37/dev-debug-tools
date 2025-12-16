@@ -126,7 +126,7 @@ class Metadata {
 
 
     /**
-     * Get the protected meta keys.
+     * Get the protected meta keys that cannot be deleted.
      *
      * @return array
      */

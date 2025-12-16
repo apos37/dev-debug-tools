@@ -899,7 +899,7 @@ body.dev-debug-tools {
     padding: 1rem;
 }
 
-.ddtt-table code:not(.ddtt-log-error-message code) {
+.ddtt-table code:not(.ddtt-log-error-message code):not(.ddtt-log-activity-note code) {
     background: none !important;
 }
 

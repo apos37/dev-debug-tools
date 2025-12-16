@@ -61,16 +61,20 @@ $metadata_settings = Metadata::settings();
 
 <div class="ddtt-sections-with-sidebar">
 
-    <div id="ddtt-metadata-viewer-section" class="ddtt-section-content" data-subsection="<?php echo esc_attr( $current_subsection ); ?>">
-        <?php Settings::render_settings_section( $metadata_settings ); ?>
+    <div class="ddtt-section-content" data-subsection="<?php echo esc_attr( $current_subsection ); ?>">
+        <div id="ddtt-metadata-settings-section" data-subsection="<?php echo esc_attr( $current_subsection ); ?>">
+            <?php Settings::render_settings_section( $metadata_settings ); ?>
+        </div>
 
-        <?php 
-        if ( method_exists( Metadata::class, 'render_metadata' ) ) {
-            Metadata::render_metadata( $current_subsection, $id, $meta_viewer_customizations );
-        } else {
-            echo '<p>' . esc_html__( 'Metadata not found.', 'dev-debug-tools' ) . '</p>';
-        }
-        ?>
+        <div id="ddtt-metadata-viewer-section" data-subsection="<?php echo esc_attr( $current_subsection ); ?>">
+            <?php 
+            if ( method_exists( Metadata::class, 'render_metadata' ) ) {
+                Metadata::render_metadata( $current_subsection, $id, $meta_viewer_customizations );
+            } else {
+                echo '<p>' . esc_html__( 'Metadata not found.', 'dev-debug-tools' ) . '</p>';
+            }
+            ?>
+        </div>
     </div>
 
     <section id="ddtt-settings-sidebar-section" class="ddtt-section-sidebar" data-subsection="<?php echo esc_attr( $current_subsection ); ?>" data-object-id="<?php echo esc_attr( $id ); ?>">

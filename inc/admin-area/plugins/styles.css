@@ -1,11 +1,11 @@
 /* Base styles for warning and danger rows */
-.ddtt-warning-row,
+/* .ddtt-warning-row,
 .ddtt-danger-row {
     cursor: help;
-}
+} */
 
 /* Animate warning row */
-.ddtt-warning-row th,
+/* .ddtt-warning-row th,
 .ddtt-warning-row td {
     animation: ddtt-fade-warning 2s forwards;
 }
@@ -13,10 +13,10 @@
 @keyframes ddtt-fade-warning {
     from { background-color: #F0F6FC; }
     to   { background-color: #FFF9DB; }
-}
+} */
 
 /* Animate danger row */
-.ddtt-danger-row th,
+/* .ddtt-danger-row th,
 .ddtt-danger-row td {
     animation: ddtt-fade-danger 2s forwards;
 }
@@ -24,7 +24,7 @@
 @keyframes ddtt-fade-danger {
     from { background-color: #F0F6FC; }
     to   { background-color: #FDE8E8; }
-}
+} */
 
 /* Very large plugin size */
 .ddtt-plugin-size.ddtt-very-large {

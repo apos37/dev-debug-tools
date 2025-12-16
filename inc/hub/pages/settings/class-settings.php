@@ -469,7 +469,7 @@ class Settings {
         return [
             'general' => [
                 'label' => false,
-                'desc'  => __( 'These settings control the Online Users feature, which adds an indicator to the admin bar and a column to the users admin list showing who is currently online. The admin bar indicator is only shown to administrators and only checks for users when you load the page. It also caches the results for 60 seconds to improve performance, so a new online user may not shown online immediately. If you are seeing a lag from high traffic, try increasing the time frame, minimizing the roles tracked, disabling heartbeat if enabled, or disabling the feature entirely.', 'dev-debug-tools' ),
+                'desc'  => __( 'These settings control the Online Users feature, which adds an indicator to the admin bar and a column to the users admin list showing who is currently online. The admin bar indicator is only shown to administrators and only checks for users when you load the page. It also caches the results for 60 seconds to improve performance, so a new online user may not show online immediately. If you are seeing a lag from high traffic, try increasing the time frame, minimizing the roles tracked, disabling heartbeat if enabled, or disabling the feature entirely.', 'dev-debug-tools' ),
                 'fields' => [
                     'online_users' => [
                         'title'      => __( 'Enable Online Users', 'dev-debug-tools' ),
@@ -721,7 +721,7 @@ class Settings {
                     ],
                     'plugins_page_last_modified' => [
                         'title'     => __( 'Last Updated Column & Warning', 'dev-debug-tools' ),
-                        'desc'      => __( 'Show the last modified date and time of the plugin files, with a warning if older than one year.', 'dev-debug-tools' ),
+                        'desc'      => __( 'Show the last modified date and time of the plugin files.', 'dev-debug-tools' ),
                         'type'      => 'checkbox',
                         'default'   => true,
                     ],

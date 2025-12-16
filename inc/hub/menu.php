@@ -237,7 +237,7 @@ class AdminMenu {
 
         $incl_count = $total_lines > 0 ? '<span class="ddtt-error-count update-plugins count-' . $total_lines . '"><span class="update-count">' . $total_lines . '</span></span>' : '';
 
-        add_menu_page(
+        $hook = add_menu_page(
             Bootstrap::name(),
             Bootstrap::name() . Helpers::multisite_suffix() . $incl_count,
             'manage_options',
@@ -247,6 +247,8 @@ class AdminMenu {
             2
         );
 
+        add_action( 'load-' . $hook, [ $this, 'maybe_redirect' ] );
+
         // Hidden pages
         $hidden_pages = [ 'welcome' ];
 
@@ -255,7 +257,7 @@ class AdminMenu {
         foreach ( self::pages() as $slug => $label ) {
             $parent_slug = in_array( $slug, $hidden_pages, true ) ? '' : 'dev-debug-dashboard';
 
-            add_submenu_page(
+            $submenu_hook = add_submenu_page(
                 $parent_slug,
                 $label,
                 $label,
@@ -263,6 +265,8 @@ class AdminMenu {
                 'dev-debug-' . $slug,
                 [ $this, 'render_page' ]
             );
+
+            add_action( 'load-' . $submenu_hook, [ $this, 'maybe_redirect' ] );
 
             // If we're on the tools page, add any favorited tools as submenus
             if ( $slug === 'tools' && $is_dev ) {
@@ -312,6 +316,35 @@ class AdminMenu {
             }
         }
     } // End register_menu()
+
+
+    /**
+     * Maybe redirect to welcome page if not a developer
+     *
+     * @return void
+     */
+    public function maybe_redirect( ) : void {
+        $screen = self::get_current_page_slug( );
+        $slug = str_replace( 'dev-debug-', '', $screen );
+
+        if ( $slug !== 'welcome' && ! get_option( 'ddtt_developers', false ) ) {
+            $page_file = Bootstrap::path( 'inc/hub/pages/welcome/page-welcome.php' );
+            if ( file_exists( $page_file ) ) {
+                $page_url = Bootstrap::page_url( 'welcome' );
+                wp_safe_redirect( $page_url );
+                exit;
+            }
+        }
+
+        if ( $slug === 'tools' && ! Helpers::is_dev( ) ) {
+            $tool_slug = self::current_tool_slug( );
+            if ( $tool_slug !== '' ) {
+                $page_url = Bootstrap::page_url( 'tools' );
+                wp_safe_redirect( $page_url );
+                exit;
+            }
+        }
+    } // End maybe_redirect()
 
 
     /**
@@ -370,22 +403,6 @@ class AdminMenu {
     public function render_page() : void {
         $screen = self::get_current_page_slug();
         $slug = str_replace( 'dev-debug-', '', $screen );
-        
-        if ( $slug !== 'welcome' && ! get_option( 'ddtt_developers', false ) ) {
-            $page_file = Bootstrap::path( 'inc/hub/pages/welcome/page-welcome.php' );
-            if ( file_exists( $page_file ) ) {
-                $page_url = Bootstrap::page_url( 'welcome' );
-                wp_safe_redirect( $page_url );
-            }
-        }
-
-        if ( $slug === 'tools' && ! Helpers::is_dev() ) {
-            $tool_slug = self::current_tool_slug();
-            if ( $tool_slug !== '' ) {
-                $page_url = Bootstrap::page_url( 'tools' );
-                wp_safe_redirect( $page_url );
-            }
-        }
 
         $page_file = '';
         $tool = false;
@@ -529,8 +546,8 @@ class AdminMenu {
     public static function get_ordered_tool_data() : array {
         return self::$tools;
     } // End get_ordered_tool_data()
-
-
+    
+    
     /**
      * Check if we are logging activity
      *
@@ -624,7 +641,15 @@ class AdminMenu {
             ]
         ];
         if ( Helpers::is_dev() ) { 
-            $sections[ 'Tools' ] = self::$tools; 
+
+            $tools = self::$tools;
+            $enabled_tools = [];
+            foreach ( $tools as $slug => $data ) {
+                if ( $data[ 'enabled' ] ) {
+                    $enabled_tools[ $slug ] = $data;
+                }
+            }
+            $sections[ 'Tools' ] = $enabled_tools; 
         } 
 
         echo '<select id="ddtt-nav-dropdown">';

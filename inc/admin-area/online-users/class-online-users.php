@@ -212,7 +212,7 @@ class OnlineUsers {
             $class = 'ddtt-online-user';
             if ( Helpers::is_dev( $user->ID ) ) {
                 $class .= ' dev';
-                $title .= ' <img src="' . esc_attr( Helpers::icon( 14, 14 ) ) . '" alt="Dev" style="vertical-align:middle; margin-left:7px; margin-top:0px; height: 16px; width: 16px; display: inline-block;" />';
+                $title .= ' <img src="' . esc_attr( Helpers::icon( 14, 14, false ) ) . '" alt="Dev" style="vertical-align:middle; margin-left:5px; margin-top:-2px; height: 16px; width: 16px; display: inline-block;" />';
             }
 
             if ( empty( $link_template ) ) {

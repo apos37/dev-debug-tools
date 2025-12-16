@@ -15,11 +15,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * @return bool|string|array
  */
 if ( ! function_exists( 'ddtt_is_dev' ) ) {
-    function ddtt_is_dev( $email = false, $array = false ) : bool|string|array {
-        if ( $email ) {
+    function ddtt_is_dev( $id, $array = false ) : bool|string|array {
+        if ( is_bool( $id ) ) {
 
             // Deprecated - use Helpers::get_devs( true ) instead
-            \Apos37\DevDebugTools\Helpers::write_log( 'ddtt_is_dev(): returning dev emails is deprecated from version 3.0 - please use ddtt_get_devs( true )', 'Developer Debug Tools: ', true );
+            // \Apos37\DevDebugTools\Helpers::write_log( 'ddtt_is_dev(): returning dev emails is deprecated from version 3.0 - please use ddtt_get_devs( true )', 'Developer Debug Tools: ', true );
+            _doing_it_wrong(
+                __FUNCTION__,
+                'Passing $email or $array is no longer supported. Use ddtt_get_devs( true ) instead, which returns an array of developer emails. You may also use ddtt_get_devs( false ) to get an array of developer IDs.',
+                '3.0'
+            );
 
             $devs = \Apos37\DevDebugTools\Helpers::get_devs( true );
             if ( $array ) {
@@ -29,7 +34,7 @@ if ( ! function_exists( 'ddtt_is_dev' ) ) {
             }
         }
 
-        return \Apos37\DevDebugTools\Helpers::is_dev();
+        return \Apos37\DevDebugTools\Helpers::is_dev( $id );
     }
 } // End ddtt_is_dev()
 

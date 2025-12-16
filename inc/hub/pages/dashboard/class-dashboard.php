@@ -168,7 +168,7 @@ class Dashboard {
 
         // Return all versions and warnings
         return [
-            'plugin'         => $latest_plugin,
+            'plugin'         => $plugin_version,
             'plugin_warning' => $plugin_warning,
             'wp'             => $wp_version,
             'wp_warning'     => $wp_warning,

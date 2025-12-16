@@ -38,7 +38,7 @@ function ddtt_get_current_url() {
  * @return false
  */
 function ddtt_get() {
-    _deprecated_function( __FUNCTION__, '3.0', 'Use $_GET instead.' );
+    _deprecated_function( __FUNCTION__, '3.0', '$_GET' );
     return false;
 } // End ddtt_get()
 
