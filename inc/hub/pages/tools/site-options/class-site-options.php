@@ -196,7 +196,7 @@ class SiteOptions {
                         'desc'      => __( "&#9888; Warning: This page allows direct access to your site settings. You can break things here. Please be cautious!", 'dev-debug-tools' ),
                         'type'      => 'button',
                         'label'    => __( 'Go to Options Page', 'dev-debug-tools' ),
-                        'onclick'   => 'window.open("' . esc_url( Bootstrap::admin_url( 'options.php' ) ) . '", "_blank")',
+                        'onclick'   => "window.open('" . esc_url( Bootstrap::admin_url( 'options.php' ) ) . "', '_blank')",
                     ],
                     'bulk_delete' => [
                         'title'     => __( "Enable Bulk Delete", 'dev-debug-tools' ),

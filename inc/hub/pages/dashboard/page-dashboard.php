@@ -50,17 +50,21 @@ $base_url  = Bootstrap::author_uri();
 $text_domain = 'dev-debug-tools';
 
 $our_links = [
+    'video' => [
+        'label' => __( 'Video Tutorial', 'dev-debug-tools' ),
+        'url'   => "https://youtu.be/36aebqdzHQw",
+    ],
     'guide' => [
         'label' => __( 'How-To Guide', 'dev-debug-tools' ),
-        'url'   => "{$base_url}/guide/plugin/{$text_domain}",
+        'url'   => "{$base_url}guide/plugin/{$text_domain}",
     ],
     'docs' => [
         'label' => __( 'Developer Docs', 'dev-debug-tools' ),
-        'url'   => "{$base_url}/docs/plugin/{$text_domain}",
+        'url'   => "{$base_url}docs/plugin/{$text_domain}",
     ],
     'support' => [
         'label' => __( 'Website Support Forum', 'dev-debug-tools' ),
-        'url'   => "{$base_url}/support/plugin/{$text_domain}",
+        'url'   => "{$base_url}support/plugin/{$text_domain}",
     ],
     'discord' => [
         'label' => __( 'Discord Support Server', 'dev-debug-tools' ),

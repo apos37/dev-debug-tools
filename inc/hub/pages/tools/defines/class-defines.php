@@ -98,7 +98,7 @@ class Defines {
             wp_send_json_error( 'unauthorized' );
         }
 
-        $key = isset( $_POST[ 'key' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'key' ] ) ) : '';
+        $keys = isset( $_POST[ 'key' ] ) ? filter_var_array( wp_unslash( $_POST[ 'key' ] ), FILTER_SANITIZE_FULL_SPECIAL_CHARS ) : '';
         $rows = '';
         $has_data = false;
 
@@ -119,7 +119,7 @@ class Defines {
             $constants = array_merge( $constants, $category_constants );
         }
 
-        $keys = is_array( $key ) ? $key : ( $key ? [ $key ] : [] );
+        $keys = is_array( $keys ) ? $keys : ( $keys ? [ $keys ] : [] );
         if ( ! empty( $keys ) ) {
             foreach ( $keys as $single_key ) {
                 $single_key = sanitize_text_field( wp_unslash( $single_key ) );

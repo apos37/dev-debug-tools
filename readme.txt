@@ -4,7 +4,7 @@ Tags: debug, developer, testing, logs, config
 Requires at least: 5.9
 Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 3.0.0.6
+Stable tag: 3.0.0.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -66,6 +66,12 @@ Yes, but you should always make a backup of your site before using functionality
 = My site broke when updating my wp-config.php or .htaccess from your plugin. How do I revert back to my original? =
 The file editors have been improved to include a code/lint checker and other checks to ensure that they include certain working pieces. However, nothing is full-proof, so in the case that something happens, a backup is automatically stored in the same folders as the originals before being saved. The backups are named with the date and time from which they were replaced. For example, the `wp-config.php` file will have been renamed to `wp-config-2022-08-22-15-25-46.php` and replaced with a new file. Simply log into your FTP or File Manager (from your host), rename the current file to something else such as `wp-config-BROKEN.php` (just in case you need it), and then rename the version you want to revert back to as `wp-config.php`. If everything looks good, then you can either delete the broken file or send a copy of it to PluginRx so we can figure out what went wrong.
 
+= How can I switch between dark and light mode? =
+Click on the bug icon in the header. ;)
+
+= What is Test Mode? And How do I get out of it? =
+If you are seeing that Test Mode is Active in the header, you likely accidentally clicked on the version number. Test Mode is for our developers only. If you contact support with an issue you are having with the plugin not working the way it should be, we may have you activate Test Mode with additional instructions on what to provide so we can handle it promptly. It is of no use to you otherwise. Just click on the version number in the header again to disable it.
+
 = Why can't I edit a username for a user? =
 Some hosts will not allow you to update a user's username directly from WP. In order to do so, you'll have to update it in your database directly.
 
@@ -73,7 +79,7 @@ Some hosts will not allow you to update a user's username directly from WP. In o
 Viewable only on the front-end, there is a link on the admin bar that shows `+ Off`. Click on it and it will add a semi-transparent bar with lines on it at the top of the page underneath the admin bar. If you click on this bar it will expand all the way down the page. Click on it again and it will minimize back to the top. You can click on the `+ On` link from the admin bar to make it go away.
 
 = Where are the quick debug links? =
-You have to enable them on the Developer Debug Tools settings first. Once they are enabled, an "ID" column will be added to the user and/or post admin list pages. Next to the user or post's ID you will see a lightning bolt icon. Clicking on the lightning bolt will redirect you to the User Meta or Post Meta tab on our plugin where you can view and edit all of the meta easily. Links are also added to the user profile and post edit screens.
+You have to enable them on the Developer Debug Tools settings first under the Admin Menu tab. Once they are enabled, an "ID" column will be added to the corresponding admin list pages. Next to the user or post's ID you will see a lightning bolt icon. Clicking on the lightning bolt will redirect you to the Metadata page on the plugin where you can view and edit all of the meta easily. Links are also added to the user profile and post edit screens.
 
 = I hid the plugin, now I can't find it! =
 You can get there directly by going to `https://yourdomain.com/wp-admin/admin.php?page=dev-debug-dashboard`. Be sure to bookmark it next time like the instructions say to do!
@@ -85,7 +91,7 @@ If you password-protected your `options.php` page like you should have (included
 We recommend using our [website support forum](https://pluginrx.com/support/plugin/dev-debug-tools/) as the primary method for requesting features and getting help. You can also reach out via our [Discord support server](https://discord.gg/3HnzNEJVnR) or the [WordPress.org support forum](https://wordpress.org/support/plugin/dev-debug-tools/), but please note that WordPress.org doesn’t always notify us of new posts, so it’s not ideal for time-sensitive issues.
 
 == Demo ==
-https://youtu.be/l45T__AIHME
+https://youtu.be/36aebqdzHQw
 
 == Screenshots ==
 1. Dashboard

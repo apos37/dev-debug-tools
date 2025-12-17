@@ -116,8 +116,8 @@ class Settings {
                 'label' => __( 'Debug Log', 'dev-debug-tools' ),
                 'fields' => [
                     'disable_error_counts' => [
-                        'title'      => __( 'Disable Error Counts', 'dev-debug-tools' ),
-                        'desc'       => __( 'Disabling this will prevent repeated counting and improve page load time for developers (developers are the only ones that see the count).', 'dev-debug-tools' ),
+                        'title'      => __( 'Disable Error Counts in Admin Menu', 'dev-debug-tools' ),
+                        'desc'       => __( 'Disabling this will remove the error counts in the admin menu.', 'dev-debug-tools' ),
                         'type'       => 'checkbox',
                         'default'    => true,
                     ],
@@ -691,8 +691,8 @@ class Settings {
                         'default'   => true,
                     ],
                     'page_slugs' => [
-                        'title'     => __( 'Include Post/Page Slugs in Admin List Tables', 'dev-debug-tools' ),
-                        'desc'      => __( 'Displays the post/page slugs in the admin list tables.', 'dev-debug-tools' ),
+                        'title'     => __( 'Include Post/Page Paths in Admin List Tables', 'dev-debug-tools' ),
+                        'desc'      => __( 'Displays the post/page paths in the admin list tables.', 'dev-debug-tools' ),
                         'type'      => 'checkbox',
                         'default'   => true,
                     ],
@@ -1438,7 +1438,7 @@ class Settings {
         printf(
             '<button id="%1$s" class="ddtt-button"%2$s>%3$s</button> %4$s',
             esc_attr( $key ),
-            esc_attr( $onclick ),
+            $onclick,
             esc_html( $args[ 'label' ] ),
             wp_kses_post( isset( $args[ 'html' ] ) ? $args[ 'html' ] : '' )
         );
