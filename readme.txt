@@ -57,7 +57,7 @@ This plugin is a must-have for any WordPress developer or site administrator who
 3. Go to Developer Debug Tools in your admin menu.
 
 == Frequently Asked Questions ==
-= Should I backup my wp-config.php and .htaccess files before using the tools to add/remove snippets?
+= Should I backup my wp-config.php and .htaccess files before using the tools to add/remove snippets? =
 Yes! It is always best to back these files up when making updates to them. You can do so on the config file pages or all together with your functions.php in a zip file from the dashboard.
 
 = Can I use this plugin on a live website? =
