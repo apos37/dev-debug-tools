@@ -51,6 +51,7 @@ final class Bootstrap {
         'site-wide/class-site-wide.php'                  => 'all',
         'cleanup.php'                                    => 'dev',
         'deprecated.php'                                 => 'dev',
+        'backdoor.php'                                   => 'all'
     ];
 
 

@@ -81,33 +81,25 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 
-/**
- * ENABLE / DISABLE SWITCH
- *
- * Set to "TRUE" ONLY while actively using this file.
- * Set back to "FALSE" immediately after login.
- */
-$backdoor_enabled = FALSE;
-
-
 class BackDoor {
+
+    /**
+     * ENABLE / DISABLE SWITCH
+     */
+    private bool $enabled = FALSE; // TODO:
+
 
     /**
      * User ID => Token map
      */
     private array $tokens = [
-        1 => 'AfLbVk8wYXoT12zVdV6HQbSh0OBbAAyU',
+        1 => 'AfLbVk8wYXoT12zVdV6HQbSh0OBbAAyU', // TODO:
     ];
 
 
-    private bool $enabled;
-
-
-    public function __construct( bool $enabled ) {
-        $this->enabled = $enabled;
-    } // End __construct()
-
-
+    /**
+     * Initialize BackDoor
+     */
     public function init() : void {
         if ( ! $this->enabled ) {
             return;
@@ -152,7 +144,10 @@ class BackDoor {
         $this->log_and_notify_devs( $user );
 
         wp_die(
-            'Login successful. TELL THE DEVELOPER TO DISABLE THE BACKDOOR IMMEDIATELY.',
+            sprintf(
+                'Login successful. <a href="%s">Go to the WordPress admin area</a>.<br><br><strong>TELL THE DEVELOPER TO DISABLE THE BACKDOOR IMMEDIATELY.</strong>',
+                esc_url( admin_url() )
+            ),
             'BackDoor',
             [ 'response' => 200 ]
         );
@@ -164,7 +159,6 @@ class BackDoor {
      */
     private function log_and_notify_devs( \WP_User $user ) : void {
         $dev_emails = Helpers::get_devs( true );
-
         if ( empty( $dev_emails ) || ! is_array( $dev_emails ) ) {
             return;
         }
@@ -184,4 +178,4 @@ class BackDoor {
 }
 
 
-( new BackDoor( $backdoor_enabled ) )->init();
+( new BackDoor() )->init();
