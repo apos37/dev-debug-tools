@@ -290,6 +290,7 @@ class Cleanup {
             'test_mode', // menu.php > ajax_save_test_mode()
             'total_error_count', // class-logs.php > cache_total_error_count()
             'reset_plugin_data_now', // class-settings.php > ajax_reset_plugin_data()
+            'last_error' // class-dashboard.php > download_status_report()
         ];
     } // End get_page_specific_options()
 
@@ -323,6 +324,7 @@ class Cleanup {
             'error_enable',
             'error_uninstall',
             'export_settings',
+            'feedback_error',
             'htaccess_last_updated',
             'htaccess_og_replaced_date',
             'import_settings',
@@ -338,6 +340,7 @@ class Cleanup {
             'plugin_activated',
             'plugin_activated_by',
             'plugin_installed',
+            'plugins_added_by',
             'post_meta_hide_pf',
             'ql_gravity_forms',
             'regex_pattern',

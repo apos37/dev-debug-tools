@@ -338,7 +338,7 @@ class Activity_Log {
 
         if ( $this->filesystem->exists( $log_file_path ) ) {
             if ( ! $this->filesystem->delete( $log_file_path ) ) {
-                Helpers::write_log( __( 'Failed to delete log file during uninstall.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'remove_log_file', new \Exception( 'Failed to delete log file during uninstall.' ), [ 'log_file_path' => $log_file_path ] );
                 return false;
             }
         }
@@ -348,11 +348,11 @@ class Activity_Log {
             $files = $this->filesystem->dirlist( $log_directory_path );
             if ( empty( $files ) ) {
                 if ( ! $this->filesystem->rmdir( $log_directory_path, false ) ) {
-                    Helpers::write_log( __( 'Failed to remove log directory during uninstall.', 'dev-debug-tools' ) );
+                    apply_filters( 'ddtt_log_error', 'remove_log_file', new \Exception( 'Failed to remove log directory during uninstall.' ), [ 'log_directory_path' => $log_directory_path ] );
                     return false;
                 }
             } else {
-                Helpers::write_log( __( 'Log directory is not empty, could not delete at uninstall.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'remove_log_file', new \Exception( 'Log directory is not empty, could not delete at uninstall.' ), [ 'log_directory_path' => $log_directory_path ] );
             }
         }
 
@@ -380,7 +380,7 @@ class Activity_Log {
         $log_directory_path = $this->log_directory_path;
         if ( ! $this->filesystem->is_dir( $log_directory_path ) ) {
             if ( ! $this->filesystem->mkdir( $log_directory_path, FS_CHMOD_DIR ) ) {
-                Helpers::write_log( __( 'Could not create log directory: ', 'dev-debug-tools' ) . $log_directory_path );
+                apply_filters( 'ddtt_log_error', 'write_to_log', new \Exception( 'Could not create log directory.' ), [ 'log_directory_path' => $log_directory_path ] );
                 return false;
             }
         }
@@ -388,19 +388,19 @@ class Activity_Log {
         // Create log file if it doesn't exist
         if ( ! $this->filesystem->exists( $log_file_path ) ) {
             if ( ! $this->filesystem->put_contents( $log_file_path, '', FS_CHMOD_FILE ) ) {
-                Helpers::write_log( __( 'Could not create log file: ', 'dev-debug-tools' ) . $log_file_path );
+                apply_filters( 'ddtt_log_error', 'write_to_log', new \Exception( 'Could not create log file.' ), [ 'log_file_path' => $log_file_path ] );
                 return false;
             }
         }
 
         $existing_log = $this->filesystem->get_contents( $log_file_path );
         if ( $existing_log === false ) {
-            Helpers::write_log( __( 'Could not find activity log to write to.', 'dev-debug-tools' ) );
+            apply_filters( 'ddtt_log_error', 'write_to_log', new \Exception( 'Could not find activity log to write to.' ), [ 'log_file_path' => $log_file_path ] );
             return false;
         }
 
         if ( ! $this->filesystem->put_contents( $log_file_path, $existing_log . $log_entry, FS_CHMOD_FILE ) ) {
-            Helpers::write_log( __( 'Could not write to activity log.', 'dev-debug-tools' ) );
+            apply_filters( 'ddtt_log_error', 'write_to_log', new \Exception( 'Could not write to activity log.' ), [ 'log_file_path' => $log_file_path ] );
             return false;
         }
     
@@ -481,7 +481,7 @@ class Activity_Log {
         }
         if ( $action_label = $this->get_action_label( __FUNCTION__ ) ) {
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label, $user ) ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file during login.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'write_to_log', new \Exception( 'Failed to write to activity log file during login.' ), [ 'user_login' => $user_login, 'user' => $user ] );
             }
         }
     } // End logging_in()
@@ -543,7 +543,7 @@ class Activity_Log {
             );
     
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file during logout.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'write_to_log', new \Exception( 'Failed to write to activity log file during logout.' ), [ 'user_login' => $user_login, 'user' => $user ] );
             }
         }
         return $check;
@@ -608,7 +608,7 @@ class Activity_Log {
                     );
             
                     if ( !$this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                        Helpers::write_log( __( 'Failed to write to activity log file during logout.', 'dev-debug-tools' ) );
+                        apply_filters( 'ddtt_log_error', 'write_to_log', new \Exception( 'Failed to write to activity log file during logout.' ), [ 'user_login' => $user_login, 'user' => $user ] );
                     }
                 }
             }
@@ -646,7 +646,7 @@ class Activity_Log {
             );
         
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file for user role change.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'write_to_log', new \Exception( 'Failed to write to activity log file for user role change.' ), [ 'user_id' => $user->ID, 'role' => $role, 'action' => $action ] );
             }
         }
     } // End updating_roles()
@@ -682,7 +682,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file during new user creation.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'write_to_log', new \Exception( 'Failed to write to activity log file during new user creation.' ), [ 'new_user_id' => $new_user->ID ] );
             }
         }
     } // End creating_account()
@@ -706,7 +706,7 @@ class Activity_Log {
         $deleted_user = get_user_by( 'ID', $user_id );
         if ( ! $deleted_user ) {
             // Translators: %d is the user ID that could not be found during deletion logging.
-            ddtt_write_log( sprintf( __( 'User with ID %d could not be found during deletion logging.', 'dev-debug-tools' ), $user_id ) );
+            apply_filters( 'ddtt_log_error', 'write_to_log', new \Exception( sprintf( __( 'User with ID %d could not be found during deletion logging.', 'dev-debug-tools' ), $user_id ) ), [ 'user_id' => $user_id ] );
             return;
         }
 
@@ -724,7 +724,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file during user deletion.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'deleting_account', new \Exception( 'Failed to write to activity log file during user deletion.' ), [ 'deleted_user_id' => $deleted_user->ID ] );
             }
         }
     } // End deleting_account()
@@ -759,7 +759,7 @@ class Activity_Log {
             );
     
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log during post creation.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'creating_post', new \Exception( 'Failed to write to activity log during post creation.' ), [ 'post_id' => $post_id ] );
             }
         }
     } // End creating_post()
@@ -828,7 +828,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file during post meta update.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'updating_post', new \Exception( 'Failed to write to activity log file during post meta update.' ), [ 'post_id' => $post->ID, 'meta_key' => $meta_key ] );
             }
         }
 
@@ -893,7 +893,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file for adding post meta.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'adding_postmeta', new \Exception( 'Failed to write to activity log file for adding post meta.' ), [ 'post_id' => $object_id, 'meta_key' => $meta_key ] );
             }
         }
     } // End adding_postmeta()
@@ -955,7 +955,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( 'Failed to write to activity log file for deleting post meta.' );
+                apply_filters( 'ddtt_log_error', 'deleting_postmeta', new \Exception( 'Failed to write to activity log file for deleting post meta.' ), [ 'post_id' => $object_id, 'meta_key' => $meta_key ] );
             }
         }
     } // End deleting_postmeta()
@@ -1040,7 +1040,7 @@ class Activity_Log {
                 );
 
                 if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                    Helpers::write_log( 'Failed to write to activity log file for post object meta changes.' );
+                    apply_filters( 'ddtt_log_error', 'updating_post', new \Exception( 'Failed to write to activity log file for post object meta changes.' ), [ 'post_id' => $post_id ] );
                 }
             }
         }
@@ -1075,7 +1075,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log during post deletion.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'deleting_post', new \Exception( 'Failed to write to activity log during post deletion.' ), [ 'post_id' => $post_id ] );
             }
         }
     } // End deleting_post()
@@ -1115,7 +1115,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file for trashed post.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'trashing_post', new \Exception( 'Failed to write to activity log file for trashed post.' ), [ 'post_id' => $post_id ] );
             }
         }
     } // End trashing_post()
@@ -1161,7 +1161,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file for post status change.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'status_post', new \Exception( 'Failed to write to activity log file for post status change.' ), [ 'post_id' => $post->ID, 'old_status' => $old_status, 'new_status' => $new_status ] );
             }
         }
     } // End status_post()
@@ -1217,7 +1217,7 @@ class Activity_Log {
 
             // Write to the log
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label, null, $ip ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log during post visit.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'visiting_post', new \Exception( 'Failed to write to activity log during post visit.' ), [ 'post_id' => $post->ID ] );
             }
         }
     } // End visiting_post()
@@ -1277,7 +1277,7 @@ class Activity_Log {
 
             // Write to the log
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label, null, $ip ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log during post visit.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'visiting_post', new \Exception( 'Failed to write to activity log during post visit.' ), [ 'post_id' => $post->ID ] );
             }
         }
     } // End bots_crawling()
@@ -1372,7 +1372,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file for plugin activation.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'activating_plugin', new \Exception( 'Failed to write to activity log file for plugin activation.' ), [ 'plugin' => $plugin ] );
             }
         }
 
@@ -1404,7 +1404,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file for plugin deactivation.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'deactivating_plugin', new \Exception( 'Failed to write to activity log file for plugin deactivation.' ), [ 'plugin' => $plugin ] );
             }
         }
     } // End deactivating_plugin()
@@ -1443,7 +1443,7 @@ class Activity_Log {
                     );
 
                     if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                        Helpers::write_log( __( 'Failed to write to activity log file for plugin update.', 'dev-debug-tools' ) );
+                        apply_filters( 'ddtt_log_error', 'updating_plugin', new \Exception( 'Failed to write to activity log file for plugin update.' ), [ 'plugin' => $plugin ] );
                     }
                 }
             }
@@ -1477,7 +1477,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file for plugin deletion.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'deleting_plugin', new \Exception( 'Failed to write to activity log file for plugin deletion.' ), [ 'plugin' => $plugin ] );
             }
         }
 
@@ -1506,7 +1506,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file for theme switching.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'switching_theme', new \Exception( 'Failed to write to activity log file for theme switching.' ), [ 'old_theme' => $old_theme->get( 'Name' ), 'new_theme' => $new_name ] );
             }
         }
     } // End switching_theme()
@@ -1563,7 +1563,7 @@ class Activity_Log {
                 );
 
                 if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                    Helpers::write_log( __( 'Failed to write to activity log file for theme update.', 'dev-debug-tools' ) );
+                    apply_filters( 'ddtt_log_error', 'updating_theme', new \Exception( 'Failed to write to activity log file for theme update.' ), [ 'theme_name' => $theme_name ] );
                 }
             }
         }
@@ -1617,7 +1617,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file during site setting update.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'updating_setting', new \Exception( 'Failed to write to activity log file during site setting update.' ), [ 'option_name' => $option_name ] );
             }
         }
     } // End updating_settings()
@@ -1651,7 +1651,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                Helpers::write_log( __( 'Failed to write to activity log file for failed login attempt.', 'dev-debug-tools' ) );
+                apply_filters( 'ddtt_log_error', 'failed_login_attempt', new \Exception( 'Failed to write to activity log file for failed login attempt.' ), [ 'username' => $username, 'ip_address' => $ip_address, 'error_message' => $error_message ] );
             }
         }
     } // End failed_login_attempt()
@@ -1684,8 +1684,7 @@ class Activity_Log {
                 );
 
                 if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                    /* translators: Log message for failed activity log write during password reset for known user */
-                    Helpers::write_log( __( 'Failed to write to activity log file during password reset initialization.', 'dev-debug-tools' ) );
+                    apply_filters( 'ddtt_log_error', 'resetting_password', new \Exception( 'Failed to write to activity log file during password reset initialization.' ), [ 'user_login' => $user_login, 'user_id' => $user->ID ] );
                 }
 
             } else {
@@ -1696,7 +1695,7 @@ class Activity_Log {
                 );
 
                 if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
-                    Helpers::write_log( __( 'Failed to write to activity log file during password reset initialization for unknown user.', 'dev-debug-tools' ) );
+                    apply_filters( 'ddtt_log_error', 'resetting_password', new \Exception( 'Failed to write to activity log file during password reset initialization for unknown user.' ), [ 'user_login' => $user_login ] );
                 }
             }
         }

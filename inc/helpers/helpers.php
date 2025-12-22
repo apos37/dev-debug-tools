@@ -2171,7 +2171,7 @@ class Helpers {
 
         global $wp_filesystem;
         if ( ! WP_Filesystem() ) {
-            Helpers::write_log( __( 'Failed to initialize WP_Filesystem.', 'dev-debug-tools' ) );
+            apply_filters( 'ddtt_log_error', 'remove_mu_plugins', new \Exception( 'Failed to initialize WP_Filesystem.' ), [ 'step' => 'filesystem_init' ] );
             return false;
         }
 

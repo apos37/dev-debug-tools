@@ -277,6 +277,105 @@ $our_links = [
             </tbody>
         </table>
     </section>
+
+    <?php
+    // apply_filters( 'ddtt_log_error', 'test_1', new \Exception( 'This is just a test.' ), [ 'step' => 'testing' ] );
+    // delete_option( 'ddtt_last_error' );
+
+    $last_error = get_option( 'ddtt_last_error', [] );
+
+    $last_error = wp_parse_args(
+        $last_error,
+        [
+            'context' => '—',
+            'message' => '—',
+            'file'    => '—',
+            'line'    => '—',
+            'version' => '—',
+            'time'    => 0,
+            'user'    => [
+                'id'       => 0,
+                'roles'    => [],
+            ],
+            'extra'   => [],
+        ]
+    );
+
+    $formatted_date = $last_error[ 'time' ] 
+        ? Helpers::convert_timezone( $last_error[ 'time' ] )
+        : '—';
+
+    if ( isset( $last_error[ 'user' ][ 'id' ] ) && $last_error[ 'user' ][ 'id' ] > 0 ) {
+        $userdata = get_userdata( $last_error[ 'user' ][ 'id' ] );
+        if ( $userdata ) {
+            $user_display = $userdata->display_name . ' (ID: ' . $last_error[ 'user' ][ 'id' ] . ')';
+        } else {
+            $user_display = $last_error[ 'user' ][ 'username' ] . ' (ID: ' . $last_error[ 'user' ][ 'id' ] . ')';
+        }
+    } else {
+        $user_display = '—';
+    }
+
+    $user_roles = ! empty( $last_error[ 'user' ][ 'roles' ] )
+        ? implode( ', ', $last_error[ 'user' ][ 'roles' ] )
+        : '—';
+
+    if ( isset( $last_error[ 'extra' ] ) && ! empty( $last_error[ 'extra' ] ) ) {
+        $extra = Helpers::print_stored_value_to_table( $last_error[ 'extra' ], true );
+        $extra = Helpers::truncate_string( $extra, true, 500, '…' );
+    } else {
+        $extra = '—';
+    }
+    ?>
+    <section id="ddtt-last-error-section" class="ddtt-section-content">
+        <h3 class="ddtt-last-error-title"><?php esc_html_e( 'Last Plugin Error', 'dev-debug-tools' ); ?></h3>
+        <p><em><?php esc_html_e( 'If you are experiencing issues with this plugin, this error may provide some insight.', 'dev-debug-tools' ); ?></em></p>
+        <table class="ddtt-table ddtt-last-error-table">
+            <tbody>
+                <tr>
+                    <th><?php esc_html_e( 'Message', 'dev-debug-tools' ); ?></th>
+                    <td><?php echo esc_html( $last_error[ 'message' ] ?? '—' ); ?></td>
+                </tr>
+                <tr>
+                    <th><?php esc_html_e( 'Context', 'dev-debug-tools' ); ?></th>
+                    <td><?php echo esc_html( $last_error[ 'context' ] ?? '—' ); ?></td>
+                </tr>
+                <tr>
+                    <th><?php esc_html_e( 'File', 'dev-debug-tools' ); ?></th>
+                    <td>
+                        <?php if ( $last_error[ 'file' ] && $last_error[ 'file' ] !== '—' ) : ?>
+                            <?php echo esc_html( $last_error[ 'file' ] ); ?>
+                            <?php if ( is_numeric( $last_error[ 'line' ] ?? false ) ) : ?>
+                                <span> : <?php echo esc_html( $last_error[ 'line' ] ); ?></span>
+                            <?php endif; ?>
+                        <?php else : ?>
+                            — 
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <tr>
+                    <th><?php esc_html_e( 'Extra', 'dev-debug-tools' ); ?></th>
+                    <td><?php echo wp_kses_post( $extra ); ?></td>
+                </tr>
+                <tr>
+                    <th><?php esc_html_e( 'Plugin Version', 'dev-debug-tools' ); ?></th>
+                    <td><?php echo esc_html( $last_error[ 'version' ] ?? '—' ); ?></td>
+                </tr>
+                <tr>
+                    <th><?php esc_html_e( 'Occurred At', 'dev-debug-tools' ); ?></th>
+                    <td><?php echo esc_html( $formatted_date ); ?></td>
+                </tr>
+                <tr>
+                    <th><?php esc_html_e( 'User', 'dev-debug-tools' ); ?></th>
+                    <td><?php echo esc_html( $user_display ); ?></td>
+                </tr>
+                <tr>
+                    <th><?php esc_html_e( 'User Roles', 'dev-debug-tools' ); ?></th>
+                    <td><?php echo esc_html( $user_roles ); ?></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
 <?php endif; ?>
 
 <section id="ddtt-support-section" class="ddtt-section ddtt-support">

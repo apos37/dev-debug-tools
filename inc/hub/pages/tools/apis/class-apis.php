@@ -79,6 +79,7 @@ class APIs {
         }
 
         if ( ! isset( $_POST[ 'route' ] ) || empty( $_POST[ 'route' ] ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_check_api', new \Exception( 'No route provided in AJAX request.' ), [ 'step' => 'no_route_provided' ] );
             wp_send_json_error( [ 'message' => __( 'No route provided.', 'dev-debug-tools' ) ] );
         }
 

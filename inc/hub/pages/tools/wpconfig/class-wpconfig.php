@@ -740,7 +740,7 @@ class WpConfig {
         if ( is_callable( 'exec' ) ) {
             @exec( "php " . escapeshellarg( $temp_file ) . " 2>&1", $output, $return_var );
         } else {
-            Helpers::write_log( 'exec() function is disabled; skipping PHP syntax check.' );
+            apply_filters( 'ddtt_log_error', 'validate_file', new \Exception( 'exec() function is disabled; skipping PHP syntax check.' ), [ 'step' => 'syntax_check' ] );
         }
 
         if ( ! empty( $output ) || ( isset( $return_var ) && $return_var !== 0 ) ) {

@@ -10,13 +10,14 @@ try {
     $tables = $wpdb->get_col( 'SHOW TABLES' );
 
     if ( is_wp_error( $tables ) || ! is_array( $tables ) ) {
+        apply_filters( 'ddtt_log_error', 'page_db_tables', new \Exception( 'Error retrieving tables.' ), [ 'step' => 'fetch_tables' ] );
         throw new \Exception( 'Error retrieving tables.' );
     }
 
     sort( $tables, SORT_NATURAL | SORT_FLAG_CASE );
 
 } catch ( \Exception $e ) {
-    Helpers::write_log( __( 'Error fetching DB tables: ', 'dev-debug-tools' ) . $e->getMessage() );
+    apply_filters( 'ddtt_log_error', 'page_db_tables', $e, [ 'step' => 'fetch_tables' ] );
     $tables = [];
 }
 

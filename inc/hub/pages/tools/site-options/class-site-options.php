@@ -293,10 +293,11 @@ class SiteOptions {
             );
 
             if ( is_wp_error( $db_options ) || ! is_array( $db_options ) ) {
+                apply_filters( 'ddtt_log_error', 'get_site_options', new \Exception( 'Error fetching site options from DB.' ), [ 'step' => 'db_fetch' ] );
                 throw new \Exception( 'Error fetching site options from DB.' );
             }
         } catch ( \Exception $e ) {
-            Helpers::write_log( __( 'Error fetching site options: ', 'dev-debug-tools' ) . $e->getMessage() );
+            apply_filters( 'ddtt_log_error', 'get_site_options', $e, [ 'step' => 'exception' ] );
             $db_options = [];
         }
 

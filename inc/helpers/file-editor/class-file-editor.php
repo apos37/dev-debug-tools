@@ -164,6 +164,7 @@ class FileEditor {
 
         // Validate the file path
         if ( ! file_exists( $abspath ) ) {
+            apply_filters( 'ddtt_log_error', 'FileEditor__construct', new \InvalidArgumentException( "File not found: " . esc_html( $abspath ) ), [ 'abspath' => $abspath ] );
             throw new \InvalidArgumentException( "File not found: " . esc_html( $abspath ) );
         }
 
@@ -173,6 +174,7 @@ class FileEditor {
         $this->filename = basename( $abspath );
         $this->class_name = '\\Apos37\\DevDebugTools\\' . $this->get_class_name( $this->filename );
         if ( ! class_exists( $this->class_name ) ) {
+            apply_filters( 'ddtt_log_error', 'FileEditor__construct', new \RuntimeException( "Class not found for file editor: " . esc_html( $this->class_name ) ), [ 'filename' => $this->filename ] );
             throw new \RuntimeException( "Class not found for file editor: " . esc_html( $this->class_name ) );
         }
 
@@ -315,6 +317,14 @@ class FileEditor {
 
         if ( $contents === false || is_wp_error( $contents ) ) {
             $error_message = is_wp_error( $contents ) ? $contents->get_error_message() : __( 'Unknown error while reading file.', 'dev-debug-tools' );
+
+            // Log the error
+            $extra = [
+                'filename' => $this->filename,
+                'type'     => 'file_download',
+            ];
+            apply_filters( 'ddtt_log_error', 'download_file', new \Exception( $error_message ), $extra );
+
             wp_die( esc_html( $error_message ) );
         }
 
@@ -887,6 +897,7 @@ class FileEditor {
         }, wp_unslash( $_POST[ 'colors' ] ) ) : []; // phpcs:ignore
 
         if ( empty( $colors_input ) || ! is_array( $colors_input ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_update_colors', new \Exception( 'Invalid colors input.' ), [ 'step' => 'input_validation' ] );
             wp_send_json_error( 'invalid_colors' );
         }
 
@@ -990,18 +1001,21 @@ class FileEditor {
         global $wp_filesystem;
         if ( ! WP_Filesystem() || ! is_object( $wp_filesystem ) ) {
             $errors[] = __( 'Could not access filesystem. Check file permissions.', 'dev-debug-tools' );
+            apply_filters( 'ddtt_log_error', 'ajax_save_edits', new \Exception( end( $errors ) ), [ 'step' => 'filesystem_init' ] );
             wp_send_json_error( [ 'errors' => $errors ] );
         }
 
         if ( ! $wp_filesystem->exists( $this->abspath ) ) {
             /* translators: %s: filename */
             $errors[] = sprintf( __( '%s not found.', 'dev-debug-tools' ), esc_html( $this->filename ) );
+            apply_filters( 'ddtt_log_error', 'ajax_save_edits', new \Exception( end( $errors ) ), [ 'step' => 'file_missing', 'filename' => $this->filename ] );
             wp_send_json_error( [ 'errors' => $errors ] );
         }
 
         if ( ! $wp_filesystem->is_writable( $this->abspath ) ) {
             /* translators: %s: filename */
             $errors[] = sprintf( __( '%s is not writable. Please check file permissions.', 'dev-debug-tools' ), esc_html( $this->filename ) );
+            apply_filters( 'ddtt_log_error', 'ajax_save_edits', new \Exception( end( $errors ) ), [ 'step' => 'file_not_writable', 'filename' => $this->filename ] );
             wp_send_json_error( [ 'errors' => $errors ] );
         }
 
@@ -1032,6 +1046,7 @@ class FileEditor {
             $content = wp_unslash( $_POST[ 'content' ] ); // phpcs:ignore
         } else {
             $errors[] = __( 'No content received.', 'dev-debug-tools' );
+            apply_filters( 'ddtt_log_error', 'ajax_save_edits', new \Exception( end( $errors ) ), [ 'step' => 'no_content' ] );
             wp_send_json_error( [ 'errors' => $errors ] );
         }
 
@@ -1040,6 +1055,7 @@ class FileEditor {
 
         if ( ! $wp_filesystem->put_contents( $temp_file, $content, FS_CHMOD_FILE ) ) {
             $errors[] = __( 'Could not write temp file. Check file permissions.', 'dev-debug-tools' );
+            apply_filters( 'ddtt_log_error', 'ajax_save_edits', new \Exception( end( $errors ) ), [ 'step' => 'temp_file_write', 'filename' => $temp_file ] );
             wp_send_json_error( [ 'errors' => $errors ] );
         }
 
@@ -1048,6 +1064,7 @@ class FileEditor {
             $validation_errors = $this->class_name::validate_file( $content, $temp_file );
             $errors = array_merge( $errors, $validation_errors );
         } catch ( \Throwable $e ) {
+            apply_filters( 'ddtt_log_error', 'ajax_save_edits', $e, [ 'step' => 'validation', 'filename' => $temp_file ] );
             wp_send_json_error( [ 'errors' => [ $e->getMessage() ] ] );
         }
 
@@ -1118,18 +1135,21 @@ class FileEditor {
         global $wp_filesystem;
         if ( ! WP_Filesystem() || ! is_object( $wp_filesystem ) ) {
             $errors[] = __( 'Could not access filesystem. Check file permissions.', 'dev-debug-tools' );
+            apply_filters( 'ddtt_log_error', 'ajax_preview_snippets', new \Exception( end( $errors ) ), [ 'step' => 'filesystem_init' ] );
             wp_send_json_error( $errors );
         }
 
         if ( ! $wp_filesystem->exists( $this->abspath ) ) {
             /* translators: %s: filename */
             $errors[] = sprintf( __( '%s not found.', 'dev-debug-tools' ), esc_html( $this->filename ) );
+            apply_filters( 'ddtt_log_error', 'ajax_preview_snippets', new \Exception( end( $errors ) ), [ 'step' => 'file_missing', 'filename' => $this->filename ] );
             wp_send_json_error( $errors );
         }
 
         if ( ! $wp_filesystem->is_writable( $this->abspath ) ) {
             /* translators: %s: filename */
             $errors[] = sprintf( __( '%s is not writable. Please check file permissions.', 'dev-debug-tools' ), esc_html( $this->filename ) );
+            apply_filters( 'ddtt_log_error', 'ajax_preview_snippets', new \Exception( end( $errors ) ), [ 'step' => 'file_not_writable', 'filename' => $this->filename ] );
             wp_send_json_error( $errors );
         }
 
@@ -1137,6 +1157,7 @@ class FileEditor {
         $contents = $wp_filesystem->get_contents( $this->abspath );
         if ( $contents === false ) {
             $errors[] = __( 'Failed to read file contents.', 'dev-debug-tools' );
+            apply_filters( 'ddtt_log_error', 'ajax_preview_snippets', new \Exception( end( $errors ) ), [ 'step' => 'read_file', 'filename' => $this->filename ] );
             wp_send_json_error( $errors );
         }
 
@@ -1164,6 +1185,7 @@ class FileEditor {
         // --- 4. Create the temp file ---
         if ( ! $wp_filesystem->put_contents( $temp_file, $temp_contents, FS_CHMOD_FILE ) ) {
             $errors[] = __( 'Could not write temp file. Check file permissions.', 'dev-debug-tools' );
+            apply_filters( 'ddtt_log_error', 'ajax_preview_snippets', new \Exception( end( $errors ) ), [ 'step' => 'temp_file_write', 'filename' => $temp_file ] );
             wp_send_json_success( [ 'errors' => $errors ] );
         }
 
@@ -1207,6 +1229,7 @@ class FileEditor {
             $wp_filesystem->delete( $temp_file );
             wp_send_json_success( 'deleted' );
         } else {
+            apply_filters( 'ddtt_log_error', 'ajax_delete_preview_file', new \Exception( 'Temp preview file not found.' ), [ 'step' => 'file_missing', 'filename' => $temp_file ] );
             wp_send_json_error( 'file_not_found' );
         }
     } // End ajax_delete_preview_file()
@@ -1228,7 +1251,8 @@ class FileEditor {
 
         $raw_contents = Helpers::get_file_contents( $filename );
 
-        if ( ! $raw_contents || is_wp_error( $raw_contents ) ) {
+        if ( ! $raw_contents || is_wp_error( $raw_contents ) ) {            
+            apply_filters( 'ddtt_log_error', 'ajax_load_previewer', new \Exception( 'Could not read file contents.' ), [ 'step' => 'file_read', 'filename' => $filename ] );
             wp_send_json_error( 'file_not_found' );
         }
 
@@ -1275,6 +1299,7 @@ class FileEditor {
 
         $snippet = isset( $_POST[ 'snippet' ] ) ? wp_unslash( $_POST[ 'snippet' ] ) : []; // phpcs:ignore
         if ( empty( $snippet[ 'lines' ] ) || empty( $snippet[ 'label' ] ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_add_snippet', new \Exception( 'Invalid snippet data submitted.' ), [ 'step' => 'validation', 'snippet' => $snippet ] );
             wp_send_json_error( __( 'Invalid snippet data.', 'dev-debug-tools' ) );
         }
 
@@ -1287,6 +1312,7 @@ class FileEditor {
         $key = $this->class_name::create_key_from_snippet( $snippet );
 
         if ( empty( $key ) ) {
+             apply_filters( 'ddtt_log_error', 'ajax_add_snippet', new \Exception( 'Variable name cannot be empty.' ), [ 'step' => 'key_generation' ] );
             wp_send_json_error( __( 'Variable name cannot be empty.', 'dev-debug-tools' ) );
         }
 
@@ -1298,6 +1324,7 @@ class FileEditor {
         // Collect all variables across existing snippets
         $snippet_key = $this->class_name::does_snippet_key_exist( $existing_snippets, $snippet );
         if ( $snippet_key ) {
+            apply_filters( 'ddtt_log_error', 'ajax_add_snippet', new \Exception( 'Snippet already exists.' ), [ 'step' => 'duplicate_check', 'snippet' => $snippet ] );
             wp_send_json_error( __( 'This snippet already exists. You can either edit or delete the existing snippet or choose a different variable name.', 'dev-debug-tools' ) );
         }
 
@@ -1351,7 +1378,10 @@ class FileEditor {
         }
 
         $key = sanitize_text_field( wp_unslash( $_POST[ 'key' ] ?? '' ) );
-        if ( ! $key ) wp_send_json_error();
+        if ( ! $key ) {
+            apply_filters( 'ddtt_log_error', 'ajax_delete_snippet', new \Exception( 'No snippet key provided.' ), [ 'step' => 'key_check' ] );
+            wp_send_json_error();
+        }
 
         $custom_snippets = filter_var_array( get_option( $this->option_key, [] ), FILTER_SANITIZE_SPECIAL_CHARS );
         $order  = isset( $custom_snippets[ 'order' ] ) && is_array( $custom_snippets[ 'order' ] ) ? $custom_snippets[ 'order' ] : [];
@@ -1391,6 +1421,7 @@ class FileEditor {
         $filepath = $this->absdir . $filename;
 
         if ( empty( $filename ) || ! file_exists( $filepath ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_delete_backup_file', new \Exception( 'Backup file not found.' ), [ 'step' => 'file_check', 'filename' => $filename ] );
             wp_send_json_error( 'file_not_found' );
         }
 
@@ -1400,6 +1431,7 @@ class FileEditor {
 
         global $wp_filesystem;
         if ( ! WP_Filesystem() || ! is_object( $wp_filesystem ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_delete_backup_file', new \Exception( 'Filesystem not available.' ), [ 'step' => 'filesystem_check' ] );
             wp_send_json_error( 'filesystem_unavailable' );
         }
 
@@ -1408,9 +1440,11 @@ class FileEditor {
                 set_transient( 'ddtt_' . $this->shortname . '_backup_deleted', $filename, 30 );
                 wp_send_json_success( 'deleted' );
             } else {
+                apply_filters( 'ddtt_log_error', 'ajax_delete_backup_file', new \Exception( 'Failed to delete backup file.' ), [ 'step' => 'delete_attempt', 'filename' => $filename ] );
                 wp_send_json_error( 'delete_failed' );
             }
         } else {
+            apply_filters( 'ddtt_log_error', 'ajax_delete_backup_file', new \Exception( 'Backup file not found on final check.' ), [ 'step' => 'final_file_check', 'filename' => $filename ] );
             wp_send_json_error( 'file_not_found' );
         }
     } // End ajax_delete_backup_file()
@@ -1430,6 +1464,7 @@ class FileEditor {
         $backups = $this->get_backups( true ); // Skip most recent
 
         if ( empty( $backups ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_clear_all_backups', new \Exception( 'No backup files found to clear.' ), [ 'step' => 'no_backups_found' ] );
             wp_send_json_error( 'no_backups_found' );
         }
 
@@ -1439,6 +1474,7 @@ class FileEditor {
 
         global $wp_filesystem;
         if ( ! WP_Filesystem() || ! is_object( $wp_filesystem ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_clear_all_backups', new \Exception( 'Filesystem not available.' ), [ 'step' => 'filesystem_check' ] );
             wp_send_json_error( 'filesystem_unavailable' );
         }
 
@@ -1459,6 +1495,7 @@ class FileEditor {
             ], 30 );
             wp_send_json_success( [ 'deleted' => $deleted ] );
         } else {
+            apply_filters( 'ddtt_log_error', 'ajax_clear_all_backups', new \Exception( 'Failed to delete any backup files.' ), [ 'step' => 'delete_attempt' ] );
             wp_send_json_error( 'delete_failed' );
         }
     } // End ajax_clear_all_backups()

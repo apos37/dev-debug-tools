@@ -50,6 +50,7 @@ class DiscordWebhook {
                     'https://discord.com/api/webhooks/xxx/xxx...'
                 )
             );
+            apply_filters( 'ddtt_log_error', 'discord_webhook_send', new \Exception( 'Could not send notification to Discord. Webhook URL is not valid.' ), [ 'webhook' => $webhook ] );
             return false;
 
         } elseif ( ! str_starts_with( $webhook, $webhook_prefix ) ) {
@@ -164,7 +165,17 @@ class DiscordWebhook {
 
         if ( ! is_wp_error( $send ) && ! empty( $send ) ) {
             return true;
+
         } else {
+            $e = new \Exception( 'Failed to send Discord webhook.' );
+            $extra = [
+                'webhook_url' => $webhook_url,
+                'json_data'   => $json_data,
+                'response'    => is_wp_error( $send ) ? $send->get_error_message() : (string) ( $send[ 'response' ][ 'code' ] ?? 'unknown' ),
+                'type'        => 'discord_webhook',
+            ];
+            apply_filters( 'ddtt_log_error', 'discord_send', $e, $extra );
+
             return false;
         }
     } // End send()

@@ -248,6 +248,27 @@
 }
 
 
+/* Last Error Section */
+
+#ddtt-last-error-section {
+    display: none;
+}
+
+.ddtt-test-mode #ddtt-last-error-section {
+    display: revert;
+}
+
+.ddtt-last-error-table th {
+    width: 250px;
+} 
+
+.ddtt-table.ddtt-last-error-table code {
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+
 /* Support Section */
 
 #ddtt-support-section {

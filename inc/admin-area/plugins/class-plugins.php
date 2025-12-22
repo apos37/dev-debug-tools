@@ -331,7 +331,7 @@ class Plugins {
                         'icons'             => true,
                         'short_description' => true,
                     ],
-                ]);
+                ] );
 
                 if ( is_wp_error( $response ) ) {
                     continue;
@@ -845,6 +845,7 @@ class Plugins {
         }
 
         if ( empty( $plugin ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_update_installer', new \Exception( 'Missing plugin identifier.' ), [ 'step' => 'input_validation' ] );
             wp_send_json_error( __( 'Missing plugin identifier.', 'dev-debug-tools' ) );
         }
 
@@ -892,6 +893,7 @@ class Plugins {
         $note   = isset( $_POST[ 'note' ] ) ? sanitize_textarea_field( wp_unslash( $_POST[ 'note' ] ) ) : '';
 
         if ( empty( $plugin ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_save_plugin_note', new \Exception( 'Missing plugin identifier.' ), [ 'step' => 'input_validation' ] );
             wp_send_json_error( __( 'Missing plugin identifier.', 'dev-debug-tools' ) );
         }
 

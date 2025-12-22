@@ -352,13 +352,13 @@ class OnlineUsers {
      */
     public function ajax_heartbeat() {
         check_ajax_referer( $this->nonce, 'nonce' );
-
         if ( ! get_option( 'ddtt_online_users_heartbeat', true ) ) {
             wp_send_json_error( [ 'message' => __( 'Heartbeat tracking has been disabled.', 'dev-debug-tools' ) ] );
         }
         
         $tracked = $this->track_activity();
         if ( ! $tracked ) {
+            apply_filters( 'ddtt_log_error', 'ajax_heartbeat', new \Exception( 'Failed to track activity.' ), [ 'step' => 'track_activity' ] );
             wp_send_json_error( [ 'message' => __( 'Failed to track activity.', 'dev-debug-tools' ) ] );
         }
 

@@ -153,6 +153,7 @@ class Discord {
         // Required
         $webhook = isset( $_POST[ 'webhook' ] ) ? filter_var( wp_unslash( $_POST[ 'webhook' ] ), FILTER_SANITIZE_URL ) : '';
         if ( empty( $webhook ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_send_message', new \Exception( 'No webhook URL provided in AJAX request.' ), [ 'step' => 'empty_webhook' ] );
             wp_send_json_error( 'empty_webhook' );
         }
 

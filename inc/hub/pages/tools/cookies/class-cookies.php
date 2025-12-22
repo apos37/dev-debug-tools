@@ -160,6 +160,7 @@ class Cookies {
         }
 
         if ( empty( $_POST[ 'cookie_name' ] ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_clear_cookie', new \Exception( 'No cookie name provided in AJAX request.' ), [ 'step' => 'no_cookie_name_provided' ] );
             wp_send_json_error( [ 'message' => __( 'No cookie name provided.', 'dev-debug-tools' ) ] );
         }
 

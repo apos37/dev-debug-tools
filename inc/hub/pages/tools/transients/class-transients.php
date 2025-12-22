@@ -151,6 +151,7 @@ class Transients {
             ", ARRAY_A );
 
             if ( ! is_array( $results ) ) {
+                apply_filters( 'ddtt_log_error', 'get_transients', new \Exception( 'Invalid results from transients query.' ), [ 'step' => 'query_execution' ] );
                 throw new \Exception( 'Invalid results from transients query.' );
             }
 
@@ -186,7 +187,7 @@ class Transients {
             } );
 
         } catch ( \Exception $e ) {
-            Helpers::write_log( __( 'Error fetching transients: ', 'dev-debug-tools' ) . $e->getMessage() );
+            apply_filters( 'ddtt_log_error', 'get_transients', $e, [] );
             $transients = [];
         }
 
@@ -231,7 +232,8 @@ class Transients {
             wp_send_json_error( 'unauthorized' );
         }
 
-        if ( empty( $_POST['transient_name'] ) ) {
+        if ( empty( $_POST[ 'transient_name' ] ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_clear_transient', new \Exception( 'No transient name provided.' ), [ 'step' => 'input_validation' ] );
             wp_send_json_error( [ 'message' => __( 'No transient name provided.', 'dev-debug-tools' ) ] );
         }
 
@@ -249,7 +251,6 @@ class Transients {
      */
     public function ajax_clear_all_transients() {
         check_ajax_referer( $this->nonce, 'nonce' );
-
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( 'unauthorized' );
         }
@@ -264,6 +265,7 @@ class Transients {
             );
 
             if ( false === $deleted ) {
+                apply_filters( 'ddtt_log_error', 'ajax_clear_all_transients', new \Exception( 'Failed to delete transients from database.' ), [] );
                 throw new \Exception( 'Failed to delete transients from database.' );
             }
 
@@ -272,7 +274,7 @@ class Transients {
             ] );
 
         } catch ( \Exception $e ) {
-            Helpers::write_log( __( 'Error clearing all transients: ', 'dev-debug-tools' ) . $e->getMessage() );
+            apply_filters( 'ddtt_log_error', 'ajax_clear_all_transients', $e, [] );
             wp_send_json_error( [
                 'message' => __( 'Could not clear transients. Check logs.', 'dev-debug-tools' )
             ] );
@@ -313,6 +315,7 @@ class Transients {
             $expired_rows = $wpdb->get_results( $sql ); // phpcs:ignore
 
             if ( ! is_array( $expired_rows ) ) {
+                apply_filters( 'ddtt_log_error', 'ajax_purge_expired_transients', new \Exception( 'Failed to fetch expired transient rows.' ), [ 'step' => 'fetch_expired' ] );
                 throw new \Exception( 'Failed to fetch expired transient rows.' );
             }
 
@@ -328,7 +331,7 @@ class Transients {
             ] );
 
         } catch ( \Exception $e ) {
-            Helpers::write_log( __( 'Error purging expired transients: ', 'dev-debug-tools' ) . $e->getMessage() );
+            apply_filters( 'ddtt_log_error', 'ajax_purge_expired_transients', $e, [] );
             wp_send_json_error( [
                 'message' => __( 'Could not purge expired transients. Check logs.', 'dev-debug-tools' ),
                 'expired' => $expired_names

@@ -48,6 +48,9 @@ class SiteWide {
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets' ] );
 
+        // Register error listener
+        $this->register_error_listener();
+
     } // End __construct()
 
 
@@ -307,6 +310,65 @@ class SiteWide {
             $version
         );
     } // End enqueue_assets()
+
+
+    /**
+     * Update the last error stored in options
+     *
+     * @param string        $context Context or location of the error.
+     * @param \Throwable|null $e       Optional exception object.
+     * @param array         $extra   Optional extra data to store.
+     */
+    private function update_last_error( $context, $e = null, $extra = [] ) : void {
+        $user = wp_get_current_user();
+        $data = [
+            'time'    => time(),
+            'user'    => [
+                'id'       => $user ? $user->ID : 0,
+                'roles'    => $user ? $user->roles : [],
+            ],
+            'version' => Bootstrap::version(),
+            'context' => $context,
+        ];
+
+        if ( $e ) {
+            $data[ 'message' ] = $e->getMessage();
+            $data[ 'file' ]    = basename( $e->getFile() );
+            $data[ 'line' ]    = $e->getLine();
+        }
+
+        if ( ! empty( $extra ) ) {
+            $data[ 'extra' ] = $extra;
+        }
+
+        Helpers::write_log( print_r( $data, true ) );
+
+        update_option( 'ddtt_last_error', $data, false );
+    } // End update_last_error()
+
+
+    /**
+     * Register error listener to capture plugin errors
+     */
+    public function register_error_listener() : void {
+        add_filter(
+            'ddtt_log_error',
+            function ( $context, $exception = null, $extra = [] ) {
+                if ( ! is_string( $context ) ) {
+                    return false;
+                }
+
+                if ( $exception && ! $exception instanceof \Throwable ) {
+                    $exception = null;
+                }
+
+                $this->update_last_error( $context, $exception, $extra );
+                return true;
+            },
+            10,
+            3
+        );
+    } // End register_error_listener()
 
 }
 

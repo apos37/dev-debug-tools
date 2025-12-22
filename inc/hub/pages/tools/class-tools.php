@@ -196,6 +196,7 @@ class Tools {
         $slug = sanitize_text_field( wp_unslash( $_POST[ 'slug' ] ?? '' ) );
         $favorited = filter_var( wp_unslash( $_POST[ 'favorited' ] ?? '' ), FILTER_VALIDATE_BOOLEAN );
         if ( ! $slug ) {
+            apply_filters( 'ddtt_log_error', 'ajax_favorite_tool', new \Exception( 'Invalid slug provided in AJAX request.' ), [ 'step' => 'invalid_slug' ] );
             wp_send_json_error();
         }
 
@@ -229,6 +230,7 @@ class Tools {
         $enabled = isset( $post_data[ 'enabled' ] ) ? filter_var( $post_data[ 'enabled' ], FILTER_VALIDATE_BOOLEAN ) : false;
 
         if ( ! $slug ) {
+            apply_filters( 'ddtt_log_error', 'ajax_toggle_tool', new \Exception( 'Invalid slug provided in AJAX request.' ), [ 'step' => 'invalid_slug' ] );
             wp_send_json_error( 'Invalid slug' );
         }
 

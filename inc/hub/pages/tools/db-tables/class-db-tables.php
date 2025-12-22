@@ -113,6 +113,7 @@ class DbTables {
         ] );
 
         if ( empty( $table ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_get_db_table', new \Exception( 'No table selected in AJAX request.' ), [ 'step' => 'no_table_selected' ] );
             wp_send_json_error( [ 'message' => __( 'No table selected.', 'dev-debug-tools' ) ] );
         }
 
@@ -120,12 +121,14 @@ class DbTables {
         // phpcs:ignore
         $all_tables = $wpdb->get_col( 'SHOW TABLES' );
         if ( ! in_array( $table, $all_tables, true ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_get_db_table', new \Exception( 'Invalid table selected in AJAX request.' ), [ 'step' => 'invalid_table', 'table' => $table ] );
             wp_send_json_error( [ 'message' => __( 'Invalid table selected.', 'dev-debug-tools' ) ] );
         }
 
         $offset  = ( $page - 1 ) * $per_page;
         $columns = $wpdb->get_col( "SHOW COLUMNS FROM `" . esc_sql( $table ) . "`" ); // phpcs:ignore
         if ( ! $columns ) {
+            apply_filters( 'ddtt_log_error', 'ajax_get_db_table', new \Exception( 'Could not fetch table columns in AJAX request.' ), [ 'step' => 'no_columns', 'table' => $table ] );
             wp_send_json_error( [ 'message' => __( 'Could not fetch table columns.', 'dev-debug-tools' ) ] );
         }
 

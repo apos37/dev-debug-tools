@@ -1730,6 +1730,7 @@ class Settings {
         $path = isset( $_POST[ 'path' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'path' ] ) ) : '';
 
         if ( ! $path ) {
+            apply_filters( 'ddtt_log_error', 'ajax_verify_settings_path', new \Exception( 'No path provided in AJAX request.' ), [ 'step' => 'no_path_provided' ] );
             wp_send_json_error( [ 'message' => __( 'No path provided', 'dev-debug-tools' ) ] );
         }
 
@@ -1762,6 +1763,7 @@ class Settings {
         $options    = $_POST[ 'options' ] ?? []; // phpcs:ignore
 
         if ( ! $subsection || ! is_array( $options ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_save_settings', new \Exception( 'Invalid data provided in AJAX request.' ), [ 'step' => 'invalid_data' ] );
             wp_send_json_error( [ 'message' => __( 'Invalid data.', 'dev-debug-tools' ) ], 400 );
         }
 
@@ -1782,6 +1784,7 @@ class Settings {
 
         $method = $subsection . '_options';
         if ( ! method_exists( $this, $method ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_save_settings', new \Exception( 'Invalid subsection provided in AJAX request.' ), [ 'step' => 'invalid_subsection', 'subsection' => $subsection ] );
             wp_send_json_error( [ 'message' => __( 'Invalid subsection.', 'dev-debug-tools' ) ], 400 );
         }
 
@@ -2014,11 +2017,13 @@ class Settings {
         $file_data = isset( $_POST[ 'jsonData' ] ) ? wp_unslash( $_POST[ 'jsonData' ] ) : null; // phpcs:ignore
 
         if ( ! $file_data ) {
+            apply_filters( 'ddtt_log_error', 'ajax_settings_import', new \Exception( 'No file data provided in AJAX request.' ), [ 'step' => 'no_file_data' ] );
             wp_send_json_error( 'No file data.' );
         }
 
         $import = json_decode( $file_data, true );
         if ( ! is_array( $import ) || empty( $import ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_settings_import', new \Exception( 'Invalid JSON data provided in AJAX request.' ), [ 'step' => 'invalid_json' ] );
             wp_send_json_error( 'Invalid JSON data.' );
         }
 

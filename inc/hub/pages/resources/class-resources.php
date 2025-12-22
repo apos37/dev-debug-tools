@@ -137,12 +137,14 @@ class Resources {
         $key   = isset( $_POST[ 'key' ] ) ? sanitize_key( wp_unslash( $_POST[ 'key' ] ) ) : '';
 
         if ( ! $title || ! $url || ! $key ) {
+            apply_filters( 'ddtt_log_error', 'ajax_add_resource', new \Exception( 'Missing required fields.' ), [ 'step' => 'input_validation' ] );
             wp_send_json_error();
         }
 
         $option = get_option( self::$option_key, [ 'order' => [], 'custom' => [] ] );
 
         if ( in_array( $key, $option[ 'order' ], true ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_add_resource', new \Exception( 'Resource key already exists.' ), [ 'step' => 'input_validation' ] );
             wp_send_json_error();
         }
 
@@ -174,7 +176,10 @@ class Resources {
         }
 
         $key = sanitize_text_field( wp_unslash( $_POST[ 'key' ] ?? '' ) );
-        if ( ! $key ) wp_send_json_error();
+        if ( ! $key ) {
+            apply_filters( 'ddtt_log_error', 'ajax_delete_resource', new \Exception( 'Missing resource key.' ), [ 'step' => 'input_validation' ] );
+            wp_send_json_error();
+        }
 
         $saved  = get_option( self::$option_key, [] );
         $order  = isset( $saved[ 'order' ] ) && is_array( $saved[ 'order' ] ) ? $saved[ 'order' ] : [];

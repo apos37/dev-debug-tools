@@ -236,15 +236,14 @@ class Metadata {
      * Handle metadata actions.
      */
     public function handle_button_actions() {
-        if ( ! is_admin() || ! current_user_can( 'manage_options' ) || ! Helpers::is_dev() ) {
-            return;
-        }
-
         if ( ! isset( $_POST[ 'ddtt_metadata_action' ] ) ) {
             return;
         }
 
         check_admin_referer( 'ddtt_metadata_action', 'ddtt_metadata_nonce' );
+        if ( ! is_admin() || ! current_user_can( 'manage_options' ) || ! Helpers::is_dev() ) {
+            return;
+        }
 
         $action     = isset( $_POST[ 'ddtt_metadata_action' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'ddtt_metadata_action' ] ) ) : '';
         $subsection = isset( $_POST[ 'subsection' ] ) ? sanitize_key( wp_unslash( $_POST[ 'subsection' ] ) ) : '';
@@ -1233,6 +1232,7 @@ class Metadata {
 
         $id = isset( $_POST[ 'id' ] ) ? absint( wp_unslash( $_POST[ 'id' ] ) ) : false;
         if ( ! $id ) {
+            apply_filters( 'ddtt_log_error', 'ajax_get_metadata', new \Exception( 'Invalid ID provided for metadata retrieval.' ), [ 'step' => 'validation' ] );
             wp_send_json_error( 'invalid_id' );
         }
 
@@ -1343,6 +1343,7 @@ class Metadata {
                 wp_set_password( $value, $object_id );
                 return true;
             }
+            apply_filters( 'ddtt_log_error', 'update_meta_value', new \Exception( 'Empty password provided.' ), compact( 'subsection', 'object_id', 'key', 'value' ) );
             return false;
         }
 
@@ -1367,9 +1368,24 @@ class Metadata {
                 ];
                 if ( in_array( $key, $core_user_fields, true ) ) {
                     $userdata = [ 'ID' => $object_id, $key => $value_to_store ];
-                    return wp_update_user( $userdata );
+                    $result = wp_update_user( $userdata );
+
+                    $check_value = get_userdata( $object_id )->$key ?? null;
+                    if ( $check_value !== $value_to_store ) {
+                        apply_filters( 'ddtt_log_error', 'update_meta_value', new \Exception( "Failed to update user field: {$key}" ), compact( 'subsection', 'object_id', 'key', 'value_to_store' ) );
+                        return false;
+                    }
+
+                    if ( is_wp_error( $result ) ) {
+                        apply_filters( 'ddtt_log_error', 'update_meta_value', $result, compact( 'subsection', 'object_id', 'key', 'value_to_store' ) );
+                    }
+                    return $result;
                 }
-                return update_user_meta( $object_id, $key, $value_to_store );
+                $result = update_user_meta( $object_id, $key, $value_to_store );
+                if ( $result === false ) {
+                    apply_filters( 'ddtt_log_error', 'update_meta_value', new \Exception( 'Failed to update user meta.' ), compact( 'object_id', 'key', 'value_to_store' ) );
+                }
+                return $result;
 
             case 'post':
             case 'media':
@@ -1397,22 +1413,35 @@ class Metadata {
 
                     // Check result
                     if ( is_wp_error( $updated_id ) || $updated_id === 0 ) {
+                        apply_filters( 'ddtt_log_error', 'update_meta_value', $updated_id instanceof \WP_Error ? $updated_id : new \Exception( 'Failed to update post.' ), compact( 'object_id', 'key', 'value_to_store' ) );
                         return false;
                     }
 
                     return true;
                 }
 
-                return update_post_meta( $object_id, $key, $value_to_store );
+                $result = update_post_meta( $object_id, $key, $value_to_store );
+                if ( $result === false ) {
+                    apply_filters( 'ddtt_log_error', 'update_meta_value', new \Exception( 'Failed to update post meta.' ), compact( 'object_id', 'key', 'value_to_store' ) );
+                }
+                return $result;
 
             case 'term':
                 // Core term fields
                 $core_term_fields = [ 'name', 'slug', 'term_group' ];
                 if ( in_array( $key, $core_term_fields, true ) ) {
                     $args = [ $key => $value_to_store ];
-                    return wp_update_term( $object_id, '', $args );
+                    $result = wp_update_term( $object_id, '', $args );
+                    if ( is_wp_error( $result ) ) {
+                        apply_filters( 'ddtt_log_error', 'update_meta_value', $result, compact( 'object_id', 'key', 'value_to_store' ) );
+                    }
+                    return $result;
                 }
-                return update_term_meta( $object_id, $key, $value_to_store );
+                $result = update_term_meta( $object_id, $key, $value_to_store );
+                if ( $result === false ) {
+                    apply_filters( 'ddtt_log_error', 'update_meta_value', new \Exception( 'Failed to update term meta.' ), compact( 'object_id', 'key', 'value_to_store' ) );
+                }
+                return $result;
 
             case 'comment':
                 // Core comment fields
@@ -1425,11 +1454,20 @@ class Metadata {
                 ];
                 if ( in_array( $key, $core_comment_fields, true ) ) {
                     $commentarr = [ 'comment_ID' => $object_id, $key => $value_to_store ];
-                    return wp_update_comment( $commentarr );
+                    $result = wp_update_comment( $commentarr );
+                    if ( is_wp_error( $result ) ) {
+                        apply_filters( 'ddtt_log_error', 'update_meta_value', $result, compact( 'object_id', 'key', 'value_to_store' ) );
+                    }
+                    return $result;
                 }
-                return update_comment_meta( $object_id, $key, $value_to_store );
+                $result = update_comment_meta( $object_id, $key, $value_to_store );
+                if ( $result === false ) {
+                    apply_filters( 'ddtt_log_error', 'update_meta_value', new \Exception( 'Failed to update comment meta.' ), compact( 'object_id', 'key', 'value_to_store' ) );
+                }
+                return $result;
 
             default:
+                apply_filters( 'ddtt_log_error', 'update_meta_value', new \Exception( 'Unknown subsection.' ), compact( 'subsection', 'object_id', 'key', 'value_to_store' ) );
                 return false;
         }
     } // End update_meta_value()
@@ -1446,15 +1484,28 @@ class Metadata {
     private function delete_meta_value( $subsection, $object_id, $key ) {
         switch ( $subsection ) {
             case 'user':
-                return delete_user_meta( $object_id, $key );
+                $result = delete_user_meta( $object_id, $key );
+                if ( $result === false ) apply_filters( 'ddtt_log_error', 'delete_meta_value', new \Exception( 'Failed to delete user meta.' ), compact( 'subsection', 'object_id', 'key' ) );
+                return $result;
+
             case 'post':
             case 'media':
-                return delete_post_meta( $object_id, $key );
+                $result = delete_post_meta( $object_id, $key );
+                if ( $result === false ) apply_filters( 'ddtt_log_error', 'delete_meta_value', new \Exception( 'Failed to delete post meta.' ), compact( 'subsection', 'object_id', 'key' ) );
+                return $result;
+
             case 'term':
-                return delete_term_meta( $object_id, $key );
+                $result = delete_term_meta( $object_id, $key );
+                if ( $result === false ) apply_filters( 'ddtt_log_error', 'delete_meta_value', new \Exception( 'Failed to delete term meta.' ), compact( 'subsection', 'object_id', 'key' ) );
+                return $result;
+
             case 'comment':
-                return delete_comment_meta( $object_id, $key );
+                $result = delete_comment_meta( $object_id, $key );
+                if ( $result === false ) apply_filters( 'ddtt_log_error', 'delete_meta_value', new \Exception( 'Failed to delete comment meta.' ), compact( 'subsection', 'object_id', 'key' ) );
+                return $result;
+
             default:
+                apply_filters( 'ddtt_log_error', 'delete_meta_value', new \Exception( 'Unknown subsection.' ), compact( 'subsection', 'object_id', 'key' ) );
                 return false;
         }
     } // End delete_meta_value()
@@ -1477,12 +1528,14 @@ class Metadata {
         $value      = isset( $_POST[ 'value' ] ) ? wp_unslash( $_POST[ 'value' ] ) : ''; // phpcs:ignore 
 
         if ( ! $subsection || ! $object_id || ! $key ) {
+            apply_filters( 'ddtt_log_error', 'ajax_update_meta_value', new \Exception( 'Missing required parameters for updating meta value.' ), [ 'step' => 'parameter_check' ] );
             wp_send_json_error();
         }
 
         $updated = $this->update_meta_value( $subsection, $object_id, $key, $value );
 
         if ( false === $updated && $this->get_meta_value( $subsection, $object_id, $key ) !== $value ) {
+            apply_filters( 'ddtt_log_error', 'ajax_update_meta_value', new \Exception( 'Failed to update meta value.' ), [ 'step' => 'update_meta' ] );
             wp_send_json_error();
         }
 
@@ -1510,12 +1563,14 @@ class Metadata {
         $key        = isset( $_POST[ 'key' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'key' ] ) ) : '';
 
         if ( ! $subsection || ! $object_id || ! $key ) {
+            apply_filters( 'ddtt_log_error', 'ajax_delete_meta_key', new \Exception( 'Missing required parameters for deleting meta key.' ), [ 'step' => 'parameter_check' ] );
             wp_send_json_error();
         }
 
         $deleted = $this->delete_meta_value( $subsection, $object_id, $key );
 
         if ( false === $deleted ) {
+            apply_filters( 'ddtt_log_error', 'ajax_delete_meta_key', new \Exception( 'Failed to delete meta key.' ), [ 'step' => 'delete_meta' ] );
             wp_send_json_error();
         }
 
@@ -1539,11 +1594,13 @@ class Metadata {
         $toggle  = isset( $_POST[ 'toggle' ] ) ? sanitize_key( wp_unslash( $_POST[ 'toggle' ] ) ) : '';
 
         if ( ! $user_id || ! $role || ! in_array( $toggle, [ 'add', 'remove' ], true ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_update_user_role', new \Exception( 'Missing required parameters for updating user role.' ), [ 'step' => 'parameter_check' ] );
             wp_send_json_error();
         }
 
         $user = get_userdata( $user_id );
         if ( ! $user ) {
+            apply_filters( 'ddtt_log_error', 'ajax_update_user_role', new \Exception( 'User not found for updating role.' ), [ 'step' => 'get_user' ] );
             wp_send_json_error();
         }
 
@@ -1554,6 +1611,7 @@ class Metadata {
         } elseif ( $toggle === 'remove' && in_array( $role, $current_roles, true ) ) {
             // Prevent removing last role
             if ( count( $current_roles ) <= 1 ) {
+                apply_filters( 'ddtt_log_error', 'ajax_update_user_role', new \Exception( 'Attempted to remove the last role from a user.' ), [ 'step' => 'remove_last_role' ] );
                 wp_send_json_error( 'cannot_remove_last_role' );
             }
             $user->remove_role( $role );
@@ -1581,11 +1639,13 @@ class Metadata {
         $toggle = isset( $_POST[ 'toggle' ] ) ? sanitize_key( wp_unslash( $_POST[ 'toggle' ] ) ) : '';
 
         if ( ! $object_id || ! $capability || ! in_array( $toggle, [ 'add', 'remove' ], true ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_update_user_capability', new \Exception( 'Missing required parameters for updating user capability.' ), [ 'step' => 'parameter_check' ] );
             wp_send_json_error();
         }
 
         $user = get_userdata( $object_id );
         if ( ! $user ) {
+            apply_filters( 'ddtt_log_error', 'ajax_update_user_capability', new \Exception( 'User not found for updating capability.' ), [ 'step' => 'get_user' ] );
             wp_send_json_error();
         }
 
@@ -1612,16 +1672,19 @@ class Metadata {
 
         $taxonomy = isset( $_POST[ 'taxonomy' ] ) ? sanitize_key( $_POST[ 'taxonomy' ] ) : '';
         if ( ! $taxonomy ) {
+            apply_filters( 'ddtt_log_error', 'ajax_get_tax_terms_editor', new \Exception( 'Missing taxonomy parameter for getting taxonomy terms editor.' ), [ 'step' => 'parameter_check' ] );
             wp_send_json_error( 'invalid_taxonomy' );
         }
 
         $tax_obj  = get_taxonomy( $taxonomy );
         if ( ! $tax_obj ) {
+            apply_filters( 'ddtt_log_error', 'ajax_get_tax_terms_editor', new \Exception( 'Invalid taxonomy for getting taxonomy terms editor.' ), [ 'step' => 'get_taxonomy' ] );
             wp_send_json_error( 'invalid_taxonomy' );
         }
 
         $post_id  = isset( $_POST[ 'object_id' ] ) ? absint( $_POST[ 'object_id' ] ) : 0;
         if ( ! $post_id ) {
+            apply_filters( 'ddtt_log_error', 'ajax_get_tax_terms_editor', new \Exception( 'Missing or invalid post ID for getting taxonomy terms editor.' ), [ 'step' => 'parameter_check' ] );
             wp_send_json_error( 'invalid_post_id' );
         }
 
@@ -1676,11 +1739,13 @@ class Metadata {
         $terms     = isset( $_POST[ 'terms' ] ) ? $_POST[ 'terms' ] : []; // phpcs:ignore
 
         if ( ! $taxonomy || ! $post_id ) {
+            apply_filters( 'ddtt_log_error', 'ajax_update_tax_terms', new \Exception( 'Missing required parameters for updating taxonomy terms.' ), [ 'step' => 'parameter_check' ] );
             wp_send_json_error( 'invalid_data' );
         }
 
         $tax_obj = get_taxonomy( $taxonomy );
         if ( ! $tax_obj ) {
+            apply_filters( 'ddtt_log_error', 'ajax_update_tax_terms', new \Exception( 'Invalid taxonomy for updating taxonomy terms.' ), [ 'step' => 'get_taxonomy' ] );
             wp_send_json_error( 'invalid_taxonomy' );
         }
 
@@ -1698,6 +1763,7 @@ class Metadata {
         }
 
         if ( is_wp_error( $result ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_update_tax_terms', new \Exception( 'Failed to update taxonomy terms: ' . $result->get_error_message() ), [ 'step' => 'set_post_terms' ] );
             wp_send_json_error( $result->get_error_message() );
         }
 
@@ -1729,10 +1795,12 @@ class Metadata {
      */
     private function validate_import_data( $import ) {
         if ( ! is_array( $import ) ) {
+            apply_filters( 'ddtt_log_error', 'validate_import_data', new \Exception( 'Import data is not an array.' ), [ 'step' => 'format_check' ] );
             return new \WP_Error( 'invalid_format', __( 'Import data is not an array.', 'dev-debug-tools' ) );
         }
 
         if ( empty( $import[ 'object' ] ) || ! is_array( $import[ 'object' ] ) ) {
+            apply_filters( 'ddtt_log_error', 'validate_import_data', new \Exception( 'Missing or invalid object data in import.' ), [ 'step' => 'object_check' ] );
             return new \WP_Error( 'missing_object', __( 'Missing or invalid object data.', 'dev-debug-tools' ) );
         }
 
@@ -1741,12 +1809,14 @@ class Metadata {
         // Determine object type
         $object_type = isset( $object[ 'post_type' ] ) ? 'post' : ( isset( $object[ 'user_email' ] ) ? 'user' : '' );
         if ( ! $object_type ) {
+            apply_filters( 'ddtt_log_error', 'validate_import_data', new \Exception( 'Unknown object type in import.' ), [ 'step' => 'type_check' ] );
             return new \WP_Error( 'unknown_type', __( 'Unknown object type.', 'dev-debug-tools' ) );
         }
 
         // Validate required fields for post
         if ( $object_type === 'post' ) {
             if ( empty( $object[ 'post_title' ] ) || empty( $object[ 'post_type' ] ) ) {
+                apply_filters( 'ddtt_log_error', 'validate_import_data', new \Exception( 'Post object is missing required fields.' ), [ 'step' => 'post_fields_check' ] );
                 return new \WP_Error( 'missing_post_fields', __( 'Post object is missing required fields.', 'dev-debug-tools' ) );
             }
         }
@@ -1754,6 +1824,7 @@ class Metadata {
         // Validate required fields for user
         if ( $object_type === 'user' ) {
             if ( empty( $object[ 'user_email' ] ) ) {
+                apply_filters( 'ddtt_log_error', 'validate_import_data', new \Exception( 'User object is missing required fields.' ), [ 'step' => 'user_fields_check' ] );
                 return new \WP_Error( 'missing_user_fields', __( 'User object is missing required fields.', 'dev-debug-tools' ) );
             }
         }
@@ -1783,17 +1854,20 @@ class Metadata {
         $file_data = isset( $_POST[ 'jsonData' ] ) ? wp_unslash( $_POST[ 'jsonData' ] ) : null; // phpcs:ignore
 
         if ( ! $file_data ) {
+            apply_filters( 'ddtt_log_error', 'ajax_metadata_import', new \Exception( 'No file data provided for metadata import.' ), [ 'step' => 'file_data_check' ] );
             wp_send_json_error( 'No file data.' );
         }
 
         $import = json_decode( $file_data, true );
         if ( ! $import || empty( $import[ 'object' ] ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_metadata_import', new \Exception( 'Invalid JSON data for metadata import.' ), [ 'step' => 'json_decode' ] );
             wp_send_json_error( 'Invalid JSON data.' );
         }
 
         // Validate import data
         $validated = $this->validate_import_data( $import );
         if ( is_wp_error( $validated ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_metadata_import', new \Exception( 'Validation failed for import data: ' . $validated->get_error_message() ), [ 'step' => 'validation' ] );
             wp_send_json_error( $validated->get_error_message() );
         }
 

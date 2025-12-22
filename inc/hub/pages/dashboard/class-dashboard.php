@@ -127,10 +127,11 @@ class Dashboard {
 
         $report_lines[] = "DEVELOPER DEBUG TOOLS SYSTEM STATUS REPORT\n";
 
-        $report_lines[] = "Is Test Mode Active: " . ( Bootstrap::is_test_mode() ? 'Yes' : 'No' ) . "\n";
+        $current_user = wp_get_current_user();
+        $report_lines[] = "Requesting User Roles: " . implode( ', ', (array) $current_user->roles );
 
         // Versions
-        $report_lines[] = "Plugin Version: " . Bootstrap::version();
+        $report_lines[] = "\nPlugin Version: " . Bootstrap::version();
         $report_lines[] = "WordPress Version: " . get_bloginfo( 'version' );
         $report_lines[] = "PHP Version: " . phpversion();
         global $wpdb;
@@ -145,13 +146,56 @@ class Dashboard {
         }
         $report_lines[] = "jQuery Version: " . $jquery_version;
 
+        $report_lines[] = "\nIs Test Mode Active: " . ( Bootstrap::is_test_mode() ? 'Yes' : 'No' );
+        $report_lines[] = "WP_DEBUG: " . ( defined( 'WP_DEBUG' ) && WP_DEBUG ? 'Yes' : 'No' );
+        $report_lines[] = "WP_DEBUG_LOG: " . ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ? 'Yes' : 'No' );
+        $report_lines[] = "WP_DEBUG_DISPLAY: " . ( defined( 'WP_DEBUG_DISPLAY' ) && WP_DEBUG_DISPLAY ? 'Yes' : 'No' );
+        $report_lines[] = "SCRIPT_DEBUG: " . ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? 'Yes' : 'No' );
+        $report_lines[] = "DISABLE_WP_CRON: " . ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ? 'Yes' : 'No' );
+
+        $report_lines[] = "\nWP_MEMORY_LIMIT: " . ( defined( 'WP_MEMORY_LIMIT' ) ? WP_MEMORY_LIMIT : 'Not defined' );
+        $report_lines[] = "WP_MAX_MEMORY_LIMIT: " . ( defined( 'WP_MAX_MEMORY_LIMIT' ) ? WP_MAX_MEMORY_LIMIT : 'Not defined' );
+        $report_lines[] = "max_execution_time: " . ini_get( 'max_execution_time' );
+        $report_lines[] = "memory_limit: " . ini_get( 'memory_limit' );
+        $report_lines[] = "upload_max_filesize: " . ini_get( 'upload_max_filesize' );
+        $report_lines[] = "post_max_size: " . ini_get( 'post_max_size' );
+
         // Site Info
         $report_lines[] = "\nSite Domain: " . get_site_url();
-        $report_lines[] = "Multisite: " . ( is_multisite() ? 'Yes' : 'No' );
+        $report_lines[] = "Site Language: " . get_bloginfo( 'language' );
         $report_lines[] = "WordPress Timezone: " . get_option( 'timezone_string' );
         $report_lines[] = "Developer Timezone: " . get_option( 'ddtt_dev_timezone' );
+
+        $report_lines[] = "Multisite: " . ( is_multisite() ? 'Yes' : 'No' );
+
+        $rest_enabled = function_exists( 'rest_url' ) && rest_get_server();
+        $report_lines[] = "Is REST Enabled: " . ( $rest_enabled ? 'Yes' : 'No' );
+
+        $heartbeat_disabled = ! wp_script_is( 'heartbeat', 'registered' );
+        $report_lines[] = "Is Heartbeat Disabled: " . ( $heartbeat_disabled ? 'Yes' : 'No' );
+
+        $home_url = home_url();
+        $site_url = site_url();
+        $report_lines[] = "Home / Site URL Mismatch: " . ( $home_url !== $site_url ? 'Yes' : 'No' );
+
+        $report_lines[] = "Permalink Structure: " . get_option( 'permalink_structure' );
+
+        // Cache
+        $object_cache = wp_using_ext_object_cache();
+        $report_lines[] = "\nObject Cache In Use: " . ( $object_cache ? 'Yes' : 'No' );
+
+        $persistent_cache = 'No';
+        if ( class_exists( 'Redis' ) || class_exists( 'Memcached' ) ) {
+            $persistent_cache = 'Yes';
+        }
+        $report_lines[] = "Persistent Cache Detected: " . $persistent_cache;
+
+        $wp_config_path = ABSPATH . 'wp-config.php';
+        $report_lines[] = "\nwp-config.php Writable: " . ( is_writable( $wp_config_path ) ? 'Yes' : 'No' );
+        
+        // Theme info
         $theme = wp_get_theme();
-        $report_lines[] = "Active Theme: " . $theme->get( 'Name' ) . " " . $theme->get( 'Version' );
+        $report_lines[] = "\nActive Theme: " . $theme->get( 'Name' ) . " " . $theme->get( 'Version' );
         $report_lines[] = "Is Child Theme? " . ( $theme->parent() ? 'Yes' : 'No' );
 
         // Plugins info
@@ -165,34 +209,87 @@ class Dashboard {
         $report_lines[] = "Inactive Plugins Count: " . count( $inactive_plugins );
 
         $report_lines[] = "\n======= ACTIVE PLUGINS: =======";
+
+        $active_plugins_data = [];
         foreach ( $active_plugins as $plugin_file ) {
             if ( isset( $all_plugins[ $plugin_file ] ) ) {
                 $p = $all_plugins[ $plugin_file ];
-                $report_lines[] = sprintf(
-                    "%s by %s, v %s, %s",
-                    $p[ 'Name' ],
-                    $p[ 'Author' ],
-                    $p[ 'Version' ],
-                    $plugin_file
-                );
+                $active_plugins_data[ $plugin_file ] = [
+                    'name' => $p[ 'Name' ],
+                    'author' => $p[ 'Author' ],
+                    'version' => $p[ 'Version' ],
+                    'file' => $plugin_file,
+                ];
             }
+        }
+
+        uasort(
+            $active_plugins_data,
+            function ( $a, $b ) {
+                return strcasecmp( $a[ 'name' ], $b[ 'name' ] );
+            }
+        );
+
+        foreach ( $active_plugins_data as $plugin ) {
+            $report_lines[] = sprintf(
+                "%s by %s, v %s, %s",
+                $plugin[ 'name' ],
+                $plugin[ 'author' ],
+                $plugin[ 'version' ],
+                $plugin[ 'file' ]
+            );
         }
 
         // Plugin settings
         $ignore_settings = [ 'ddtt_pass', 'ddtt_plugins' ];
 
         $report_lines[] = "\n======= PLUGIN SETTINGS: =======";
+
         $options = wp_load_alloptions();
+        $ddtt_options = [];
         foreach ( $options as $key => $value ) {
             if ( str_starts_with( $key, 'ddtt_' ) && ! in_array( $key, $ignore_settings ) ) {
-                $value = maybe_unserialize( $value );
-                if ( is_array( $value ) || is_object( $value ) ) {
-                    $report_lines[] = $key . " =>\n" . print_r( $value, true );
-                } else {
-                    $report_lines[] = $key . " => " . $value;
-                }
-                $report_lines[] = ""; // empty line between settings
+                $ddtt_options[ $key ] = maybe_unserialize( $value );
             }
+        }
+
+        ksort( $ddtt_options );
+
+        foreach ( $ddtt_options as $key => $value ) {
+            if ( is_array( $value ) || is_object( $value ) ) {
+                $report_lines[] = $key . " =>\n" . print_r( $value, true );
+            } else {
+                $report_lines[] = $key . " => " . $value;
+            }
+            $report_lines[] = "";
+        }
+
+        $report_lines[] = "\n======= LAST ERRORS DETECTED: =======";
+
+        // Plugin-scoped stored errors
+        $ddtt_last_error = get_option( 'ddtt_last_error' );
+        if ( $ddtt_last_error ) {
+            $report_lines[] = "\nLast Plugin Error:";
+            $report_lines[] = print_r( maybe_unserialize( $ddtt_last_error ), true );
+        } else {
+            $report_lines[] = "Last Plugin Error: None";
+        }
+
+        $report_lines[] = "";
+
+        // Last PHP error
+        $last_php_error = error_get_last();
+        if ( $last_php_error ) {
+            $report_lines[] = "Last PHP Error:";
+            $report_lines[] = sprintf(
+                "Type: %s\nMessage: %s\nFile: %s\nLine: %s",
+                $last_php_error[ 'type' ],
+                $last_php_error[ 'message' ],
+                $last_php_error[ 'file' ],
+                $last_php_error[ 'line' ]
+            );
+        } else {
+            $report_lines[] = "Last PHP Error: None";
         }
 
         $filename = 'ddtt-system-status-report-' . gmdate( 'Y-m-d-H-i-s' ) . '.txt';
@@ -545,7 +642,6 @@ class Dashboard {
      */
     public function ajax_check_issue() {
         check_ajax_referer( $this->nonce_action, 'nonce' );
-
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Unauthorized', 'dev-debug-tools' ) ] );
         }
@@ -553,6 +649,7 @@ class Dashboard {
         $issue_key = isset( $_POST[ 'issue_key' ] ) ? sanitize_key( wp_unslash( $_POST[ 'issue_key' ]) ) : '';
 
         if ( empty( $issue_key ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_check_issue', new \Exception( 'No issue key provided.' ), [ 'step' => 'input_validation' ] );
             wp_send_json_error( [ 'message' => __( 'No issue key provided', 'dev-debug-tools' ) ] );
         }
 
@@ -560,6 +657,7 @@ class Dashboard {
         $issues_list = $issues_instance->get();
 
         if ( ! isset( $issues_list[ $issue_key ] ) || ! is_callable( $issues_list[ $issue_key ][ 'callback' ] ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_check_issue', new \Exception( 'Invalid issue key.' ), [ 'step' => 'input_validation' ] );
             wp_send_json_error( [ 'message' => __( 'Invalid issue key', 'dev-debug-tools' ) ] );
         }
 

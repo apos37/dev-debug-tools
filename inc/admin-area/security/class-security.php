@@ -272,6 +272,7 @@ class Security {
 
         // Check if currently locked out
         if ( get_transient( $lockout_key ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_check_password', new \Exception( 'Too many failed attempts. Locked out.' ), [ 'step' => 'lockout_check' ] );
             wp_send_json_error( [ 'message' => sprintf(
                 // translators: %d: number of minutes until lockout expires
                 __( 'Too many failed attempts. Try again in %d minutes.', 'dev-debug-tools' ),
@@ -311,6 +312,7 @@ class Security {
 
             $seconds_remaining = $lockout_minutes * 60;
 
+            apply_filters( 'ddtt_log_error', 'ajax_check_password', new \Exception( 'Too many failed attempts. Locked out.' ), [ 'step' => 'lockout_enforced' ] );
             wp_send_json_error( [
                 'message'           => __( 'Too many failed attempts. Locked out.', 'dev-debug-tools' ),
                 'lockout_seconds'   => $seconds_remaining,
@@ -327,6 +329,7 @@ class Security {
                 'dev-debug-tools'
             ), $remaining );
 
+        apply_filters( 'ddtt_log_error', 'ajax_check_password', new \Exception( 'Incorrect password.' ), [ 'step' => 'invalid_password' ] );
         wp_send_json_error( [ 'message' => $message ] );
     } // End ajax_check_password()
 

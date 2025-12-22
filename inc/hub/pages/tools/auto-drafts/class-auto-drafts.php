@@ -113,6 +113,7 @@ class AutoDrafts {
         }
 
         if ( ! isset( $_POST[ 'post_id' ] ) || empty( $_POST[ 'post_id' ] ) ) {
+            apply_filters( 'ddtt_log_error', 'ajax_clear_auto_draft', new \Exception( 'No post ID provided in AJAX request.' ), [ 'step' => 'no_post_id_provided' ] );
             wp_send_json_error( [ 'message' => __( 'No post ID provided.', 'dev-debug-tools' ) ] );
         }
 
