@@ -570,6 +570,12 @@ class Settings {
                         'type'      => 'checkbox',
                         'default'   => true,
                     ],
+                    'admin_bar_debug' => [
+                        'title'     => __( 'Indicate WP_DEBUG is Enabled', 'dev-debug-tools' ),
+                        'desc'      => __( 'Add faint red stripes to the admin bar when WP_DEBUG is enabled.', 'dev-debug-tools' ),
+                        'type'      => 'checkbox',
+                        'default'   => true,
+                    ],
                     'admin_bar_resources' => [
                         'title'     => __( 'Add Resources Menu', 'dev-debug-tools' ),
                         'desc'      => __( 'Add a Resources menu to the admin bar with links to useful resources.', 'dev-debug-tools' ),

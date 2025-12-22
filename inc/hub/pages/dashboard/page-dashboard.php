@@ -92,6 +92,10 @@ $our_links = [
                         <span class="dashicons dashicons-media-archive"></span>
                         <span class="button-label"><?php esc_html_e( 'Download Important Files', 'dev-debug-tools' ); ?></span>
                     </button>
+                    <button class="ddtt-button" type="submit" name="ddtt-download-status-report" title="Text file with system status report to share when seeking support" style="margin-top: 10px;">
+                        <span class="dashicons dashicons-media-text"></span>
+                        <span class="button-label"><?php esc_html_e( 'Download System Status Report', 'dev-debug-tools' ); ?></span>
+                    </button>
                 </form>
             </div>
         <?php endif; ?>

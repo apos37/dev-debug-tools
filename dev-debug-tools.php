@@ -3,7 +3,7 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://pluginrx.com/plugin/dev-debug-tools/
  * Description:         WordPress debugging and testing tools for developers
- * Version:             3.0.0.7
+ * Version:             3.0.0.8
  * Requires at least:   5.9
  * Tested up to:        6.9
  * Requires PHP:        8.0
@@ -134,8 +134,8 @@ final class Bootstrap {
             wp_die( sprintf(
                 /* translators: %1$s is plugin name, %2$s is required PHP version */
                 esc_html( __( '%1$s requires PHP %2$s or higher.', 'dev-debug-tools' ) ),
-                esc_html( $this->meta['name'] ),
-                esc_html( $this->meta['requires_php'] )
+                esc_html( $this->meta[ 'name' ] ),
+                esc_html( $this->meta[ 'requires_php' ] )
             ) );
         }
     } // End check_environment()
@@ -267,7 +267,10 @@ final class Bootstrap {
      * @return string
      */
     public static function script_version() : string {
-        return self::is_test_mode() ? (string) time() : self::version();
+        if ( self::is_test_mode() ) {
+            return 'TEST-' . time();
+        }
+        return self::version();
     } // End script_version()
 
 

@@ -74,6 +74,14 @@ class AdminBar {
             add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_gravity_forms_finder' ] );
         }
 
+        // Indicate that we are in debug mode
+        if ( get_option( 'ddtt_admin_bar_debug', true ) ) {
+            add_filter( 'body_class', [ $this, 'add_debug_body_class' ] );
+            add_filter( 'admin_body_class', [ $this, 'add_debug_body_class' ] );
+            add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_debug_mode_indicator' ] );
+            add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_debug_mode_indicator' ] );
+        }
+
     } // End __construct()
 
 
@@ -677,6 +685,7 @@ class AdminBar {
      * @param WP_Admin_Bar $wp_admin_bar The WP_Admin_Bar instance, passed by reference.
      */
     private function render_post_details( $wp_admin_bar ) {
+        $post_id = null;
         if ( is_search() ) {
             $post_info_title = __( 'Search Results Page', 'dev-debug-tools' );
         } elseif ( is_404() ) {
@@ -1074,6 +1083,48 @@ class AdminBar {
 
         wp_send_json_success();
     } // End ajax_save_centering_tool()
+
+
+    /**
+     * Add a body class if WP_DEBUG is enabled
+     *
+     * @param string|array $classes The existing body classes.
+     * @return string|array The modified body classes.
+     */
+    public function add_debug_body_class( $classes ) {
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            if ( is_array( $classes ) ) {
+                $classes[] = 'ddtt-debug-enabled';
+            } else {
+                $classes .= ' ddtt-debug-enabled';
+            }
+        } else {
+            if ( is_array( $classes ) ) {
+                $classes[] = 'ddtt-debug-disabled';
+            } else {
+                $classes .= ' ddtt-debug-disabled';
+            }
+        }
+        return $classes;
+    } // End add_debug_body_class()
+
+
+    /**
+     * Enqueue the condensed admin bar styles
+     */
+    public function enqueue_debug_mode_indicator() {
+        if ( Helpers::is_dev() ) {
+            $version = Bootstrap::script_version();
+            $handle = 'ddtt-admin-bar-debug-mode-indicator';
+
+            wp_enqueue_style(
+                $handle,
+                Bootstrap::url( 'inc/admin-area/admin-bar/debug-mode-indicator.css' ),
+                [],
+                $version
+            );
+        }
+    } // End enqueue_debug_mode_indicator()
 
 }
 

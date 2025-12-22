@@ -4,7 +4,7 @@ Tags: debug, developer, testing, logs, config
 Requires at least: 5.9
 Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 3.0.0.7
+Stable tag: 3.0.0.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -106,7 +106,12 @@ https://youtu.be/36aebqdzHQw
 10. Admin bar centering tool
 
 == Changelog ==
-= 3.0.0 =
+= 3.0.0.8 =
+* Update: Added a Download System Status Report button to dashboard for sharing with support
+* Update: Added option to indicate WP_DEBUG is enabled by subtly striping the admin bar
+* Fix: ddtt_is_dev() causing fatal error if used without any params
+
+= 3.0.0.7 =
 * Major update: rewrote the plugin for better performance, UI and UX
 * Fixes: Fixed a number of bugs throughout
 * Update: Added a light mode option by toggling the bug icon in the header

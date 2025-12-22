@@ -44,6 +44,10 @@ class Dashboard {
             $this->download_important_files();
         }
 
+        if ( isset( $_POST[ 'ddtt-download-status-report' ] ) ) { // phpcs:ignore
+            $this->download_status_report();
+        }
+
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
         add_action( 'wp_ajax_ddtt_check_issue', [ $this, 'ajax_check_issue' ] );
     } // End __construct()
@@ -53,7 +57,11 @@ class Dashboard {
      * Handle the download important files request.
      */
     public function download_important_files() {
-        if ( !isset( $_POST[ 'ddtt-download-important-files' ] ) || ! isset( $_POST[ $this->nonce_field ] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $this->nonce_field ] ) ), $this->nonce_action ) ) {
+        if ( 
+            ! isset( $_POST[ 'ddtt-download-important-files' ] ) || 
+            ! isset( $_POST[ $this->nonce_field ] ) || 
+            ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $this->nonce_field ] ) ), $this->nonce_action ) 
+        ) {
             return;
         }
 
@@ -97,6 +105,104 @@ class Dashboard {
             wp_die( esc_html( __( 'Could not create backup zip.', 'dev-debug-tools' ) ) );
         }
     } // End download_important_files()
+
+
+    /**
+     * Handle the download system status report request.
+     */
+    public function download_status_report() {
+        if (
+            ! isset( $_POST[ 'ddtt-download-status-report' ] ) ||
+            ! isset( $_POST[ $this->nonce_field ] ) ||
+            ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $this->nonce_field ] ) ), $this->nonce_action )
+        ) {
+            return;
+        }
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( 'Unauthorized access.' );
+        }
+
+        $report_lines = [];
+
+        $report_lines[] = "DEVELOPER DEBUG TOOLS SYSTEM STATUS REPORT\n";
+
+        $report_lines[] = "Is Test Mode Active: " . ( Bootstrap::is_test_mode() ? 'Yes' : 'No' ) . "\n";
+
+        // Versions
+        $report_lines[] = "Plugin Version: " . Bootstrap::version();
+        $report_lines[] = "WordPress Version: " . get_bloginfo( 'version' );
+        $report_lines[] = "PHP Version: " . phpversion();
+        global $wpdb;
+        $report_lines[] = "MySQL Version: " . $wpdb->db_version();
+
+        $jquery_version = '';
+        if ( isset( $GLOBALS[ 'wp_scripts' ] ) && $GLOBALS[ 'wp_scripts' ] instanceof \WP_Scripts ) {
+            $jquery_version = $GLOBALS[ 'wp_scripts' ]->registered[ 'jquery' ]->ver ?? false;
+            if ( $jquery_version ) {
+                $jquery_version = sanitize_text_field( wp_unslash( $jquery_version ) );
+            }
+        }
+        $report_lines[] = "jQuery Version: " . $jquery_version;
+
+        // Site Info
+        $report_lines[] = "\nSite Domain: " . get_site_url();
+        $report_lines[] = "Multisite: " . ( is_multisite() ? 'Yes' : 'No' );
+        $report_lines[] = "WordPress Timezone: " . get_option( 'timezone_string' );
+        $report_lines[] = "Developer Timezone: " . get_option( 'ddtt_dev_timezone' );
+        $theme = wp_get_theme();
+        $report_lines[] = "Active Theme: " . $theme->get( 'Name' ) . " " . $theme->get( 'Version' );
+        $report_lines[] = "Is Child Theme? " . ( $theme->parent() ? 'Yes' : 'No' );
+
+        // Plugins info
+        $all_plugins = get_plugins();
+        $active_plugins = get_option( 'active_plugins', [] );
+        $must_use_plugins = get_mu_plugins();
+        $inactive_plugins = array_diff( array_keys( $all_plugins ), $active_plugins );
+
+        $report_lines[] = "\nActive Plugins Count: " . count( $active_plugins );
+        $report_lines[] = "Must Use Plugins Count: " . count( $must_use_plugins );
+        $report_lines[] = "Inactive Plugins Count: " . count( $inactive_plugins );
+
+        $report_lines[] = "\n======= ACTIVE PLUGINS: =======";
+        foreach ( $active_plugins as $plugin_file ) {
+            if ( isset( $all_plugins[ $plugin_file ] ) ) {
+                $p = $all_plugins[ $plugin_file ];
+                $report_lines[] = sprintf(
+                    "%s by %s, v %s, %s",
+                    $p[ 'Name' ],
+                    $p[ 'Author' ],
+                    $p[ 'Version' ],
+                    $plugin_file
+                );
+            }
+        }
+
+        // Plugin settings
+        $ignore_settings = [ 'ddtt_pass', 'ddtt_plugins' ];
+
+        $report_lines[] = "\n======= PLUGIN SETTINGS: =======";
+        $options = wp_load_alloptions();
+        foreach ( $options as $key => $value ) {
+            if ( str_starts_with( $key, 'ddtt_' ) && ! in_array( $key, $ignore_settings ) ) {
+                $value = maybe_unserialize( $value );
+                if ( is_array( $value ) || is_object( $value ) ) {
+                    $report_lines[] = $key . " =>\n" . print_r( $value, true );
+                } else {
+                    $report_lines[] = $key . " => " . $value;
+                }
+                $report_lines[] = ""; // empty line between settings
+            }
+        }
+
+        $filename = 'ddtt-system-status-report-' . gmdate( 'Y-m-d-H-i-s' ) . '.txt';
+
+        header( 'Content-Type: text/plain' );
+        header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+        echo implode( "\n", $report_lines );
+
+        exit;
+    } // End download_status_report()
 
 
     /**

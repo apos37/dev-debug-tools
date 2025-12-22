@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * @return bool|string|array
  */
 if ( ! function_exists( 'ddtt_is_dev' ) ) {
-    function ddtt_is_dev( $id, $array = false ) : bool|string|array {
+    function ddtt_is_dev( $id = null, $array = false ) : bool|string|array {
         if ( is_bool( $id ) ) {
 
             // Deprecated - use Helpers::get_devs( true ) instead
