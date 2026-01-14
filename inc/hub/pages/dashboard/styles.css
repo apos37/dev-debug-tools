@@ -105,6 +105,7 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 1rem;
+    margin-bottom: 0 !important;
 }
 
 .ddtt-dashboard-block li:first-child {
@@ -117,7 +118,7 @@
     font-weight: 600;
 }
 
-.ddtt-dashboard-block li span {
+.ddtt-dashboard-block li span:not(.warning-symbol) {
     opacity: 0.8;
     text-align: right;
     display: inline-block;
@@ -152,6 +153,11 @@
     transition: opacity 0.3s;
 }
 
+.ddtt-dashboard-block .tooltiptext {
+    max-width: 300px !important;
+    display: inline-block !important;
+}
+
 #ddtt-hub .tooltip:hover .tooltiptext {
     visibility: visible;
     opacity: 1;
@@ -159,11 +165,6 @@
 
 #ddtt-hub .warning-symbol {
     display: inline-block;
-    width: 10px;
-    height: 10px;
-    background-color: var(--color-warning);
-    border-radius: 50%;
-    margin-left: 4px;
 }
 
 

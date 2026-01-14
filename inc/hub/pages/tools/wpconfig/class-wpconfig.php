@@ -734,11 +734,17 @@ class WpConfig {
         }
 
         // --- 5. Direct execution check ---
-        $output = [];
+        $output     = [];
         $return_var = null;
 
         if ( is_callable( 'exec' ) ) {
-            @exec( "php " . escapeshellarg( $temp_file ) . " 2>&1", $output, $return_var );
+            @exec( 'php -v 2>&1', $version_output, $version_status );
+
+            if ( $version_status === 0 ) {
+                @exec( 'php ' . escapeshellarg( $temp_file ) . ' 2>&1', $output, $return_var );
+            } else {
+                apply_filters( 'ddtt_log_error', 'validate_file', new \Exception( 'PHP CLI binary not found; skipping PHP syntax check.' ), [ 'step' => 'syntax_check' ] );
+            }
         } else {
             apply_filters( 'ddtt_log_error', 'validate_file', new \Exception( 'exec() function is disabled; skipping PHP syntax check.' ), [ 'step' => 'syntax_check' ] );
         }

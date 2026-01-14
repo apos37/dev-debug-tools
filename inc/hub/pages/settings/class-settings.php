@@ -258,6 +258,17 @@ class Settings {
      */
     public static function config_files_options() : array {
         return [
+            'general' => [
+                'label' => false,
+                'fields' => [
+                    'syntax_checker' => [
+                        'title'      => __( 'Enable Syntax Checker', 'dev-debug-tools' ),
+                        'desc'       => __( 'Check for syntax errors when saving edits on the WP-Config and HTACCESS tools. It is not recommended to disable this unless you have a specific reason. If disabled, use those tools at your own risk.', 'dev-debug-tools' ),
+                        'type'       => 'checkbox',
+                        'default'    => true,
+                    ],
+                ]
+            ],
             'wpconfig_cleaner' => [
                 'label' => __( 'WP-Config Cleaner (✨)', 'dev-debug-tools' ),
                 'desc'  => __( 'This tool located in the Raw Editor lets you tidy up the wp-config.php file in one click. The options below control what gets cleaned. After running the cleaner, you can cancel editing if needed, so test freely and turn off any options you don’t want.', 'dev-debug-tools' ),
@@ -699,6 +710,12 @@ class Settings {
                     'page_slugs' => [
                         'title'     => __( 'Include Post/Page Paths in Admin List Tables', 'dev-debug-tools' ),
                         'desc'      => __( 'Displays the post/page paths in the admin list tables.', 'dev-debug-tools' ),
+                        'type'      => 'checkbox',
+                        'default'   => true,
+                    ],
+                    'force_updates_check' => [
+                        'title'     => __( 'Add Force Updates Check Button', 'dev-debug-tools' ),
+                        'desc'      => __( 'Adds a button on the Updates page to force check for updates.', 'dev-debug-tools' ),
                         'type'      => 'checkbox',
                         'default'   => true,
                     ],

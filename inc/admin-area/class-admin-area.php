@@ -70,6 +70,10 @@ class AdminArea {
             } );
         }
 
+        if ( get_option( 'ddtt_force_updates_check', true ) ) {
+            add_action( 'current_screen', [ $this, 'maybe_force_update_check' ] );
+        }
+
         // Enqueue admin area assets
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
 
@@ -392,6 +396,43 @@ class AdminArea {
 
 
     /**
+     * Handle the force update check action for both plugins and themes.
+     */
+    public function maybe_force_update_check( $screen ) {
+        if ( ! in_array( $screen->id, [ 'update-core', 'update-core-network' ], true ) ) {
+            return;
+        }
+
+        $force_check = isset( $_GET[ 'force_update_check' ] ) ? sanitize_text_field( wp_unslash( $_GET[ 'force_update_check' ] ) ) : '';
+        if ( ! $force_check ) {
+            return;
+        }
+
+        if ( ! current_user_can( 'update_plugins' ) && ! current_user_can( 'update_themes' ) ) {
+            wp_die( 'Unauthorized' );
+        }
+
+        $nonce = isset( $_GET[ '_wpnonce' ] ) ? sanitize_text_field( wp_unslash( $_GET[ '_wpnonce' ] ) ) : '';
+        if ( ! wp_verify_nonce( $nonce, 'force_update_check' ) ) {
+            wp_die( 'Unauthorized' );
+        }
+
+        if ( current_user_can( 'update_plugins' ) ) {
+            delete_site_transient( 'update_plugins' );
+            wp_update_plugins();
+        }
+
+        if ( current_user_can( 'update_themes' ) ) {
+            delete_site_transient( 'update_themes' );
+            wp_update_themes();
+        }
+
+        wp_safe_redirect( is_multisite() ? network_admin_url( 'update-core.php' ) : admin_url( 'update-core.php' ) );
+        exit;
+    } // End maybe_force_update_check()
+
+
+    /**
      * Enqueue admin area assets
      */
     public function enqueue_assets( $hook ) : void {
@@ -458,6 +499,26 @@ class AdminArea {
                 $version,
                 true
             );
+        }
+
+
+        /**
+         * Updates Page (single site or multisite)
+         */
+        if ( in_array( $hook, [ 'update-core.php', 'update-core-network.php' ], true ) ) {
+            wp_enqueue_script(
+                'ddtt-updates-page',
+                Bootstrap::url( 'inc/admin-area/updates.js' ),
+                [ 'jquery' ],
+                $version,
+                true
+            );
+
+            wp_localize_script( 'ddtt-updates-page', 'ddtt_updates', [
+                    'nonce'      => wp_create_nonce( 'force_update_check' ),
+                    'update_url' => is_multisite() ? network_admin_url( 'update-core.php' ): admin_url( 'update-core.php' ),
+                    'btn_label'  => __( 'Force Update Check', 'dev-debug-tools' ),
+            ] );
         }
     } // End enqueue_assets()
 

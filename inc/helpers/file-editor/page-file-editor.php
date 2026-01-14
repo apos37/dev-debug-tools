@@ -19,19 +19,31 @@ $color_background = $colors[ 'background' ];
 
 // Mode
 $mode = Helpers::is_dark_mode() ? 'dark' : 'light';
+
+$syntax_checker = filter_var( get_option( 'ddtt_syntax_checker', true ), FILTER_VALIDATE_BOOLEAN );
 ?>
 
 <div id="ddtt-page-title-section">
     <div id="ddtt-page-title-left">
         <h2 id="ddtt-page-title"><?php echo esc_html( $this_title ); ?></h2>
         <p>
-            <?php 
-            /* translators: %s: filename being edited */
+            <?php
             echo esc_html( sprintf(
-            /* translators: %s: filename being edited */
-            __( "⚠ WARNING! Editing your %s file can break your site if you make incorrect changes or introduce syntax errors. Every site is different, so not all snippets will work for everyone. Always create a backup before making any changes. This tool checks for syntax errors and requirements before saving, but you should still review your edits carefully. If you don't know what you're doing here, it's probably best to seek assistance or leave it alone.", 'dev-debug-tools' ),
-            esc_html( $this_filename )
+                /* translators: %s: filename being edited */
+                __( "⚠️ WARNING! Editing your %s file can break your site if you make incorrect changes or introduce syntax errors. Every site is different, so not all snippets will work for everyone. Always create a backup before making any changes. ", 'dev-debug-tools' ),
+                esc_html( $this_filename )
             ) );
+
+            if ( $syntax_checker ) {
+                echo wp_kses_post( __( 'This tool checks for syntax errors and requirements before saving, but you should still review your edits carefully. If you are experiencing issues with the syntax checker and know what you\'re doing, you can disable it temporarily in the config files <a href="' . esc_url( Bootstrap::page_url( 'settings&s=config_files' ) ) . '">settings</a>. However, use at your own risk.', 'dev-debug-tools' ) );
+            }
+            ?>
+        </p>
+        <p>
+            <?php 
+            if ( ! $syntax_checker ) {
+                echo '<div class="ddtt-warning-message"><strong><em>' . wp_kses_post( __( 'Note: Syntax checking is currently disabled. Be extra careful when making changes. To re-enable it, go to the config files <a href="' . esc_url( Bootstrap::page_url( 'settings&s=config_files' ) ) . '">settings</a>.', 'dev-debug-tools' ) ) . '</em></strong></div>';
+            }
             ?>
         </p>
     </div>

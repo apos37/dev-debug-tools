@@ -1060,12 +1060,18 @@ class FileEditor {
         }
 
         // --- 3. Check for errors ---
-        try {
-            $validation_errors = $this->class_name::validate_file( $content, $temp_file );
-            $errors = array_merge( $errors, $validation_errors );
-        } catch ( \Throwable $e ) {
-            apply_filters( 'ddtt_log_error', 'ajax_save_edits', $e, [ 'step' => 'validation', 'filename' => $temp_file ] );
-            wp_send_json_error( [ 'errors' => [ $e->getMessage() ] ] );
+        $syntax_checker = filter_var( get_option( 'ddtt_syntax_checker', true ), FILTER_VALIDATE_BOOLEAN );
+        if ( $syntax_checker ) {
+            try {
+                $validation_errors = $this->class_name::validate_file( $content, $temp_file );
+                $errors = array_merge( $errors, $validation_errors );
+            } catch ( \Throwable $e ) {
+                apply_filters( 'ddtt_log_error', 'ajax_save_edits', $e, [ 'step' => 'validation', 'filename' => $temp_file ] );
+                wp_send_json_error( [ 'errors' => [ $e->getMessage() ] ] );
+            }
+        } else {
+            // Log that syntax checking is disabled
+            apply_filters( 'ddtt_log_error', 'ajax_save_edits', 'Syntax checking is disabled in settings. Skipping validation step.', [ 'step' => 'validation_skipped' ] );
         }
 
         // --- 4. No errors, proceed to override ---

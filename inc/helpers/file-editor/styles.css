@@ -72,3 +72,19 @@
     margin-top: 2rem;
     display: block;
 }
+
+
+/* Warning Message */
+
+.ddtt-warning-message {
+    background: var(--color-warning);
+    padding: 10px 20px;
+    width: fit-content;
+    color: black;
+    border-radius: 5px;
+}
+
+.ddtt-warning-message a {
+    background: var(--color-warning);
+    color: #005177 !important;
+}

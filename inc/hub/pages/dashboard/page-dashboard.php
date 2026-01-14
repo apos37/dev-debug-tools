@@ -187,12 +187,12 @@ $our_links = [
             <?php endif; ?>
 
             <?php if ( $uptime ) : ?>
-                <?php if ( isset( $uptime[ 'readable' ] ) ) : ?>
+                <?php if ( isset( $uptime[ 'readable' ] ) && $uptime[ 'readable' ] ) : ?>
                     <li>
                         <strong><?php esc_html_e( 'Uptime:', 'dev-debug-tools' ); ?></strong>
                         <span><?php echo esc_html( $uptime[ 'readable' ] ); ?></span>
                     </li>
-                <?php elseif ( isset( $uptime[ 'raw' ] ) ) : ?>
+                <?php elseif ( isset( $uptime[ 'raw' ] ) && $uptime[ 'raw' ] ) : ?>
                     <li>
                         <strong><?php esc_html_e( 'Uptime:', 'dev-debug-tools' ); ?></strong>
                         <span><?php echo esc_html( $uptime[ 'raw' ] ); ?></span>

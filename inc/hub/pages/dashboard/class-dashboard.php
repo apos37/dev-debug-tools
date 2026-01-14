@@ -313,7 +313,7 @@ class Dashboard {
         $plugin_warning = '';
         $latest_plugin = self::get_latest_plugin_version();
         if ( version_compare( $plugin_version, $latest_plugin, '<' ) ) {
-            $plugin_warning = '<div class="tooltip"><a href="' . $updates_url . '"><span class="warning-symbol"></span></a>
+            $plugin_warning = '<div class="tooltip"><a href="' . $updates_url . '"><span class="warning-symbol">⚠️</span></a>
                 <span class="tooltiptext">' . __( 'A newer version of this plugin is available', 'dev-debug-tools' ) . ' (' . $latest_plugin . ')</span>
             </div>';
         }
@@ -323,7 +323,7 @@ class Dashboard {
         global $wp_version;
         $latest_wp = get_site_transient( 'update_core' );
         if ( is_object( $latest_wp ) && isset( $latest_wp->updates[0]->version ) && $wp_version !== $latest_wp->updates[0]->version ) {
-            $wp_warning = '<div class="tooltip"><a href="' . $updates_url . '"><span class="warning-symbol"></span></a>
+            $wp_warning = '<div class="tooltip"><a href="' . $updates_url . '"><span class="warning-symbol">⚠️</span></a>
                 <span class="tooltiptext">' . __( 'A newer version of WordPress is available', 'dev-debug-tools' ) . ' (' . $latest_wp->updates[0]->version . ')</span>
             </div>';
         }
@@ -333,7 +333,7 @@ class Dashboard {
         $php_version = phpversion();
         $latest_php = self::get_latest_php_version( true );
         if ( floatval( $php_version ) < floatval( $latest_php ) ) {
-            $php_warning = '<div class="tooltip"><span class="warning-symbol"></span>
+            $php_warning = '<div class="tooltip"><span class="warning-symbol">⚠️</span>
                 <span class="tooltiptext">' . __( 'A new major version of PHP is available', 'dev-debug-tools' ) . ' (' . $latest_php . '.x)</span>
             </div>';
         }
