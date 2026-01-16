@@ -4,7 +4,7 @@ Tags: debug, developer, testing, logs, config
 Requires at least: 5.9
 Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 3.0.1
+Stable tag: 3.0.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -106,6 +106,10 @@ https://youtu.be/36aebqdzHQw
 10. Admin bar centering tool
 
 == Changelog ==
+= 3.0.1.1 =
+* Fix: If on the network, the admin bar menu links were reset to network links
+* Update: Admin bar menu links were out of order due to defaults
+
 = 3.0.1 =
 * Update: Added a Force Update Check button to the Updates page, with option to remove it in Settings > Admin Area
 * Update: Added an option to disable syntax checker for config files should there be server issues

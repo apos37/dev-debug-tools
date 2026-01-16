@@ -520,32 +520,64 @@ class AdminBar {
     private function render_add_admin_menu_links( $wp_admin_bar ) {
         $saved_admin_menu_items = filter_var_array( get_option( 'ddtt_admin_menu_items', [] ), FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
-
-        /**
-         * Allow filtering of the admin menu items
-         */
+        // Allow filtering
         $saved_admin_menu_items = apply_filters( 'ddtt_admin_bar_dropdown_links', $saved_admin_menu_items );
-        
-        if ( ! empty( $saved_admin_menu_items ) ) {
+        if ( empty( $saved_admin_menu_items ) ) {
+            return;
+        }
 
-            $has_access = Helpers::has_access();
+        // Remove trailing separator from saved menu if it exists
+        $last_item = end( $saved_admin_menu_items );
+        if ( isset( $last_item[ 'slug' ] ) && str_starts_with( (string) $last_item[ 'slug' ], 'separator' ) ) {
+            array_pop( $saved_admin_menu_items );
+        }
 
-            foreach ( $saved_admin_menu_items as $admin_menu_link ) {
-                if ( ! current_user_can( $admin_menu_link[ 'perm' ] ) ) {
-                    continue;
-                }
+        $has_access = Helpers::has_access();
 
-                if ( $admin_menu_link[ 'slug' ] === 'dev-debug-dashboard' && ! $has_access ) {
-                    continue;
-                }
-
-                $wp_admin_bar->add_node( [
-                    'parent' => 'site-name',
-                    'id'     => isset( $admin_menu_link[ 'slug' ] ) ? $admin_menu_link[ 'slug' ] : strtolower( str_replace( ' ', '_', $admin_menu_link[ 'label' ] ) ),
-                    'title'  => $admin_menu_link[ 'label' ],
-                    'href'   => $admin_menu_link[ 'url' ]
-                ] );
+        $has_dashboard = false;
+        foreach ( $saved_admin_menu_items as $item ) {
+            if ( isset( $item[ 'slug' ] ) && $item[ 'slug' ] === 'index.php' ) {
+                $has_dashboard = true;
+                break;
             }
+        }
+
+        if ( $has_dashboard ) {
+            $parent = 'site-name';
+            $children = $wp_admin_bar->get_nodes();
+            foreach ( $children as $child ) {
+                if ( $child->parent === $parent ) {
+                    $wp_admin_bar->remove_node( $child->id );
+                }
+            }
+        }
+
+        // Add saved items in the saved order
+        foreach ( $saved_admin_menu_items as $admin_menu_link ) {
+            if ( ! current_user_can( $admin_menu_link[ 'perm' ] ) ) {
+                continue;
+            }
+
+            if ( $admin_menu_link[ 'slug' ] === 'dev-debug-dashboard' && ! $has_access ) {
+                continue;
+            }
+
+            $classes = 'ddtt-admin-bar-menu-link';
+
+            // Add separator class if slug starts with "separator"
+            if ( isset( $admin_menu_link['slug'] ) && str_starts_with( (string) $admin_menu_link['slug'], 'separator' ) ) {
+                $classes .= ' ddtt-admin-bar-separator';
+            }
+
+            $wp_admin_bar->add_node( [
+                'parent' => 'site-name',
+                'id'     => $admin_menu_link[ 'slug' ] ?? strtolower( str_replace( ' ', '_', $admin_menu_link[ 'label' ] ) ),
+                'title'  => $admin_menu_link[ 'label' ],
+                'href'   => $admin_menu_link[ 'url' ],
+                'meta'   => [
+                    'class' => $classes
+                ]
+            ] );
         }
     } // End render_add_admin_menu_links()
 
@@ -554,6 +586,11 @@ class AdminBar {
      * Maybe store the admin menu options in an option for later use
      */
     public function maybe_store_admin_menu_options() {
+        // Don't store menu items in the multisite network admin
+        if ( is_network_admin() ) {
+            return;
+        }
+
         $adding_links = filter_var( get_option( 'ddtt_admin_bar_add_links', true ), FILTER_VALIDATE_BOOLEAN );
         $saved_admin_menu_items = filter_var_array( get_option( 'ddtt_admin_menu_items', [] ), FILTER_SANITIZE_FULL_SPECIAL_CHARS );
         
@@ -618,19 +655,16 @@ class AdminBar {
             'options-general.php'     => admin_url( 'options-general.php' ),
         ];
 
-        $already_added = [
-            'index.php',
-            'plugins.php',
-            'themes.php',
-        ];
+        $already_added = [];
 
         $admin_menu_items = [];
         foreach( $menu as $item ) {
             
             $slug = $item[2];
 
-            // Skip separators and non-admin URLs
-            if ( $slug === null || $slug === '' || in_array( $slug, $already_added, true ) || strpos( $slug, 'separator' ) !== false || strpos( $slug, 'http' ) === 0 || strpos( $slug, 'https' ) === 0 ) {
+            // Skip non-admin URLs
+            // strpos( $slug, 'separator' ) !== false || 
+            if ( $slug === null || $slug === '' || in_array( $slug, $already_added, true ) || strpos( $slug, 'http' ) === 0 || strpos( $slug, 'https' ) === 0 ) {
                 continue;
             }
 
@@ -646,6 +680,8 @@ class AdminBar {
                 $url = admin_url( $special_urls[ $slug ] );
             } elseif ( strpos( $slug, '.php' ) !== false || strpos( $slug, '?' ) !== false ) {
                 $url = admin_url( $slug );
+            } elseif ( strpos( $slug, 'separator' ) !== false ) {
+                $url = '';
             } else {
                 $url = menu_page_url( $slug, false );
                 if ( ! $url ) {

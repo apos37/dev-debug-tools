@@ -6,3 +6,14 @@
 #wpadminbar #wp-admin-bar-site-name .ab-sub-wrapper ul:last-of-type {
     padding-bottom: 10px;
 }
+
+/* Admin bar separator style */
+.ddtt-admin-bar-separator {
+    pointer-events: none;
+    cursor: default;
+    height: 1px !important;
+    margin: 5px 0 !important;
+    border-top: 1px solid #d1d1d1;
+    background: transparent !important;
+    opacity: 0.2;
+}
