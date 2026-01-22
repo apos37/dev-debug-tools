@@ -612,22 +612,6 @@ class AdminBar {
 
 
     /**
-     * Check if a URL exists (returns 200-399)
-     * 
-     * @param string $url The URL to check.
-     * @return bool True if the URL exists, false otherwise.
-     */
-    private function url_exists( string $url ): bool {
-        $response = wp_remote_head( $url, [ 'timeout' => 2 ] );
-        if ( is_wp_error( $response ) ) {
-            return false;
-        }
-        $code = wp_remote_retrieve_response_code( $response );
-        return $code >= 200 && $code < 400;
-    } // End url_exists()
-
-
-    /**
      * Get the admin menu options
      * 
      * @return array The admin menu options.
@@ -1153,6 +1137,7 @@ class AdminBar {
             $version = Bootstrap::script_version();
             $handle = 'ddtt-admin-bar-debug-mode-indicator';
 
+            // CSS
             wp_enqueue_style(
                 $handle,
                 Bootstrap::url( 'inc/admin-area/admin-bar/debug-mode-indicator.css' ),

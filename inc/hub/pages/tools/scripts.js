@@ -87,27 +87,95 @@ jQuery( document ).ready( function( $ ) {
 
 
     /**
-     * Sortable
+     * Drag and Drop Tool Reordering
      */
-    $( '#ddtt-tools-grid' ).sortable( {
-        placeholder: 'ddtt-sortable-placeholder',
-        update: function( event, ui ) {
-            let sortedMap = {};
+    const grid = document.getElementById( 'ddtt-tools-grid' );
+    let draggedItem = null;
+    let scrollAnimationFrame = null;
+    let pointerY = 0;
 
-            $( this ).children( 'li' ).each( function( index ) {
-                let slug = $( this ).data( 'slug' );
-                if ( slug ) {
-                    sortedMap[ slug ] = index;
-                }
-            } );
+    if ( grid ) {
 
-            $.post( ajaxurl, {
-                action: 'ddtt_save_tools',
-                tools: sortedMap,
-                nonce: ddtt_tools.nonce
-            } );
+        grid.querySelectorAll( 'li' ).forEach( function( item ) {
+            item.setAttribute( 'draggable', 'true' );
+        } );
+
+        grid.addEventListener( 'dragstart', function( e ) {
+            const item = e.target.closest( 'li' );
+            if ( ! item ) return;
+
+            draggedItem = item;
+            item.classList.add( 'ddtt-dragging' );
+        } );
+
+        grid.addEventListener( 'dragend', function() {
+            if ( draggedItem ) {
+                draggedItem.classList.remove( 'ddtt-dragging' );
+                draggedItem = null;
+
+                cancelAnimationFrame( scrollAnimationFrame );
+                scrollAnimationFrame = null;
+
+                persistToolsOrder();
+            }
+        } );
+
+        grid.addEventListener( 'dragover', function( e ) {
+            e.preventDefault();
+            pointerY = e.clientY;
+
+            const target = e.target.closest( 'li' );
+            if ( ! target || target === draggedItem ) return;
+
+            const rect = target.getBoundingClientRect();
+            const offset = e.clientY - rect.top;
+
+            if ( offset > rect.height / 2 ) {
+                target.after( draggedItem );
+            } else {
+                target.before( draggedItem );
+            }
+
+            startAutoScroll();
+        } );
+
+        grid.addEventListener( 'wheel', function( e ) {
+            if ( draggedItem ) {
+                e.stopPropagation();
+            }
+        }, { passive: true } );
+    }
+
+    function startAutoScroll() {
+        if ( scrollAnimationFrame ) return;
+
+        function step() {
+            const margin = 80;
+            const speed = 12;
+
+            if ( pointerY < margin ) window.scrollBy( 0, -speed );
+            else if ( pointerY > window.innerHeight - margin ) window.scrollBy( 0, speed );
+
+            scrollAnimationFrame = requestAnimationFrame( step );
         }
-    } );
+
+        step();
+    }
+
+    function persistToolsOrder() {
+        const sortedMap = {};
+
+        grid.querySelectorAll( 'li' ).forEach( function( item, index ) {
+            const slug = item.getAttribute( 'data-slug' ) || item.dataset.slug;
+            if ( slug ) sortedMap[ slug ] = index;
+        } );
+
+        $.post( ajaxurl, {
+            action: 'ddtt_save_tools',
+            tools: sortedMap,
+            nonce: ddtt_tools.nonce
+        } );
+    }
 
 
     /**

@@ -1,4 +1,3 @@
-
 jQuery( document ).ready( function( $ ) {
 
     function buildCenteringTool( opts ) {

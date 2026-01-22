@@ -926,25 +926,15 @@ class AdminMenu {
         }
 
         // scripts.js
-        $pages_with_sortable = [ 'resources', 'tools' ];
-        if ( in_array( $slug, $pages_with_sortable, true ) && Helpers::is_dev() ) {
-            $page_deps = [ 'jquery', 'jquery-ui-sortable' ];
-        } else {
-            $page_deps = [ 'jquery' ];
-        }
-
         $page_script = Bootstrap::path( "inc/hub/pages/{$slug}/scripts.js" );
         if ( file_exists( $page_script ) ) {
             wp_enqueue_script(
                 "ddtt-page-{$slug}",
                 Bootstrap::url( "inc/hub/pages/{$slug}/scripts.js" ),
-                $page_deps,
+                [ 'jquery' ],
                 $version,
                 true
             );
-            if ( in_array( $slug, $pages_with_sortable, true ) ) {
-                wp_enqueue_script( 'jquery-ui-sortable' );
-            }
         }
 
         // Tools

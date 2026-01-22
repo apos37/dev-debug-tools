@@ -46,6 +46,7 @@ class Plugins {
             'another-show-hooks',
             'aryo-activity-log',
             'asgaros-forum',
+            'better-search-replace',
             'child-theme-configurator',
             'code-snippets',
             'debug-bar',
@@ -53,7 +54,6 @@ class Plugins {
             'debugpress',
             'disk-usage-sunburst',
             'fakerpress',
-            'go-live-update-urls',
             'heartbeat-control', // WP Dashboard: 60, Frontend: Disable, Post Editor: 30
             'import-users-from-csv-with-meta',
             'ns-cloner-site-copier',
@@ -188,6 +188,10 @@ class Plugins {
              get_option( 'ddtt_plugins_page_notes', true ) ) {
             add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
         }
+
+        // Network Admin columns
+        add_filter( 'manage_plugins-network_columns', [ $this, 'add_network_column' ] );
+        add_action( 'manage_plugins_custom_column', [ $this, 'render_network_column' ], 10, 3 );
         
     } // End __construct()
 
@@ -910,6 +914,56 @@ class Plugins {
             'note'   => $note,
         ] );
     } // End ajax_save_plugin_note()
+
+
+    /**
+     * Add Active Sites column to Network Admin plugins page.
+     *
+     * @param array $columns
+     * @return array
+     */
+    public function add_network_column( $columns ) : array {
+        $columns[ 'network_active_sites' ] = __( 'Active Sites', 'textdomain' );
+        return $columns;
+    } // End add_network_column()
+
+
+    /**
+     * Render content for Active Sites column in Network Admin plugins page.
+     *
+     * @param string $column_name
+     * @param string $plugin_file
+     */
+    public function render_network_column( $column_name, $plugin_file, $plugin_data ) : void {
+        if ( $column_name !== 'network_active_sites' ) {
+            return;
+        }
+
+        // If network-activated, just show "Network Active"
+        if ( is_plugin_active_for_network( $plugin_file ) ) {
+            echo '<strong>Network Active</strong>';
+            return;
+        }
+
+        $sites = get_sites( [ 'number' => 0, 'fields' => 'ids' ] );
+        $active_on = [];
+
+        foreach ( $sites as $site_id ) {
+            switch_to_blog( $site_id );
+            $active_plugins = (array) get_option( 'active_plugins', [] );
+
+            if ( in_array( $plugin_file, $active_plugins, true ) ) {
+                $site = get_blog_details( $site_id );
+                if ( $site ) {
+                    $active_on[] = esc_html( $site->blogname );
+                }
+            }
+
+            restore_current_blog();
+        }
+
+        echo empty( $active_on ) ? '<span class="network-plugin-not-used">NOT USED</span>' : wp_kses_post( implode( '<br>', $active_on ) );
+    } // End render_network_column()
 
 }
 

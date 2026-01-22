@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Step 2: Enable the backdoor
  * --------------------------
- * Set $backdoor_enabled to TRUE.
+ * Set $enabled to TRUE.
  *
  *
  * Step 3: Upload this file
@@ -68,7 +68,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Step 6: DISABLE THE BACKDOOR
  * ---------------------------
  * After logging in:
- * - Set $backdoor_enabled back to FALSE
+ * - Set $enabled back to FALSE
  * - Upload the updated backdoor.php file again
  *
  *

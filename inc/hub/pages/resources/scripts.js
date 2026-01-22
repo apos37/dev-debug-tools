@@ -10,23 +10,112 @@ jQuery( document ).ready( function( $ ) {
         return;
     }
 
-
     /**
-     * Sortable
+     * Drag n Drop Sorting
      */
-    $( '#ddtt-resources-grid' ).sortable( {
-        placeholder: 'ddtt-sortable-placeholder',
-        cancel: '.ddtt-new-resource',
-        update: function( event, ui ) {
-            let sortedIDs = $( this ).sortable( 'toArray', { attribute: 'data-index' } );
+    const grid = document.getElementById( 'ddtt-resources-grid' );
+    let draggedItem = null;
+    let scrollAnimationFrame = null;
+    let pointerY = 0;
 
-            $.post( ajaxurl, {
-                action: 'ddtt_save_resources',
-                resources: sortedIDs,
-                _ajax_nonce: ddtt_resources.nonce
-            } );
+    if ( grid ) {
+
+        grid.querySelectorAll( 'li:not(.ddtt-new-resource)' ).forEach( function ( item ) {
+            item.setAttribute( 'draggable', 'true' );
+        } );
+
+        grid.addEventListener( 'dragstart', function ( e ) {
+            const item = e.target.closest( 'li' );
+
+            if ( ! item || item.classList.contains( 'ddtt-new-resource' ) ) {
+                return;
+            }
+
+            draggedItem = item;
+            item.classList.add( 'ddtt-dragging' );
+        } );
+
+        grid.addEventListener( 'dragend', function () {
+            if ( draggedItem ) {
+                draggedItem.classList.remove( 'ddtt-dragging' );
+                draggedItem = null;
+
+                cancelAnimationFrame( scrollAnimationFrame );
+                scrollAnimationFrame = null;
+
+                persistResourceOrder();
+            }
+        } );
+
+        grid.addEventListener( 'dragover', function ( e ) {
+            e.preventDefault();
+            pointerY = e.clientY;
+
+            const target = e.target.closest( 'li' );
+
+            if (
+                ! target ||
+                target === draggedItem ||
+                target.classList.contains( 'ddtt-new-resource' )
+            ) {
+                return;
+            }
+
+            const rect = target.getBoundingClientRect();
+            const offset = e.clientY - rect.top;
+
+            if ( offset > rect.height / 2 ) {
+                target.after( draggedItem );
+            } else {
+                target.before( draggedItem );
+            }
+
+            startAutoScroll();
+        } );
+
+        grid.addEventListener( 'wheel', function ( e ) {
+            if ( draggedItem ) {
+                // Let the browser handle the scrolling naturally
+                e.stopPropagation(); // Prevent any grid-specific scroll handling if needed
+            }
+        }, { passive: true } );
+
+    }
+
+    function startAutoScroll() {
+        if ( scrollAnimationFrame ) return;
+
+        function step() {
+            const margin = 80;  // distance from viewport edges
+            const speed = 12;   // pixels per frame
+
+            if ( pointerY < margin ) {
+                window.scrollBy( 0, -speed );
+            } else if ( pointerY > window.innerHeight - margin ) {
+                window.scrollBy( 0, speed );
+            }
+
+            scrollAnimationFrame = requestAnimationFrame( step );
         }
-    } );
+
+        step();
+    }
+
+    function persistResourceOrder() {
+        const sortedIDs = [];
+
+        grid.querySelectorAll( 'li[data-index]' ).forEach( function ( item ) {
+            if ( ! item.classList.contains( 'ddtt-new-resource' ) ) {
+                sortedIDs.push( item.getAttribute( 'data-index' ) );
+            }
+        } );
+
+        $.post( ajaxurl, { 
+            action: 'ddtt_save_resources',
+            resources: sortedIDs,
+            _ajax_nonce: ddtt_resources.nonce
+        } );
+    }
 
 
     /**

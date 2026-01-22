@@ -120,10 +120,19 @@
     color: red;
 }
 
+#ddtt-tools-grid li {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    will-change: transform;
+}
+
 .ddtt-sortable-placeholder {
-    background: #f0f0f0;
-    border: 2px dashed #bbb;
-    min-height: 60px;
+    transition: all 0.2s ease;
+}
+
+.ddtt-dragging {
+    transition: none !important;
+    opacity: 0.4;
+    cursor: grabbing;
 }
 
 .ddtt-toggle-wrapper {

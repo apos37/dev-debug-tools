@@ -43,3 +43,15 @@
     font-size: 0.85em;
     cursor: pointer;
 }
+
+#network_active_sites {
+    width: 250px;
+}
+
+.network-plugin-not-used {
+    font-weight: bold;
+    background: #D63638;
+    color: #FFFFFF;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
