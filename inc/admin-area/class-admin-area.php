@@ -418,6 +418,7 @@ class AdminArea {
         }
 
         if ( current_user_can( 'update_plugins' ) ) {
+            $this->delete_plugin_update_check_transients();
             delete_site_transient( 'update_plugins' );
             wp_update_plugins();
         }
@@ -430,6 +431,28 @@ class AdminArea {
         wp_safe_redirect( is_multisite() ? network_admin_url( 'update-core.php' ) : admin_url( 'update-core.php' ) );
         exit;
     } // End maybe_force_update_check()
+
+
+    /**
+     * Delete all plugin update check transients
+     */
+    private function delete_plugin_update_check_transients() {
+        global $wpdb;
+
+        $pattern = '_update_check';
+        $transients = $wpdb->get_col(
+            $wpdb->prepare(
+                "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s",
+                '%' . $wpdb->esc_like( $pattern )
+            )
+        );
+
+        foreach ( $transients as $transient ) {
+            $name = str_replace( '_transient_', '', $transient );
+            $name = preg_replace( '/^site_transient_/', '', $name );
+            delete_transient( $name );
+        }
+    } // End delete_plugin_update_check_transients()
 
 
     /**
@@ -505,7 +528,7 @@ class AdminArea {
         /**
          * Updates Page (single site or multisite)
          */
-        if ( in_array( $hook, [ 'update-core.php', 'update-core-network.php' ], true ) ) {
+        if ( in_array( $hook, [ 'update-core.php', 'update-core-network.php' ], true ) && ! isset( $_GET[ 'action' ] ) ) {
             wp_enqueue_script(
                 'ddtt-updates-page',
                 Bootstrap::url( 'inc/admin-area/updates.js' ),

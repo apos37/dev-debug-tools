@@ -257,7 +257,7 @@ class DbTables {
         }
 
         $html = ob_get_clean();
-        wp_send_json_success( [ 'html' => $html, 'pagination' => $pagination_html ] );
+        wp_send_json_success( [ 'html' => $html, 'pagination' => $pagination_html, 'total_records' => $total ] );
     } // End ajax_get_db_table()
 
 

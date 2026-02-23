@@ -13,6 +13,7 @@ jQuery( document ).ready( function( $ ) {
         $( '#ddtt-record-value-table' ).html(
             '<tr><td colspan="100%"><em class="ddtt-loading-msg">' + ddtt_db_tables.i18n.loading + '</em></td></tr>'
         );
+        $( '#ddtt-total-records-count' ).text( '...' );
 
         $.post( ajaxurl, {
             action: 'ddtt_get_table_records',
@@ -25,11 +26,13 @@ jQuery( document ).ready( function( $ ) {
             if ( response.success ) {
                 $( '#ddtt-record-value-table' ).html( response.data.html );
                 $( '#ddtt-records-pagination' ).html( response.data.pagination );
+                $( '#ddtt-total-records-count' ).text( response.data.total_records );
             } else {
                 $( '#ddtt-record-value-table' ).html(
                     '<tr><td colspan="100%"><em>' + response.data.message + '</em></td></tr>'
                 );
                 $( '#ddtt-records-pagination' ).html( '' );
+                $( '#ddtt-total-records-count' ).text( '0' );
             }
         } );
     }

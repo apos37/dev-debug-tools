@@ -26,6 +26,10 @@ $selected_table = get_option( 'ddtt_last_selected_table', '' );
 $selected_table_name = is_array( $selected_table ) && isset( $selected_table[ 'table' ] ) ? $selected_table[ 'table' ] : '';
 $selected_table_search = is_array( $selected_table ) && isset( $selected_table[ 'search' ] ) ? sanitize_text_field( $selected_table[ 'search' ] ) : '';
 $selected_table_per_page = is_array( $selected_table ) && isset( $selected_table[ 'per_page' ] ) ? absint( $selected_table[ 'per_page' ] ) : DbTables::RECORDS_PER_PAGE_DEFAULT;
+$selected_table_total_records = 0;
+if ( $selected_table_name ) {
+    $selected_table_total_records = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$selected_table_name}`" );
+}
 ?>
 
 <div id="ddtt-page-title-section">
@@ -69,6 +73,10 @@ $selected_table_per_page = is_array( $selected_table ) && isset( $selected_table
                 <option value="50"<?php echo ( $selected_table_per_page == 50 ) ? ' selected' : ''; ?>><?php esc_html_e( '50 per page', 'dev-debug-tools' ); ?></option>
                 <option value="100"<?php echo ( $selected_table_per_page == 100 ) ? ' selected' : ''; ?>><?php esc_html_e( '100 per page', 'dev-debug-tools' ); ?></option>
             </select>
+
+            <div id="ddtt-totals-records">
+                <?php esc_html_e( 'Total Records: ', 'dev-debug-tools' ); ?><span id="ddtt-total-records-count"><?php echo esc_html( $selected_table_total_records ); ?></span>
+            </div>
         </div>
         <div class="ddtt-search-box">
             <form id="ddtt-record-search-form" style="display: none;">

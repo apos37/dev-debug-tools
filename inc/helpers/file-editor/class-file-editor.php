@@ -369,8 +369,10 @@ class FileEditor {
         if ( $this->filename === '.htaccess' ) {
             $pattern = '/^\.htaccess-(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{2})$/';
         } else {
-            $pattern = '/^' . preg_quote( $this->tool_slug, '/' ) . '-(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{2})\.php$/';
+            $slug = str_replace( '.php', '', $this->filename );
+            $pattern = '/^' . preg_quote( $slug, '/' ) . '-(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{2})\.php$/';
         }
+
         $filename_key_func = function( $file ) { return $file; };
 
         foreach ( $files as $file ) {

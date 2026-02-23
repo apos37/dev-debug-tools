@@ -4,7 +4,7 @@ Tags: debug, developer, testing, logs, config
 Requires at least: 5.9
 Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 3.0.1.2
+Stable tag: 3.0.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -106,6 +106,12 @@ https://youtu.be/36aebqdzHQw
 10. Admin bar centering tool
 
 == Changelog ==
+= 3.0.1.3 =
+* Fix: WP-CONFIG backups dropdown showing empty when there are backups
+* Tweak: Added removal of all transients that end with _update_check to force update check button
+* Tweak: Remove Force Updates button when doing actions
+* Update: Added total records quantity on Database Tables tool
+
 = 3.0.1.2 =
 * Update: Replace jQuery Sortable with HTML Drag and Drop
 * Tweak: Added more contrast to admin bar background color when debug mode is enabled

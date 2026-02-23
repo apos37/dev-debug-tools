@@ -21,6 +21,8 @@ $color_background = $colors[ 'background' ];
 $mode = Helpers::is_dark_mode() ? 'dark' : 'light';
 
 $syntax_checker = filter_var( get_option( 'ddtt_syntax_checker', true ), FILTER_VALIDATE_BOOLEAN );
+
+$backups = $editor->get_backups();
 ?>
 
 <div id="ddtt-page-title-section">
@@ -139,8 +141,7 @@ $syntax_checker = filter_var( get_option( 'ddtt_syntax_checker', true ), FILTER_
                 <div id="ddtt-backup-select">
                     <select id="ddtt-backups">
                         <option value=""><?php esc_html_e( '-- Select a Backup to View --', 'dev-debug-tools' ); ?></option>
-                        <?php 
-                        $backups = $editor->get_backups();
+                        <?php
                         foreach ( $backups as $filename => $label ) {
                             echo '<option value="' . esc_attr( $filename ) . '">' . esc_html( $label ) . '</option>';
                         }

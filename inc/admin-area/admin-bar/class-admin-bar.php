@@ -587,7 +587,7 @@ class AdminBar {
      */
     public function maybe_store_admin_menu_options() {
         // Don't store menu items in the multisite network admin
-        if ( is_network_admin() ) {
+        if ( is_network_admin() || ! Helpers::is_dev() ) {
             return;
         }
 
