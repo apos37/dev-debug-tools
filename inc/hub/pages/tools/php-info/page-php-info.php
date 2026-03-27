@@ -13,6 +13,8 @@ $phpinfo = preg_replace( '/<title>(.*)<\/title>/', '', $phpinfo );
 $phpinfo = preg_replace( '/<meta name(.*)>/', '', $phpinfo );
 $phpinfo = preg_replace( '/<style.*?>([^>]*)<\/style>/', '', $phpinfo );
 $phpinfo = preg_replace( '/<td class="e">(.*?)<\/td>/', '<td class="e"><span class="ddtt-highlight-variable">$1</span></td>', $phpinfo );
+$phpinfo = preg_replace( '%^.*<body>(.*)</body>.*$%ms', '$1', $phpinfo );
+$phpinfo = preg_replace( '/<style type="text\/css">.*?<\/style>/s', '', $phpinfo );
 ?>
 
 <div id="ddtt-page-title-section">

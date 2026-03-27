@@ -452,7 +452,8 @@ class Plugins {
         $data = $this->get_plugin_data();
         foreach ( $wp_list_table->items as $file => &$plugin ) {
             $plugin[ 'plugin_size' ] = $data[ $file ][ 'size' ] ?? 0;
-            $plugin[ 'plugin_last_mod' ] = $data[ $file ][ 'last_modified' ] ?? 0;
+            $updated_date = $data[ $file ][ 'updated' ] ?? 0;
+            $plugin[ 'plugin_last_mod' ] = ( 0 !== $updated_date ) ? strtotime( $updated_date ) : 0;
         }
 
         // Handle sorting

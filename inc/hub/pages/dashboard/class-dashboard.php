@@ -566,7 +566,7 @@ class Dashboard {
 
         if ( $uptime === false && function_exists( 'shell_exec' ) && !in_array( 'shell_exec', array_map( 'trim', explode( ',', ini_get( 'disable_functions' ) ) ) ) ) {
             $raw = shell_exec( 'uptime -p' );
-            return [ 'raw' => trim( $raw ) ];
+            return $raw ? [ 'raw' => trim( $raw ) ] : false;
         }
 
         if ( $uptime !== false ) {

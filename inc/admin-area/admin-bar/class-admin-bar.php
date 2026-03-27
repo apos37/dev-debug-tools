@@ -70,8 +70,13 @@ class AdminBar {
         }
 
         // Gravity Forms finder enqueue
-        if ( get_option( 'ddtt_admin_bar_gravity_form_finder', true ) && ! is_admin() && is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
-            add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_gravity_forms_finder' ] );
+        if ( get_option( 'ddtt_admin_bar_gravity_form_finder', true ) && ! is_admin() ) {
+            if ( ! function_exists( 'is_plugin_active' ) ) {
+                require_once ABSPATH . 'wp-admin/includes/plugin.php';
+            }
+            if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
+                add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_gravity_forms_finder' ] );
+            }
         }
 
         // Indicate that we are in debug mode

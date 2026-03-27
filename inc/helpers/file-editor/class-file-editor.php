@@ -164,8 +164,9 @@ class FileEditor {
 
         // Validate the file path
         if ( ! file_exists( $abspath ) ) {
-            apply_filters( 'ddtt_log_error', 'FileEditor__construct', new \InvalidArgumentException( "File not found: " . esc_html( $abspath ) ), [ 'abspath' => $abspath ] );
-            throw new \InvalidArgumentException( "File not found: " . esc_html( $abspath ) );
+            echo '<div class="notice notice-error"><p>' . esc_html__( 'Error: File not found.', 'dev-debug-tools' ) . '</p></div>';
+            Helpers::write_log( "File not found: " . esc_html( $abspath ) );
+            wp_die();
         }
 
         // Set class properties

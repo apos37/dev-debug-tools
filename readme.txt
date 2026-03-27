@@ -4,7 +4,7 @@ Tags: debug, developer, testing, logs, config
 Requires at least: 5.9
 Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 3.0.1.3
+Stable tag: 3.0.1.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -106,6 +106,14 @@ https://youtu.be/36aebqdzHQw
 10. Admin bar centering tool
 
 == Changelog ==
+= 3.0.1.4 =
+* Fix: Deprecation error on dashboard (props @standoutsites)
+* Tweak: If .htaccess is not found, then it says so on the htaccess page instead of leaving it blank and only logging it
+* Fix: Plugins page - sorting by last updated column wasn't working (props @venutius)
+* Fix: CSS printing on top of php info page
+* Fix: PHP Fatal error:  Uncaught Error: Call to undefined function is_plugin_active() in class-admin-bar.php (props @venutius)
+* Fix: Adding new snippets to WPCONFIG wasn't working
+
 = 3.0.1.3 =
 * Fix: WP-CONFIG backups dropdown showing empty when there are backups
 * Tweak: Added removal of all transients that end with _update_check to force update check button

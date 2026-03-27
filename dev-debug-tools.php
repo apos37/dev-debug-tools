@@ -3,7 +3,7 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://pluginrx.com/plugin/dev-debug-tools/
  * Description:         WordPress debugging and testing tools for developers
- * Version:             3.0.1.3
+ * Version:             3.0.1.4
  * Requires at least:   5.9
  * Tested up to:        6.9
  * Requires PHP:        8.0
@@ -147,7 +147,13 @@ final class Bootstrap {
      * @return void
      */
     public function load_files() : void {
-        require_once __DIR__ . '/inc/helpers/helpers.php';
+        $helpers_file = __DIR__ . '/inc/helpers/helpers.php';
+        if ( file_exists( $helpers_file ) ) {
+            require_once $helpers_file;
+        } else {
+            return;
+        }
+        
         $is_dev = Helpers::has_access();
         $is_administrator = current_user_can( 'administrator' );
 

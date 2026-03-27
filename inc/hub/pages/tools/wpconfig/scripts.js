@@ -4,8 +4,8 @@ DevDebugTools.Helpers.log_file_path();
 // Now start jQuery
 jQuery( document ).ready( function( $ ) {
 
+    const shortname = ddtt_file_editor.properties.shortname;
     var rawEditor = $( '#ddtt-raw-editor' );
-
     
     /**
      * Magic Cleaner

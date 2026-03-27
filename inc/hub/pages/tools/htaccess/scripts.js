@@ -7,7 +7,6 @@ jQuery( document ).ready( function( $ ) {
     const shortname = ddtt_file_editor.properties.shortname;
     var rawEditor = $( '#ddtt-raw-editor' );
 
-
     /**
      * Magic Cleaner
      */
