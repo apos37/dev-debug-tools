@@ -199,6 +199,8 @@ class Cleanup {
      */
     private static function get_admin_areas_options() {
         return [
+            'track_last_online',
+            'sync_users_last_online',
             'ql_user_id',
             'ql_post_id',
             'ql_comment_id',

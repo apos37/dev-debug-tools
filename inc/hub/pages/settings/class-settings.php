@@ -683,6 +683,12 @@ class Settings {
             'general' => [
                 'label' => false,
                 'fields' => [
+                    'track_last_online' => [
+                        'title'     => __( 'Track Last Online Time', 'dev-debug-tools' ),
+                        'desc'      => __( 'Keep track of the last time each user was online. Note: if the Online Users feature is enabled, users will be tracked even if this is disabled.', 'dev-debug-tools' ),
+                        'type'      => 'checkbox',
+                        'default'   => false,
+                    ],
                     'ql_user_id' => [
                         'title'     => __( 'User ID Quick Links', 'dev-debug-tools' ),
                         'desc'      => __( 'Adds a User ID column to the Users admin list page with quick debug links for developers to debug user meta.', 'dev-debug-tools' ),
@@ -960,16 +966,11 @@ class Settings {
         add_action( 'ddtt_header_notices', [ $this, 'render_header_notices' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
         add_action( 'wp_ajax_ddtt_user_select', [ $this, 'ajax_user_select' ] );
-        add_action( 'wp_ajax_nopriv_ddtt_user_select', '__return_false' );
         add_action( 'wp_ajax_ddtt_verify_settings_path', [ $this, 'ajax_verify_settings_path' ] );
-        add_action( 'wp_ajax_nopriv_ddtt_verify_settings_path', '__return_false' );
         add_action( 'wp_ajax_ddtt_save_settings', [ $this, 'ajax_save_settings' ] );
-        add_action( 'wp_ajax_nopriv_ddtt_save_settings', '__return_false' );
         add_action( 'wp_ajax_ddtt_reset_all_plugin_data', [ $this, 'ajax_reset_all_plugin_data' ] );
-        add_action( 'wp_ajax_nopriv_ddtt_reset_all_plugin_data', '__return_false' );
         $this->handle_downloads();
         add_action( 'wp_ajax_ddtt_settings_import', [ $this, 'ajax_settings_import' ] );
-        add_action( 'wp_ajax_nopriv_ddtt_settings_import', '__return_false' );
     } // End __construct()
     
 
@@ -1256,7 +1257,7 @@ class Settings {
                     $choice_key = $choice_label;
                 }
 
-                $is_checked = in_array( $choice_key, $value ) || ( empty( $value ) && in_array( $choice_key, $defaults ) );
+                $is_checked = ( ! empty( $value ) && in_array( $choice_key, $value ) ) || ( empty( $value ) && is_array( $defaults ) && in_array( $choice_key, $defaults ) );
 
                 printf(
                     '<div class="ddtt-toggle-wrapper">
@@ -1458,10 +1459,12 @@ class Settings {
      */
     public static function render_field_button( $key, $args ) {
         $onclick = isset( $args[ 'onclick' ] ) ? ' onclick="' . esc_attr( $args[ 'onclick' ] ) . '"' : '';
+        $disabled = isset( $args[ 'disabled' ] ) && $args[ 'disabled' ] ? ' disabled' : '';
         printf(
-            '<button id="%1$s" class="ddtt-button"%2$s>%3$s</button> %4$s',
+            '<button id="%1$s" class="ddtt-button"%2$s%3$s>%4$s</button> %5$s',
             esc_attr( $key ),
             $onclick,
+            esc_attr( $disabled ),
             esc_html( $args[ 'label' ] ),
             wp_kses_post( isset( $args[ 'html' ] ) ? $args[ 'html' ] : '' )
         );
@@ -1590,6 +1593,47 @@ class Settings {
 
 
     /**
+     * Render an inactive users threshold field.
+     *
+     * @param string $key The key of the option.
+     * @param array $args The arguments for the field.
+     */
+    public static function render_field_inactive_users_threshold( $key, $args ) {
+        $val = intval( get_option( $key, $args[ 'defaults' ][ 'val' ] ) );
+        $unit = sanitize_key( get_option( $key, $args[ 'defaults' ][ 'unit' ] ) );
+
+        echo '<div class="ddtt-inactive-users-threshold-wrap">
+            <span class="ddtt-inactive-users-threshold-label">' . esc_html__( 'Inactive for', 'dev-debug-tools' ) . '</span>';
+
+        printf(
+            '<input type="number" id="%1$s_val" name="%1$s_val" value="%2$s" class="small-text" />',
+            esc_attr( $key ),
+            esc_attr( $val ),
+        );
+
+        printf(
+            '<select id="%1$s_unit" name="%1$s_unit">
+                <option value="days"%2$s>%3$s</option>
+                <option value="weeks"%4$s>%5$s</option>
+                <option value="months"%6$s>%7$s</option>
+                <option value="years"%8$s>%9$s</option>
+            </select>',
+            esc_attr( $key ),
+            selected( $unit, 'days', false ),
+            esc_html__( 'Days', 'dev-debug-tools' ),
+            selected( $unit, 'weeks', false ),
+            esc_html__( 'Weeks', 'dev-debug-tools' ),
+            selected( $unit, 'months', false ),
+            esc_html__( 'Months', 'dev-debug-tools' ),
+            selected( $unit, 'years', false ),
+            esc_html__( 'Years', 'dev-debug-tools' )
+        );
+
+        echo '</div>';
+    } // End render_field_inactive_users_threshold()
+
+
+    /**
      * Render settings section with subsections and fields.
      *
      * @param array $options_subsections The subsections and their fields to render.
@@ -1665,9 +1709,9 @@ class Settings {
         }
 
         wp_localize_script( 'ddtt-page-settings', 'ddtt_settings', [
-            'nonce'      => wp_create_nonce( $this->nonce ),
-            'resetNonce' => wp_create_nonce( $this->reset_nonce ),
-            'i18n'       => [
+            'nonce'           => wp_create_nonce( $this->nonce ),
+            'resetNonce'      => wp_create_nonce( $this->reset_nonce ),
+            'i18n'            => [
                 'verifyButton'  => __( 'Verify', 'dev-debug-tools' ),
                 'verifying'     => __( 'Verifying...', 'dev-debug-tools' ),
                 'verified'      => __( 'Verified', 'dev-debug-tools' ),
@@ -1805,11 +1849,16 @@ class Settings {
             wp_send_json_error( [ 'message' => __( 'Invalid subsection.', 'dev-debug-tools' ) ], 400 );
         }
 
+        $skip_types = [ 'search', 'button', 'html' ]; // Field types to skip during saving
+
         $settings = $this->$method();
         $fields = [];
         foreach ( $settings as $section ) {
             if ( isset( $section[ 'fields' ] ) && is_array( $section[ 'fields' ] ) ) {
                 foreach ( $section[ 'fields' ] as $key => $args ) {
+                    if ( in_array( $args[ 'type' ], $skip_types ) ) {
+                        continue;
+                    }
                     $fields[ $key ] = $args[ 'type' ];
                 }
             }

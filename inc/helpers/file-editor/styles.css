@@ -30,6 +30,31 @@
     font-size: 0.7rem;
 }
 
+#ddtt-snippet-manager .ddtt-table .ddtt-snippet-item td:nth-child(5) {
+    width: 200px;
+}
+
+.ddtt-snippet-item td.snippet-code {
+    width: 550px;
+}
+
+.ddtt-snippet-code {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 10px;
+    width: 100%;
+    max-width: 0;
+    min-width: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+#ddtt-snippet-manager .ddtt-table td:last-child code {
+    margin-bottom: 1rem;
+    display: inline-block;
+    flex: 0 0 auto;
+    width: auto;
+}
 
 /* Sidebar */
 

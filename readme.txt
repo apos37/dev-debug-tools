@@ -4,7 +4,7 @@ Tags: debug, developer, testing, logs, config
 Requires at least: 5.9
 Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 3.0.1.4
+Stable tag: 3.0.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -106,6 +106,16 @@ https://youtu.be/36aebqdzHQw
 10. Admin bar centering tool
 
 == Changelog ==
+= 3.0.2.1 =
+* Tweak: Remove pending delete keys on users that log in again for inactive users tool
+
+= 3.0.2 =
+* Update: Added 3 new snippets to HTACCESS tool
+* Fix: Updated CSS to support long snippets
+* Fix: Warning filesize(): stat failed on logs tool
+* Update: Added new Inactive Users tool
+* Update: Added new options in Settings > Admin Area for tracking last online and syncing users
+
 = 3.0.1.4 =
 * Fix: Deprecation error on dashboard (props @standoutsites)
 * Tweak: If .htaccess is not found, then it says so on the htaccess page instead of leaving it blank and only logging it

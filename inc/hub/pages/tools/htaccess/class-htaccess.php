@@ -153,6 +153,32 @@ class Htaccess {
                 ],
                 'desc' => __( 'Tells the server to display the <code>/404.shtml</code> page whenever a 401 Unauthorized error occurs. This typically happens when a user tries to access a restricted area of the site without the correct credentials. Same with when a 403 Forbidden error occurs, which is usually triggered when a user tries to access a directory or file for which they do not have permission. Furthermore, this snippet blocks access to the <code>/author/admin/</code> page.', 'dev-debug-tools' )
             ],
+            'block_aggressive_bots' => [
+                'label' => __( 'Block Aggressive Bots and Scrapers', 'dev-debug-tools' ),
+                'lines' => [
+                    '# Block non-SEO bots, AI scrapers, and aggressive crawlers',
+                    '<IfModule mod_rewrite.c>',
+                    'RewriteEngine On',
+                    'RewriteCond %{HTTP_USER_AGENT} (crawl|Barkrowler|SemrushBot|MJ12bot|DotBot|feed|Go-http-client) [NC,OR]',
+                    'RewriteCond %{HTTP_USER_AGENT} (Amazonbot|Bytespider|ClaudeBot|Baiduspider|Baiduspider-render|OAI-SearchBot|YisouSpider) [NC,OR]',
+                    'RewriteCond %{HTTP_USER_AGENT} (PetalBot|AhrefsBot|YandexBot|CCBot|SeznamBot|seek) [NC,OR]',
+                    'RewriteCond %{HTTP_USER_AGENT} ^$',
+                    'RewriteRule .* - [F,L]',
+                    '</IfModule>',
+                ],
+                'desc' => __( 'Identifies and blocks aggressive bots, AI scrapers (like ClaudeBot and OAI-SearchBot), and SEO crawlers that can exhaust server resources. It also blocks requests with empty User Agents, which are commonly used by malicious scripts.', 'dev-debug-tools' )
+            ],
+            'block_xmlrpc' => [
+                'label' => __( 'Disable XML-RPC', 'dev-debug-tools' ),
+                'lines' => [
+                    '# Block WordPress XML-RPC to prevent DDoS and Brute Force',
+                    '<Files xmlrpc.php>',
+                    'Order Deny,Allow',
+                    'Deny from all',
+                    '</Files>',
+                ],
+                'desc' => __( 'Disables access to xmlrpc.php. While originally used for remote posting and pingbacks, it is now primarily a target for brute-force attacks and DDoS amplification. Disabling it significantly reduces server load and improves security.', 'dev-debug-tools' )
+            ],
             'upload_size' => [
                 'label' => __( 'Increase Upload Size', 'dev-debug-tools' ),
                 'lines' => [
@@ -178,6 +204,16 @@ class Htaccess {
                     '</ifmodule>',
                 ],
                 'desc' => __( 'Only useful if you are hosting with GoDaddy and have Website Security feature with backups enabled. This is a recommended snippet by Sucuri that may help resolve issues with redirecting during backups.', 'dev-debug-tools' )
+            ],
+            'substitute_max_line_length' => [
+                'label' => __( 'Fix Apache/GoDaddy 502 Timeout', 'dev-debug-tools' ),
+                'lines' => [
+                    '# Fixes 502 errors on large pages like nav-menus.php',
+                    '<IfModule mod_substitute.c>',
+                    'SubstituteMaxLineLength 10M',
+                    '</IfModule>'
+                ],
+                'desc' => __( 'Increases the maximum line length for Apache\'s mod_substitute. This prevents "Backend or gateway read timeout" (HTTP 502) errors on large admin pages like the WordPress Menu editor, which can generate extremely long lines of HTML that exceed default server buffers.', 'dev-debug-tools' )
             ],
         ];
 

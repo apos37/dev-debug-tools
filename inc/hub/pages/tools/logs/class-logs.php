@@ -1227,7 +1227,13 @@ class Logs {
         $path = self::get_path( $subsection );
         $type = isset( $log_viewer_customizations[ 'type' ] ) ? sanitize_key( $log_viewer_customizations[ 'type' ] ) : 'easy';
 
-        $file_size = filesize( $path[ 'abs' ] );
+        $abs_path = $path[ 'abs' ];
+        if ( ! file_exists( $abs_path ) ) {
+            echo '<p>' . esc_html__( 'Log file does not exist yet.', 'dev-debug-tools' ) . '</p>';
+            return;
+        }
+
+        $file_size = filesize( $abs_path );
         $max_file_size_mb = get_option( 'ddtt_max_log_size', 10 ); // Default to 10 MB
         $max_file_size = $max_file_size_mb * 1024 * 1024; // Convert to bytes
         $file_size_mb = round( $file_size / 1024 / 1024, 2 );

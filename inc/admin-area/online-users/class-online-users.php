@@ -34,17 +34,26 @@ class OnlineUsers {
 
 
     /**
+     * Whether the online users feature is enabled (cached to avoid repeated option lookups)
+     *
+     * @var boolean
+     */
+    private $online_users_enabled = true;
+
+
+    /**
      * Constructor
      */
     public function __construct() {
 
-        // Check if feature is enabled
-        if ( ! get_option( 'ddtt_online_users', true ) ) {
+        // Track user activity
+        $this->online_users_enabled = get_option( 'ddtt_online_users', true );
+        add_action( 'init', [ $this, 'track_activity' ] );
+
+        // Stop if feature is disabled
+        if ( ! $this->online_users_enabled ) {
             return;
         }
-
-        // Track user activity
-        add_action( 'init', [ $this, 'track_activity' ] );
 
         // Admin bar menu
         add_action( 'admin_bar_menu', [ $this, 'admin_bar' ], 9999999 );
@@ -107,8 +116,14 @@ class OnlineUsers {
      * Track current user's activity
      */
     public function track_activity() {
-        if ( $this->should_track_user() ) {
+        $track_last_online = get_option( 'ddtt_track_last_online', false );
+        if ( $track_last_online || $this->should_track_user() ) {
             $user_id = get_current_user_id();
+            
+            if ( metadata_exists( 'user', $user_id, 'ddtt_pending_delete' ) ) {
+                delete_user_meta( $user_id, 'ddtt_pending_delete' );
+            }
+
             update_user_meta( $user_id, $this->meta_key, time() );
             return true;
         }

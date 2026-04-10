@@ -39,6 +39,11 @@ class AdminMenu {
                 'description'  => __( "View and manage user meta, post meta, and other metadata.", 'dev-debug-tools' ),
                 'include_menu' => true,
             ],
+            'inactive-users' => [
+                'name'        => __( "Inactive Users", 'dev-debug-tools' ),
+                'description' => __( "View and manage users who have not logged in for a specified period of time.", 'dev-debug-tools' ),
+                'include_menu' => true,
+            ],
             'db-tables' => [
                 'name'        => __( "Database Tables", 'dev-debug-tools' ),
                 'description' => __( "View your database tables and their records.", 'dev-debug-tools' ),

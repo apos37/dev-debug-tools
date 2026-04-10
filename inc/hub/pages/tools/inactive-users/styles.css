@@ -1,0 +1,84 @@
+.ddtt-inactive-users .ddtt-filter-section {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.ddtt-inactive-users .ddtt-filters-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.ddtt-filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#ddtt_threshold_val {
+    width: 80px;
+}
+
+.ddtt-inactive-users-threshold-wrap {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.ddtt-settings-row.type-checkboxes .ddtt-toggle-group {
+    column-count: 3;
+    column-gap: 12px;
+    width: 100%;
+    max-width: 1000px;
+    display: block !important;
+}
+
+.ddtt-settings-row.type-checkboxes .ddtt-toggle-wrapper {
+    display: block;
+    break-inside: avoid;
+    margin-top: 0 !important;
+    margin-bottom: 12px;
+}
+
+#ddtt-mark-users-inactive-btn {
+    background: var(--color-warning) !important;
+}
+
+#ddtt-delete-inactive-users-btn {
+    background: var(--color-error) !important;
+}
+
+#ddtt-users-table tfoot {
+    background-color: var(--color-bg-alt2);
+}
+
+.ddtt-pagination {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2rem;
+    align-items: center;
+    justify-content: center;
+}
+
+#ddtt-users-pagination .ddtt-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.ddtt-scan-results-link {
+    display: block;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+tr.ddtt-pending-deletion .ddtt-deletion-status {
+    font-style: italic;
+    color: var(--color-warning);
+}
+
+tr.ddtt-ready-for-deletion .ddtt-deletion-status {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--color-error);
+}
