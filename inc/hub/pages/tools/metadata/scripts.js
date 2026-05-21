@@ -207,6 +207,7 @@ jQuery( document ).ready( function( $ ) {
             deleteButton.prop( 'disabled', true );
 
         } else {
+            
             // Save mode
             var newValue = valueCell.find( 'textarea' ).val();
 
@@ -231,16 +232,24 @@ jQuery( document ).ready( function( $ ) {
                 value: newValue,
                 object_id: id,
                 subsection: currentSubsection,
-                _wpnonce: ddtt_metadata.nonce
+                nonce: ddtt_metadata.nonce
             }, function( response ) {
                 if ( response.success ) {
                     valueCell.html( response.data );
                 } else {
                     valueCell.html( originalValue );
-                    alert( ddtt_metadata.i18n.errorSaving );
+                    var errorMsg = response.data ? response.data : ddtt_metadata.i18n.errorSaving;
+                    alert( errorMsg );
                 }
 
                 originalValue = '';
+                button.data( 'action', 'edit' ).text( ddtt_metadata.i18n.edit );
+                deleteButton.prop( 'disabled', false );
+            } ).fail( function( xhr ) {
+                // This triggers if PHP crashed (Fatal error, -1, or 403)
+                valueCell.html( originalValue );
+                alert( 'Server Error: The request could not be completed.' );
+                
                 button.data( 'action', 'edit' ).text( ddtt_metadata.i18n.edit );
                 deleteButton.prop( 'disabled', false );
             } );

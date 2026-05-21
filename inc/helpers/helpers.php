@@ -1259,7 +1259,7 @@ class Helpers {
 
         if ( preg_match( '/^(a|O|s|i|d|b|C):/i', $trimmed ) && preg_match( '/[;}]/', substr( $trimmed, -1 ) ) ) {
             try {
-                $result = unserialize( $trimmed );
+                $result = @unserialize( $trimmed );
                 return ( $result !== false || $string === 'b:0;' );
             } catch ( \Exception $e ) {
                 return false;

@@ -1534,23 +1534,23 @@ class Activity_Log {
                 $new_theme_data = $upgrader->new_theme_data;
 
                 if ( isset( $new_theme_data[ 'Name' ] ) ) {
-                    $theme_name  = $new_theme_data[ 'Name' ];
-                    $new_version = $new_theme_data[ 'Version' ];
+                    $theme_name  = $new_theme_data[ 'Name' ] ?? $unknown;
+                    $new_version = $new_theme_data[ 'Version' ] ?? $unknown;
                 }
                 
             } elseif ( isset( $upgrader->skin->options[ 'title' ] ) ) {
-                $theme_name  = $upgrader->skin->options[ 'title' ];
-                $new_version = $upgrader->skin->options[ 'version' ];
+                $theme_name  = $upgrader->skin->options[ 'title' ] ?? $unknown;
+                $new_version = $upgrader->skin->options[ 'version' ] ?? $unknown;
 
             } elseif ( isset( $hook_extra[ 'themes' ] ) ) {
-                $theme_name = $hook_extra[ 'themes' ][ 0 ];
+                $theme_name = $hook_extra[ 'themes' ][ 0 ] ?? $unknown;
 
             } elseif ( isset( $hook_extra[ 'theme' ] ) ) {
-                $theme_name = $hook_extra[ 'theme' ];
+                $theme_name = $hook_extra[ 'theme' ] ?? $unknown;
             }
 
             if ( isset( $upgrader->skin->theme_info ) ) {
-                $old_version = $upgrader->skin->theme_info->get( 'Version' );
+                $old_version = $upgrader->skin->theme_info->get( 'Version' ) ?? $unknown;
             }
 
             if ( $action_label = $this->get_action_label( __FUNCTION__ ) ) {                

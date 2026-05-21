@@ -1,10 +1,10 @@
 === Developer Debug Tools ===
 Contributors: apos37, venutius
 Tags: debug, developer, testing, logs, config
-Requires at least: 5.9
-Tested up to: 6.9
+Requires at least: 6.0
+Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 3.0.2.1
+Stable tag: 3.0.2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -106,6 +106,13 @@ https://youtu.be/36aebqdzHQw
 10. Admin bar centering tool
 
 == Changelog ==
+= 3.0.2.2 =
+* Compatibility: Increased minimum required WordPress version to 6.0
+* Compatibility: Tested with WordPress 7.0
+* Fix: Metadata - updating of user_login not working
+* Fix: Metadata - some user object meta not updating or giving an error message why
+* Fix: Undefined array key in class-activity.php
+
 = 3.0.2.1 =
 * Tweak: Remove pending delete keys on users that log in again for inactive users tool
 

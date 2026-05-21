@@ -1334,7 +1334,7 @@ class Metadata {
      * @param int    $object_id
      * @param string $key
      * @param mixed  $value
-     * @return bool
+     * @return bool|int|WP_Error
      */
     private function update_meta_value( $subsection, $object_id, $key, $value ) {
         // Handle password separately
@@ -1367,17 +1367,27 @@ class Metadata {
                     'user_url', 'user_registered', 'user_status', 'user_activation_key'
                 ];
                 if ( in_array( $key, $core_user_fields, true ) ) {
+
+                    // SPECIAL CASE: user_login (WP doesn't allow this via API)
+                    if ( 'user_login' === $key ) {
+                        global $wpdb;
+                        $result = $wpdb->update(
+                            $wpdb->users,
+                            [ 'user_login' => $value ],
+                            [ 'ID' => $object_id ]
+                        );
+                        clean_user_cache( $object_id );
+                        return ( false !== $result );
+                    }
+
                     $userdata = [ 'ID' => $object_id, $key => $value_to_store ];
                     $result = wp_update_user( $userdata );
 
-                    $check_value = get_userdata( $object_id )->$key ?? null;
-                    if ( $check_value !== $value_to_store ) {
-                        apply_filters( 'ddtt_log_error', 'update_meta_value', new \Exception( "Failed to update user field: {$key}" ), compact( 'subsection', 'object_id', 'key', 'value_to_store' ) );
-                        return false;
-                    }
-
                     if ( is_wp_error( $result ) ) {
-                        apply_filters( 'ddtt_log_error', 'update_meta_value', $result, compact( 'subsection', 'object_id', 'key', 'value_to_store' ) );
+                        // Extract the message string so the logger doesn't crash
+                        $error_string = $result->get_error_message(); 
+                        apply_filters( 'ddtt_log_error', 'update_meta_value', new \Exception( $error_string ), compact( 'subsection', 'object_id', 'key', 'value_to_store' ) );
+                        return $result;
                     }
                     return $result;
                 }
@@ -1522,21 +1532,26 @@ class Metadata {
             wp_send_json_error( 'unauthorized' );
         }
 
-        $subsection = isset( $_POST[ 'subsection' ] ) ? sanitize_key( $_POST[ 'subsection' ] ) : '';
+        $subsection = isset( $_POST[ 'subsection' ] ) ? sanitize_key( wp_unslash( $_POST[ 'subsection' ] ) ) : '';
         $object_id  = isset( $_POST[ 'object_id' ] ) ? absint( $_POST[ 'object_id' ] ) : 0;
         $key        = isset( $_POST[ 'key' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'key' ] ) ) : '';
         $value      = isset( $_POST[ 'value' ] ) ? wp_unslash( $_POST[ 'value' ] ) : ''; // phpcs:ignore 
 
         if ( ! $subsection || ! $object_id || ! $key ) {
             apply_filters( 'ddtt_log_error', 'ajax_update_meta_value', new \Exception( 'Missing required parameters for updating meta value.' ), [ 'step' => 'parameter_check' ] );
-            wp_send_json_error();
+            wp_send_json_error( 'invalid_parameters' );
         }
 
         $updated = $this->update_meta_value( $subsection, $object_id, $key, $value );
 
-        if ( false === $updated && $this->get_meta_value( $subsection, $object_id, $key ) !== $value ) {
+        if ( is_wp_error( $updated ) ) {
+            if ( ob_get_length() ) ob_clean();
+            wp_send_json_error( $updated->get_error_message() );
+        }
+
+        if ( ! $updated ) {
             apply_filters( 'ddtt_log_error', 'ajax_update_meta_value', new \Exception( 'Failed to update meta value.' ), [ 'step' => 'update_meta' ] );
-            wp_send_json_error();
+            wp_send_json_error( 'update_failed' );
         }
 
         // Return the rendered value
