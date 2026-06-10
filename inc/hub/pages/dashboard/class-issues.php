@@ -64,6 +64,30 @@ class Issues {
                 ],
                 'callback' => [ $this, 'not_using_child_theme' ],
             ],
+            'search_engine_discouraged' => [
+                'label'    => __( 'Search Engine Visibility Disabled', 'dev-debug-tools' ),
+                'details'  => __( 'The "Discourage search engines from indexing this site" option should not be enabled on a live site. This blocks search engine crawlers via robots.txt and meta tags, which is harmful for live production sites.', 'dev-debug-tools' ),
+                'severity' => 'warning',
+                'actions'  => [
+                    [
+                        'label' => __( 'Update Visibility Settings', 'dev-debug-tools' ),
+                        'url'   => admin_url( 'options-reading.php' ),
+                    ],
+                ],
+                'callback' => [ $this, 'search_engine_discouraged' ],
+            ],
+            'default_site_identity' => [
+                'label'    => __( 'Default Site Identity Still Set', 'dev-debug-tools' ),
+                'details'  => __( 'The site title or tagline should be updated from the WordPress defaults. Leaving them as-is looks unprofessional and may affect SEO.', 'dev-debug-tools' ),
+                'severity' => 'notice',
+                'actions'  => [
+                    [
+                        'label' => __( 'Update Site Identity', 'dev-debug-tools' ),
+                        'url'   => admin_url( 'options-general.php' ),
+                    ],
+                ],
+                'callback' => [ $this, 'default_site_identity' ],
+            ],
         ];
 
 
@@ -124,5 +148,27 @@ class Issues {
         $is_child_theme = is_child_theme();
         return ! $is_child_theme;
     } // End not_using_child_theme()
+
+
+    /**
+     * Check if search engines are discouraged from indexing the site.
+     *
+     * @return bool  true if there is an issue, false otherwise.
+     */
+    public function search_engine_discouraged() : bool {
+        return (bool) get_option( 'blog_public' ) === false;
+    } // End search_engine_discouraged()
+
+
+    /**
+     * Check if the site is still using default WordPress title or tagline values.
+     *
+     * @return bool  true if there is an issue, false otherwise.
+     */
+    public function default_site_identity() : bool {
+        $title   = trim( get_option( 'blogname', '' ) );
+        $tagline = trim( get_option( 'blogdescription', '' ) );
+        return $title === 'Just another WordPress site' || $tagline === 'Just another WordPress site';
+    } // End default_site_identity()
 
 }

@@ -249,4 +249,67 @@ jQuery( document ).ready( function( $ ) {
         } );
     }
 
+
+    /**
+     * Check for Update Functionality
+     */
+    if ( ddtt_plugins.doing_update_link ) {
+        $( document ).on( 'click', '.ddtt-check-plugin-update', function( e ) {
+            e.preventDefault();
+
+            var link          = $( this );
+            var plugin        = link.data( 'plugin' );
+            var slug          = link.data( 'slug' );
+            var nonce         = link.data( 'nonce' );
+            var original_text = link.text();
+
+            link.html( '<span class="dashicons dashicons-update ddtt-rotate"></span>' + ddtt_plugins.i18n.checking_update );
+
+            var data = {
+                action : 'ddtt_check_plugin_update',
+                plugin : plugin,
+                slug   : slug,
+                nonce  : nonce,
+            };
+
+            $.post( ajaxurl, data, function( response ) {
+                if ( ! response.success ) {
+                    link.text( response.data.message || original_text );
+                    return;
+                }
+
+                if ( ! response.data.has_update ) {
+                    link.text( response.data.message || original_text );
+                    return;
+                }
+
+                var d           = response.data;
+                var row_id      = slug + '-update';
+                var details_label = 'View ' + d.plugin_name + ' version ' + d.version + ' details';
+                var update_label  = 'Update ' + d.plugin_name + ' now';
+
+                var details_part = '';
+                if ( d.details_url ) {
+                    var is_external  = d.is_external;
+                    var details_attr = is_external ? 'target="_blank"' : 'class="thickbox open-plugin-details-modal"';
+                    details_part     = ' <a href="' + d.details_url + '" ' + details_attr + ' aria-label="' + details_label + '">View version ' + d.version + ' details</a> or';
+                }
+
+                var update_row = '<tr class="plugin-update-tr active" id="' + row_id + '" data-slug="' + d.slug + '" data-plugin="' + d.plugin + '">' +
+                    '<td colspan="7" class="plugin-update colspanchange">' +
+                    '<div class="update-message notice inline notice-warning notice-alt"><p>' +
+                    'There is a new version of ' + d.plugin_name + ' available.' + details_part + ' ' +
+                    '<a href="' + d.update_url + '" class="update-link" aria-label="' + update_label + '">update now</a>.' +
+                    '</p></div></td></tr>';
+
+                var plugin_row = $( 'tr[data-plugin="' + plugin + '"]' ).not( '.plugin-update-tr' ).first();
+
+                $( '#' + row_id ).remove();
+                plugin_row.addClass( 'update' );
+                plugin_row.after( update_row );
+                link.text( original_text );
+            } );
+        } );
+    }
+
 } );

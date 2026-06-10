@@ -1,31 +1,3 @@
-/* Base styles for warning and danger rows */
-/* .ddtt-warning-row,
-.ddtt-danger-row {
-    cursor: help;
-} */
-
-/* Animate warning row */
-/* .ddtt-warning-row th,
-.ddtt-warning-row td {
-    animation: ddtt-fade-warning 2s forwards;
-}
-
-@keyframes ddtt-fade-warning {
-    from { background-color: #F0F6FC; }
-    to   { background-color: #FFF9DB; }
-} */
-
-/* Animate danger row */
-/* .ddtt-danger-row th,
-.ddtt-danger-row td {
-    animation: ddtt-fade-danger 2s forwards;
-}
-
-@keyframes ddtt-fade-danger {
-    from { background-color: #F0F6FC; }
-    to   { background-color: #FDE8E8; }
-} */
-
 /* Very large plugin size */
 .ddtt-plugin-size.ddtt-very-large {
     font-weight: bold !important;
@@ -55,3 +27,34 @@
     padding: 2px 6px;
     border-radius: 4px;
 }
+
+.plugins .plugin-title .ddtt-check-plugin-update .dashicons-update {
+    float: none !important;
+    padding: 0 !important;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+    margin-right: 4px;
+    display: inline-block;
+    margin-top: -2px;
+}
+
+.plugins .plugin-title .ddtt-check-plugin-update .dashicons-update:before {
+    font-size: 14px !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    color: red !important;
+}
+
+@keyframes ddtt-spin {
+    from { transform: rotate( 0deg ); }
+    to { transform: rotate( 360deg ); }
+}
+
+.ddtt-rotate {
+    animation: ddtt-spin 1s linear infinite;
+    display: inline-block;
+}
+

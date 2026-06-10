@@ -124,6 +124,13 @@ class Plugins {
     private $nonce = 'ddtt_plugins_nonce';
 
 
+    private $doing_update_link = false;
+    private $page_size = false;
+    private $page_last_modified = false;
+    private $page_installed_by = false;
+    private $page_notes = false;
+
+
     /**
      * Constructor
      */
@@ -135,6 +142,11 @@ class Plugins {
         // Vars
         $this->hiding_plugin = get_option( 'ddtt_hide_plugin' );
         $this->dev_access_only = get_option( 'ddtt_dev_access_only' );
+        $this->doing_update_link = get_option( 'ddtt_plugins_page_update_check', true );
+        $this->page_size = get_option( 'ddtt_plugins_page_size', true );
+        $this->page_last_modified = get_option( 'ddtt_plugins_page_last_modified', true );
+        $this->page_installed_by = get_option( 'ddtt_plugins_page_installed_by', true );
+        $this->page_notes = get_option( 'ddtt_plugins_page_notes', true );
 
          // If hiding the plugin, or restricting access to devs only, hide settings link
         if ( $this->hiding_plugin || ( $this->dev_access_only && ! Helpers::is_dev() ) ) {
@@ -155,13 +167,18 @@ class Plugins {
             return;
         }
 
+        // Add Check for Updates link
+        if ( $this->doing_update_link ) {
+            add_filter( 'plugin_action_links', [ $this, 'add_check_update_link' ], 10, 2 );
+            add_action( 'wp_ajax_ddtt_check_plugin_update', [ $this, 'ajax_check_plugin_update' ] );
+        }
+
         // Add custom columns
         add_filter( 'manage_plugins_columns', [ $this, 'add_columns' ] );
         add_action( 'manage_plugins_custom_column', [ $this, 'render_column' ], 10, 3 );
         
         // Size and last modified
-        if ( get_option( 'ddtt_plugins_page_size', true ) || 
-             get_option( 'ddtt_plugins_page_last_modified', true ) ) {
+        if ( $this->page_size || $this->page_last_modified ) {
             add_filter( 'manage_plugins_sortable_columns', [ $this, 'register_sortable_columns' ] );
             add_action( 'pre_current_active_plugins', [ $this, 'prepare_plugin_sorting' ] );
             add_action( 'upgrader_process_complete', [ $this , 'update_plugin_data_bulk' ], 10, 2 );
@@ -170,22 +187,20 @@ class Plugins {
         }
 
         // Update installer name
-        if ( get_option( 'ddtt_plugins_page_installed_by', true ) ) {
+        if ( $this->page_installed_by ) {
             add_action( 'activated_plugin', [ $this, 'maybe_record_installer' ], 10, 2 );
             add_action( 'wp_ajax_ddtt_update_installer', [ $this, 'ajax_update_installer' ] );
             add_action( 'delete_plugin', [ $this, 'remove_plugin_installer' ], 10, 1 );
         }
 
         // Add notes action link
-        if ( get_option( 'ddtt_plugins_page_notes', true ) ) {
+        if ( $this->page_notes ) {
             add_filter( 'plugin_row_meta', [ $this, 'add_notes_meta_link' ], 9999, 3 );
             add_action( 'wp_ajax_ddtt_save_plugin_note', [ $this, 'ajax_save_plugin_note' ] );
         }
 
         // Enqueue assets
-        if ( get_option( 'ddtt_plugins_page_last_modified', true ) ||
-             get_option( 'ddtt_plugins_page_installed_by', true ) ||
-             get_option( 'ddtt_plugins_page_notes', true ) ) {
+        if ( $this->doing_update_link || $this->page_last_modified || $this->page_installed_by || $this->page_notes ) {
             add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
         }
 
@@ -357,6 +372,128 @@ class Plugins {
 
         echo '</div>';
     } // End render_add_plugins_tab()
+
+
+    /**
+     * Add "Check for Update" action link to each plugin row.
+     *
+     * @param array  $links  Existing action links.
+     * @param string $file   Plugin file path.
+     * @return array
+     */
+    public function add_check_update_link( $links, $file ) {
+        if ( ! current_user_can( 'update_plugins' ) ) {
+            return $links;
+        }
+
+        $plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file );
+        $slug = $plugin_data[ 'TextDomain' ] ?? '';
+
+        if ( ! $slug ) {
+            return $links;
+        }
+
+        $nonce = wp_create_nonce( 'ddtt_check_plugin_update_' . $file );
+
+        $link = sprintf(
+            '<a href="#" class="ddtt-check-plugin-update" data-plugin="%s" data-slug="%s" data-nonce="%s">%s</a>',
+            esc_attr( $file ),
+            esc_attr( $slug ),
+            esc_attr( $nonce ),
+            esc_html__( 'Check for Update', 'dev-debug-tools' )
+        );
+
+        $links[ 'ddtt_check_update' ] = $link;
+
+        return $links;
+    } // End add_check_update_link()
+
+
+    /**
+     * AJAX: Check WP.org API for a plugin update and inject into transient if newer.
+     */
+    public function ajax_check_plugin_update() {
+        $plugin = isset( $_POST[ 'plugin' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'plugin' ] ) ) : '';
+        $slug   = isset( $_POST[ 'slug' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'slug' ] ) ) : '';
+        $nonce  = isset( $_POST[ 'nonce' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'nonce' ] ) ) : '';
+
+        if ( ! $plugin || ! $slug || ! wp_verify_nonce( $nonce, 'ddtt_check_plugin_update_' . $plugin ) ) {
+            wp_send_json_error( [ 'message' => __( 'Unauthorized.', 'dev-debug-tools' ) ] );
+        }
+
+        if ( ! current_user_can( 'update_plugins' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Unauthorized.', 'dev-debug-tools' ) ] );
+        }
+
+        if ( ! function_exists( 'plugins_api' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
+        }
+
+        $response = plugins_api( 'plugin_information', [
+            'slug'   => $slug,
+            'fields' => [ 'version' => true ],
+        ] );
+
+        $is_external = ! is_wp_error( $response ) && ( ! empty( $response->external ) || empty( $response->homepage ) || strpos( $response->homepage, 'wordpress.org' ) === false );
+
+        if ( is_wp_error( $response ) ) {
+            wp_send_json_error( [ 'message' => __( 'This plugin is not available on WordPress.org or could not be reached.', 'dev-debug-tools' ) ] );
+        }
+
+        $plugin_data    = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin );
+        $local_version  = $plugin_data[ 'Version' ] ?? '0';
+        $remote_version = $response->version ?? '0';
+
+        if ( version_compare( $remote_version, $local_version, '>' ) ) {
+            $transient = get_site_transient( 'update_plugins' );
+
+            if ( ! is_object( $transient ) ) {
+                $transient = new \stdClass();
+            }
+
+            if ( ! isset( $transient->response ) ) {
+                $transient->response = [];
+            }
+
+            $transient->response[ $plugin ] = (object) [
+                'id'          => ( $is_external ? 'external' : 'w.org' ) . '/plugins/' . $slug,
+                'slug'        => $slug,
+                'plugin'      => $plugin,
+                'new_version' => $remote_version,
+                'url'         => $response->url ?? $response->homepage ?? '',
+                'package'     => $response->package ?? $response->download_link ?? '',
+            ];
+
+            set_site_transient( 'update_plugins', $transient );
+
+            $update_nonce = wp_create_nonce( 'upgrade-plugin_' . $plugin );
+            $update_url   = admin_url( 'update.php?action=upgrade-plugin&plugin=' . rawurlencode( $plugin ) . '&_wpnonce=' . $update_nonce );
+            $plugin_name  = $plugin_data[ 'Name' ] ?? $slug;
+
+            $details_url = '';
+            if ( ! $is_external ) {
+                $details_url = admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . rawurlencode( $slug ) . '&section=changelog&TB_iframe=true&width=600&height=800' );
+            } elseif ( ! empty( $response->url ) ) {
+                $details_url = $response->url;
+            }
+
+            wp_send_json_success( [
+                'has_update'  => true,
+                'plugin'      => $plugin,
+                'slug'        => $slug,
+                'version'     => $remote_version,
+                'plugin_name' => $plugin_name,
+                'details_url' => $details_url,
+                'update_url'  => $update_url,
+                'is_external' => $is_external,
+            ] );
+        }
+
+        wp_send_json_success( [
+            'has_update' => false,
+            'message'    => __( 'Plugin is up to date.', 'dev-debug-tools' ),
+        ] );
+    } // End ajax_check_plugin_update()
 
 
     /**
@@ -560,6 +697,8 @@ class Plugins {
     /**
      * Refresh data for a plugin.
      *
+     * @param array  $data        The full plugin data array (passed by reference).
+     * @param string $plugin_file The plugin file to refresh.
      * @return array
      */
     private function refresh_plugin_entry( &$data, $plugin_file ) {
@@ -626,6 +765,7 @@ class Plugins {
      * Render Size column content.
      *
      * @param string $plugin_file
+     * @param array $plugin_data
      */
     protected function render_size( $plugin_file, $plugin_data ) {
         $size_bytes = 0;
@@ -802,30 +942,30 @@ class Plugins {
 
     /**
      * Enqueue JS and CSS for Plugins page enhancements.
+     * 
+     * @param string $hook The current admin page.
      */
     public function enqueue_assets( $hook ) {
         if ( $hook !== 'plugins.php' ) {
             return;
         }
-
-        // Notes
-        $doing_notes = get_option( 'ddtt_plugins_page_notes', true );
-        $notes = $doing_notes ? get_option( 'ddtt_plugin_notes', [] ) : [];
         
         // Pass translations and dynamic data
         wp_localize_script( 'ddtt-plugins-page', 'ddtt_plugins', [
-            'is_dev'       => Helpers::is_dev(),
-            'doing_update' => get_option( 'ddtt_plugins_page_author_update', true ),
-            'doing_notes'  => $doing_notes,
-            'notes'        => $notes,
-            'nonce'        => wp_create_nonce( $this->nonce ),
-            'i18n'         => [
+            'is_dev'            => Helpers::is_dev(),
+            'doing_update_link' => $this->doing_update_link,
+            'doing_update'      => get_option( 'ddtt_plugins_page_author_update', true ),
+            'doing_notes'       => $this->page_notes,
+            'notes'             => $this->page_notes ? get_option( 'ddtt_plugin_notes', [] ) : [],
+            'nonce'             => wp_create_nonce( $this->nonce ),
+            'i18n'              => [
                 'tooltip_updated_warning' => __( 'This plugin has not been updated by the author in over a year.', 'dev-debug-tools' ),
                 'tooltip_updated_danger'  => __( 'This plugin has not been updated by the author in over 2 years.', 'dev-debug-tools' ),
                 'tooltip_compat'          => __( 'This plugin may not be compatible with your current WordPress version.', 'dev-debug-tools' ),
                 'note_edit'               => __( 'Edit Note', 'dev-debug-tools' ),
                 'note_save'               => __( 'Save Note', 'dev-debug-tools' ),
                 'unknown'                 => __( 'Unknown', 'dev-debug-tools' ),
+                'checking_update'         => __( 'Checking...', 'dev-debug-tools' ),
             ]
         ] );
     } // End enqueue_assets()

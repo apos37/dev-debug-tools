@@ -736,6 +736,12 @@ class Settings {
             'plugins_page' => [
                 'label' => __( 'Plugins Page — Must Enable Enhancements Above', 'dev-debug-tools' ),
                 'fields' => [
+                    'plugins_page_update_check' => [
+                        'title'     => __( 'Check for Update Link', 'dev-debug-tools' ),
+                        'desc'      => __( 'Add a "Check for Update" action link to each plugin row to manually check the source for a newer version.', 'dev-debug-tools' ),
+                        'type'      => 'checkbox',
+                        'default'   => true,
+                    ],
                     'plugins_page_size' => [
                         'title'     => __( 'Size Column', 'dev-debug-tools' ),
                         'desc'      => __( 'Show the total folder size of each plugin.', 'dev-debug-tools' ),
