@@ -26,10 +26,10 @@ jQuery( function( $ ) {
         btn.prop( 'disabled', true );
         notice.html( '' ).removeClass( 'notice-warning notice-success' ).addClass( 'notice-info' ).css( 'display', 'inline-flex' );
 
-        var plugins = ddtt_updates.plugins;
-        var themes  = ddtt_updates.themes;
-        var plugin_updates = 0;
-        var theme_updates  = 0;
+        var plugins        = ddtt_updates.plugins;
+        var themes         = ddtt_updates.themes;
+        var plugin_updates = [];
+        var theme_updates  = [];
 
         async function checkPlugin( index ) {
             if ( index >= plugins.length ) {
@@ -53,7 +53,7 @@ jQuery( function( $ ) {
                     }
                 }
                 if ( response.success && response.data.has_update ) {
-                    plugin_updates++;
+                    plugin_updates.push( response.data );
                 }
             } );
 
@@ -63,20 +63,32 @@ jQuery( function( $ ) {
         async function checkTheme( index ) {
             if ( index >= themes.length ) {
                 var parts = [];
-                if ( plugin_updates > 0 ) {
-                    parts.push( plugin_updates + ' ' + ddtt_updates.i18n.plugin_updates );
+                if ( plugin_updates.length > 0 ) {
+                    parts.push( plugin_updates.length + ' ' + ddtt_updates.i18n.plugin_updates );
                 }
-                if ( theme_updates > 0 ) {
-                    parts.push( theme_updates + ' ' + ddtt_updates.i18n.theme_updates );
+                if ( theme_updates.length > 0 ) {
+                    parts.push( theme_updates.length + ' ' + ddtt_updates.i18n.theme_updates );
                 }
-                var summary = parts.length ? parts.join( ', ' ) : ddtt_updates.i18n.all_up_to_date;
 
+                var summary = parts.length ? parts.join( ', ' ) : ddtt_updates.i18n.all_up_to_date;
                 notice.removeClass( 'notice-info' ).addClass( parts.length ? 'notice-warning' : 'notice-success' );
                 notice.html( summary );
 
+                if ( ddtt_updates.test_mode ) {
+                    console.log( 'Committing plugin updates:', plugin_updates );
+                    console.log( 'Committing theme updates:', theme_updates );
+                }
+
+                await $.post( ajaxurl, {
+                    action         : 'ddtt_commit_update_results',
+                    plugin_updates : JSON.stringify( plugin_updates ),
+                    theme_updates  : JSON.stringify( theme_updates ),
+                    nonce          : ddtt_updates.nonce,
+                } );
+
                 if ( !ddtt_updates.test_mode ) {
                     setTimeout( function() {
-                            window.location.reload();
+                        window.location.reload();
                     }, 3000 );
                 }
                 return;
@@ -97,7 +109,7 @@ jQuery( function( $ ) {
                     }
                 }
                 if ( response.success && response.data.has_update ) {
-                    theme_updates++;
+                    theme_updates.push( response.data );
                 }
             } );
 

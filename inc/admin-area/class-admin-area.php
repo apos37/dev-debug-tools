@@ -73,6 +73,9 @@ class AdminArea {
         if ( get_option( 'ddtt_force_updates_check', true ) ) {
             add_action( 'wp_ajax_ddtt_force_check_single_plugin', [ $this, 'ajax_force_check_single_plugin' ] );
             add_action( 'wp_ajax_ddtt_force_check_single_theme', [ $this, 'ajax_force_check_single_theme' ] );
+            add_action( 'wp_ajax_ddtt_commit_update_results', [ $this, 'ajax_commit_update_results' ] );
+            add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'protect_plugin_update_transient' ] );
+            add_filter( 'pre_set_site_transient_update_themes', [ $this, 'protect_theme_update_transient' ] );
         }
 
         // Enqueue admin area assets
@@ -412,10 +415,6 @@ class AdminArea {
             wp_send_json_error();
         }
 
-        if ( ! function_exists( 'plugins_api' ) ) {
-            require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
-        }
-
         $plugin_data   = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin );
         $local_version = $plugin_data[ 'Version' ] ?? '0';
 
@@ -444,37 +443,19 @@ class AdminArea {
         $remote_version = $response->version ?? '0';
 
         if ( version_compare( $remote_version, $local_version, '>' ) ) {
-            $transient = get_site_transient( 'update_plugins' );
-
-            if ( ! is_object( $transient ) ) {
-                $transient = new \stdClass();
-            }
-
-            if ( ! isset( $transient->response ) ) {
-                $transient->response = [];
-            }
-
-            $transient->response[ $plugin ] = (object) [
-                'id'          => 'w.org/plugins/' . $slug,
-                'slug'        => $slug,
-                'plugin'      => $plugin,
-                'new_version' => $remote_version,
-                'url'         => 'https://wordpress.org/plugins/' . $slug . '/',
-                'package'     => $response->download_link ?? '',
-                'icons'       => [
-                    '1x' => 'https://ps.w.org/' . $slug . '/assets/icon-128x128.png',
-                    '2x' => 'https://ps.w.org/' . $slug . '/assets/icon-256x256.png',
-                ],
-            ];
-
-            set_site_transient( 'update_plugins', $transient );
-            wp_send_json_success( [ 'has_update' => true ] );
+            wp_send_json_success( [
+                'has_update'    => true,
+                'plugin'        => $plugin,
+                'slug'          => $slug,
+                'local_version' => $local_version,
+                'new_version'   => $remote_version,
+                'download_link' => $response->download_link ?? '',
+            ] );
         }
 
-        wp_send_json_success( [ 
+        wp_send_json_success( [
             'plugin'     => $plugin,
             'has_update' => false,
-            'response'   => $response 
         ] );
     } // End ajax_force_check_single_plugin()
 
@@ -492,10 +473,6 @@ class AdminArea {
 
         if ( ! $stylesheet ) {
             wp_send_json_error();
-        }
-
-        if ( ! function_exists( 'themes_api' ) ) {
-            require_once ABSPATH . 'wp-admin/includes/theme.php';
         }
 
         $theme         = wp_get_theme( $stylesheet );
@@ -526,6 +503,80 @@ class AdminArea {
         $remote_version = $response->version ?? '0';
 
         if ( version_compare( $remote_version, $local_version, '>' ) ) {
+            wp_send_json_success( [
+                'has_update'    => true,
+                'theme'         => $stylesheet,
+                'local_version' => $local_version,
+                'new_version'   => $remote_version,
+                'download_link' => $response->download_link ?? '',
+            ] );
+        }
+
+        wp_send_json_success( [
+            'theme'      => $stylesheet,
+            'has_update' => false,
+        ] );
+    } // End ajax_force_check_single_theme()
+
+
+    /**
+     * AJAX: Commit update results to prevent transient from being overwritten.
+     */
+    public function ajax_commit_update_results() {
+        $nonce = isset( $_POST[ 'nonce' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'nonce' ] ) ) : '';
+        if ( ! wp_verify_nonce( $nonce, 'force_update_check' ) || ! current_user_can( 'update_plugins' ) ) {
+            wp_send_json_error();
+        }
+
+        $plugin_updates = isset( $_POST[ 'plugin_updates' ] ) ? json_decode( stripslashes( $_POST[ 'plugin_updates' ] ), true ) : [];
+        $theme_updates  = isset( $_POST[ 'theme_updates' ] ) ? json_decode( stripslashes( $_POST[ 'theme_updates' ] ), true ) : [];
+
+        if ( ! empty( $plugin_updates ) ) {
+            $transient = get_site_transient( 'update_plugins' );
+
+            if ( ! is_object( $transient ) ) {
+                $transient = new \stdClass();
+            }
+
+            if ( ! isset( $transient->response ) ) {
+                $transient->response = [];
+            }
+
+            if ( ! isset( $transient->checked ) ) {
+                $transient->checked = [];
+            }
+
+            $transient->last_checked = time();
+
+            foreach ( $plugin_updates as $update ) {
+                $plugin = $update[ 'plugin' ];
+                $slug   = $update[ 'slug' ];
+
+                $transient->checked[ $plugin ]  = $update[ 'local_version' ];
+                $transient->response[ $plugin ] = (object) [
+                    'id'          => 'w.org/plugins/' . $slug,
+                    'slug'        => $slug,
+                    'plugin'      => $plugin,
+                    'new_version' => $update[ 'new_version' ],
+                    'url'         => 'https://wordpress.org/plugins/' . $slug . '/',
+                    'package'     => $update[ 'download_link' ],
+                    'icons'       => [
+                        '1x' => 'https://ps.w.org/' . $slug . '/assets/icon-128x128.png',
+                        '2x' => 'https://ps.w.org/' . $slug . '/assets/icon-256x256.png',
+                    ],
+                ];
+            }
+
+            foreach ( $plugin_updates as $update ) {
+                unset( $transient->no_update[ $update[ 'plugin' ] ] );
+            }
+
+            set_site_transient( 'update_plugins', $transient );
+            wp_clear_scheduled_hook( 'wp_update_plugins' );
+            set_site_transient( 'ddtt_protected_plugin_updates', $transient->response, 12 * HOUR_IN_SECONDS );
+        }
+
+        if ( ! empty( $theme_updates ) ) {
             $transient = get_site_transient( 'update_themes' );
 
             if ( ! is_object( $transient ) ) {
@@ -536,48 +587,94 @@ class AdminArea {
                 $transient->response = [];
             }
 
-            $transient->response[ $stylesheet ] = [
-                'theme'       => $stylesheet,
-                'new_version' => $remote_version,
-                'url'         => 'https://wordpress.org/themes/' . $stylesheet . '/',
-                'package'     => $response->download_link ?? '',
-                'icons'       => [
-                    '1x' => 'https://ts.w.org/' . $stylesheet . '/screenshot.png?ver=' . $remote_version,
-                ],
-            ];
+            if ( ! isset( $transient->checked ) ) {
+                $transient->checked = [];
+            }
+
+            $transient->last_checked = time();
+
+            foreach ( $theme_updates as $update ) {
+                $stylesheet = $update[ 'theme' ];
+
+                $transient->checked[ $stylesheet ]  = $update[ 'local_version' ];
+                $transient->response[ $stylesheet ] = [
+                    'theme'       => $stylesheet,
+                    'new_version' => $update[ 'new_version' ],
+                    'url'         => 'https://wordpress.org/themes/' . $stylesheet . '/',
+                    'package'     => $update[ 'download_link' ],
+                    'icons'       => [
+                        '1x' => 'https://ts.w.org/' . $stylesheet . '/screenshot.png?ver=' . $update[ 'new_version' ],
+                    ],
+                ];
+            }
+
+            foreach ( $theme_updates as $update ) {
+                unset( $transient->no_update[ $update[ 'theme' ] ] );
+            }
 
             set_site_transient( 'update_themes', $transient );
-            wp_send_json_success( [ 'has_update' => true ] );
+            wp_clear_scheduled_hook( 'wp_update_themes' );
+            set_site_transient( 'ddtt_protected_theme_updates', $transient->response, 12 * HOUR_IN_SECONDS );
         }
 
-        wp_send_json_success( [ 
-            'theme'      => $stylesheet,
-            'has_update' => false,
-            'response'   => $response
-        ] );
-    } // End ajax_force_check_single_theme()
+        wp_send_json_success();
+    } // End ajax_commit_update_results()
 
 
     /**
-     * Delete all plugin update check transients
+     * Protect injected plugin update data from being overwritten.
+     *
+     * @param mixed $value
+     * @return mixed
      */
-    private function delete_plugin_update_check_transients() {
-        global $wpdb;
-
-        $pattern = '_update_check';
-        $transients = $wpdb->get_col(
-            $wpdb->prepare(
-                "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s",
-                '%' . $wpdb->esc_like( $pattern )
-            )
-        );
-
-        foreach ( $transients as $transient ) {
-            $name = str_replace( '_transient_', '', $transient );
-            $name = preg_replace( '/^site_transient_/', '', $name );
-            delete_transient( $name );
+    public function protect_plugin_update_transient( $value ) {
+        $protected = get_site_transient( 'ddtt_protected_plugin_updates' );
+        if ( empty( $protected ) ) {
+            return $value;
         }
-    } // End delete_plugin_update_check_transients()
+
+        if ( ! is_object( $value ) ) {
+            $value = new \stdClass();
+        }
+
+        if ( ! isset( $value->response ) ) {
+            $value->response = [];
+        }
+
+        foreach ( $protected as $plugin => $data ) {
+            $value->response[ $plugin ] = $data;
+        }
+
+        return $value;
+    } // End protect_plugin_update_transient()
+
+
+    /**
+     * Protect injected theme update data from being overwritten.
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    public function protect_theme_update_transient( $value ) {
+        $protected = get_site_transient( 'ddtt_protected_theme_updates' );
+        if ( empty( $protected ) ) {
+            return $value;
+        }
+
+        if ( ! is_object( $value ) ) {
+            $value = new \stdClass();
+        }
+
+        if ( ! isset( $value->response ) ) {
+            $value->response = [];
+        }
+
+        foreach ( $protected as $stylesheet => $data ) {
+            $value->response[ $stylesheet ] = $data;
+        }
+
+        return $value;
+    } // End protect_theme_update_transient()
 
 
     /**
@@ -682,6 +779,7 @@ class AdminArea {
                     'name' => $data[ 'Name' ] ?? $slug,
                 ];
             }
+
             usort( $plugin_list, function( $a, $b ) {
                 return strcmp( $a[ 'name' ], $b[ 'name' ] );
             } );

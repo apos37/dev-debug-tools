@@ -4,7 +4,7 @@ Tags: debug, developer, testing, logs, config
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 3.0.3.1
+Stable tag: 3.0.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -106,6 +106,9 @@ https://youtu.be/36aebqdzHQw
 10. Admin bar centering tool
 
 == Changelog ==
+= 3.0.3.2 =
+* Fix: Force Update Check results not persisting after page reload due to transient being overwritten by WordPress background check and another plugin
+
 = 3.0.3.1 =
 * Update: Overhauled Force Update Check button on the Updates page to check each plugin and theme directly against the WordPress.org API in real time via AJAX, bypassing transient cache and third-party update hooks
 
