@@ -133,6 +133,8 @@ class AdminArea {
 
     /**
      * Enqueue assets for User Profile Edit page
+     * 
+     * @param string $hook The current admin page hook suffix.
      */
     public function enqueue_user_profile_edit( $hook ) {
         if ( $hook !== 'user-edit.php' ) {
@@ -218,9 +220,8 @@ class AdminArea {
     /**
      * Add the post/page ID column content
      *
-     * @param mixed $value
      * @param string $column_name
-     * @param int $user_id
+     * @param int $post_id
      * @return string
      */
     public function post_column_content( $column_name, $post_id ) {
