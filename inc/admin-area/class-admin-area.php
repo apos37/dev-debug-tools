@@ -76,6 +76,7 @@ class AdminArea {
             add_action( 'wp_ajax_ddtt_commit_update_results', [ $this, 'ajax_commit_update_results' ] );
             add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'protect_plugin_update_transient' ] );
             add_filter( 'pre_set_site_transient_update_themes', [ $this, 'protect_theme_update_transient' ] );
+            add_action( 'upgrader_process_complete', [ $this, 'clear_protected_update_transients' ], 10, 2 );
         }
 
         // Enqueue admin area assets
@@ -451,6 +452,7 @@ class AdminArea {
                 'local_version' => $local_version,
                 'new_version'   => $remote_version,
                 'download_link' => $response->download_link ?? '',
+                'tested'        => $response->tested ?? '',
             ] );
         }
 
@@ -510,6 +512,7 @@ class AdminArea {
                 'local_version' => $local_version,
                 'new_version'   => $remote_version,
                 'download_link' => $response->download_link ?? '',
+                'tested'        => $response->tested ?? '',
             ] );
         }
 
@@ -561,6 +564,7 @@ class AdminArea {
                     'new_version' => $update[ 'new_version' ],
                     'url'         => 'https://wordpress.org/plugins/' . $slug . '/',
                     'package'     => $update[ 'download_link' ],
+                    'tested'      => $update[ 'tested' ] ?? '',
                     'icons'       => [
                         '1x' => 'https://ps.w.org/' . $slug . '/assets/icon-128x128.png',
                         '2x' => 'https://ps.w.org/' . $slug . '/assets/icon-256x256.png',
@@ -603,6 +607,7 @@ class AdminArea {
                     'new_version' => $update[ 'new_version' ],
                     'url'         => 'https://wordpress.org/themes/' . $stylesheet . '/',
                     'package'     => $update[ 'download_link' ],
+                    'tested'      => $update[ 'tested' ] ?? '',
                     'icons'       => [
                         '1x' => 'https://ts.w.org/' . $stylesheet . '/screenshot.png?ver=' . $update[ 'new_version' ],
                     ],
@@ -676,6 +681,49 @@ class AdminArea {
 
         return $value;
     } // End protect_theme_update_transient()
+
+
+    /**
+     * Clear protected update transients after upgrades complete.
+     *
+     * @param \WP_Upgrader $upgrader
+     * @param array        $hook_extra
+     */
+    public function clear_protected_update_transients( $upgrader, $hook_extra ) {
+        $type = $hook_extra[ 'type' ] ?? '';
+
+        if ( $type === 'plugin' ) {
+            $plugins   = isset( $hook_extra[ 'plugins' ] ) ? $hook_extra[ 'plugins' ] : [];
+            $plugin    = isset( $hook_extra[ 'plugin' ] ) ? [ $hook_extra[ 'plugin' ] ] : [];
+            $updated   = array_merge( $plugins, $plugin );
+            $protected = get_site_transient( 'ddtt_protected_plugin_updates' );
+
+            if ( ! empty( $protected ) && ! empty( $updated ) ) {
+                foreach ( $updated as $plugin_file ) {
+                    unset( $protected[ $plugin_file ] );
+                }
+                empty( $protected )
+                    ? delete_site_transient( 'ddtt_protected_plugin_updates' )
+                    : set_site_transient( 'ddtt_protected_plugin_updates', $protected, 12 * HOUR_IN_SECONDS );
+            }
+        }
+
+        if ( $type === 'theme' ) {
+            $themes    = isset( $hook_extra[ 'themes' ] ) ? $hook_extra[ 'themes' ] : [];
+            $theme     = isset( $hook_extra[ 'theme' ] ) ? [ $hook_extra[ 'theme' ] ] : [];
+            $updated   = array_merge( $themes, $theme );
+            $protected = get_site_transient( 'ddtt_protected_theme_updates' );
+
+            if ( ! empty( $protected ) && ! empty( $updated ) ) {
+                foreach ( $updated as $stylesheet ) {
+                    unset( $protected[ $stylesheet ] );
+                }
+                empty( $protected )
+                    ? delete_site_transient( 'ddtt_protected_theme_updates' )
+                    : set_site_transient( 'ddtt_protected_theme_updates', $protected, 12 * HOUR_IN_SECONDS );
+            }
+        }
+    } // End clear_protected_update_transients()
 
 
     /**
