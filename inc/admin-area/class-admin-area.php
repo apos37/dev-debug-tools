@@ -71,7 +71,8 @@ class AdminArea {
         }
 
         if ( get_option( 'ddtt_force_updates_check', true ) ) {
-            add_action( 'current_screen', [ $this, 'maybe_force_update_check' ] );
+            add_action( 'wp_ajax_ddtt_force_check_single_plugin', [ $this, 'ajax_force_check_single_plugin' ] );
+            add_action( 'wp_ajax_ddtt_force_check_single_theme', [ $this, 'ajax_force_check_single_theme' ] );
         }
 
         // Enqueue admin area assets
@@ -396,41 +397,165 @@ class AdminArea {
 
 
     /**
-     * Handle the force update check action for both plugins and themes.
+     * AJAX: Check a single plugin against the WP.org or external API and inject into transient.
      */
-    public function maybe_force_update_check( $screen ) {
-        if ( ! in_array( $screen->id, [ 'update-core', 'update-core-network' ], true ) ) {
-            return;
+    public function ajax_force_check_single_plugin() {
+        $nonce = isset( $_POST[ 'nonce' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'nonce' ] ) ) : '';
+        if ( ! wp_verify_nonce( $nonce, 'force_update_check' ) || ! current_user_can( 'update_plugins' ) ) {
+            wp_send_json_error();
         }
 
-        $force_check = isset( $_GET[ 'force_update_check' ] ) ? sanitize_text_field( wp_unslash( $_GET[ 'force_update_check' ] ) ) : '';
-        if ( ! $force_check ) {
-            return;
+        $plugin = isset( $_POST[ 'plugin' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'plugin' ] ) ) : '';
+        $slug   = isset( $_POST[ 'slug' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'slug' ] ) ) : '';
+
+        if ( ! $plugin || ! $slug ) {
+            wp_send_json_error();
         }
 
-        if ( ! current_user_can( 'update_plugins' ) && ! current_user_can( 'update_themes' ) ) {
-            wp_die( 'Unauthorized' );
+        if ( ! function_exists( 'plugins_api' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
         }
 
-        $nonce = isset( $_GET[ '_wpnonce' ] ) ? sanitize_text_field( wp_unslash( $_GET[ '_wpnonce' ] ) ) : '';
-        if ( ! wp_verify_nonce( $nonce, 'force_update_check' ) ) {
-            wp_die( 'Unauthorized' );
+        $plugin_data   = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin );
+        $local_version = $plugin_data[ 'Version' ] ?? '0';
+
+        $api_url  = 'https://api.wordpress.org/plugins/info/1.0/' . $slug . '.json';
+        $request  = wp_remote_get( $api_url );
+
+        if ( is_wp_error( $request ) ) {
+            wp_send_json_success( [
+                'plugin'     => $plugin,
+                'has_update' => false,
+                'error'      => 'WP_Error: ' . $request->get_error_message(),
+            ] );
         }
 
-        if ( current_user_can( 'update_plugins' ) ) {
-            $this->delete_plugin_update_check_transients();
-            delete_site_transient( 'update_plugins' );
-            wp_update_plugins();
+        $body     = wp_remote_retrieve_body( $request );
+        $response = json_decode( $body );
+
+        if ( empty( $response ) || ! empty( $response->error ) ) {
+            wp_send_json_success( [
+                'plugin'     => $plugin,
+                'has_update' => false,
+                'error'      => 'Not found on WordPress.org',
+            ] );
         }
 
-        if ( current_user_can( 'update_themes' ) ) {
-            delete_site_transient( 'update_themes' );
-            wp_update_themes();
+        $remote_version = $response->version ?? '0';
+
+        if ( version_compare( $remote_version, $local_version, '>' ) ) {
+            $transient = get_site_transient( 'update_plugins' );
+
+            if ( ! is_object( $transient ) ) {
+                $transient = new \stdClass();
+            }
+
+            if ( ! isset( $transient->response ) ) {
+                $transient->response = [];
+            }
+
+            $transient->response[ $plugin ] = (object) [
+                'id'          => 'w.org/plugins/' . $slug,
+                'slug'        => $slug,
+                'plugin'      => $plugin,
+                'new_version' => $remote_version,
+                'url'         => 'https://wordpress.org/plugins/' . $slug . '/',
+                'package'     => $response->download_link ?? '',
+                'icons'       => [
+                    '1x' => 'https://ps.w.org/' . $slug . '/assets/icon-128x128.png',
+                    '2x' => 'https://ps.w.org/' . $slug . '/assets/icon-256x256.png',
+                ],
+            ];
+
+            set_site_transient( 'update_plugins', $transient );
+            wp_send_json_success( [ 'has_update' => true ] );
         }
 
-        wp_safe_redirect( is_multisite() ? network_admin_url( 'update-core.php' ) : admin_url( 'update-core.php' ) );
-        exit;
-    } // End maybe_force_update_check()
+        wp_send_json_success( [ 
+            'plugin'     => $plugin,
+            'has_update' => false,
+            'response'   => $response 
+        ] );
+    } // End ajax_force_check_single_plugin()
+
+
+    /**
+     * AJAX: Check a single theme against the WP.org API and inject into transient.
+     */
+    public function ajax_force_check_single_theme() {
+        $nonce = isset( $_POST[ 'nonce' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'nonce' ] ) ) : '';
+        if ( ! wp_verify_nonce( $nonce, 'force_update_check' ) || ! current_user_can( 'update_themes' ) ) {
+            wp_send_json_error();
+        }
+
+        $stylesheet = isset( $_POST[ 'stylesheet' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'stylesheet' ] ) ) : '';
+
+        if ( ! $stylesheet ) {
+            wp_send_json_error();
+        }
+
+        if ( ! function_exists( 'themes_api' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/theme.php';
+        }
+
+        $theme         = wp_get_theme( $stylesheet );
+        $local_version = $theme->get( 'Version' ) ?? '0';
+
+        $api_url  = 'https://api.wordpress.org/themes/info/1.1/?action=theme_information&request[slug]=' . rawurlencode( $stylesheet ) . '&request[fields][version]=1';
+        $request  = wp_remote_get( $api_url );
+
+        if ( is_wp_error( $request ) ) {
+            wp_send_json_success( [
+                'theme'      => $stylesheet,
+                'has_update' => false,
+                'error'      => 'WP_Error: ' . $request->get_error_message(),
+            ] );
+        }
+
+        $body     = wp_remote_retrieve_body( $request );
+        $response = json_decode( $body );
+
+        if ( empty( $response ) || ! empty( $response->error ) ) {
+            wp_send_json_success( [
+                'theme'      => $stylesheet,
+                'has_update' => false,
+                'error'      => 'Not found on WordPress.org',
+            ] );
+        }
+
+        $remote_version = $response->version ?? '0';
+
+        if ( version_compare( $remote_version, $local_version, '>' ) ) {
+            $transient = get_site_transient( 'update_themes' );
+
+            if ( ! is_object( $transient ) ) {
+                $transient = new \stdClass();
+            }
+
+            if ( ! isset( $transient->response ) ) {
+                $transient->response = [];
+            }
+
+            $transient->response[ $stylesheet ] = [
+                'theme'       => $stylesheet,
+                'new_version' => $remote_version,
+                'url'         => 'https://wordpress.org/themes/' . $stylesheet . '/',
+                'package'     => $response->download_link ?? '',
+                'icons'       => [
+                    '1x' => 'https://ts.w.org/' . $stylesheet . '/screenshot.png?ver=' . $remote_version,
+                ],
+            ];
+
+            set_site_transient( 'update_themes', $transient );
+            wp_send_json_success( [ 'has_update' => true ] );
+        }
+
+        wp_send_json_success( [ 
+            'theme'      => $stylesheet,
+            'has_update' => false,
+            'response'   => $response
+        ] );
+    } // End ajax_force_check_single_theme()
 
 
     /**
@@ -456,10 +581,13 @@ class AdminArea {
 
 
     /**
-     * Enqueue admin area assets
+     * Enqueue admin area assets.
+     * 
+     * @param string $hook The current admin page hook suffix.
      */
     public function enqueue_assets( $hook ) : void {
         $version = Bootstrap::script_version();
+        $is_test_mode = Bootstrap::is_test_mode();
 
         
         /**
@@ -485,7 +613,7 @@ class AdminArea {
         );
 
         wp_localize_script( 'ddtt-helpers', 'ddtt_helpers', [
-            'test_mode'   => Bootstrap::is_test_mode(),
+            'test_mode'   => $is_test_mode,
             'plugin_root' => Bootstrap::url(),
         ] );
 
@@ -537,10 +665,51 @@ class AdminArea {
                 true
             );
 
+            if ( ! function_exists( 'get_plugins' ) ) {
+                require_once ABSPATH . 'wp-admin/includes/plugin.php';
+            }
+
+            $all_plugins    = get_plugins();
+            $plugin_list    = [];
+            foreach ( $all_plugins as $file => $data ) {
+                $slug = $data[ 'TextDomain' ] ?? '';
+                if ( ! $slug ) {
+                    continue;
+                }
+                $plugin_list[] = [
+                    'file' => $file,
+                    'slug' => $slug,
+                    'name' => $data[ 'Name' ] ?? $slug,
+                ];
+            }
+            usort( $plugin_list, function( $a, $b ) {
+                return strcmp( $a[ 'name' ], $b[ 'name' ] );
+            } );
+
+            $all_themes  = wp_get_themes();
+            $theme_list  = [];
+            foreach ( $all_themes as $stylesheet => $theme ) {
+                $theme_list[] = [
+                    'stylesheet' => $stylesheet,
+                    'name'       => $theme->get( 'Name' ) ?? $stylesheet,
+                ];
+            }
+            usort( $theme_list, function( $a, $b ) {
+                return strcmp( $a[ 'name' ], $b[ 'name' ] );
+            } );
+
             wp_localize_script( 'ddtt-updates-page', 'ddtt_updates', [
-                    'nonce'      => wp_create_nonce( 'force_update_check' ),
-                    'update_url' => is_multisite() ? network_admin_url( 'update-core.php' ): admin_url( 'update-core.php' ),
-                    'btn_label'  => __( 'Force Update Check', 'dev-debug-tools' ),
+                'nonce'     => wp_create_nonce( 'force_update_check' ),
+                'plugins'   => $plugin_list,
+                'themes'    => $theme_list,
+                'btn_label' => __( 'Force Update Check', 'dev-debug-tools' ),
+                'test_mode' => $is_test_mode,
+                'i18n'      => [
+                    'checking'       => __( 'Checking', 'dev-debug-tools' ),
+                    'plugin_updates' => __( 'plugin update(s) found', 'dev-debug-tools' ),
+                    'theme_updates'  => __( 'theme update(s) found', 'dev-debug-tools' ),
+                    'all_up_to_date' => __( 'Everything is up to date.', 'dev-debug-tools' ),
+                ],
             ] );
         }
     } // End enqueue_assets()

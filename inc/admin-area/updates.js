@@ -1,19 +1,110 @@
-// Helper logs
 DevDebugTools.Helpers.log_file_path();
 DevDebugTools.Helpers.log_localization( 'ddtt_updates' );
 
-// Now start jQuery
 jQuery( function( $ ) {
 
     var title = $( '.wrap h1' );
-    if ( title.length ) {
-        var btn = $( '<a>', {
-            href: ddtt_updates.update_url + '?force_update_check=1&_wpnonce=' + ddtt_updates.nonce,
-            class: 'button button-primary',
-            text: ddtt_updates.btn_label
-        } ).css( 'margin-left', '1em' );
-
-        title.append( btn );
+    if ( ! title.length ) {
+        return;
     }
+
+    var btn = $( '<button>', {
+        id:    'ddtt-force-update-check',
+        class: 'button button-primary',
+        text:  ddtt_updates.btn_label,
+    } );
+
+    var notice = $( '<span>', {
+        id:  'ddtt-force-update-notice',
+        class: 'notice inline'
+    } );
+
+    title.wrap( '<div id="ddtt-update-wrapper"></div>' );
+    title.after( notice ).after( btn );
+
+    btn.on( 'click', function() {
+        btn.prop( 'disabled', true );
+        notice.html( '' ).removeClass( 'notice-warning notice-success' ).addClass( 'notice-info' ).css( 'display', 'inline-flex' );
+
+        var plugins = ddtt_updates.plugins;
+        var themes  = ddtt_updates.themes;
+        var plugin_updates = 0;
+        var theme_updates  = 0;
+
+        async function checkPlugin( index ) {
+            if ( index >= plugins.length ) {
+                checkTheme( 0 );
+                return;
+            }
+
+            var plugin = plugins[ index ];
+            notice.html( '<span class="dashicons dashicons-update ddtt-rotate"></span>' + ddtt_updates.i18n.checking + ' ' + plugin.name + '...' );
+
+            await $.post( ajaxurl, {
+                action : 'ddtt_force_check_single_plugin',
+                plugin : plugin.file,
+                slug   : plugin.slug,
+                nonce  : ddtt_updates.nonce,
+            } ).then( function( response ) {
+                if ( ddtt_updates.test_mode ) {
+                    console.log( 'Plugin check: ' + plugin.name, response );
+                    if ( response.data.error ) {
+                        console.log( 'Plugin error: ' + plugin.name + ' — ' + response.data.error );
+                    }
+                }
+                if ( response.success && response.data.has_update ) {
+                    plugin_updates++;
+                }
+            } );
+
+            checkPlugin( index + 1 );
+        }
+
+        async function checkTheme( index ) {
+            if ( index >= themes.length ) {
+                var parts = [];
+                if ( plugin_updates > 0 ) {
+                    parts.push( plugin_updates + ' ' + ddtt_updates.i18n.plugin_updates );
+                }
+                if ( theme_updates > 0 ) {
+                    parts.push( theme_updates + ' ' + ddtt_updates.i18n.theme_updates );
+                }
+                var summary = parts.length ? parts.join( ', ' ) : ddtt_updates.i18n.all_up_to_date;
+
+                notice.removeClass( 'notice-info' ).addClass( parts.length ? 'notice-warning' : 'notice-success' );
+                notice.html( summary );
+
+                if ( !ddtt_updates.test_mode ) {
+                    setTimeout( function() {
+                            window.location.reload();
+                    }, 3000 );
+                }
+                return;
+            }
+
+            var theme = themes[ index ];
+            notice.html( '<span class="dashicons dashicons-update ddtt-rotate"></span>' + ddtt_updates.i18n.checking + ' ' + theme.name + '...' );
+
+            await $.post( ajaxurl, {
+                action    : 'ddtt_force_check_single_theme',
+                stylesheet: theme.stylesheet,
+                nonce     : ddtt_updates.nonce,
+            } ).then( function( response ) {
+                if ( ddtt_updates.test_mode ) {
+                    console.log( 'Theme check: ' + theme.name, response );
+                    if ( response.data.error ) {
+                        console.log( 'Theme error: ' + theme.name + ' — ' + response.data.error );
+                    }
+                }
+                if ( response.success && response.data.has_update ) {
+                    theme_updates++;
+                }
+            } );
+
+            checkTheme( index + 1 );
+        }
+
+        checkPlugin( 0 );
+    } );
 
 } );
