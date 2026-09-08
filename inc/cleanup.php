@@ -204,6 +204,7 @@ class Cleanup {
             'ql_user_id',
             'ql_post_id',
             'ql_comment_id',
+            'ql_menu_item_id',
             'ids_in_search',
             'plugins_page_data',
             'plugins_page_size',

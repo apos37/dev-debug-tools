@@ -71,7 +71,7 @@ if ( ! $last_viewed_version || version_compare( $plugin_version, $last_viewed_ve
 
             <h1 id="ddtt-header-title"><?php echo esc_attr( Bootstrap::name() ); ?><?php echo wp_kses_post( Helpers::multisite_suffix() ); ?></h1>
 
-            <span id="ddtt-header-version">(v <?php echo esc_html( $plugin_version ); ?>)</span>
+            <span id="ddtt-header-version" title="Clicking the plugin version toggles test mode on by setting the `ddtt_test_mode` site option to 1. You can then check that option to force script versions to time() or run other test-mode-only logic.">(v <?php echo esc_html( $plugin_version ); ?>)</span>
         </div>
 
         <div id="ddtt-header-menu">

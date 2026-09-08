@@ -707,6 +707,12 @@ class Settings {
                         'type'      => 'checkbox',
                         'default'   => true,
                     ],
+                    'ql_menu_item_id' => [
+                        'title'     => __( 'Menu Item Quick Links', 'dev-debug-tools' ),
+                        'desc'      => __( 'Adds a lightning bolt icon next to each menu item title on the Menus admin page with a quick debug link for developers to debug menu item meta.', 'dev-debug-tools' ),
+                        'type'      => 'checkbox',
+                        'default'   => true,
+                    ],
                     'ids_in_search' => [
                         'title'     => __( 'Include IDs in Admin List Table Searches', 'dev-debug-tools' ),
                         'desc'      => __( 'Allows searching by ID in the admin list tables.', 'dev-debug-tools' ),

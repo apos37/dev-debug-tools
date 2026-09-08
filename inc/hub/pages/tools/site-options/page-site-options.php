@@ -4,6 +4,15 @@ namespace Apos37\DevDebugTools;
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 $single_option = false;
+$total_options = 0;
+
+$last_view = get_option( 'ddtt_site_options_last_view', [
+    'per_page' => SiteOptions::RECORDS_PER_PAGE_DEFAULT,
+    'search'   => '',
+] );
+$per_page = absint( $last_view[ 'per_page' ] ?? SiteOptions::RECORDS_PER_PAGE_DEFAULT );
+$per_page = $per_page > 0 ? $per_page : SiteOptions::RECORDS_PER_PAGE_DEFAULT;
+$all_options = [];
 
 // Lookup a single site option
 if ( isset( $_GET[ 'lookup' ] ) && isset( $_GET[ '_wpnonce' ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET[ '_wpnonce' ] ) ), 'ddtt_site_option_lookup' ) ) {
@@ -24,10 +33,8 @@ if ( isset( $_GET[ 'lookup' ] ) && isset( $_GET[ '_wpnonce' ] ) && wp_verify_non
 
 // Getting all options
 } else {
-    // update_option( '__test_option_1', 'Test Value 1', false );
-    // update_option( '__test_option_2', [ 'key1' => 'value1', 'key2' => 'value2' ] );
-    // update_option( '__test_option_3', serialize( [ 'a', 'b', 'c' ] ), false );
-    $all_options = SiteOptions::get_site_options();
+    $total_options = SiteOptions::get_options_count( $last_view[ 'search' ] ?? '' );
+    $all_options = SiteOptions::get_site_options_page( 1, $per_page, $last_view[ 'search' ] ?? '' );
 }
 
 $tool_settings = SiteOptions::settings();
@@ -80,8 +87,10 @@ if ( $autoload_total < 300000 ) {
 }
 ?>
 
-<section id="ddtt-autoload-stats-section" class="ddtt-section-content">
-    <h3><?php echo esc_html__( 'Autoload Size Summary', 'dev-debug-tools' ); ?></h3>
+<section id="ddtt-autoload-stats-section" class="ddtt-section-content ddtt-collapsed">
+    <h3 class="ddtt-collapsible-toggle" data-target="ddtt-autoload-stats-content"><?php echo esc_html__( 'Autoload Size Summary', 'dev-debug-tools' ); ?> <span class="ddtt-collapse-arrow">&#9656;</span></h3>
+
+    <div id="ddtt-autoload-stats-content" class="ddtt-collapsible-content">
 
     <p>
         <?php echo esc_html__( 'Total autoloaded size:', 'dev-debug-tools' ); ?>
@@ -136,6 +145,9 @@ if ( $autoload_total < 300000 ) {
             <?php endforeach; ?>
         </tbody>
     </table>
+
+    </div>
+
 </section>
 
 <?php if ( ! empty( $single_option ) ) : ?>
@@ -148,124 +160,43 @@ if ( $autoload_total < 300000 ) {
 <?php else : ?>
 
     <section id="ddtt-tool-section" class="ddtt-all-options ddtt-section-content">
-        <h3><?php echo esc_html__( 'Total # of Options:', 'dev-debug-tools' ); ?> <?php echo esc_html( count( $all_options ) ); ?></h3>
+        <div class="ddtt-title-addnew">
+            <h3><?php echo esc_html__( 'Total # of Options:', 'dev-debug-tools' ); ?> <span id="ddtt-options-total-count"><?php echo esc_html( $total_options ); ?></span></h3>
+            <button id="ddtt-add-new-option" class="ddtt-button">+ <?php esc_html_e( 'Add New Option', 'dev-debug-tools' ); ?></button>
+        </div>
         <p><strong><?php echo esc_html__( 'Note:', 'dev-debug-tools' ); ?></strong> <?php echo wp_kses( __( 'Some options may be labeled as <em>Unknown Source</em>. This can happen because we cannot reliably determine the source for dynamically created or runtime-generated options. Options registered or used exclusively via dynamic code, custom hooks, or without static references in plugin or theme files may not be detected by the static scanning method. Additionally, some options might be remnants from old plugins or themes no longer in use, which also results in an unknown source.', 'dev-debug-tools' ), [ 'em' => [] ] ); ?></p>
 
-        <table class="ddtt-table">
+        <p class="ddtt-notice-inline ddtt-warning"><strong><?php echo esc_html__( 'Caution:', 'dev-debug-tools' ); ?></strong> <?php echo wp_kses( __( 'Editing or deleting site options directly can break your site if done carelessly. Use this feature at your own risk. It is a good idea to first test with a newly-created option before touching existing ones, and to copy an option\'s current value somewhere safe before editing it, so you can restore it if something goes wrong.', 'dev-debug-tools' ), [] ); ?></p>
+
+        <div class="ddtt-options-toolbar">
+            <input type="search" id="ddtt-options-search" placeholder="<?php esc_attr_e( 'Search options…', 'dev-debug-tools' ); ?>" value="<?php echo esc_attr( $last_view[ 'search' ] ?? '' ); ?>">
+
+            <select id="ddtt-records-per-page">
+                <option value="10"<?php echo ( $per_page == 10 ) ? ' selected' : ''; ?>><?php esc_html_e( '10 per page', 'dev-debug-tools' ); ?></option>
+                <option value="25"<?php echo ( $per_page == 25 ) ? ' selected' : ''; ?>><?php esc_html_e( '25 per page', 'dev-debug-tools' ); ?></option>
+                <option value="50"<?php echo ( $per_page == 50 ) ? ' selected' : ''; ?>><?php esc_html_e( '50 per page', 'dev-debug-tools' ); ?></option>
+                <option value="100"<?php echo ( $per_page == 100 ) ? ' selected' : ''; ?>><?php esc_html_e( '100 per page', 'dev-debug-tools' ); ?></option>
+            </select>
+        </div>
+
+        <?php $total_pages = max( 1, (int) ceil( $total_options / $per_page ) ); ?>
+        <table class="ddtt-table" id="ddtt-options-table" data-page="1" data-per-page="<?php echo esc_attr( $per_page ); ?>" data-search="<?php echo esc_attr( $last_view[ 'search' ] ?? '' ); ?>" data-total="<?php echo esc_attr( $total_options ); ?>" data-total-pages="<?php echo esc_attr( $total_pages ); ?>">
             <thead>
                 <tr>
                     <th style="width: 30px;" class="ddtt-edit-mode-only"><?php echo esc_html__( 'Delete', 'dev-debug-tools' ); ?></th>
                     <th style="width: 300px;"><?php echo esc_html__( 'Registered Setting/Option', 'dev-debug-tools' ); ?></th>
+                    <th style="width: 90px;"><?php echo esc_html__( 'Autoload', 'dev-debug-tools' ); ?></th>
                     <th style="width: 300px;"><?php echo esc_html__( 'Option Details', 'dev-debug-tools' ); ?></th>
                     <th><?php echo esc_html__( 'Value', 'dev-debug-tools' ); ?></th>
+                    <th style="width: 90px;"><?php echo esc_html__( 'Actions', 'dev-debug-tools' ); ?></th>
                 </tr>
             </thead>
             <tbody>
-                <?php
-                // Allowed kses
-                $allowed_html = [ 
-                    'pre'  => [], 
-                    'br'   => [], 
-                    'code' => [], 
-                    'a'    => [ 
-                        'href'  => [], 
-                        'class' => [] 
-                    ], 
-                    'span' => [ 
-                        'class' => [], 
-                        'style' => [] 
-                    ]
-                ];
-
-                // Prefixes for known plugins
-                $plugin_label = __( 'Plugin', 'dev-debug-tools' );
-
-                $prefixes = [
-                    'ddtt_'                   => $plugin_label . ': Developer Debug Tools',
-                    'blnotifier_'             => $plugin_label . ': Broken Link Notifier',
-                    'clear_cache_everywhere_' => $plugin_label . ': Clear Cache Everywhere',
-                    'cscompanion_'            => $plugin_label . ': Cornerstone Companion',
-                    'cornerstone_'            => $plugin_label . ': Cornerstone',
-                    'css-organizer-'          => $plugin_label . ': CSS Organizer',
-                    'erifl-'                  => $plugin_label . ': ERI File Library',
-                    'gfat_'                   => $plugin_label . ': Advanced Tools for Gravity Forms',
-                    'gravityformsaddon_'      => $plugin_label . ': A Gravity Forms Add-On',
-                    'helpdocs_'               => $plugin_label . ': Admin Help Docs',
-                    'role_visibility_'        => $plugin_label . ': Role Visibility',
-                    'uamonitor_'              => $plugin_label . ': User Account Monitor',
-                    'wcagaat_'                => $plugin_label . ': WCAG Admin Accessibility Tools',
-                    'wp_mail_logging_'        => $plugin_label . ': WP Mail Logging',
-                    'wp_mail_smtp_'           => $plugin_label . ': WP Mail SMTP',
-                ];
-
-                if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
-                    $prefixes[ 'gf_' ]    = $plugin_label . ': Gravity Forms';
-                    $prefixes[ 'gform_' ] = $plugin_label . ': Gravity Forms';
-                }
-
-                $prefixes = apply_filters( 'ddtt_site_option_prefixes', $prefixes );
-
-                // Loop through all options
-                foreach ( $all_options as $option => $data ) {
-                    $value    = $data[ 'value' ];
-                    $source   = $data[ 'source' ][ 'name' ] ?? 'Unknown Source';
-                    $type     = $data[ 'source' ][ 'type' ] ?? 'unknown';
-                    $autoload = $data[ 'autoload' ] ?? 'unknown';
-
-                    $group = $reg_options[ $option ][ 'group' ] ?? '';
-
-                    // Override source/type if matched by prefix
-                    $found_prefix = false;
-                    foreach ( $prefixes as $prefix => $prefix_source ) {
-                        if ( strpos( $option, $prefix ) === 0 ) {
-                            $source       = $prefix_source;
-                            $type         = 'plugin';
-                            $found_prefix = true;
-                            break;
-                        }
-                    }
-
-                    /* translators: %s: Source label HTML, Group name, Autoload status, Size */
-                    $option_details = sprintf(
-                        '%1$s<br>%2$s %3$s<br>%4$s %5$s<br>%6$s %7$s',
-                        '<span class="ddtt-source-label ddtt-type-' . esc_attr( $type ) . '">' . esc_html( $source ) . '</span>',
-                        esc_html__( 'Group:', 'dev-debug-tools' ),
-                        esc_html( $group ?: '—' ),
-                        esc_html__( 'Autoload:', 'dev-debug-tools' ),
-                        esc_html( $autoload ),
-                        esc_html__( 'Size:', 'dev-debug-tools' ),
-                        esc_html( Helpers::format_bytes( $data['size'] ?? strlen( maybe_serialize( $value ) ) ) )
-                    );
-
-                    $formatted_value = Helpers::print_stored_value_to_table( $value );
-
-                    $display_value = Helpers::truncate_string( $formatted_value, true );
-
-                    ?>
-                    <tr id="<?php echo esc_html( $option ); ?>" class="ddtt-source-type ddtt-type-<?php echo esc_attr( $type ); ?>" data-source="<?php echo esc_attr( $source ); ?>" data-group="<?php echo esc_attr( $group ); ?>">
-                        <?php
-                        $is_ddtt   = ( $option === 'ddtt_deleted_site_options' );
-                        $is_core   = ( $source === 'Core (WordPress)' );
-                        $is_disabled = ( $is_ddtt || $is_core );
-                        $disabled_reason = $is_ddtt ? __( 'This option belongs to Developer Debug Tools and cannot be deleted.', 'dev-debug-tools' )
-                                        : ( $is_core ? __( 'This is a WordPress core option and cannot be deleted.', 'dev-debug-tools' ) : '' );
-                        ?>
-                        <td class="ddtt-edit-mode-only">
-                            <input type="checkbox"
-                                name="ddtt_bulk_delete[]"
-                                value="<?php echo esc_attr( $option ); ?>"
-                                <?php disabled( $is_disabled ); ?>
-                                <?php echo $is_disabled ? 'title="' . esc_attr( $disabled_reason ) . '"' : ''; ?>>
-                        </td>
-                        <td><span class="ddtt-highlight-variable"><?php echo esc_html( $option ); ?></span></td>
-                        <td><?php echo wp_kses( $option_details, $allowed_html ); ?></td>
-                        <td><?php echo wp_kses_post( $display_value ); ?></td>
-                    </tr>
-                    <?php
-                }
-                ?>
+                <?php SiteOptions::render_options_rows( $all_options ); ?>
             </tbody>
         </table>
+
+        <div id="ddtt-options-pagination" class="ddtt-pagination"></div>
     </section>
 
 <?php endif; ?>

@@ -14,7 +14,15 @@ class SiteOptions {
      *
      * @var bool
      */
-    public const CACHE_SITE_OPTION_SOURCES = false;
+    public const CACHE_SITE_OPTION_SOURCES = true;
+
+
+    /**
+     * Default number of records per page for pagination
+     *
+     * @var int
+     */
+    public const RECORDS_PER_PAGE_DEFAULT = 10;
 
 
     /**
@@ -251,6 +259,14 @@ class SiteOptions {
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
         add_action( 'wp_ajax_ddtt_bulk_delete', [ $this, 'ajax_bulk_delete' ] );
         add_action( 'wp_ajax_nopriv_ddtt_bulk_delete', '__return_false' );
+        add_action( 'wp_ajax_ddtt_update_site_option_value', [ $this, 'ajax_update_site_option_value' ] );
+        add_action( 'wp_ajax_nopriv_ddtt_update_site_option_value', '__return_false' );
+        add_action( 'wp_ajax_ddtt_add_site_option', [ $this, 'ajax_add_site_option' ] );
+        add_action( 'wp_ajax_nopriv_ddtt_add_site_option', '__return_false' );
+        add_action( 'wp_ajax_ddtt_delete_site_option', [ $this, 'ajax_delete_site_option' ] );
+        add_action( 'wp_ajax_nopriv_ddtt_delete_site_option', '__return_false' );
+        add_action( 'wp_ajax_ddtt_get_site_options_page', [ $this, 'ajax_get_site_options_page' ] );
+        add_action( 'wp_ajax_nopriv_ddtt_get_site_options_page', '__return_false' );
     } // End __construct()
 
 
@@ -354,6 +370,227 @@ class SiteOptions {
 
         return $all_options;
     } // End get_site_options()
+
+
+    /**
+     * Get the total count of site options, optionally filtered by search.
+     *
+     * @param string $search Optional search term to filter option names.
+     * @return int
+     */
+    public static function get_options_count( string $search = '' ) : int {
+        global $wpdb;
+
+        if ( $search ) {
+            return (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE %s",
+                '%' . $wpdb->esc_like( $search ) . '%'
+            ) );
+        }
+
+        return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->options}" );
+    } // End get_options_count()
+
+
+    /**
+     * Get a single page of site options, optionally filtered by search.
+     *
+     * @param int $page The page number to retrieve.
+     * @param int $per_page The number of options per page.
+     * @param string $search Optional search term to filter option names.
+     * @return array
+     */
+    public static function get_site_options_page( int $page, int $per_page, string $search = '' ) : array {
+        global $wpdb;
+
+        $offset = ( $page - 1 ) * $per_page;
+
+        if ( $search ) {
+            $rows = $wpdb->get_results( $wpdb->prepare(
+                "SELECT option_name, option_value, autoload FROM {$wpdb->options} WHERE option_name LIKE %s ORDER BY option_name ASC LIMIT %d OFFSET %d",
+                '%' . $wpdb->esc_like( $search ) . '%',
+                $per_page,
+                $offset
+            ), ARRAY_A );
+        } else {
+            $rows = $wpdb->get_results( $wpdb->prepare(
+                "SELECT option_name, option_value, autoload FROM {$wpdb->options} ORDER BY option_name ASC LIMIT %d OFFSET %d",
+                $per_page,
+                $offset
+            ), ARRAY_A );
+        }
+
+        if ( ! is_array( $rows ) ) {
+            return [];
+        }
+
+        $sources = get_transient( 'ddtt_option_sources' );
+        if ( ! self::CACHE_SITE_OPTION_SOURCES || ! $sources ) {
+            $sources = self::detect_option_sources();
+            set_transient( 'ddtt_option_sources', $sources, HOUR_IN_SECONDS );
+        }
+
+        $reg_settings = get_registered_settings();
+        $option_groups = [];
+        foreach ( $reg_settings as $name => $setting_args ) {
+            if ( isset( $setting_args[ 'option_group' ] ) ) {
+                $option_groups[ $name ] = $setting_args[ 'option_group' ];
+            }
+        }
+
+        $page_options = [];
+        foreach ( $rows as $row ) {
+            $name = $row[ 'option_name' ];
+            $page_options[ $name ] = [
+                'value'    => $row[ 'option_value' ],
+                'source'   => $sources[ $name ] ?? [ 'type' => 'unknown', 'name' => 'Unknown' ],
+                'autoload' => $row[ 'autoload' ],
+                'group'    => $option_groups[ $name ] ?? '',
+                'size'     => strlen( maybe_serialize( $row[ 'option_value' ] ) ),
+            ];
+        }
+
+        return $page_options;
+    } // End get_site_options_page()
+
+
+    /**
+     * Render the option rows for the given options array.
+     *
+     * @param array $options The options to render.
+     * @return void
+     */
+    public static function render_options_rows( array $options ) : void {
+        $allowed_html = [
+            'pre'  => [],
+            'br'   => [],
+            'code' => [],
+            'a'    => [ 'href' => [], 'class' => [] ],
+            'span' => [ 'class' => [], 'style' => [] ],
+        ];
+
+        $plugin_label = __( 'Plugin', 'dev-debug-tools' );
+
+        $prefixes = [
+            'ddtt_'                   => $plugin_label . ': Developer Debug Tools',
+            'blnotifier_'             => $plugin_label . ': Broken Link Notifier',
+            'clear_cache_everywhere_' => $plugin_label . ': Clear Cache Everywhere',
+            'cscompanion_'            => $plugin_label . ': Cornerstone Companion',
+            'cornerstone_'            => $plugin_label . ': Cornerstone',
+            'css-organizer-'          => $plugin_label . ': CSS Organizer',
+            'erifl-'                  => $plugin_label . ': ERI File Library',
+            'gfat_'                   => $plugin_label . ': Advanced Tools for Gravity Forms',
+            'gravityformsaddon_'      => $plugin_label . ': A Gravity Forms Add-On',
+            'helpdocs_'               => $plugin_label . ': Admin Help Docs',
+            'role_visibility_'        => $plugin_label . ': Role Visibility',
+            'uamonitor_'              => $plugin_label . ': User Account Monitor',
+            'wcagaat_'                => $plugin_label . ': WCAG Admin Accessibility Tools',
+            'wp_mail_logging_'        => $plugin_label . ': WP Mail Logging',
+            'wp_mail_smtp_'           => $plugin_label . ': WP Mail SMTP',
+        ];
+
+        if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
+            $prefixes[ 'gf_' ]    = $plugin_label . ': Gravity Forms';
+            $prefixes[ 'gform_' ] = $plugin_label . ': Gravity Forms';
+        }
+
+        $prefixes = apply_filters( 'ddtt_site_option_prefixes', $prefixes );
+
+        foreach ( $options as $option => $data ) {
+            $value    = $data[ 'value' ];
+            $source   = $data[ 'source' ][ 'name' ] ?? 'Unknown Source';
+            $type     = $data[ 'source' ][ 'type' ] ?? 'unknown';
+            $autoload = $data[ 'autoload' ] ?? 'unknown';
+            $group    = $data[ 'group' ] ?? '';
+
+            foreach ( $prefixes as $prefix => $prefix_source ) {
+                if ( strpos( $option, $prefix ) === 0 ) {
+                    $source = $prefix_source;
+                    $type   = 'plugin';
+                    break;
+                }
+            }
+
+            $option_details = sprintf(
+                '<span class="ddtt-highlight-variable ddtt-type-%1$s">%2$s</span><br>%3$s %4$s<br>%5$s %6$s',
+                esc_attr( $type ),
+                esc_html( $source ),
+                esc_html__( 'Group:', 'dev-debug-tools' ),
+                esc_html( $group ?: '—' ),
+                esc_html__( 'Size:', 'dev-debug-tools' ),
+                esc_html( Helpers::format_bytes( $data[ 'size' ] ?? strlen( maybe_serialize( $value ) ) ) )
+            );
+
+            $formatted_value = Helpers::print_stored_value_to_table( $value );
+            $display_value = Helpers::truncate_string( $formatted_value, true );
+
+            $is_ddtt = ( $option === 'ddtt_deleted_site_options' );
+            $is_core = ( $source === 'Core (WordPress)' );
+            $is_disabled = ( $is_ddtt || $is_core );
+            $disabled_reason = $is_ddtt ? __( 'This option belongs to Developer Debug Tools and cannot be deleted.', 'dev-debug-tools' )
+                            : ( $is_core ? __( 'This is a WordPress core option and cannot be deleted.', 'dev-debug-tools' ) : '' );
+            $autoload_value = in_array( $autoload, [ 'yes', 'on', 'auto', '1' ], true ) ? 'yes' : 'no';
+            ?>
+            <tr id="<?php echo esc_attr( $option ); ?>" class="ddtt-source-type ddtt-type-<?php echo esc_attr( $type ); ?>" data-source="<?php echo esc_attr( $source ); ?>" data-group="<?php echo esc_attr( $group ); ?>" data-protected="<?php echo $is_disabled ? '1' : '0'; ?>">
+                <td class="ddtt-edit-mode-only">
+                    <input type="checkbox"
+                        name="ddtt_bulk_delete[]"
+                        value="<?php echo esc_attr( $option ); ?>"
+                        <?php disabled( $is_disabled ); ?>
+                        <?php echo $is_disabled ? 'title="' . esc_attr( $disabled_reason ) . '"' : ''; ?>>
+                </td>
+                <td><span class="ddtt-highlight-variable"><?php echo esc_html( $option ); ?></span></td>
+                <td class="ddtt-option-autoload-cell"><?php echo esc_html( $autoload_value === 'yes' ? __( 'Yes', 'dev-debug-tools' ) : __( 'No', 'dev-debug-tools' ) ); ?></td>
+                <td><?php echo wp_kses( $option_details, $allowed_html ); ?></td>
+                <td class="ddtt-option-value-cell"><?php echo wp_kses_post( $display_value ); ?></td>
+                <td>
+                    <button class="ddtt-button ddtt-option-action-button" data-action="edit" data-option="<?php echo esc_attr( $option ); ?>" data-autoload="<?php echo esc_attr( $autoload_value ); ?>"><?php esc_html_e( 'Edit', 'dev-debug-tools' ); ?></button>
+                    <button class="ddtt-button ddtt-option-action-button" data-action="delete" data-option="<?php echo esc_attr( $option ); ?>"<?php echo $is_disabled ? ' disabled title="' . esc_attr( $disabled_reason ) . '"' : ''; ?>><?php esc_html_e( 'Delete', 'dev-debug-tools' ); ?></button>
+                </td>
+            </tr>
+            <?php
+        }
+    } // End render_options_rows()
+
+
+    /**
+     * Handle AJAX request to get a page of site options.
+     *
+     * @return void
+     */
+    public function ajax_get_site_options_page() {
+        check_ajax_referer( $this->nonce, 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( 'unauthorized' );
+        }
+
+        $page     = isset( $_POST[ 'page' ] ) ? absint( $_POST[ 'page' ] ) : 1;
+        $search   = isset( $_POST[ 'search' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'search' ] ) ) : '';
+        $per_page = isset( $_POST[ 'per_page' ] ) ? absint( $_POST[ 'per_page' ] ) : self::RECORDS_PER_PAGE_DEFAULT;
+
+        $page = max( 1, $page );
+        $per_page = $per_page > 0 ? $per_page : self::RECORDS_PER_PAGE_DEFAULT;
+
+        update_option( 'ddtt_site_options_last_view', [
+            'per_page' => $per_page,
+            'search'   => $search,
+        ] );
+
+        $total   = self::get_options_count( $search );
+        $options = self::get_site_options_page( $page, $per_page, $search );
+
+        ob_start();
+        self::render_options_rows( $options );
+        $rows_html = ob_get_clean();
+
+        wp_send_json_success( [
+            'rows'        => $rows_html,
+            'total'       => $total,
+            'total_pages' => max( 1, (int) ceil( $total / $per_page ) ),
+            'page'        => $page,
+        ] );
+    } // End ajax_get_site_options_page()
 
 
     /**
@@ -587,11 +824,29 @@ class SiteOptions {
         wp_localize_script( 'ddtt-tool-site-options', 'ddtt_site_options', [
             'nonce' => wp_create_nonce( $this->nonce ),
             'i18n'  => [
-                'confirmationNotice' => __( 'Select options to delete and click the button above. This action cannot be undone!', 'dev-debug-tools' ),
-                'confirmDelete'      => __( 'Are you sure you want to delete the selected options? This action cannot be undone!', 'dev-debug-tools' ),
-                'noneSelected'       => __( 'No options selected.', 'dev-debug-tools' ),
-                'error'              => __( 'Error deleting options.', 'dev-debug-tools' ),
-                'deleting'           => __( 'Deleting options...', 'dev-debug-tools' ),
+                'confirmationNotice'  => __( 'Select options to delete and click the button above. This action cannot be undone!', 'dev-debug-tools' ),
+                'confirmDelete'       => __( 'Are you sure you want to delete the selected options? This action cannot be undone!', 'dev-debug-tools' ),
+                'noneSelected'        => __( 'No options selected.', 'dev-debug-tools' ),
+                'error'               => __( 'Error deleting options.', 'dev-debug-tools' ),
+                'deleting'            => __( 'Deleting options...', 'dev-debug-tools' ),
+                'enterKey'            => __( 'Enter option name', 'dev-debug-tools' ),
+                'enterValue'          => __( 'Enter value', 'dev-debug-tools' ),
+                'save'                => __( 'Save', 'dev-debug-tools' ),
+                'cancel'              => __( 'Cancel', 'dev-debug-tools' ),
+                'delete'              => __( 'Delete', 'dev-debug-tools' ),
+                'edit'                => __( 'Edit', 'dev-debug-tools' ),
+                'errorSaving'         => __( 'Error saving option value.', 'dev-debug-tools' ),
+                'errorAdding'         => __( 'Error adding option.', 'dev-debug-tools' ),
+                'optionExists'        => __( 'That option already exists.', 'dev-debug-tools' ),
+                'protected'           => __( 'This option is protected and cannot be edited.', 'dev-debug-tools' ),
+                'yes'                 => __( 'Yes', 'dev-debug-tools' ),
+                'no'                  => __( 'No', 'dev-debug-tools' ),
+                'confirmDeleteOption' => __( 'Are you sure you want to delete this option? This cannot be undone.', 'dev-debug-tools' ),
+                'errorDeletingOption' => __( 'Error deleting option.', 'dev-debug-tools' ),
+                'searchPlaceholder'   => __( 'Search options…', 'dev-debug-tools' ),
+                'pageOf'              => __( 'Page %1$s of %2$s', 'dev-debug-tools' ),
+                'prev'                => __( 'Prev', 'dev-debug-tools' ),
+                'next'                => __( 'Next', 'dev-debug-tools' ),
             ],
         ] );
     } // End enqueue_assets()
@@ -657,6 +912,150 @@ class SiteOptions {
 
         wp_send_json_success( [ 'deleted' => $deleted ] );
     } // End ajax_bulk_delete()
+
+
+    /**
+     * Safely unserialize user-submitted input without allowing object injection.
+     *
+     * @param string $value The raw posted value.
+     * @return mixed
+     */
+    private static function safe_unserialize( string $value ) {
+        $unserialized = @unserialize( $value, [ 'allowed_classes' => false ] );
+        return ( $unserialized !== false || $value === 'b:0;' ) ? $unserialized : $value;
+    } // End safe_unserialize()
+
+
+    /**
+     * Handle AJAX request to update a site option's value and autoload status.
+     *
+     * @return void
+     */
+    public function ajax_update_site_option_value() {
+        check_ajax_referer( $this->nonce, 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( 'unauthorized' );
+        }
+
+        $option = isset( $_POST[ 'option' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'option' ] ) ) : '';
+        $value = isset( $_POST[ 'value' ] ) ? wp_unslash( $_POST[ 'value' ] ) : '';
+        $autoload = isset( $_POST[ 'autoload' ] ) ? sanitize_key( wp_unslash( $_POST[ 'autoload' ] ) ) : 'no';
+
+        if ( ! $option ) {
+            wp_send_json_error( 'missing_option' );
+        }
+
+        if ( $option === 'ddtt_deleted_site_options' || in_array( $option, self::get_core_option_names(), true ) ) {
+            wp_send_json_error( 'protected_option' );
+        }
+
+        $autoload = in_array( $autoload, [ 'yes', 'no' ], true ) ? $autoload : 'no';
+        $stored_value = self::safe_unserialize( $value );
+        $before = get_option( $option );
+
+        $updated = update_option( $option, $stored_value, $autoload );
+
+        if ( ! $updated && get_option( $option ) !== $stored_value && $before !== $stored_value ) {
+            apply_filters( 'ddtt_log_error', 'ajax_update_site_option_value', new \Exception( 'Failed to update site option value.' ), [ 'step' => 'update_option' ] );
+            wp_send_json_error( 'update_failed' );
+        }
+
+        $formatted_value = Helpers::print_stored_value_to_table( $stored_value );
+        $display_value = Helpers::truncate_string( $formatted_value, true );
+
+        wp_send_json_success( [
+            'value'    => $display_value,
+            'autoload' => $autoload,
+        ] );
+    } // End ajax_update_site_option_value()
+
+
+    /**
+     * Handle AJAX request to add a new site option.
+     *
+     * @return void
+     */
+    public function ajax_add_site_option() {
+        check_ajax_referer( $this->nonce, 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( 'unauthorized' );
+        }
+
+        $option = isset( $_POST[ 'option' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'option' ] ) ) : '';
+        $value = isset( $_POST[ 'value' ] ) ? wp_unslash( $_POST[ 'value' ] ) : '';
+        $autoload = isset( $_POST[ 'autoload' ] ) ? sanitize_key( wp_unslash( $_POST[ 'autoload' ] ) ) : 'no';
+
+        if ( ! $option ) {
+            wp_send_json_error( 'missing_option' );
+        }
+
+        $autoload = in_array( $autoload, [ 'yes', 'no' ], true ) ? $autoload : 'no';
+        $placeholder = '__ddtt_missing__';
+
+        if ( get_option( $option, $placeholder ) !== $placeholder ) {
+            wp_send_json_error( 'option_exists' );
+        }
+
+        $stored_value = self::safe_unserialize( $value );
+        $added = add_option( $option, $stored_value, '', $autoload );
+
+        if ( ! $added ) {
+            apply_filters( 'ddtt_log_error', 'ajax_add_site_option', new \Exception( 'Failed to add new site option.' ), [ 'step' => 'add_option' ] );
+            wp_send_json_error( 'add_failed' );
+        }
+
+        $formatted_value = Helpers::print_stored_value_to_table( $stored_value );
+        $display_value = Helpers::truncate_string( $formatted_value, true );
+
+        wp_send_json_success( [
+            'option'   => $option,
+            'value'    => $display_value,
+            'autoload' => $autoload,
+            'details'  => esc_html__( 'Unknown Source', 'dev-debug-tools' ),
+        ] );
+    } // End ajax_add_site_option()
+
+
+    /**
+     * Handle AJAX request to delete a single site option.
+     *
+     * @return void
+     */
+    public function ajax_delete_site_option() {
+        check_ajax_referer( $this->nonce, 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( 'unauthorized' );
+        }
+
+        $option = isset( $_POST[ 'option' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'option' ] ) ) : '';
+
+        if ( ! $option ) {
+            wp_send_json_error( 'missing_option' );
+        }
+
+        if ( $option === 'ddtt_deleted_site_options' || in_array( $option, self::get_core_option_names(), true ) ) {
+            wp_send_json_error( 'protected_option' );
+        }
+
+        $deleted = delete_option( $option );
+
+        if ( ! $deleted ) {
+            apply_filters( 'ddtt_log_error', 'ajax_delete_site_option', new \Exception( 'Failed to delete site option.' ), [ 'step' => 'delete_option' ] );
+            wp_send_json_error( 'delete_failed' );
+        }
+
+        $user = wp_get_current_user();
+        Helpers::write_log( sprintf(
+            'Deleted option by %s: %s',
+            $user->exists() ? $user->user_login . ' (ID ' . $user->ID . ')' : 'Unknown user',
+            $option
+        ) );
+
+        wp_send_json_success();
+    } // End ajax_delete_site_option()
 
 
     /**

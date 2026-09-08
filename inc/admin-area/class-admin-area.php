@@ -53,6 +53,11 @@ class AdminArea {
             add_filter( 'manage_edit-comments_columns', [ $this, 'comments_column' ] );
             add_action( 'manage_comments_custom_column', [ $this, 'comments_column_content' ], 999, 2 );
         }
+
+        // Menu item ID quick links
+        if ( get_option( 'ddtt_ql_menu_item_id', true ) && Helpers::is_dev() ) {
+            add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_nav_menu_quick_links' ] );
+        }
         
         // Allow searching posts/pages by id in admin area
         if ( get_option( 'ddtt_ids_in_search', true ) ) {
@@ -333,6 +338,34 @@ class AdminArea {
             }
         }
     } // End comments_column_content()
+
+
+    /**
+     * Enqueue assets for nav menu item quick links.
+     *
+     * @param string $hook The current admin page hook suffix.
+     */
+    public function enqueue_nav_menu_quick_links( $hook ) {
+        if ( $hook !== 'nav-menus.php' ) {
+            return;
+        }
+
+        $version = Bootstrap::script_version();
+        $handle = 'ddtt-nav-menu-quick-links';
+
+        wp_enqueue_script(
+            $handle,
+            Bootstrap::url( 'inc/admin-area/nav-menu-quick-links.js' ),
+            [ 'jquery' ],
+            $version,
+            true
+        );
+
+        wp_localize_script( $handle, 'ddtt_nav_menu_quick_links', [
+            'quick_link_icon' => $this->quick_link_icon(),
+            'quick_link_url'  => Metadata::post_lookup_url( '%d' ),
+        ] );
+    } // End enqueue_nav_menu_quick_links()
 
 
     /**

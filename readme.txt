@@ -2,9 +2,9 @@
 Contributors: apos37, venutius
 Tags: debug, developer, testing, logs, config
 Requires at least: 6.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 3.0.3.3
+Stable tag: 3.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -106,6 +106,16 @@ https://youtu.be/36aebqdzHQw
 10. Admin bar centering tool
 
 == Changelog ==
+* 3.0.4 =
+* Tweak: Added a title attribute on the plugin version in the header to explain what test mode does
+* Update: Added Menu Item Quick Links setting — adds a lightning bolt icon next to each menu item title on the Menus admin page for developers to quickly debug menu item meta
+* Update: Added inline editing, autoload control, and delete buttons to individual options on the Site Options tool, matching the Metadata tool's UX
+* Update: Added an "Add New Option" button to the Site Options tool for creating new options directly, with support for array/serialized values
+* Update: Added server-side pagination and a per-page dropdown (matching Database Tables tool) to the Site Options tool to fix slow loading with large option counts
+* Update: Added a search field to the Site Options tool to filter by option name
+* Tweak: Made the Autoload Size Summary section on Site Options collapsed by default, with expand/collapse toggle
+* Tweak: Site Options tool now caches option source detection (plugin/theme scan) instead of running it on every page load, improving performance
+
 = 3.0.3.3 =
 * Fix: Force Update Check incorrectly showing "Not tested" compatibility notice for plugins and themes that are tested with the current WordPress version
 * Fix: Force Update Check results not persisting after page reload due to transient being overwritten by WordPress background check or third-party plugins

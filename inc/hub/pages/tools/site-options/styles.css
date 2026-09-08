@@ -44,3 +44,112 @@
 #ddtt_bulk_delete_submit {
     margin-top: 1rem;
 }
+
+/* Add New Button */
+
+.ddtt-title-addnew {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    border-bottom: 2px solid var(--color-border);
+    margin: 1em 0;
+    padding-bottom: 0.25rem;
+}
+
+#ddtt-hub .ddtt-title-addnew h3 {
+    margin: 0;
+    padding: 0;
+    border-bottom: 0;
+}
+
+
+/* Actions Column */
+
+.ddtt-all-options .ddtt-table td:last-child {
+    white-space: nowrap;
+}
+
+#ddtt-hub .ddtt-button.ddtt-option-action-button {
+    font-size: 0.73rem;
+    white-space: nowrap;
+}
+
+button.ddtt-button.ddtt-option-action-button[data-action="delete"] {
+    background: var(--color-error) !important;
+}
+
+
+/* Search Toolbar */
+
+.ddtt-options-toolbar {
+    margin: 1rem 0;
+}
+
+#ddtt-options-search {
+    width: 300px;
+}
+
+
+/* Pagination */
+
+.ddtt-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.ddtt-pagination-label {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+#ddtt-hub .ddtt-pagination .ddtt-button:disabled,
+#ddtt-hub .ddtt-pagination .ddtt-button[disabled] {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Collapsible Section */
+
+#ddtt-hub .ddtt-collapsible-toggle {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ddtt-collapse-arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+    font-size: 0.85em;
+}
+
+.ddtt-collapsed .ddtt-collapse-arrow {
+    transform: rotate(0deg);
+}
+
+#ddtt-autoload-stats-section:not(.ddtt-collapsed) .ddtt-collapse-arrow {
+    transform: rotate(90deg);
+}
+
+.ddtt-collapsed .ddtt-collapsible-content {
+    display: none;
+}
+
+/* Caution Note */
+
+.ddtt-notice-inline {
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+
+.ddtt-notice-inline.ddtt-warning {
+    background: var(--color-warning);
+    color: black;
+}

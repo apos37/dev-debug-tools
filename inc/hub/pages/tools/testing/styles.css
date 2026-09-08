@@ -32,3 +32,161 @@
     overflow: auto;
     border-radius: 0 10px 10px 0;
 }
+
+#ddtt-playground-generator h3 {
+    margin-bottom: 0.25rem;
+}
+
+.playground-description.description {
+    margin-top: -1rem !important;
+    margin-bottom: 1rem !important;
+}
+
+#ddtt-playground-generator {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.ddtt-playground-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.ddtt-playground-field input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ddtt-playground-field select,
+.ddtt-playground-field input {
+    width: 100%;
+}
+
+#ddtt-playground-url {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary, #555);
+}
+
+.ddtt-playground-field label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ddtt-playground-field .ddtt-help-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ddtt-playground-field .ddtt-help-icon {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.ddtt-playground-field .ddtt-help-icon .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--color-text-secondary);
+    pointer-events: none;
+}
+
+.ddtt-playground-field .ddtt-help-icon:hover .dashicons {
+    color: var(--color-link, #1e73be);
+}
+
+.ddtt-playground-field .ddtt-help-content {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-90%);
+    margin-bottom: 6px;
+    width: 240px;
+    top: auto;
+}
+
+#ddtt-playground-loading {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 8px;
+    font-style: italic;
+    color: var(--color-text-secondary);
+}
+
+#ddtt-playground-loading .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+#ddtt-playground-loading.ddtt-hidden {
+    display: none;
+}
+
+.ddtt-playground-inline-add {
+    display: flex;
+    gap: 6px;
+}
+
+.ddtt-playground-inline-add input,
+.ddtt-playground-inline-add button {
+    box-sizing: border-box;
+}
+
+.ddtt-playground-inline-add input {
+    flex: 1;
+}
+
+.ddtt-playground-inline-add button {
+    padding: 0 12px !important;
+    height: 40px;
+}
+
+.ddtt-playground-inline-add input {
+    flex: 1;
+}
+
+.ddtt-playground-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-height: 28px;
+}
+
+.ddtt-playground-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--color-bg-alt, #f0f0f0);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+}
+
+.ddtt-playground-tag-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    color: var(--color-text-secondary);
+}
+
+.ddtt-playground-tag-remove:hover {
+    color: var(--color-error);
+}
+
+#ddtt-playground-add-pluginrx {
+    margin-bottom: 1rem;
+}

@@ -29,6 +29,8 @@ $shortcut = Helpers::get_os() === 'mac' ? 'Cmd + Enter' : 'Ctrl + Enter';
                         <p class="description"><?php echo esc_html( $shortcut ); ?></p>
                     </div>
                 </div>
+
+                <?php Testing::render_playground_sidebar(); ?>
             </div>
         </div>
     </section>
