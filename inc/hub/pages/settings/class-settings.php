@@ -25,6 +25,7 @@ class Settings {
             $dev_only = [
                 'logging'      => __( 'Logging', 'dev-debug-tools' ),
                 'config_files' => __( 'Config Files', 'dev-debug-tools' ),
+                'seo'          => __( 'SEO', 'dev-debug-tools' ),
                 'metadata'     => __( 'Metadata', 'dev-debug-tools' ),
                 'heartbeat'    => __( 'Heartbeat', 'dev-debug-tools' ),
                 'online_users' => __( 'Online Users', 'dev-debug-tools' ),
@@ -367,6 +368,70 @@ class Settings {
             ]
         ];
     } // End config_files_options()
+
+
+    /**
+     * Get the SEO settings options.
+     *
+     * @return array
+     */
+    public static function seo_options() : array {
+        return [
+            'paths' => [
+                'label' => __( 'Paths', 'dev-debug-tools' ),
+                'desc'  => __( 'Paths are relative to your home URL. Full URLs on this site are converted to paths when verified.', 'dev-debug-tools' ),
+                'fields' => [
+                    'seo_robots_path' => [
+                        'title'   => __( 'Robots.txt Path', 'dev-debug-tools' ),
+                        'desc'    => __( 'Usually <code>robots.txt</code>.', 'dev-debug-tools' ),
+                        'type'    => 'url_path',
+                        'default' => 'robots.txt',
+                    ],
+                    'seo_sitemap_path' => [
+                        'title'   => __( 'Main Sitemap Path', 'dev-debug-tools' ),
+                        'desc'    => __( 'Leave blank to auto-detect from robots.txt, then from your SEO plugin, then from the WordPress core sitemap.', 'dev-debug-tools' ),
+                        'type'    => 'url_path',
+                        'default' => '',
+                    ],
+                    'seo_extra_sitemaps' => [
+                        'title'   => __( 'Additional Sitemaps', 'dev-debug-tools' ),
+                        'desc'    => __( 'Other sitemaps to include in the viewer dropdown.', 'dev-debug-tools' ),
+                        'type'    => 'url_path_plus',
+                        'default' => '',
+                    ],
+                    'seo_llms_path' => [
+                        'title'   => __( 'LLMs.txt Path', 'dev-debug-tools' ),
+                        'desc'    => __( 'Usually <code>llms.txt</code>.', 'dev-debug-tools' ),
+                        'type'    => 'url_path',
+                        'default' => 'llms.txt',
+                    ],
+                    'seo_llms_full_path' => [
+                        'title'   => __( 'LLMs-Full.txt Path', 'dev-debug-tools' ),
+                        'desc'    => __( 'Usually <code>llms-full.txt</code>. Leave blank to hide it from the viewer.', 'dev-debug-tools' ),
+                        'type'    => 'url_path',
+                        'default' => 'llms-full.txt',
+                    ],
+                ]
+            ],
+            'diagnostics' => [
+                'label' => __( 'Diagnostics', 'dev-debug-tools' ),
+                'fields' => [
+                    'seo_cache_minutes' => [
+                        'title'   => __( 'Cache Minutes', 'dev-debug-tools' ),
+                        'desc'    => __( 'How long fetched files are cached. The refresh icon always skips the cache. Set to 0 to disable caching.', 'dev-debug-tools' ),
+                        'type'    => 'number',
+                        'default' => 5,
+                    ],
+                    'seo_sample_urls' => [
+                        'title'   => __( 'Sample URLs', 'dev-debug-tools' ),
+                        'desc'    => __( 'Number of sitemap URLs (max 25) to check for status codes and noindex. Set to 0 to disable.', 'dev-debug-tools' ),
+                        'type'    => 'number',
+                        'default' => 0,
+                    ],
+                ]
+            ],
+        ];
+    } // End seo_options()
 
 
     /**
@@ -979,6 +1044,7 @@ class Settings {
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
         add_action( 'wp_ajax_ddtt_user_select', [ $this, 'ajax_user_select' ] );
         add_action( 'wp_ajax_ddtt_verify_settings_path', [ $this, 'ajax_verify_settings_path' ] );
+        add_action( 'wp_ajax_ddtt_verify_settings_url', [ $this, 'ajax_verify_settings_url' ] );
         add_action( 'wp_ajax_ddtt_save_settings', [ $this, 'ajax_save_settings' ] );
         add_action( 'wp_ajax_ddtt_reset_all_plugin_data', [ $this, 'ajax_reset_all_plugin_data' ] );
         $this->handle_downloads();
@@ -1440,6 +1506,68 @@ class Settings {
 
 
     /**
+     * Render a URL path field with verification button.
+     *
+     * @param string $key The key of the option.
+     * @param array $args The arguments for the field.
+     */
+    public static function render_field_url_path( $key, $args ) {
+        $value = sanitize_text_field( get_option( $key, $args[ 'default' ] ) );
+
+        echo '<div class="ddtt-text-field-wrap has-verify">';
+
+            printf(
+                '<input type="text" id="%1$s" name="%1$s" value="%2$s" class="regular-text" />',
+                esc_attr( $key ),
+                esc_attr( $value )
+            );
+
+            printf(
+                ' <button type="button" class="ddtt-button ddtt-verify-path" data-key="%1$s" data-verify="url">%2$s</button>',
+                esc_attr( $key ),
+                esc_html__( 'Verify', 'dev-debug-tools' )
+            );
+
+        echo '</div>';
+    } // End render_field_url_path()
+
+
+    /**
+     * Render multiple URL path fields with verification buttons.
+     *
+     * @param string $key The key of the option.
+     * @param array $args The arguments for the field.
+     */
+    public static function render_field_url_path_plus( $key, $args ) {
+        $values = get_option( $key, $args[ 'default' ] );
+        if ( ! is_array( $values ) ) {
+            $values = $values ? [ $values ] : [ '' ];
+        }
+
+        echo '<div class="ddtt-path-plus-wrap">';
+
+        foreach ( $values as $path ) {
+            echo '<div class="ddtt-text-field-wrap has-verify">';
+                printf(
+                    '<input type="text" name="%1$s[]" value="%2$s" class="regular-text" />',
+                    esc_attr( $key ),
+                    esc_attr( sanitize_text_field( $path ) )
+                );
+                printf(
+                    ' <button type="button" class="ddtt-button ddtt-verify-path" data-key="%1$s" data-verify="url">%2$s</button>',
+                    esc_attr( $key ),
+                    esc_html__( 'Verify', 'dev-debug-tools' )
+                );
+                echo ' <button type="button" class="ddtt-button ddtt-remove-path">–</button>';
+            echo '</div>';
+        }
+
+        echo '<button type="button" class="ddtt-button ddtt-add-path" data-key="' . esc_attr( $key ) . '" data-verify="url">' . esc_html__( 'Add Another', 'dev-debug-tools' ) . '</button>';
+        echo '</div>';
+    } // End render_field_url_path_plus()
+
+
+    /**
      * Sanitize a path plus field value.
      *
      * @param string|array $value The value to sanitize.
@@ -1731,6 +1859,7 @@ class Settings {
                 'verifySuccess' => __( 'Good news! File exists at this path.', 'dev-debug-tools' ),
                 'verifyFail'    => __( 'Uh oh! File does not exist at this path.', 'dev-debug-tools' ),
                 'verifyError'   => __( 'Error verifying path.', 'dev-debug-tools' ),
+                'verifyUrlFail' => __( 'Uh oh! This URL did not return HTTP 200.', 'dev-debug-tools' ),
                 'saving'        => __( 'Saving...', 'dev-debug-tools' ),
                 'saved'         => __( 'Saved', 'dev-debug-tools' ),
                 'saveSuccess'   => __( 'Saved successfully!', 'dev-debug-tools' ),
@@ -1821,6 +1950,31 @@ class Settings {
             'path'   => $path,
         ] );
     } // End ajax_verify_settings_path()
+
+
+    /**
+     * AJAX handler to verify a URL path returns HTTP 200.
+     */
+    public function ajax_verify_settings_url() {
+        check_ajax_referer( $this->nonce, 'nonce' );
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Unauthorized', 'dev-debug-tools' ) ] );
+        }
+
+        $path = isset( $_POST[ 'path' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'path' ] ) ) : '';
+        if ( ! $path ) {
+            wp_send_json_error( [ 'message' => __( 'No path provided', 'dev-debug-tools' ) ] );
+        }
+
+        $url = esc_url_raw( home_url( '/' . ltrim( $path, '/' ) ) );
+        $response = wp_remote_get( $url, [ 'timeout' => 10, 'sslverify' => false, 'limit_response_size' => 1024 ] );
+        $status = is_wp_error( $response ) ? $response->get_error_message() : 'HTTP ' . wp_remote_retrieve_response_code( $response );
+
+        wp_send_json_success( [
+            'exists' => ! is_wp_error( $response ) && (int) wp_remote_retrieve_response_code( $response ) === 200,
+            'path'   => $url . ' (' . $status . ')',
+        ] );
+    } // End ajax_verify_settings_url()
 
 
     /**
@@ -1922,6 +2076,7 @@ class Settings {
                     break;
 
                 case 'path_plus':
+                case 'url_path_plus':
                     $value = self::sanitize_path_plus( $value );
                     break;
 

@@ -40,16 +40,17 @@ jQuery( function( $ ) {
         e.preventDefault();
 
         const key = $( this ).data( 'key' );
+        const verifyType = $( this ).data( 'verify' ) || '';
 
-        const $newField = $( `
+        const newField = $( `
             <div class="ddtt-text-field-wrap has-verify">
                 <input type="text" name="${key}[]" value="" class="regular-text" />
-                <button type="button" class="ddtt-button ddtt-verify-path" data-key="${key}">${ddtt_settings.i18n.verifyButton}</button>
+                <button type="button" class="ddtt-button ddtt-verify-path" data-key="${key}" data-verify="${verifyType}">${ddtt_settings.i18n.verifyButton}</button>
                 <button type="button" class="ddtt-button ddtt-remove-path">–</button>
             </div>
         ` );
 
-        $newField.insertBefore( $( this ) );
+        newField.insertBefore( $( this ) );
     } );
 
     $( document ).on( 'click', '.ddtt-remove-path', function( e ) {
@@ -62,6 +63,8 @@ jQuery( function( $ ) {
 
         const button = $( this );
         const input = button.siblings( 'input[type="text"]' );
+        const isUrl = button.data( 'verify' ) === 'url';
+        const failMsg = isUrl ? ddtt_settings.i18n.verifyUrlFail : ddtt_settings.i18n.verifyFail;
         let path = input.val().trim();
 
         if ( path.startsWith( 'http://' ) || path.startsWith( 'https://' ) ) {
@@ -75,7 +78,7 @@ jQuery( function( $ ) {
         }
 
         if ( ! path ) {
-            alert( ddtt_settings.i18n.verifyFail );
+            alert( failMsg );
             button.removeClass( 'ddtt-status-verified ddtt-status-failed' ).addClass( 'ddtt-status-failed' ).text( ddtt_settings.i18n.failed );
             return;
         }
@@ -83,7 +86,7 @@ jQuery( function( $ ) {
         button.prop( 'disabled', true ).removeClass( 'ddtt-status-verified ddtt-status-failed' ).text( ddtt_settings.i18n.verifying );
 
         $.post( ajaxurl, {
-            action: 'ddtt_verify_settings_path',
+            action: isUrl ? 'ddtt_verify_settings_url' : 'ddtt_verify_settings_path',
             nonce: ddtt_settings.nonce,
             path: path,
         } )
@@ -91,7 +94,7 @@ jQuery( function( $ ) {
             if ( response.success && response.data.exists ) {
                 button.text( ddtt_settings.i18n.verified ).addClass( 'ddtt-status-verified' );
             } else {
-                const msg = ddtt_settings.i18n.verifyFail + ( response.data.path ? ' — ' + response.data.path : '' );
+                const msg = failMsg + ( response.data.path ? ' — ' + response.data.path : '' );
                 alert( msg );
                 button.text( ddtt_settings.i18n.failed ).addClass( 'ddtt-status-failed' );
             }

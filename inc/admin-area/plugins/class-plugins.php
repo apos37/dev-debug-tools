@@ -396,10 +396,11 @@ class Plugins {
         $nonce = wp_create_nonce( 'ddtt_check_plugin_update_' . $file );
 
         $link = sprintf(
-            '<a href="#" class="ddtt-check-plugin-update" data-plugin="%s" data-slug="%s" data-nonce="%s">%s</a>',
+            '<a href="#" class="ddtt-check-plugin-update ddtt-disabled" data-plugin="%s" data-slug="%s" data-nonce="%s"><span class="ddtt-tooltip-text" title="%s">%s</span></a>',
             esc_attr( $file ),
             esc_attr( $slug ),
             esc_attr( $nonce ),
+            esc_attr__( 'Waiting for scripts to load. If this never activates, another plugin, theme, or custom code is causing a JavaScript conflict.', 'dev-debug-tools' ),
             esc_html__( 'Check for Update', 'dev-debug-tools' )
         );
 

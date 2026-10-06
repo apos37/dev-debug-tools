@@ -1,0 +1,86 @@
+/* Diagnostics */
+
+.ddtt-seo-diagnostics {
+    margin: 1rem 0 2rem 0;
+}
+
+.ddtt-seo-diagnostics td:first-child {
+    width: 90px;
+}
+
+.ddtt-seo-severity {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: black;
+}
+
+.ddtt-seo-diagnostics tr[data-severity="error"] .ddtt-seo-severity {
+    background: var(--color-error);
+    color: white;
+}
+
+.ddtt-seo-diagnostics tr[data-severity="warning"] .ddtt-seo-severity {
+    background: var(--color-warning);
+}
+
+.ddtt-seo-diagnostics tr[data-severity="info"] .ddtt-seo-severity {
+    background: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+.ddtt-seo-diagnostics tr[data-severity="success"] .ddtt-seo-severity {
+    background: var(--color-success, #46b450);
+    color: white;
+}
+
+
+/* Code view */
+
+#ddtt-seo-code {
+    overflow-x: auto;
+    white-space: pre;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    max-height: 75vh;
+    overflow-y: auto;
+}
+
+
+/* Output view */
+
+.ddtt-seo-output td {
+    word-break: break-all;
+}
+
+.ddtt-seo-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+
+/* Sidebar */
+
+#ddtt-settings-sidebar-section select {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+
+/* LLMs.txt */
+
+.ddtt-seo-llms-header {
+    margin-bottom: 1rem;
+}
+
+.ddtt-seo-llms-header blockquote {
+    margin: 0.5rem 0 0 0;
+    padding: 0.5rem 1rem;
+    border-left: 4px solid var(--color-border);
+}

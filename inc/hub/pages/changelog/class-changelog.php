@@ -17,7 +17,6 @@ class Changelog {
      * @return string|array
      */
     public static function get_logs() : string|array {
-        // Initialize the filesystem
         global $wp_filesystem;
         if ( empty( $wp_filesystem ) ) {
             require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -27,19 +26,26 @@ class Changelog {
             return '<p>' . esc_html__( 'Unable to access the filesystem.', 'dev-debug-tools' ) . '</p>';
         }
 
-        // Get the file content
-        $file_path = Bootstrap::path( 'readme.txt' );
-        $file = $wp_filesystem->get_contents( $file_path );
+        $file = false;
+        foreach ( [ 'changelog.txt', 'readme.txt' ] as $filename ) {
+            $file_path = Bootstrap::path( $filename );
+            if ( $wp_filesystem->exists( $file_path ) ) {
+                $file = $wp_filesystem->get_contents( $file_path );
+                if ( $file !== false && str_contains( $file, '== Changelog ==' ) ) {
+                    break;
+                }
+                $file = false;
+            }
+        }
 
         if ( false === $file ) {
             return '<p>' . esc_html__( 'Unable to fetch the changelog at this time.', 'dev-debug-tools' ) . '</p>';
         }
 
-        // Extract changelog section
         $changelog = strstr( $file, '== Changelog ==' );
         $changelog = preg_replace( '/^==\s*Changelog\s*==\s*/mi', '', $changelog );
+        $changelog = preg_replace( '/^\[See the full changelog\].*$/mi', '', $changelog );
 
-        // Split into entries
         $entries_raw = preg_split( '/^\s*=+\s*(.*?)\s*=+\s*$/m', $changelog, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
         $entries = [];
         for ( $i = 0; $i < count( $entries_raw ) - 1; $i += 2 ) {

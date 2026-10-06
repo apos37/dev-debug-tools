@@ -91,7 +91,7 @@ class FileEditor {
      *
      * @var array
      */
-    public $default_colors = [
+    const DEFAULT_COLORS = [
         'dark' => [
             'comments'   => '#5E9955',
             'fx_vars'    => '#DCDCAA',
@@ -107,6 +107,8 @@ class FileEditor {
             'background' => '#f5f5f5',
         ],
     ];
+
+    public array $default_colors = self::DEFAULT_COLORS;
 
 
     /**

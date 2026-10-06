@@ -59,6 +59,11 @@ class AdminMenu {
                 'description' => __( "View and edit your <code>.htaccess</code> file.", 'dev-debug-tools' ),
                 'include_menu' => true,
             ],
+            'seo' => [
+                'name'         => __( "SEO", 'dev-debug-tools' ),
+                'description'  => __( "View your <code>robots.txt</code> and sitemaps with diagnostics.", 'dev-debug-tools' ),
+                'include_menu' => true,
+            ],
             'site-options' => [
                 'name'        => __( "Site Options", 'dev-debug-tools' ),
                 'description' => __( "View the site's options and delete any that are not needed.", 'dev-debug-tools' ),

@@ -58,3 +58,11 @@
     display: inline-block;
 }
 
+.ddtt-check-plugin-update.ddtt-disabled {
+    pointer-events: none;
+    color: #a7aaad;
+    cursor: default;
+}
+.ddtt-check-plugin-update.ddtt-disabled .ddtt-tooltip-text {
+    pointer-events: auto;
+}

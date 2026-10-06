@@ -310,6 +310,15 @@ jQuery( document ).ready( function( $ ) {
                 link.text( original_text );
             } );
         } );
+
+        // Enable the "Check for Update" links for all plugins
+        $( '.ddtt-check-plugin-update.ddtt-disabled' ).each( function () {
+            var $link = $( this );
+            var $text = $link.find( '.ddtt-tooltip-text' );
+
+            $link.removeClass( 'ddtt-disabled' );
+            $text.attr( 'title', 'Click to check for an available update.' );
+        } );
     }
 
 } );
