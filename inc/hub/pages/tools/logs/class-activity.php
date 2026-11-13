@@ -828,6 +828,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
+                // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Log context array, not a query.
                 apply_filters( 'ddtt_log_error', 'updating_post', new \Exception( 'Failed to write to activity log file during post meta update.' ), [ 'post_id' => $post->ID, 'meta_key' => $meta_key ] );
             }
         }
@@ -893,6 +894,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
+                // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Log context array, not a query.
                 apply_filters( 'ddtt_log_error', 'adding_postmeta', new \Exception( 'Failed to write to activity log file for adding post meta.' ), [ 'post_id' => $object_id, 'meta_key' => $meta_key ] );
             }
         }
@@ -955,6 +957,7 @@ class Activity_Log {
             );
 
             if ( ! $this->write_to_log( $this->current_user_log_message( $action_label ) . ' | ' . $log_message ) ) {
+                // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Log context array, not a query.
                 apply_filters( 'ddtt_log_error', 'deleting_postmeta', new \Exception( 'Failed to write to activity log file for deleting post meta.' ), [ 'post_id' => $object_id, 'meta_key' => $meta_key ] );
             }
         }

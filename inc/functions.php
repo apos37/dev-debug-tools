@@ -75,6 +75,7 @@ if ( ! function_exists( 'ddtt_print_r' ) ) {
  * Short alias for ddtt_print_r()
  */
 if ( ! function_exists( 'dpr' ) ) {
+    // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- Short global alias intended for developer use in code snippets.
     function dpr( $var, $left_margin = null, $user_id = null, $write_bool = true ) {
         return \Apos37\DevDebugTools\Helpers::print_r( $var, $left_margin, $user_id, $write_bool );
     }
@@ -102,6 +103,7 @@ if ( ! function_exists( 'ddtt_write_log' ) ) {
  * Short alias for ddtt_write_log()
  */
 if ( ! function_exists( 'dwl' ) ) {
+    // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- Short global alias intended for developer use in code snippets.
     function dwl( $log, $prefix = true, $backtrace = false, $full_stacktrace = false ) {
         return \Apos37\DevDebugTools\Helpers::write_log( $log, $prefix, $backtrace, $full_stacktrace );
     }

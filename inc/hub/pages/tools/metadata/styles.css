@@ -207,3 +207,34 @@ button.ddtt-button.ddtt-meta-action-button[data-action="delete"] {
     cursor: not-allowed;
     opacity: 0.25;
 }
+
+
+/* Saving Spinner */
+
+.ddtt-saving-spinner {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    margin-right: 0.4em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    vertical-align: -0.1em;
+    animation: ddtt-saving-spin 0.7s linear infinite;
+}
+
+@keyframes ddtt-saving-spin {
+    to {
+        transform: rotate( 360deg );
+    }
+}
+
+#ddtt-hub .ddtt-button.ddtt-meta-action-button.ddtt-saving:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.ddtt-meta-key-row td:last-child,
+.ddtt-meta-new-row td:last-child {
+    white-space: nowrap;
+}

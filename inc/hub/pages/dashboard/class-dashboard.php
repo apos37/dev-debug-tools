@@ -191,7 +191,7 @@ class Dashboard {
         $report_lines[] = "Persistent Cache Detected: " . $persistent_cache;
 
         $wp_config_path = ABSPATH . 'wp-config.php';
-        $report_lines[] = "\nwp-config.php Writable: " . ( is_writable( $wp_config_path ) ? 'Yes' : 'No' );
+        $report_lines[] = "\nwp-config.php Writable: " . ( is_writable( $wp_config_path ) ? 'Yes' : 'No' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Read-only permission check for the status report; no file is written.
         
         // Theme info
         $theme = wp_get_theme();
@@ -257,7 +257,7 @@ class Dashboard {
 
         foreach ( $ddtt_options as $key => $value ) {
             if ( is_array( $value ) || is_object( $value ) ) {
-                $report_lines[] = $key . " =>\n" . print_r( $value, true );
+                $report_lines[] = $key . " =>\n" . print_r( $value, true ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r -- Returned as a string for the diagnostic report, not output.
             } else {
                 $report_lines[] = $key . " => " . $value;
             }
@@ -270,7 +270,7 @@ class Dashboard {
         $ddtt_last_error = get_option( 'ddtt_last_error' );
         if ( $ddtt_last_error ) {
             $report_lines[] = "\nLast Plugin Error:";
-            $report_lines[] = print_r( maybe_unserialize( $ddtt_last_error ), true );
+            $report_lines[] = print_r( maybe_unserialize( $ddtt_last_error ), true ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r -- Returned as a string for the diagnostic report, not output.
         } else {
             $report_lines[] = "Last Plugin Error: None";
         }
@@ -296,7 +296,7 @@ class Dashboard {
 
         header( 'Content-Type: text/plain' );
         header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
-        echo implode( "\n", $report_lines );
+        echo implode( "\n", $report_lines ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Plain text download (Content-Type: text/plain), not rendered as HTML.
 
         exit;
     } // End download_status_report()

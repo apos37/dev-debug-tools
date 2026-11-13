@@ -2,6 +2,7 @@
 namespace Apos37\DevDebugTools;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template included inside AdminMenu::render_page(); variables are local to that method.
 
 $is_dev = Helpers::is_dev();
 
@@ -44,6 +45,9 @@ $opcache_status = $opcache_enabled ? __( 'Enabled', 'dev-debug-tools' ) : __( 'D
 if ( $is_dev ) {
     $issues = (new Issues())->get();
 }
+
+// Get the security score (only when the Security Checks tool is turned on)
+$security = $is_dev && class_exists( SecurityChecks::class ) ? SecurityChecks::score() : null;
 
 // Support
 $base_url  = Bootstrap::author_uri();
@@ -243,9 +247,66 @@ $our_links = [
     </div>
 </section>
 
+<?php if ( $security ) : ?>
+    <?php
+    $security_url = Bootstrap::tool_url( 'security-checks' );
+    $security_statuses = SecurityChecks::statuses();
+    ?>
+    <section id="ddtt-security-score-section" class="ddtt-section-content">
+        <h3><?php esc_html_e( 'Security Checks', 'dev-debug-tools' ); ?></h3>
+        <p class="ddtt-dashboard-desc"><em><?php esc_html_e( 'The score from the last run of the Security Checks tool. It covers common security problems only. A high score does not mean the site is secure or that it will not be hacked.', 'dev-debug-tools' ); ?></em></p>
+        <div class="ddtt-dashboard-security">
+            <div class="ddtt-dashboard-score" data-band="<?php echo esc_attr( $security[ 'band' ] ); ?>">
+                <span class="ddtt-dashboard-score-number"><?php echo esc_html( $security[ 'value' ] === null ? '—' : $security[ 'value' ] . '%' ); ?></span>
+                <span class="ddtt-dashboard-score-label"><?php esc_html_e( 'Security score', 'dev-debug-tools' ); ?></span>
+            </div>
+            <div class="ddtt-dashboard-security-text">
+                <?php if ( $security[ 'value' ] === null ) : ?>
+                    <p><strong><?php esc_html_e( 'Security checks have not run on this site yet.', 'dev-debug-tools' ); ?></strong></p>
+                <?php else : ?>
+                    <p class="ddtt-dashboard-security-counts">
+                        <?php foreach ( $security_statuses as $status => $label ) : ?>
+                            <?php if ( $status !== 'none' && $security[ 'counts' ][ $status ] ) : ?>
+                                <span data-status="<?php echo esc_attr( $status ); ?>"><?php echo esc_html( $label . ': ' . $security[ 'counts' ][ $status ] ); ?></span>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </p>
+                    <p class="description">
+                        <?php
+                        /* translators: 1: checks counted in the score, 2: total checks, 3: time since the last run */
+                        echo esc_html( sprintf( __( 'Based on %1$d of %2$d checks. Last run %3$s ago.', 'dev-debug-tools' ), $security[ 'counted' ], $security[ 'total' ], human_time_diff( $security[ 'last_run' ] ) ) );
+                        ?>
+                    </p>
+                    <?php if ( $security[ 'last_run' ] < time() - 30 * DAY_IN_SECONDS ) : ?>
+                        <p class="description"><?php esc_html_e( 'These results are over 30 days old. Run the checks again to update them.', 'dev-debug-tools' ); ?></p>
+                    <?php endif; ?>
+                <?php endif; ?>
+                <div class="ddtt-dashboard-security-actions">
+                    <a class="ddtt-button" href="<?php echo esc_url( add_query_arg( 'run', '1', $security_url ) ); ?>">
+                        <span class="dashicons dashicons-shield"></span>
+                        <span class="button-label"><?php esc_html_e( 'Run Security Checks', 'dev-debug-tools' ); ?></span>
+                    </a>
+                    <a class="ddtt-button" href="<?php echo esc_url( $security_url ); ?>"><?php esc_html_e( 'View Results', 'dev-debug-tools' ); ?></a>
+                </div>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>
+
 <?php if ( $is_dev ) : ?>
     <section id="ddtt-issues-section" class="ddtt-section-content">
-        <h3 class="ddtt-issues-title"><?php esc_html_e( 'Check for Site Issues', 'dev-debug-tools' ); ?></h3>
+        <h3 class="ddtt-issues-title"><?php esc_html_e( 'Site Setup Checks', 'dev-debug-tools' ); ?></h3>
+        <p class="ddtt-dashboard-desc">
+            <em>
+                <?php esc_html_e( 'Quick checks for common setup mistakes, such as permalinks, search engine visibility, site URLs and site identity. These are not security checks.', 'dev-debug-tools' ); ?>
+                <?php if ( $security ) : ?>
+                    <?php esc_html_e( 'Security is checked separately in the Security Checks section above.', 'dev-debug-tools' ); ?>
+                <?php else : ?>
+                    <?php esc_html_e( 'To check security, turn on the Security Checks tool in Tools.', 'dev-debug-tools' ); ?>
+                <?php endif; ?>
+                <?php esc_html_e( 'Neither covers every possible problem.', 'dev-debug-tools' ); ?>
+            </em>
+        </p>
         <button id="ddtt-check-issues-button" class="ddtt-button">
             <span class="dashicons dashicons-update"></span>
             <span class="button-label"><?php esc_html_e( 'Check Now', 'dev-debug-tools' ); ?></span>

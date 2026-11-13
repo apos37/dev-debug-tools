@@ -8,115 +8,138 @@ jQuery( function( $ ) {
         return;
     }
 
-    var btn = $( '<button>', {
-        id:    'ddtt-force-update-check',
+    var btnPlugins = $( '<button>', {
+        id:    'ddtt-update-plugins',
+        type:  'button',
         class: 'button button-primary',
-        text:  ddtt_updates.btn_label,
+        text:  ddtt_updates.i18n.btn_plugins,
     } );
 
+    var btnThemes = $( '<button>', {
+        id:    'ddtt-update-themes',
+        type:  'button',
+        class: 'button button-primary',
+        text:  ddtt_updates.i18n.btn_themes,
+    } );
+
+    var buttons = $( '<span>', { id: 'ddtt-update-buttons' } ).append( btnPlugins, btnThemes );
+
     var notice = $( '<span>', {
-        id:  'ddtt-force-update-notice',
+        id:    'ddtt-force-update-notice',
         class: 'notice inline'
     } );
 
     title.wrap( '<div id="ddtt-update-wrapper"></div>' );
-    title.after( notice ).after( btn );
+    title.after( notice ).after( buttons );
 
-    btn.on( 'click', function() {
-        btn.prop( 'disabled', true );
-        notice.html( '' ).removeClass( 'notice-warning notice-success' ).addClass( 'notice-info' ).css( 'display', 'inline-flex' );
+    var config = {
+        plugins: {
+            list:     ddtt_updates.plugins,
+            action:   'ddtt_force_check_single_plugin',
+            checking: ddtt_updates.i18n.checking_plugins,
+            upToDate: ddtt_updates.i18n.plugins_up_to_date,
+            params:   function( item ) {
+                return { plugin: item.file, slug: item.slug };
+            },
+        },
+        themes: {
+            list:     ddtt_updates.themes,
+            action:   'ddtt_force_check_single_theme',
+            checking: ddtt_updates.i18n.checking_themes,
+            upToDate: ddtt_updates.i18n.themes_up_to_date,
+            params:   function( item ) {
+                return { stylesheet: item.stylesheet };
+            },
+        },
+    };
 
-        var plugins        = ddtt_updates.plugins;
-        var themes         = ddtt_updates.themes;
-        var plugin_updates = [];
-        var theme_updates  = [];
+    function setNotice( status, text, spin ) {
+        notice.removeClass( 'notice-info notice-warning notice-success notice-error' ).addClass( 'notice-' + status ).empty();
 
-        async function checkPlugin( index ) {
-            if ( index >= plugins.length ) {
-                checkTheme( 0 );
-                return;
-            }
-
-            var plugin = plugins[ index ];
-            notice.html( '<span class="dashicons dashicons-update ddtt-rotate"></span>' + ddtt_updates.i18n.checking + ' ' + plugin.name + '...' );
-
-            await $.post( ajaxurl, {
-                action : 'ddtt_force_check_single_plugin',
-                plugin : plugin.file,
-                slug   : plugin.slug,
-                nonce  : ddtt_updates.nonce,
-            } ).then( function( response ) {
-                if ( ddtt_updates.test_mode ) {
-                    console.log( 'Plugin check: ' + plugin.name, response );
-                    if ( response.data.error ) {
-                        console.log( 'Plugin error: ' + plugin.name + ' — ' + response.data.error );
-                    }
-                }
-                if ( response.success && response.data.has_update ) {
-                    plugin_updates.push( response.data );
-                }
-            } );
-
-            checkPlugin( index + 1 );
+        if ( spin ) {
+            notice.append( $( '<span>', { class: 'dashicons dashicons-update ddtt-rotate' } ) );
         }
 
-        async function checkTheme( index ) {
-            if ( index >= themes.length ) {
-                var parts = [];
-                if ( plugin_updates.length > 0 ) {
-                    parts.push( plugin_updates.length + ' ' + ddtt_updates.i18n.plugin_updates );
-                }
-                if ( theme_updates.length > 0 ) {
-                    parts.push( theme_updates.length + ' ' + ddtt_updates.i18n.theme_updates );
-                }
+        notice.append( document.createTextNode( text ) ).css( 'display', 'inline-flex' );
+    }
 
-                var summary = parts.length ? parts.join( ', ' ) : ddtt_updates.i18n.all_up_to_date;
-                notice.removeClass( 'notice-info' ).addClass( parts.length ? 'notice-warning' : 'notice-success' );
-                notice.html( summary );
+    function setButtons( disabled ) {
+        buttons.find( 'button' ).prop( 'disabled', disabled );
+    }
+
+    function submitUpdate( data ) {
+        var form = $( '<form>', { method: 'post', action: data.url } );
+
+        form.append( $( '<input>', { type: 'hidden', name: '_wpnonce', value: data.nonce } ) );
+
+        $.each( data.items, function( index, item ) {
+            form.append( $( '<input>', { type: 'hidden', name: 'checked[]', value: item } ) );
+        } );
+
+        form.appendTo( 'body' ).get( 0 ).submit();
+    }
+
+    async function run( type ) {
+        var cfg     = config[ type ];
+        var total   = cfg.list.length;
+        var updates = [];
+
+        setButtons( true );
+
+        for ( var i = 0; i < total; i++ ) {
+            var item = cfg.list[ i ];
+
+            setNotice( 'info', cfg.checking.replace( '%1$d', i + 1 ).replace( '%2$d', total ), true );
+
+            try {
+                var response = await $.post( ajaxurl, $.extend( { action: cfg.action, nonce: ddtt_updates.nonce }, cfg.params( item ) ) );
 
                 if ( ddtt_updates.test_mode ) {
-                    console.log( 'Committing plugin updates:', plugin_updates );
-                    console.log( 'Committing theme updates:', theme_updates );
+                    console.log( 'Check: ' + item.name, response );
                 }
 
-                await $.post( ajaxurl, {
-                    action         : 'ddtt_commit_update_results',
-                    plugin_updates : JSON.stringify( plugin_updates ),
-                    theme_updates  : JSON.stringify( theme_updates ),
-                    nonce          : ddtt_updates.nonce,
-                } );
-
-                if ( !ddtt_updates.test_mode ) {
-                    setTimeout( function() {
-                        window.location.reload();
-                    }, 3000 );
-                }
-                return;
-            }
-
-            var theme = themes[ index ];
-            notice.html( '<span class="dashicons dashicons-update ddtt-rotate"></span>' + ddtt_updates.i18n.checking + ' ' + theme.name + '...' );
-
-            await $.post( ajaxurl, {
-                action    : 'ddtt_force_check_single_theme',
-                stylesheet: theme.stylesheet,
-                nonce     : ddtt_updates.nonce,
-            } ).then( function( response ) {
-                if ( ddtt_updates.test_mode ) {
-                    console.log( 'Theme check: ' + theme.name, response );
-                    if ( response.data.error ) {
-                        console.log( 'Theme error: ' + theme.name + ' — ' + response.data.error );
-                    }
-                }
                 if ( response.success && response.data.has_update ) {
-                    theme_updates.push( response.data );
+                    updates.push( response.data );
                 }
-            } );
-
-            checkTheme( index + 1 );
+            } catch ( error ) {
+                if ( ddtt_updates.test_mode ) {
+                    console.log( 'Check failed: ' + item.name, error );
+                }
+            }
         }
 
-        checkPlugin( 0 );
+        if ( ! updates.length ) {
+            setNotice( 'success', cfg.upToDate, false );
+            setButtons( false );
+            return;
+        }
+
+        setNotice( 'warning', ddtt_updates.i18n.updating, true );
+
+        var commit = await $.post( ajaxurl, {
+            action  : 'ddtt_commit_update_results',
+            type    : type,
+            updates : JSON.stringify( updates ),
+            nonce   : ddtt_updates.nonce,
+        } ).catch( function() {
+            return null;
+        } );
+
+        if ( ! commit || ! commit.success || ! commit.data.url ) {
+            setNotice( 'error', ddtt_updates.i18n.error, false );
+            setButtons( false );
+            return;
+        }
+
+        submitUpdate( commit.data );
+    }
+
+    btnPlugins.on( 'click', function() {
+        run( 'plugins' );
+    } );
+
+    btnThemes.on( 'click', function() {
+        run( 'themes' );
     } );
 
 } );

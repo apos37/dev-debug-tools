@@ -3,7 +3,7 @@
  * Plugin Name:         Developer Debug Tools
  * Plugin URI:          https://pluginrx.com/plugin/dev-debug-tools/
  * Description:         WordPress debugging and testing tools for developers
- * Version:             3.0.5
+ * Version:             3.0.6
  * Requires at least:   6.0
  * Requires PHP:        8.0
  * Author:              PluginRx
@@ -33,24 +33,25 @@ final class Bootstrap {
      * This array contains the paths to all plugin files that need to be included.
      */
     public const FILES = [
-        'hub/pages/resources/links.php'                  => 'dev',
-        'admin-area/class-admin-area.php'                => 'admin',
-        'hub/menu.php'                                   => 'dev',
-        'functions.php'                                  => 'all',
-        'helpers/help-map.php'                           => 'dev',
-        'helpers/error-messages.php'                     => 'all',
-        'helpers/jokes.php'                              => 'dev',
-        'helpers/discord.php'                            => 'all',
-        'admin-area/security/class-security.php'         => 'all',
-        'shortcodes.php'                                 => 'dev',
-        'site-wide/heartbeat/class-heartbeat.php'        => 'dev',
-        'admin-area/admin-bar/class-admin-bar.php'       => 'all',
-        'admin-area/online-users/class-online-users.php' => 'all',
-        'admin-area/plugins/class-plugins.php'           => 'admin',
-        'site-wide/class-site-wide.php'                  => 'all',
-        'cleanup.php'                                    => 'dev',
-        'deprecated.php'                                 => 'dev',
-        'backdoor.php'                                   => 'all'
+        'hub/pages/resources/links.php'                           => 'dev',
+        'admin-area/class-admin-area.php'                         => 'admin',
+        'hub/menu.php'                                            => 'dev',
+        'functions.php'                                           => 'all',
+        'helpers/help-map.php'                                    => 'dev',
+        'helpers/error-messages.php'                              => 'all',
+        'helpers/jokes.php'                                       => 'dev',
+        'helpers/discord.php'                                     => 'all',
+        'admin-area/security/class-security.php'                  => 'all',
+        'shortcodes.php'                                          => 'dev',
+        'site-wide/heartbeat/class-heartbeat.php'                 => 'dev',
+        'admin-area/admin-bar/class-admin-bar.php'                => 'all',
+        'admin-area/online-users/class-online-users.php'          => 'all',
+        'admin-area/plugins/class-plugins.php'                    => 'admin',
+        'site-wide/class-site-wide.php'                           => 'all',
+        'cleanup.php'                                             => 'dev',
+        'deprecated.php'                                          => 'dev',
+        'backdoor.php'                                            => 'all',
+        'hub/pages/tools/security-checks/class-security-cron.php' => 'all'
     ];
 
 

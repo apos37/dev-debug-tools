@@ -382,12 +382,14 @@ class SiteOptions {
         global $wpdb;
 
         if ( $search ) {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin-only tool reading the live options table; cached results would be stale.
             return (int) $wpdb->get_var( $wpdb->prepare(
                 "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE %s",
                 '%' . $wpdb->esc_like( $search ) . '%'
             ) );
         }
 
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin-only tool reading the live options table; cached results would be stale.
         return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->options}" );
     } // End get_options_count()
 
@@ -406,6 +408,7 @@ class SiteOptions {
         $offset = ( $page - 1 ) * $per_page;
 
         if ( $search ) {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin-only tool reading the live options table; cached results would be stale.
             $rows = $wpdb->get_results( $wpdb->prepare(
                 "SELECT option_name, option_value, autoload FROM {$wpdb->options} WHERE option_name LIKE %s ORDER BY option_name ASC LIMIT %d OFFSET %d",
                 '%' . $wpdb->esc_like( $search ) . '%',
@@ -413,6 +416,7 @@ class SiteOptions {
                 $offset
             ), ARRAY_A );
         } else {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin-only tool reading the live options table; cached results would be stale.
             $rows = $wpdb->get_results( $wpdb->prepare(
                 "SELECT option_name, option_value, autoload FROM {$wpdb->options} ORDER BY option_name ASC LIMIT %d OFFSET %d",
                 $per_page,
@@ -844,6 +848,7 @@ class SiteOptions {
                 'confirmDeleteOption' => __( 'Are you sure you want to delete this option? This cannot be undone.', 'dev-debug-tools' ),
                 'errorDeletingOption' => __( 'Error deleting option.', 'dev-debug-tools' ),
                 'searchPlaceholder'   => __( 'Search options…', 'dev-debug-tools' ),
+                /* translators: 1: current page number, 2: total number of pages. */
                 'pageOf'              => __( 'Page %1$s of %2$s', 'dev-debug-tools' ),
                 'prev'                => __( 'Prev', 'dev-debug-tools' ),
                 'next'                => __( 'Next', 'dev-debug-tools' ),
@@ -939,7 +944,7 @@ class SiteOptions {
         }
 
         $option = isset( $_POST[ 'option' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'option' ] ) ) : '';
-        $value = isset( $_POST[ 'value' ] ) ? wp_unslash( $_POST[ 'value' ] ) : '';
+        $value = isset( $_POST[ 'value' ] ) ? wp_unslash( $_POST[ 'value' ] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Raw value is intentional; this tool edits arbitrary option values. Nonce and capability are verified above.
         $autoload = isset( $_POST[ 'autoload' ] ) ? sanitize_key( wp_unslash( $_POST[ 'autoload' ] ) ) : 'no';
 
         if ( ! $option ) {
@@ -984,7 +989,7 @@ class SiteOptions {
         }
 
         $option = isset( $_POST[ 'option' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'option' ] ) ) : '';
-        $value = isset( $_POST[ 'value' ] ) ? wp_unslash( $_POST[ 'value' ] ) : '';
+        $value = isset( $_POST[ 'value' ] ) ? wp_unslash( $_POST[ 'value' ] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Raw value is intentional; this tool edits arbitrary option values. Nonce and capability are verified above.
         $autoload = isset( $_POST[ 'autoload' ] ) ? sanitize_key( wp_unslash( $_POST[ 'autoload' ] ) ) : 'no';
 
         if ( ! $option ) {

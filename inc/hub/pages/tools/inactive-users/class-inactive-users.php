@@ -6,6 +6,7 @@
 namespace Apos37\DevDebugTools;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
+// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Inactivity state is stored in user meta; queries run only in admin tools.
 
 class InactiveUsers {
 
@@ -100,6 +101,7 @@ class InactiveUsers {
                     ],
                     'sync_users_last_online' => [
                         'title'     => __( 'Legacy Data Migration', 'dev-debug-tools' ),
+                        /* translators: %s: human-readable time difference since last sync. */
                         'desc'      => __( 'Search existing WordPress session tokens to "backfill" activity dates for users who haven\'t been tracked by this plugin yet. Recommended for first-time setup. Adds a "ddtt_last_online" meta key to users.', 'dev-debug-tools' ) . '<br><br><span class="ddtt-last-synced">' . sprintf( __( 'Last synced: %s', 'dev-debug-tools' ), $last_synced > 0 ? human_time_diff( $last_synced, time() ) . ' ago' : 'Never' ) . '</span>',
                         'type'      => 'button',
                         'label'     => __( 'Sync Activity from Sessions', 'dev-debug-tools' ),
@@ -207,7 +209,8 @@ class InactiveUsers {
         $last_synced = get_option( 'ddtt_sync_users_last_online' );
 
         if ( ! $track_last_online && ! $online_users_enabled ) {
-            Helpers::render_notice( sprintf( __( 'You must enable <a href="1%s">tracking of last online users</a> or <a href="2%s">online users feature</a>.', 'dev-debug-tools' ), esc_html( Bootstrap::page_url( 'settings&s=admin_areas' ) ), esc_html( Bootstrap::page_url( 'settings&s=online_users' ) ) ), 'error' );
+            /* translators: 1: URL of the admin area settings, 2: URL of the online users settings. */
+            Helpers::render_notice( sprintf( __( 'You must enable <a href="%1$s">tracking of last online users</a> or <a href="%2$s">online users feature</a>.', 'dev-debug-tools' ), esc_url( Bootstrap::page_url( 'settings&s=admin_areas' ) ), esc_url( Bootstrap::page_url( 'settings&s=online_users' ) ) ), 'error' );
         } elseif ( ! $last_synced ) {
             Helpers::render_notice( __( 'You have not optimized user tracking yet. Please click the <strong>"Sync Activity from Sessions"</strong> button below to backfill existing users so that they can be properly tracked and appear in the inactive users tool.', 'dev-debug-tools' ), 'warning' );
         }
@@ -453,7 +456,7 @@ class InactiveUsers {
                 ?>
                     <tr id="ddtt-user-row-<?php echo esc_attr( $user->ID ); ?>" class="<?php echo esc_attr( implode( ' ', $row_classes ) ); ?>">
                         <td><input class="ddtt-user-checkbox" type="checkbox" value="<?php echo esc_attr( $user->ID ); ?>"></td>
-                        <td><span class="ddtt-highlight-variable"><a href="<?php echo MetaData::user_lookup_url( $user->ID ); ?>" target="_blank"><?php echo esc_attr( $user->ID ); ?></a></span></td>
+                        <td><span class="ddtt-highlight-variable"><a href="<?php echo esc_url( MetaData::user_lookup_url( $user->ID ) ); ?>" target="_blank"><?php echo esc_attr( $user->ID ); ?></a></span></td>
                         <?php foreach ( $extra_keys as $key => $label ) : ?>
                             <td><?php echo esc_html( isset( $user->$key ) ? $user->$key : get_user_meta( $user->ID, $key, true ) ); ?></td>
                         <?php endforeach; ?>
@@ -733,6 +736,7 @@ class InactiveUsers {
         if ( $removed_count > 0 ) {
             wp_send_json_success( [
                 'total_removed' => $removed_count,
+                /* translators: %d: number of users removed from pending deletion. */
                 'message'       => sprintf( __( 'Successfully removed %d users from pending deletion.', 'dev-debug-tools' ), $removed_count )
             ] );
         } else {
@@ -907,7 +911,7 @@ class InactiveUsers {
             16 => 'Sixteen', 17 => 'Seventeen', 18 => 'Eighteen', 19 => 'Nineteen', 20 => 'Twenty'
         ];
 
-        $fake_time_string = date( 'Y-m-d H:i:s', strtotime( '-3 years' ) );
+        $fake_time_string = gmdate( 'Y-m-d H:i:s', strtotime( '-3 years' ) );
         $fake_timestamp   = strtotime( $fake_time_string );
         $count            = 0;
 
@@ -934,6 +938,7 @@ class InactiveUsers {
             if ( ! is_wp_error( $user_id ) ) {
 
                 // Backdate and Session logic remains the same...
+                // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Backdates user_registered; no WordPress API sets this field.
                 $wpdb->update( $wpdb->users, [ 'user_registered' => $fake_time_string ], [ 'ID' => $user_id ] );
 
                 $verifier = wp_generate_password( 43, false );
@@ -953,7 +958,8 @@ class InactiveUsers {
             }
         }
 
-        wp_send_json_success( [ 'message' => sprintf( __( 'Batch %s: %d test users generated.', 'dev-debug-tools' ), $batch_id, $count ) ] );
+        /* translators: 1: batch ID, 2: number of test users generated. */
+        wp_send_json_success( [ 'message' => sprintf( __( 'Batch %1$s: %2$d test users generated.', 'dev-debug-tools' ), $batch_id, $count ) ] );
     } // End ajax_generate_test_users()
 
 

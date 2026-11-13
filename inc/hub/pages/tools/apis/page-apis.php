@@ -2,6 +2,7 @@
 namespace Apos37\DevDebugTools;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template included inside AdminMenu::render_page(); variables are local to that method.
 
 // Get the rest routes
 $wp_rest_server = rest_get_server();

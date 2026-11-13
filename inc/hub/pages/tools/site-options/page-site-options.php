@@ -2,6 +2,7 @@
 namespace Apos37\DevDebugTools;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template included inside AdminMenu::render_page(); variables are local to that method.
 
 $single_option = false;
 $total_options = 0;
@@ -55,22 +56,11 @@ $prefix = $wpdb->get_blog_prefix( $blog_id );
 $table = $prefix . 'options';
 
 $autoload_on = [ 'auto', 'on', 'yes', '1' ];
-$list = "'" . implode( "', '", $autoload_on ) . "'";
+$placeholders = implode( ', ', array_fill( 0, count( $autoload_on ), '%s' ) );
 
-$autoload_total = $wpdb->get_var(
-    "SELECT SUM( LENGTH( option_value ) )
-     FROM {$table}
-     WHERE autoload IN ( {$list} )"
-);
+$autoload_total = $wpdb->get_var( $wpdb->prepare( "SELECT SUM( LENGTH( option_value ) ) FROM {$table} WHERE autoload IN ( {$placeholders} )", $autoload_on ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table name is the blog prefix plus a fixed string; placeholders are generated; values are prepared.
 
-$autoload_heavy = $wpdb->get_results(
-    "SELECT option_name, LENGTH( option_value ) AS bytes
-     FROM {$table}
-     WHERE autoload IN ( {$list} )
-     ORDER BY bytes DESC
-     LIMIT 20",
-    ARRAY_A
-);
+$autoload_heavy = $wpdb->get_results( $wpdb->prepare( "SELECT option_name, LENGTH( option_value ) AS bytes FROM {$table} WHERE autoload IN ( {$placeholders} ) ORDER BY bytes DESC LIMIT 20", $autoload_on ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table name is the blog prefix plus a fixed string; placeholders are generated; values are prepared.
 
 $autoload_status = '';
 $autoload_color  = '';

@@ -1,4 +1,37 @@
 == Changelog ==
+= 3.0.6 =
+* Update: Added a Security Checks tool with 55 read-only checks across Public Exposure, Configuration, Users & Access, Software & Files, and Code Review, each explaining what an attacker could do and how to fix it
+* Update: Added a security score to the Security Checks tool, weighted by severity, with a notice that it is not a guarantee of security
+* Update: Added a Security Checks settings tab for turning individual checks on and off
+* Update: Added Add Security Headers, Force HTTPS in Browsers (HSTS), and Hide PHP and WordPress Versions snippets to the HTACCESS tool
+* Update: Meta keys can now be edited inline in the Custom Meta section of the Metadata tool; renaming preserves the key's meta ID and all of its values, rejects protected keys, and rejects keys that already exist on the object
+* Tweak: Added a "Saving..." spinner to the Edit/Save and Save New buttons in the Metadata tool to show a save is in progress and prevent double submits
+* Tweak: AJAX handlers for Test Mode, Save Mode and What's New now return false for logged-out visitors
+* Fix: Saving Test Mode did not check the user's capability; it now requires manage_options
+* Fix: The emergency login file no longer ships with the example token enabled in its token list
+* Fix: Checkbox settings showed every box as checked after all of them were unchecked and saved
+* Fix: Saving .htaccess logged a PHP deprecation notice on servers without apache2ctl
+* Fix: The "enter a meta key" alert on Add New in the Metadata tool displayed "undefined" because its text was never localized
+* Fix: Add New and Delete in the Metadata tool sent the nonce under the wrong parameter name and were rejected by the AJAX handlers
+* Update: Added a Security Checks card to the Dashboard with the security score, the results of the last run, and buttons to run the checks or view the results
+* Tweak: Renamed the Dashboard's "Check for Site Issues" section to "Site Setup Checks" and noted that it does not check security
+* Update: Added scheduled Security Checks runs (daily or weekly, off by default) that send email and Discord alerts when a check newly fails or the score drops
+* Update: Added a Run Now button to the Cron Jobs tool that runs an event immediately and updates its next run time
+* Tweak: Added a couple extra recommended plugins
+* Update: Replaced the Force Update Check button on the Updates page with "Check and Update All Plugins" and "Check and Update All Themes" buttons, which check WordPress.org directly, show a "Checking plugins… 12 of 40" progress message, and then start WordPress's bulk update immediately
+* Update: The per-plugin "Check for Updates" link on the Plugins page now refreshes WordPress's last-checked time and installed versions so the update link it produces works reliably
+* Update: Removed the ALLOW_UNFILTERED_UPLOADS option from the wp-config tool per WP repo rules
+* Tweak: Removed the filters that protected plugin and theme update data from being overwritten, along with the hardcoded WordPress.org icon URLs and cron schedule clearing the old update check relied on
+* Tweak: Database queries in the Signups, Site Options and DB Tables tools now use prepared statements and validated table names
+* Tweak: Output is now escaped in more places across the Logs, Inactive Users, File Editor and Dashboard tools
+* Tweak: Added translator comments and numbered placeholders to translatable strings in various places, and replaced a hardcoded text domain
+* Tweak: Dates in the Inactive Users tool now use gmdate()
+* Tweak: Resolved all WordPress Plugin Check errors and warnings, and documented each intentional exception in the code
+* Fix: Links in an Inactive Users message were broken by a misplaced placeholder
+* Fix: The deprecated-function backtrace log entry printed "Array" instead of the "Backtrace" label
+* Fix: The Defines and Globals tools no longer throw a PHP error when the submitted data is not an array
+* Fix: The DB Tables tool no longer runs a record count on a stored table that no longer exists
+
 = 3.0.5 =
 * Update: Added an LLMs.txt tab to the SEO tool for viewing llms.txt and llms-full.txt, with format, link, generator plugin, and robots.txt AI crawler diagnostics
 * Update: Added a new SEO tool with Robots.txt and Sitemap tabs, including Output and Code views, a child sitemap selector, search, pagination, and download buttons

@@ -1,0 +1,298 @@
+/* Summary */
+
+#ddtt-security-summary {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin: 0 0 1.5rem 0;
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-left-width: 6px;
+    border-radius: 4px;
+    background: var(--color-bg-alt);
+}
+
+#ddtt-security-summary[data-state="fail"] {
+    border-left-color: var(--color-error);
+}
+
+#ddtt-security-summary[data-state="warning"],
+#ddtt-security-summary[data-state="unknown"] {
+    border-left-color: var(--color-warning);
+}
+
+#ddtt-security-summary[data-state="pass"] {
+    border-left-color: var(--color-success);
+}
+
+.ddtt-security-score {
+    flex: 0 0 auto;
+    min-width: 150px;
+    text-align: center;
+}
+
+.ddtt-security-score-number {
+    display: block;
+    font-size: 4.5rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.ddtt-security-score-label {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+}
+
+.ddtt-security-score[data-band="good"] .ddtt-security-score-number {
+    color: var(--color-success, #46b450);
+}
+
+.ddtt-security-score[data-band="fair"] .ddtt-security-score-number {
+    color: var(--color-warning);
+}
+
+.ddtt-security-score[data-band="poor"] .ddtt-security-score-number {
+    color: var(--color-error);
+}
+
+.ddtt-security-summary-text {
+    flex: 1 1 auto;
+}
+
+@media ( max-width: 782px ) {
+    #ddtt-security-summary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+
+.ddtt-security-basis {
+    margin: 0 0 0.75rem 0;
+}
+
+.ddtt-security-headline {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.ddtt-security-counts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+
+/* Disclaimer */
+
+#ddtt-security-disclaimer {
+    margin: 0 0 1.5rem 0;
+}
+
+#ddtt-security-disclaimer p {
+    margin: 0 0 0.5rem 0;
+    line-height: 1.6;
+}
+
+#ddtt-security-disclaimer summary {
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-secondary);
+}
+
+
+/* Categories */
+
+.ddtt-security-category {
+    margin: 3.5rem 0 2rem 0;
+}
+
+.ddtt-security-category h3 {
+    margin-bottom: 0.25rem;
+}
+
+.ddtt-security-category-desc {
+    margin-top: 0;
+    color: var(--color-text-secondary);
+}
+
+
+/* Table */
+
+.ddtt-security-table {
+    table-layout: fixed;
+}
+
+.ddtt-security-table th:nth-child(1),
+.ddtt-security-table td:nth-child(1) {
+    width: 100px;
+}
+
+.ddtt-security-table th:nth-child(2),
+.ddtt-security-table td:nth-child(2) {
+    width: 30%;
+}
+
+.ddtt-security-table td:nth-child(2) strong {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.ddtt-security-table th:last-child,
+.ddtt-security-table td.ddtt-security-actions {
+    width: 160px;
+    text-align: right;
+}
+
+.ddtt-security-details td {
+    width: auto !important;
+    text-align: left !important;
+}
+
+#ddtt-security-section [hidden],
+#ddtt-security-actions [hidden] {
+    display: none !important;
+}
+
+.ddtt-security-actions .ddtt-button {
+    margin-left: 4px;
+}
+
+.ddtt-security-time {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+}
+
+
+/* Status and severity pills */
+
+.ddtt-security-status,
+.ddtt-security-severity {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    background: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+.ddtt-security-status[data-status="fail"] {
+    background: var(--color-error);
+    color: white;
+}
+
+.ddtt-security-status[data-status="warning"],
+.ddtt-security-status[data-status="unknown"] {
+    background: var(--color-warning);
+    color: black;
+}
+
+.ddtt-security-status[data-status="pass"] {
+    background: var(--color-success, #46b450);
+    color: white;
+}
+
+.ddtt-security-status[data-status="info"] {
+    background: var(--color-info);
+    color: white;
+}
+
+#ddtt-hub .ddtt-security-severity {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    line-height: 1.4;
+}
+
+.ddtt-security-severity[data-severity="critical"],
+.ddtt-security-severity[data-severity="high"] {
+    border-color: var(--color-error);
+    color: var(--color-error);
+}
+
+.ddtt-security-severity[data-severity="medium"] {
+    border-color: var(--color-warning);
+}
+
+.ddtt-security-row[data-status="pass"] .ddtt-security-severity,
+.ddtt-security-row[data-status="none"] .ddtt-security-severity {
+    opacity: 0.5;
+}
+
+
+/* Details */
+
+#ddtt-hub .ddtt-security-details td {
+    padding: 1.5rem 1.75rem;
+    background: var(--color-bg-alt);
+}
+
+.ddtt-security-details h4 {
+    margin: 1.25rem 0 0.5rem 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.ddtt-security-details h4:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+}
+
+.ddtt-security-details p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+.ddtt-security-items li {
+    margin-bottom: 4px;
+}
+
+.ddtt-security-items {
+    margin: 0;
+    padding-left: 1.25rem;
+    list-style: disc;
+}
+
+.ddtt-security-items code {
+    word-break: break-all;
+}
+
+.ddtt-security-details code {
+    color: var(--color-text-secondary);
+    background: var(--color-bg-alt2) !important;
+    padding: 4px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    box-shadow: 2px 2px 8px 2px var(--color-bg-alt);
+    line-height: 1.7rem;
+}
+
+
+/* Sidebar */
+
+#ddtt-security-actions {
+    flex-direction: column;
+}
+
+#ddtt-security-actions .description {
+    margin: 0;
+}
+
+#ddtt-settings-sidebar-section select {
+    width: 100%;
+    margin-bottom: 10px;
+}

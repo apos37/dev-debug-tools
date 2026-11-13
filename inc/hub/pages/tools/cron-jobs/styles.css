@@ -7,3 +7,19 @@
     overflow-x: auto;
     white-space: pre-wrap;
 }
+
+.ddtt-cron-run-col {
+    width: 140px;
+    text-align: right;
+}
+
+.ddtt-cron-run-status {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+}
+
+.ddtt-cron-run-status.is-error {
+    color: var(--color-error);
+}

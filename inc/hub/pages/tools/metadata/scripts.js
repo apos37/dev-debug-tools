@@ -8,6 +8,13 @@ jQuery( document ).ready( function( $ ) {
     const currentSubsection = ddtt_metadata.subsection;
 
     /**
+     * Put a button into its saving state
+     */
+    function ddttSetSaving( button ) {
+        button.addClass( 'ddtt-saving' ).prop( 'disabled', true ).html( '<span class="ddtt-saving-spinner"></span>' + ddtt_metadata.i18n.saving );
+    }
+
+    /**
      * Load metadata based on sidebar inputs
      */
     function ddttLoadMetadata( extra = {} ) {
@@ -136,7 +143,9 @@ jQuery( document ).ready( function( $ ) {
     $( document ).on( 'click', '.ddtt-save-new', function( e ) {
         e.preventDefault();
 
-        var row = $( this ).closest( 'tr' );
+        var button = $( this );
+        var row = button.closest( 'tr' );
+        var cancelButton = row.find( '.ddtt-cancel-new' );
         var key = row.find( '.ddtt-meta-new-key' ).val();
         var value = row.find( '.ddtt-meta-new-value' ).val();
         var id = $( '#ddtt-custom-meta-table' ).closest( 'section' ).data( 'object-id' );
@@ -146,13 +155,21 @@ jQuery( document ).ready( function( $ ) {
             return;
         }
 
+        var resetButtons = function() {
+            button.removeClass( 'ddtt-saving' ).prop( 'disabled', false ).text( ddtt_metadata.i18n.save );
+            cancelButton.prop( 'disabled', false );
+        };
+
+        ddttSetSaving( button );
+        cancelButton.prop( 'disabled', true );
+
         $.post( ajaxurl, {
             action: 'ddtt_update_meta_value',
             key: key,
             value: value,
             object_id: id,
             subsection: currentSubsection,
-            _wpnonce: ddtt_metadata.nonce
+            nonce: ddtt_metadata.nonce
         }, function( response ) {
             if ( response.success ) {
                 row.removeClass( 'ddtt-meta-new-row' )
@@ -160,14 +177,18 @@ jQuery( document ).ready( function( $ ) {
                     .addClass( `ddtt-meta-key-${key}` );
 
                 row.html( '<td><span class="ddtt-highlight-variable">' + key + '</span></td>' +
-                        '<td>' + response.data + '</td>' +
+                        '<td>' + response.data.value + '</td>' +
                         '<td>' +
                         '<button class="ddtt-button ddtt-meta-action-button" data-action="edit" data-key="' + key + '">' + ddtt_metadata.i18n.edit + '</button> ' +
                         '<button class="ddtt-button ddtt-meta-action-button" data-action="delete" data-key="' + key + '">' + ddtt_metadata.i18n.delete + '</button>' +
                         '</td>' );
             } else {
-                alert( ddtt_metadata.i18n.errorSaving );
+                resetButtons();
+                alert( response.data ? response.data : ddtt_metadata.i18n.errorSaving );
             }
+        } ).fail( function() {
+            resetButtons();
+            alert( ddtt_metadata.i18n.errorSaving );
         } );
     } );
 
@@ -176,18 +197,39 @@ jQuery( document ).ready( function( $ ) {
      * Edit/Save Button Handler
      */
     var originalValue = '';
+    var originalKey = '';
+    var originalKeyText = '';
     $( document ).on( 'click', '.ddtt-meta-action-button[data-action="edit"], .ddtt-meta-action-button[data-action="save"]', function( e ) {
         e.preventDefault();
 
         var button = $( this );
         var row = button.closest( 'tr' );
         var key = button.data( 'key' );
+        var keyCell = row.find( 'td' ).eq( 0 );
         var valueCell = row.find( 'td' ).eq( 1 );
         var deleteButton = row.find( '.ddtt-meta-action-button[data-action="delete"]' );
         var id = button.closest( 'section' ).data( 'object-id' );
+        var isCustomMeta = row.closest( '#ddtt-custom-meta-table' ).length > 0;
 
-        if ( $( this ).data( 'action' ) === 'edit' ) {
+        var exitEditMode = function() {
+            originalValue = '';
+            originalKey = '';
+            originalKeyText = '';
+            button.removeClass( 'ddtt-saving' ).prop( 'disabled', false ).data( 'action', 'edit' ).text( ddtt_metadata.i18n.edit );
+            deleteButton.prop( 'disabled', false );
+        };
+
+        var restoreCells = function() {
+            valueCell.html( originalValue );
+            if ( isCustomMeta ) {
+                keyCell.html( originalKey );
+            }
+        };
+
+        if ( button.data( 'action' ) === 'edit' ) {
             originalValue = valueCell.html();
+            originalKey = keyCell.html();
+            originalKeyText = keyCell.text().trim();
         }
 
         var cellClone = valueCell.clone();
@@ -203,55 +245,77 @@ jQuery( document ).ready( function( $ ) {
             var placeholder = key === 'user_pass' ? ddtt_metadata.i18n.enterPassword : '';
             valueCell.html( '<textarea class="ddtt-meta-edit-field" style="width:100%;" placeholder="' + placeholder + '">' + currentValue + '</textarea>' );
 
+            if ( isCustomMeta ) {
+                keyCell.empty().append( $( '<input type="text" class="ddtt-meta-edit-key" style="width:100%;">' ).val( originalKeyText ) );
+            }
+
             button.data( 'action', 'save' ).text( ddtt_metadata.i18n.save );
             deleteButton.prop( 'disabled', true );
 
         } else {
-            
-            // Save mode
-            var newValue = valueCell.find( 'textarea' ).val();
 
-            // No change, just revert to edit mode
-            if ( ( newValue === currentValue ) || ( key === 'user_pass' && newValue === '' ) ) {
-                valueCell.html( originalValue );
-                originalValue = '';
-                button.data( 'action', 'edit' ).text( ddtt_metadata.i18n.edit );
-                deleteButton.prop( 'disabled', false );
+            var newValue = valueCell.find( 'textarea' ).val();
+            var newKey = isCustomMeta ? keyCell.find( '.ddtt-meta-edit-key' ).val().trim() : '';
+            var keyChanged = isCustomMeta && newKey !== originalKeyText;
+            var valueChanged = ! ( ( newValue === currentValue ) || ( key === 'user_pass' && newValue === '' ) );
+
+            if ( isCustomMeta && ! newKey ) {
+                alert( ddtt_metadata.i18n.enterKeyAlert );
                 return;
             }
 
-            // Validate email if key is user_email
+            if ( ! keyChanged && ! valueChanged ) {
+                restoreCells();
+                exitEditMode();
+                return;
+            }
+
             if ( key === 'user_email' && newValue && ! /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test( newValue ) ) {
                 alert( ddtt_metadata.i18n.invalidEmail );
                 return;
             }
 
-            $.post( ajaxurl, {
+            var postData = {
                 action: 'ddtt_update_meta_value',
-                key: key,
-                value: newValue,
+                key: isCustomMeta ? originalKeyText : key,
                 object_id: id,
                 subsection: currentSubsection,
                 nonce: ddtt_metadata.nonce
-            }, function( response ) {
+            };
+
+            if ( keyChanged ) {
+                postData.new_key = newKey;
+            }
+
+            if ( valueChanged ) {
+                postData.value = newValue;
+            }
+
+            ddttSetSaving( button );
+
+            $.post( ajaxurl, postData, function( response ) {
                 if ( response.success ) {
-                    valueCell.html( response.data );
+                    valueCell.html( response.data.value );
+
+                    if ( isCustomMeta ) {
+                        keyCell.empty().append( $( '<span class="ddtt-highlight-variable"></span>' ).text( response.data.key ) );
+
+                        if ( keyChanged ) {
+                            row.removeClass( 'ddtt-meta-key-' + originalKeyText ).addClass( 'ddtt-meta-key-' + response.data.key );
+                            row.find( '.ddtt-meta-action-button' ).attr( 'data-key', response.data.key ).data( 'key', response.data.key );
+                        }
+                    }
                 } else {
-                    valueCell.html( originalValue );
+                    restoreCells();
                     var errorMsg = response.data ? response.data : ddtt_metadata.i18n.errorSaving;
                     alert( errorMsg );
                 }
 
-                originalValue = '';
-                button.data( 'action', 'edit' ).text( ddtt_metadata.i18n.edit );
-                deleteButton.prop( 'disabled', false );
-            } ).fail( function( xhr ) {
-                // This triggers if PHP crashed (Fatal error, -1, or 403)
-                valueCell.html( originalValue );
+                exitEditMode();
+            } ).fail( function() {
+                restoreCells();
                 alert( 'Server Error: The request could not be completed.' );
-                
-                button.data( 'action', 'edit' ).text( ddtt_metadata.i18n.edit );
-                deleteButton.prop( 'disabled', false );
+                exitEditMode();
             } );
         }
     } );

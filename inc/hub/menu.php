@@ -64,6 +64,11 @@ class AdminMenu {
                 'description'  => __( "View your <code>robots.txt</code> and sitemaps with diagnostics.", 'dev-debug-tools' ),
                 'include_menu' => true,
             ],
+            'security-checks' => [
+                'name'         => __( "Security Checks", 'dev-debug-tools' ),
+                'description'  => __( "Run read-only security checks on this site and see how to fix what they find.", 'dev-debug-tools' ),
+                'include_menu' => true,
+            ],
             'site-options' => [
                 'name'        => __( "Site Options", 'dev-debug-tools' ),
                 'description' => __( "View the site's options and delete any that are not needed.", 'dev-debug-tools' ),
@@ -220,11 +225,11 @@ class AdminMenu {
         add_action( 'admin_init', [ $this, 'require_integration_classes' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
         add_action( 'wp_ajax_ddtt_save_mode', [ $this, 'ajax_save_mode' ] );
-        add_action( 'wp_ajax_nopriv_ddtt_save_mode', [ $this, 'ajax_save_mode' ] );
+        add_action( 'wp_ajax_nopriv_ddtt_save_mode', '__return_false' );
         add_action( 'wp_ajax_ddtt_dismiss_whats_new', [ $this, 'ajax_dismiss_whats_new' ] );
-        add_action( 'wp_ajax_nopriv_ddtt_dismiss_whats_new', [ $this, 'ajax_dismiss_whats_new' ] );
+        add_action( 'wp_ajax_nopriv_ddtt_dismiss_whats_new', '__return_false' );
         add_action( 'wp_ajax_ddtt_save_test_mode', [ $this, 'ajax_save_test_mode' ] );
-        add_action( 'wp_ajax_nopriv_ddtt_save_test_mode', [ $this, 'ajax_save_test_mode' ] );
+        add_action( 'wp_ajax_nopriv_ddtt_save_test_mode', '__return_false' );
     } // End __construct()
 
 
@@ -1080,8 +1085,11 @@ class AdminMenu {
      */
     public function ajax_save_test_mode() {
         check_ajax_referer( 'ddtt_save_mode', 'nonce' );
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( 'unauthorized' );
+        }
 
-        $mode = isset( $_POST[ 'mode' ] ) ? (int) $_POST[ 'mode' ] : 0;
+        $mode = isset( $_POST[ 'mode' ] ) ? absint( wp_unslash( $_POST[ 'mode' ] ) ) : 0;
         update_option( 'ddtt_test_mode', $mode );
 
         wp_send_json_success();

@@ -4,7 +4,7 @@ Tags: debug, developer, testing, logs, config
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 3.0.5
+Stable tag: 3.0.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -18,7 +18,7 @@ This plugin offers a suite of features to aid in debugging, including, but not l
 * Dashboard with **important site information and server metrics**
 * **Enhanced log viewer** for `debug.log`, error logs, custom logs, and an activity log
 * **Config file** viewers and editors for `wp-config.php` and `.htaccess` files
-* **SEO viewer** for `robots.txt`, sitemaps, and `llms.txt` with built-in diagnostics
+* **SEO viewer** for `robots.txt`, sitemaps, and `llms.txt` with built-in diagnostics (Added in 3.0.5)
 * **Meta Data** viewer and editor for users, posts, tax terms, comments, and media
 * **Database Table records** viewer
 * **Site Options** viewer and editor
@@ -33,6 +33,7 @@ This plugin offers a suite of features to aid in debugging, including, but not l
 * **PHP Info** and **php.ini** viewers
 * **Discord Notifications** of fatal errors and when users with certain roles log in
 * **Discord Messenger** for testing connections with Discord
+* **Security Checks** with 55 read-only checks, a security score, and how to fix each issue (Added in 3.0.6)
 * **See who's online** and **last online** dates
 * **Heartbeat Monitor** for testing WP Heartbeat API sitewide
 * **Plugins Page Enhancements** with addt plugin data and notes feature
@@ -56,6 +57,15 @@ This plugin is a must-have for any WordPress developer or site administrator who
 1. Install the plugin from your website's plugin directory, or upload the plugin to your plugins folder. 
 2. Activate it.
 3. Go to Developer Debug Tools in your admin menu.
+
+== External Services ==
+The Security Checks tool (Developer Debug Tools > Tools > Security Checks) connects to the services below when a developer runs a check, and on a daily or weekly schedule if Scheduled Runs is turned on in Settings > Security Checks (off by default). Nothing is sent on page loads.
+
+* **WordPress.org API (api.wordpress.org)**: The Core Files Modified check downloads the official file checksums for your WordPress version and language. The Closed or Abandoned Plugins and Themes check looks up each installed plugin and the active theme. Sent: your WordPress version and locale, and the folder names (slugs) of your plugins and active theme. Privacy policy: https://wordpress.org/about/privacy/
+* **WordPress.org downloads (downloads.wordpress.org)**: The Plugin Files Modified check downloads the official file checksums for each installed plugin from WordPress.org. Sent: the plugin's slug and version. Privacy policy: https://wordpress.org/about/privacy/
+* **Discord (discord.com)**: If Discord alerts for Security Checks are turned on, a scheduled run that finds new problems sends the site name, the security score, and the names of the newly failing checks to the webhook URL you enter. Terms: https://discord.com/terms Privacy policy: https://discord.com/privacy
+
+The Security Checks tool also requests this site's own pages the way a logged-out visitor would, opens a secure connection to this site to read its certificate, and looks up DNS records for this site's domain and the admin email's domain with your server's DNS resolver. These do not send data to any third party.
 
 == Frequently Asked Questions ==
 = Should I backup my wp-config.php and .htaccess files before using the tools to add/remove snippets? =
@@ -91,6 +101,9 @@ If you password-protected your `options.php` page like you should have (included
 = Why does the SEO tool show a request error on my staging site? =
 The SEO tool fetches your `robots.txt` and sitemaps over HTTP, just like a search engine would. If your staging site uses basic authentication or your host blocks requests from the server back to itself, those requests will fail. The diagnostics table shows the exact error so you can work out the cause.
 
+= Does a high Security Checks score mean my site is secure? =
+No. The Security Checks tool is a starting point, not a full security audit. It tests a limited set of common problems from the site's own point of view, and it can miss things or be wrong. It cannot detect stolen or weak passwords, unpublished vulnerabilities, server-level problems, or a site that is already compromised. Keep everything updated, use two-factor authentication, keep tested backups, and consider a reputable security service and a professional review for important sites. The tool is provided as is, without warranty.
+
 = Where can I get further support? =
 We recommend using our [website support forum](https://pluginrx.com/support/plugin/dev-debug-tools/) as the primary method for requesting features and getting help. You can also reach out via our [Discord support server](https://discord.gg/3HnzNEJVnR) or the [WordPress.org support forum](https://wordpress.org/support/plugin/dev-debug-tools/), but please note that WordPress.org doesn’t always notify us of new posts, so it’s not ideal for time-sensitive issues.
 
@@ -110,6 +123,39 @@ https://youtu.be/36aebqdzHQw
 10. Admin bar centering tool
 
 == Changelog ==
+= 3.0.6 =
+* Update: Added a Security Checks tool with 55 read-only checks across Public Exposure, Configuration, Users & Access, Software & Files, and Code Review, each explaining what an attacker could do and how to fix it
+* Update: Added a security score to the Security Checks tool, weighted by severity, with a notice that it is not a guarantee of security
+* Update: Added a Security Checks settings tab for turning individual checks on and off
+* Update: Added Add Security Headers, Force HTTPS in Browsers (HSTS), and Hide PHP and WordPress Versions snippets to the HTACCESS tool
+* Update: Meta keys can now be edited inline in the Custom Meta section of the Metadata tool; renaming preserves the key's meta ID and all of its values, rejects protected keys, and rejects keys that already exist on the object
+* Tweak: Added a "Saving..." spinner to the Edit/Save and Save New buttons in the Metadata tool to show a save is in progress and prevent double submits
+* Tweak: AJAX handlers for Test Mode, Save Mode and What's New now return false for logged-out visitors
+* Fix: Saving Test Mode did not check the user's capability; it now requires manage_options
+* Fix: The emergency login file no longer ships with the example token enabled in its token list
+* Fix: Checkbox settings showed every box as checked after all of them were unchecked and saved
+* Fix: Saving .htaccess logged a PHP deprecation notice on servers without apache2ctl
+* Fix: The "enter a meta key" alert on Add New in the Metadata tool displayed "undefined" because its text was never localized
+* Fix: Add New and Delete in the Metadata tool sent the nonce under the wrong parameter name and were rejected by the AJAX handlers
+* Update: Added a Security Checks card to the Dashboard with the security score, the results of the last run, and buttons to run the checks or view the results
+* Tweak: Renamed the Dashboard's "Check for Site Issues" section to "Site Setup Checks" and noted that it does not check security
+* Update: Added scheduled Security Checks runs (daily or weekly, off by default) that send email and Discord alerts when a check newly fails or the score drops
+* Update: Added a Run Now button to the Cron Jobs tool that runs an event immediately and updates its next run time
+* Tweak: Added a couple extra recommended plugins
+* Update: Replaced the Force Update Check button on the Updates page with "Check and Update All Plugins" and "Check and Update All Themes" buttons, which check WordPress.org directly, show a "Checking plugins… 12 of 40" progress message, and then start WordPress's bulk update immediately
+* Update: The per-plugin "Check for Updates" link on the Plugins page now refreshes WordPress's last-checked time and installed versions so the update link it produces works reliably
+* Update: Removed the ALLOW_UNFILTERED_UPLOADS option from the wp-config tool per WP repo rules
+* Tweak: Removed the filters that protected plugin and theme update data from being overwritten, along with the hardcoded WordPress.org icon URLs and cron schedule clearing the old update check relied on
+* Tweak: Database queries in the Signups, Site Options and DB Tables tools now use prepared statements and validated table names
+* Tweak: Output is now escaped in more places across the Logs, Inactive Users, File Editor and Dashboard tools
+* Tweak: Added translator comments and numbered placeholders to translatable strings in various places, and replaced a hardcoded text domain
+* Tweak: Dates in the Inactive Users tool now use gmdate()
+* Tweak: Resolved all WordPress Plugin Check errors and warnings, and documented each intentional exception in the code
+* Fix: Links in an Inactive Users message were broken by a misplaced placeholder
+* Fix: The deprecated-function backtrace log entry printed "Array" instead of the "Backtrace" label
+* Fix: The Defines and Globals tools no longer throw a PHP error when the submitted data is not an array
+* Fix: The DB Tables tool no longer runs a record count on a stored table that no longer exists
+
 = 3.0.5 =
 * Update: Added an LLMs.txt tab to the SEO tool for viewing llms.txt and llms-full.txt, with format, link, generator plugin, and robots.txt AI crawler diagnostics
 * Update: Added a new SEO tool with Robots.txt and Sitemap tabs, including Output and Code views, a child sitemap selector, search, pagination, and download buttons
@@ -131,21 +177,5 @@ https://youtu.be/36aebqdzHQw
 * Update: Added a search field to the Site Options tool to filter by option name
 * Tweak: Made the Autoload Size Summary section on Site Options collapsed by default, with expand/collapse toggle
 * Tweak: Site Options tool now caches option source detection (plugin/theme scan) instead of running it on every page load, improving performance
-
-= 3.0.3.3 =
-* Fix: Force Update Check incorrectly showing "Not tested" compatibility notice for plugins and themes that are tested with the current WordPress version
-* Fix: Force Update Check results not persisting after page reload due to transient being overwritten by WordPress background check or third-party plugins
-* Update: Overhauled Force Update Check button on the Updates page to check each plugin and theme directly against the WordPress.org API in real time via AJAX, bypassing transient cache and third-party update hooks
-
-= 3.0.3 =
-* Update: Added two new site checks on the dashboard
-* Update: Added a "Check for Update" action link to each plugin row on the Plugins page to manually check the source for a newer version
-
-= 3.0.2.2 =
-* Compatibility: Increased minimum required WordPress version to 6.0
-* Compatibility: Tested with WordPress 7.0
-* Fix: Metadata - updating of user_login not working
-* Fix: Metadata - some user object meta not updating or giving an error message why
-* Fix: Undefined array key in class-activity.php
 
 [See the full changelog](https://plugins.svn.wordpress.org/dev-debug-tools/trunk/changelog.txt)

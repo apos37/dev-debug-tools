@@ -24,6 +24,11 @@
     padding: 0;
 }
 
+#ddtt-update-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
 /* Force Update Notice */
 #ddtt-force-update-notice {
     display: none;

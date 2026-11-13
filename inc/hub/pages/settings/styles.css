@@ -18,3 +18,18 @@
 #online_users_discord_enable {
     margin-top: 3rem !important;
 }
+
+.ddtt-settings-row[id^="security_checks_"] .ddtt-toggle-group {
+    column-count: 1;
+}
+
+.ddtt-settings-subsection-desc .ddtt-security-paused {
+    display: block;
+    margin-bottom: 1rem;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-warning);
+    background: var(--color-message-bg);
+    color: var(--color-message-text);
+    font-style: normal;
+}

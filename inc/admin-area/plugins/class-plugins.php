@@ -30,9 +30,12 @@ class Plugins {
             'admin-help-docs',
             'broken-link-notifier',
             'clear-cache-everywhere',
+            'deadbolt',
             'do-nothing',
+            'fake-user-detector',
+            'pluginrx-control-center',
             'simple-maintenance-redirect',
-            'user-account-monitor',
+            'site-perspectives',
             'wcag-admin-accessibility-tools',
         ];
 
@@ -454,6 +457,20 @@ class Plugins {
 
             if ( ! isset( $transient->response ) ) {
                 $transient->response = [];
+            }
+
+            if ( ! isset( $transient->checked ) ) {
+                $transient->checked = [];
+            }
+
+            $transient->last_checked = time();
+
+            if ( ! function_exists( 'get_plugins' ) ) {
+                require_once ABSPATH . 'wp-admin/includes/plugin.php';
+            }
+
+            foreach ( get_plugins() as $file => $data ) {
+                $transient->checked[ $file ] = $data[ 'Version' ];
             }
 
             $transient->response[ $plugin ] = (object) [
@@ -1065,7 +1082,7 @@ class Plugins {
      * @return array
      */
     public function add_network_column( $columns ) : array {
-        $columns[ 'network_active_sites' ] = __( 'Active Sites', 'textdomain' );
+        $columns[ 'network_active_sites' ] = __( 'Active Sites', 'dev-debug-tools' );
         return $columns;
     } // End add_network_column()
 

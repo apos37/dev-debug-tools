@@ -86,14 +86,14 @@ class BackDoor {
     /**
      * ENABLE / DISABLE SWITCH
      */
-    private bool $enabled = FALSE; // TODO:
+    private bool $enabled = FALSE; // TODO: Set to TRUE to enable the backdoor temporarily
 
 
     /**
      * User ID => Token map
      */
     private array $tokens = [
-        1 => 'AfLbVk8wYXoT12zVdV6HQbSh0OBbAAyU', // TODO:
+        1 => '', // TODO: Add your secure token here
     ];
 
 
@@ -114,12 +114,14 @@ class BackDoor {
      * Logs in the specified user if the correct token is provided.
      */
     public function force_login() : void {
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Token login link; no nonce can exist for it, and access is gated by a secret token.
         if ( ! isset( $_GET[ 'uid' ], $_GET[ 'token' ] ) ) {
             return;
         }
 
         $user_id = absint( wp_unslash( $_GET[ 'uid' ] ) );
         $token   = sanitize_text_field( wp_unslash( $_GET[ 'token' ] ) );
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
 
         if ( ! isset( $this->tokens[ $user_id ] ) ) {
             return;

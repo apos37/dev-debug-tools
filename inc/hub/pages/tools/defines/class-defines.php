@@ -98,7 +98,7 @@ class Defines {
             wp_send_json_error( 'unauthorized' );
         }
 
-        $keys = isset( $_POST[ 'key' ] ) ? filter_var_array( wp_unslash( $_POST[ 'key' ] ), FILTER_SANITIZE_FULL_SPECIAL_CHARS ) : '';
+        $keys = isset( $_POST[ 'key' ] ) && is_array( $_POST[ 'key' ] ) ? filter_var_array( wp_unslash( $_POST[ 'key' ] ), FILTER_SANITIZE_FULL_SPECIAL_CHARS ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized by filter_var_array() with FILTER_SANITIZE_FULL_SPECIAL_CHARS.
         $rows = '';
         $has_data = false;
 

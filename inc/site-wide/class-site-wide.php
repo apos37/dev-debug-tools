@@ -31,7 +31,7 @@ class SiteWide {
              get_option( 'ddtt_backtrace_warnings', false ) ||
              get_option( 'ddtt_backtrace_errors', false ) ) {
 
-            set_error_handler( [ $this, 'log_php_backtrace' ] );
+            set_error_handler( [ $this, 'log_php_backtrace' ] ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Opt-in backtrace logging feature.
         }
         
         // WP Mail failure logging
@@ -135,14 +135,16 @@ class SiteWide {
     /**
      * Format backtrace for logging
      *
-     * @param array $backtrace The backtrace array.
+     * @param string $function The deprecated function name
      * 
      * @return string
      */
     public static function log_deprecated_backtrace( $function ) {
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Opt-in backtrace logging feature.
         $backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS );
         $formatted = Helpers::format_backtrace( $backtrace );
-        error_log( "{$backtrace} for deprecated function '{$function}':\n{$formatted}. You may disable backtraces for this type of error in the Developer Debug Log Settings." );
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Opt-in backtrace logging feature.
+        error_log( __( 'Backtrace', 'dev-debug-tools' ) . " for deprecated function '{$function}':\n{$formatted}. You may disable backtraces for this type of error in the Developer Debug Log Settings." );
     } // End log_deprecated_backtrace()
 
 
@@ -157,6 +159,7 @@ class SiteWide {
      * @return bool
      */
     public function log_php_backtrace( $errno, $errstr, $errfile, $errline ) {
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Opt-in backtrace logging feature.
         $backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS );
         array_shift( $backtrace );
         $formatted = Helpers::format_backtrace( $backtrace );
@@ -198,6 +201,7 @@ class SiteWide {
         $errstr .= "\n" . $backtrace . ":\n" . $formatted;
 
         // Log the message as a single line
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Opt-in backtrace logging feature.
         error_log( "{$type} {$backtrace} for: '{$errstr}' in {$errfile}( {$errline} ).\nYou may disable backtraces for this type of error in the Developer Debug Log Settings." );
 
         return false;
@@ -341,7 +345,7 @@ class SiteWide {
             $data[ 'extra' ] = $extra;
         }
 
-        Helpers::write_log( print_r( $data, true ) );
+        Helpers::write_log( print_r( $data, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r -- Returned as a string for the log, not output.
 
         update_option( 'ddtt_last_error', $data, false );
     } // End update_last_error()

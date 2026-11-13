@@ -1211,7 +1211,9 @@ class Metadata {
                 'add'                  => __( 'Add', 'dev-debug-tools' ),
                 'remove'               => __( 'Remove', 'dev-debug-tools' ),
                 'updateTerms'          => __( 'Update Terms', 'dev-debug-tools' ),
-                'confirmReset'         => __( 'Are you sure you want to reset all custom metadata for this object? This cannot be undone.', 'dev-debug-tools' ) 
+                'confirmReset'         => __( 'Are you sure you want to reset all custom metadata for this object? This cannot be undone.', 'dev-debug-tools' ),
+                'enterKeyAlert'        => __( 'Please enter a meta key.', 'dev-debug-tools' ),
+                'saving'               => __( 'Saving...', 'dev-debug-tools' ),
             ],
         ] );
     } // End enqueue_assets()
@@ -1371,6 +1373,7 @@ class Metadata {
                     // SPECIAL CASE: user_login (WP doesn't allow this via API)
                     if ( 'user_login' === $key ) {
                         global $wpdb;
+                        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- WordPress does not allow changing user_login through its API.
                         $result = $wpdb->update(
                             $wpdb->users,
                             [ 'user_login' => $value ],
@@ -1484,6 +1487,50 @@ class Metadata {
 
 
     /**
+     * Rename a custom meta key, keeping all of its rows and meta IDs.
+     *
+     * @param string $subsection
+     * @param int    $object_id
+     * @param string $old_key
+     * @param string $new_key
+     * @return true|\WP_Error
+     */
+    private function rename_meta_key( $subsection, $object_id, $old_key, $new_key ) {
+        global $wpdb;
+
+        $meta_type = ( $subsection === 'media' ) ? 'post' : $subsection;
+
+        if ( ! in_array( $meta_type, [ 'user', 'post', 'term', 'comment' ], true ) ) {
+            return new \WP_Error( 'ddtt_invalid_subsection', __( 'Unknown subsection.', 'dev-debug-tools' ) );
+        }
+
+        $protected_keys = self::protected_meta_keys();
+        if ( in_array( $old_key, $protected_keys, true ) || in_array( $new_key, $protected_keys, true ) ) {
+            return new \WP_Error( 'ddtt_protected_key', __( 'Protected meta keys cannot be renamed.', 'dev-debug-tools' ) );
+        }
+
+        if ( ! metadata_exists( $meta_type, $object_id, $old_key ) ) {
+            return new \WP_Error( 'ddtt_key_not_found', __( 'The original meta key no longer exists.', 'dev-debug-tools' ) );
+        }
+
+        if ( metadata_exists( $meta_type, $object_id, $new_key ) ) {
+            return new \WP_Error( 'ddtt_key_exists', __( 'That meta key already exists on this object.', 'dev-debug-tools' ) );
+        }
+
+        $result = $wpdb->update( $wpdb->{ $meta_type . 'meta' }, [ 'meta_key' => $new_key ], [ $meta_type . '_id' => $object_id, 'meta_key' => $old_key ], [ '%s' ], [ '%d', '%s' ] ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Renames a meta key in place; no WordPress API supports this.
+
+        if ( $result === false ) {
+            apply_filters( 'ddtt_log_error', 'rename_meta_key', new \Exception( 'Failed to rename meta key.' ), compact( 'subsection', 'object_id', 'old_key', 'new_key' ) );
+            return new \WP_Error( 'ddtt_rename_failed', __( 'Failed to rename meta key.', 'dev-debug-tools' ) );
+        }
+
+        wp_cache_delete( $object_id, $meta_type . '_meta' );
+
+        return true;
+    } // End rename_meta_key()
+
+
+    /**
      * Delete a metadata value.
      *
      * @param string $subsection
@@ -1522,7 +1569,7 @@ class Metadata {
 
 
     /**
-     * Handle AJAX request to update a metadata value.
+     * Handle AJAX request to update a metadata value and optionally rename its key.
      *
      * @return void
      */
@@ -1535,30 +1582,47 @@ class Metadata {
         $subsection = isset( $_POST[ 'subsection' ] ) ? sanitize_key( wp_unslash( $_POST[ 'subsection' ] ) ) : '';
         $object_id  = isset( $_POST[ 'object_id' ] ) ? absint( $_POST[ 'object_id' ] ) : 0;
         $key        = isset( $_POST[ 'key' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'key' ] ) ) : '';
-        $value      = isset( $_POST[ 'value' ] ) ? wp_unslash( $_POST[ 'value' ] ) : ''; // phpcs:ignore 
+        $new_key    = isset( $_POST[ 'new_key' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'new_key' ] ) ) : '';
+        $has_value  = isset( $_POST[ 'value' ] );
+        $value      = $has_value ? wp_unslash( $_POST[ 'value' ] ) : ''; // phpcs:ignore
 
         if ( ! $subsection || ! $object_id || ! $key ) {
             apply_filters( 'ddtt_log_error', 'ajax_update_meta_value', new \Exception( 'Missing required parameters for updating meta value.' ), [ 'step' => 'parameter_check' ] );
             wp_send_json_error( 'invalid_parameters' );
         }
 
-        $updated = $this->update_meta_value( $subsection, $object_id, $key, $value );
+        if ( $new_key !== '' && $new_key !== $key ) {
+            $renamed = $this->rename_meta_key( $subsection, $object_id, $key, $new_key );
 
-        if ( is_wp_error( $updated ) ) {
-            if ( ob_get_length() ) ob_clean();
-            wp_send_json_error( $updated->get_error_message() );
+            if ( is_wp_error( $renamed ) ) {
+                wp_send_json_error( $renamed->get_error_message() );
+            }
+
+            $key = $new_key;
         }
 
-        if ( ! $updated ) {
-            apply_filters( 'ddtt_log_error', 'ajax_update_meta_value', new \Exception( 'Failed to update meta value.' ), [ 'step' => 'update_meta' ] );
-            wp_send_json_error( 'update_failed' );
+        if ( $has_value ) {
+            $updated = $this->update_meta_value( $subsection, $object_id, $key, $value );
+
+            if ( is_wp_error( $updated ) ) {
+                if ( ob_get_length() ) ob_clean();
+                wp_send_json_error( $updated->get_error_message() );
+            }
+
+            if ( ! $updated ) {
+                apply_filters( 'ddtt_log_error', 'ajax_update_meta_value', new \Exception( 'Failed to update meta value.' ), [ 'step' => 'update_meta' ] );
+                wp_send_json_error( 'update_failed' );
+            }
+        } else {
+            $value = $this->get_meta_value( $subsection, $object_id, $key );
         }
 
-        // Return the rendered value
         $object = $this->get_object( $subsection, $object_id );
-        $rendered_value = $this->render_meta_value( $subsection, 'custom', $object, $key, $value );
 
-        wp_send_json_success( $rendered_value );
+        wp_send_json_success( [
+            'key'   => $key,
+            'value' => $this->render_meta_value( $subsection, 'custom', $object, $key, $value )
+        ] );
     } // End ajax_update_meta_value()
 
 

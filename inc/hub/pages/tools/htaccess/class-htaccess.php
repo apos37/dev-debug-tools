@@ -67,6 +67,28 @@ class Htaccess {
                 ],
                 'desc' => __( 'Restricts access to the <code>debug.log</code> file within your WordPress installation, enhancing security. This is highly recommended, especially if you have enabled debugging on your <code>wp-config.php</code> file. Only authorized IP addresses (localhost and hosting server) can view the log file. Unauthorized users won\'t be able to access sensitive debugging information.', 'dev-debug-tools' )
             ],
+            'security_headers' => [
+                'label' => __( 'Add Security Headers', 'dev-debug-tools' ),
+                'lines' => [
+                    '<IfModule mod_headers.c>',
+                    'Header always set X-Content-Type-Options "nosniff"',
+                    'Header always set X-Frame-Options "SAMEORIGIN"',
+                    'Header always set Content-Security-Policy "frame-ancestors \'self\'"',
+                    'Header always set Referrer-Policy "strict-origin-when-cross-origin"',
+                    'Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"',
+                    '</IfModule>',
+                ],
+                'desc' => __( 'Adds headers that tell browsers how to treat your site. <code>X-Content-Type-Options</code> stops browsers from running uploaded files as scripts. <code>X-Frame-Options</code> and <code>frame-ancestors</code> stop other sites from loading your pages in a frame to trick visitors into clicking things. <code>Referrer-Policy</code> keeps full URLs from being sent to other sites. <code>Permissions-Policy</code> blocks the camera, microphone, and location for every page. Remove <code>geolocation=()</code> if your site uses the visitor\'s location, such as a store finder, and add your other domains to <code>frame-ancestors</code> if they embed your pages in an iframe. If your host or CDN already sends any of these headers, remove those lines here so they are not sent twice.', 'dev-debug-tools' )
+            ],
+            'hsts' => [
+                'label' => __( 'Force HTTPS in Browsers (HSTS)', 'dev-debug-tools' ),
+                'lines' => [
+                    '<IfModule mod_headers.c>',
+                    'Header always set Strict-Transport-Security "max-age=31536000"',
+                    '</IfModule>',
+                ],
+                'desc' => __( 'Tells browsers to only connect to your site over HTTPS for one year, so visitors cannot be downgraded to an unencrypted connection. Only add this once HTTPS works on every page. Browsers that have seen the header will refuse to load the site over HTTP until it expires, even if you remove it. To test first, change <code>31536000</code> to <code>300</code> (five minutes), then raise it once everything works.', 'dev-debug-tools' )
+            ],
             'redirect_https' => [
                 'label' => __( 'Redirect http:// to https://', 'dev-debug-tools' ),
                 'lines' => [
@@ -84,6 +106,19 @@ class Htaccess {
                     'ServerSignature Off',
                 ],
                 'desc' => __( 'Disables the server signature (also known as the server banner or server version) for your WordPress site. The server signature is a piece of information about your web server (e.g., Apache, Nginx) and its version. By default, when an error occurs (such as a 404 page), the server includes this signature in the response headers. The server signature can reveal sensitive information about the software versions running on the web server. Hiding the server signature enhances security by reducing the exposure of server details. It prevents potential attackers from knowing specific server software versions. Disabling the server signature is a recommended security practice.', 'dev-debug-tools' )
+            ],
+            'hide_versions' => [
+                'label' => __( 'Hide PHP and WordPress Versions', 'dev-debug-tools' ),
+                'lines' => [
+                    '<IfModule mod_headers.c>',
+                    'Header always unset X-Powered-By',
+                    'Header unset X-Powered-By',
+                    '</IfModule>',
+                    '<Files "readme.html">',
+                    'Require all denied',
+                    '</Files>',
+                ],
+                'desc' => __( 'Removes the <code>X-Powered-By</code> header, which shows your exact PHP version, and blocks <code>readme.html</code>, which shows your WordPress version. WordPress restores <code>readme.html</code> on every core update, so blocking it here works better than deleting it.', 'dev-debug-tools' )
             ],
             'disable_index_browsing' => [
                 'label' => __( 'Disable Index Browsing', 'dev-debug-tools' ),
@@ -532,7 +567,7 @@ class Htaccess {
 
         // --- 4. Check for syntax errors using Apache's configtest if available ---
         // This is optional and only works if shell_exec and apache2ctl are available
-        if ( function_exists( 'shell_exec' ) && trim( shell_exec( 'which apache2ctl' ) ) ) {
+        if ( function_exists( 'shell_exec' ) && trim( (string) shell_exec( 'which apache2ctl' ) ) ) {
             $tmp_htaccess = tempnam( sys_get_temp_dir(), 'htaccess_' );
             file_put_contents( $tmp_htaccess, $content );
             $output = shell_exec( 'apache2ctl -t -f ' . escapeshellarg( $tmp_htaccess ) . ' 2>&1' );

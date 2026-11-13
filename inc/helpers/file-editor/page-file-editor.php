@@ -3,6 +3,7 @@ namespace Apos37\DevDebugTools;
 use Apos37\DevDebugTools\FileEditor;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template included inside AdminMenu::render_page(); variables are local to that method.
 
 require_once Bootstrap::path( 'inc/hub/pages/tools/' . $this_tool_slug . '/class-' . $this_tool_slug . '.php' );
 $editor = FileEditor::instance( $this_abspath );
@@ -37,14 +38,18 @@ $backups = $editor->get_backups();
             ) );
 
             if ( $syntax_checker ) {
-                echo wp_kses_post( __( 'This tool checks for syntax errors and requirements before saving, but you should still review your edits carefully. If you are experiencing issues with the syntax checker and know what you\'re doing, you can disable it temporarily in the config files <a href="' . esc_url( Bootstrap::page_url( 'settings&s=config_files' ) ) . '">settings</a>. However, use at your own risk.', 'dev-debug-tools' ) );
+                /* translators: %s: URL of the config files settings page. */
+                $syntax_message = __( 'This tool checks for syntax errors and requirements before saving, but you should still review your edits carefully. If you are experiencing issues with the syntax checker and know what you\'re doing, you can disable it temporarily in the config files <a href="%s">settings</a>. However, use at your own risk.', 'dev-debug-tools' );
+                echo wp_kses_post( sprintf( $syntax_message, esc_url( Bootstrap::page_url( 'settings&s=config_files' ) ) ) );
             }
             ?>
         </p>
         <p>
             <?php 
             if ( ! $syntax_checker ) {
-                echo '<div class="ddtt-warning-message"><strong><em>' . wp_kses_post( __( 'Note: Syntax checking is currently disabled. Be extra careful when making changes. To re-enable it, go to the config files <a href="' . esc_url( Bootstrap::page_url( 'settings&s=config_files' ) ) . '">settings</a>.', 'dev-debug-tools' ) ) . '</em></strong></div>';
+                /* translators: %s: URL of the config files settings page. */
+                $disabled_message = __( 'Note: Syntax checking is currently disabled. Be extra careful when making changes. To re-enable it, go to the config files <a href="%s">settings</a>.', 'dev-debug-tools' );
+                echo '<div class="ddtt-warning-message"><strong><em>' . wp_kses_post( sprintf( $disabled_message, esc_url( Bootstrap::page_url( 'settings&s=config_files' ) ) ) ) . '</em></strong></div>';
             }
             ?>
         </p>

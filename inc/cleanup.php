@@ -414,6 +414,7 @@ class Cleanup {
         $prefix = 'ddtt_';
 
         // Delete all transients with your prefix
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Cleanup must read the live options table; results are deleted immediately.
         $transients = $wpdb->get_col( $wpdb->prepare(
             "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s",
             $wpdb->esc_like( '_transient_' . $prefix ) . '%'
@@ -426,6 +427,7 @@ class Cleanup {
         }
 
         // Also delete expired transient timeouts just in case
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Cleanup must read the live options table; results are deleted immediately.
         $timeouts = $wpdb->get_col( $wpdb->prepare(
             "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s",
             $wpdb->esc_like( '_transient_timeout_' . $prefix ) . '%'

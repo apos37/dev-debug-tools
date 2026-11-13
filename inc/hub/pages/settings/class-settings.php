@@ -23,15 +23,16 @@ class Settings {
 
         if ( Helpers::is_dev() ) {
             $dev_only = [
-                'logging'      => __( 'Logging', 'dev-debug-tools' ),
-                'config_files' => __( 'Config Files', 'dev-debug-tools' ),
-                'seo'          => __( 'SEO', 'dev-debug-tools' ),
-                'metadata'     => __( 'Metadata', 'dev-debug-tools' ),
-                'heartbeat'    => __( 'Heartbeat', 'dev-debug-tools' ),
-                'online_users' => __( 'Online Users', 'dev-debug-tools' ),
-                'admin_bar'    => __( 'Admin Bar', 'dev-debug-tools' ),
-                'admin_areas'  => __( 'Admin Area', 'dev-debug-tools' ),
-                'security'     => __( 'Security', 'dev-debug-tools' ),
+                'logging'         => __( 'Logging', 'dev-debug-tools' ),
+                'config_files'    => __( 'Config Files', 'dev-debug-tools' ),
+                'seo'             => __( 'SEO', 'dev-debug-tools' ),
+                'metadata'        => __( 'Metadata', 'dev-debug-tools' ),
+                'heartbeat'       => __( 'Heartbeat', 'dev-debug-tools' ),
+                'online_users'    => __( 'Online Users', 'dev-debug-tools' ),
+                'admin_bar'       => __( 'Admin Bar', 'dev-debug-tools' ),
+                'admin_areas'     => __( 'Admin Area', 'dev-debug-tools' ),
+                'security_checks' => __( 'Security Checks', 'dev-debug-tools' ),
+                'security'        => __( 'Plugin Security', 'dev-debug-tools' ),
             ];
             $sections = array_merge( $sections, $dev_only );
         }
@@ -435,6 +436,116 @@ class Settings {
 
 
     /**
+     * Get the security checks settings options.
+     *
+     * @return array
+     */
+    public static function security_checks_options() : array {
+        require_once Bootstrap::path( 'inc/hub/pages/tools/security-checks/class-security-checks.php' );
+
+        $schedule_desc = __( 'Run all enabled checks automatically with WP-Cron and get an alert when a check starts failing. Scheduled runs contact api.wordpress.org and downloads.wordpress.org, the same as manual runs. WP-Cron runs when the site gets visits, so low-traffic sites may run late.', 'dev-debug-tools' );
+
+        $paused = SecurityChecksCron::paused_reason();
+        if ( $paused !== '' ) {
+            $maintenance_link = defined( 'SMREDIRECT_VERSION' ) ? ' <a href="' . esc_url( admin_url( 'options-general.php?page=smredirect-settings' ) ) . '">' . esc_html__( 'Maintenance settings', 'dev-debug-tools' ) . '</a>' : '';
+            $schedule_desc = '<span class="ddtt-security-paused"><strong>' . esc_html__( 'Scheduled runs are paused.', 'dev-debug-tools' ) . '</strong> ' . esc_html( $paused ) . ' ' . esc_html__( 'Checks run during maintenance would test the maintenance redirect instead of the site, so they resume automatically when maintenance mode is turned off.', 'dev-debug-tools' ) . $maintenance_link . '</span>' . $schedule_desc;
+        }
+
+        $options = [
+            'schedule' => [
+                'label'  => __( 'Scheduled Runs', 'dev-debug-tools' ),
+                'desc'   => $schedule_desc,
+                'fields' => [
+                    'security_checks_schedule' => [
+                        'title'   => __( 'Run Checks Automatically', 'dev-debug-tools' ),
+                        'desc'    => __( 'The first run starts about an hour after you save.', 'dev-debug-tools' ),
+                        'type'    => 'select',
+                        'choices' => [
+                            'off'    => __( 'Off', 'dev-debug-tools' ),
+                            'daily'  => __( 'Daily', 'dev-debug-tools' ),
+                            'weekly' => __( 'Weekly', 'dev-debug-tools' ),
+                        ],
+                        'default' => 'off',
+                    ],
+                    'security_checks_email_enable' => [
+                        'title'   => __( 'Email Alerts', 'dev-debug-tools' ),
+                        'desc'    => __( 'Send an email when a scheduled run finds a new failure or the score drops.', 'dev-debug-tools' ),
+                        'type'    => 'checkbox',
+                        'default' => true,
+                    ],
+                    'security_checks_email' => [
+                        'title'     => __( 'Alert Email Address', 'dev-debug-tools' ),
+                        /* translators: %s: admin email address */
+                        'desc'      => sprintf( __( 'Leave blank to use the admin email (%s).', 'dev-debug-tools' ), get_option( 'admin_email' ) ),
+                        'type'      => 'text',
+                        'default'   => '',
+                        'condition' => [
+                            'field' => 'security_checks_email_enable',
+                            'value' => true,
+                        ],
+                    ],
+                    'security_checks_discord_enable' => [
+                        'title'   => __( 'Discord Alerts', 'dev-debug-tools' ),
+                        'desc'    => __( 'Send a Discord message when a scheduled run finds a new failure or the score drops.', 'dev-debug-tools' ),
+                        'type'    => 'checkbox',
+                        'default' => false,
+                    ],
+                    'security_checks_discord_webhook' => [
+                        'title'     => __( 'Discord Webhook for Security Alerts', 'dev-debug-tools' ),
+                        /* translators: %s is a link to Discord webhook documentation */
+                        'desc'      => sprintf( __( 'Enter your %s webhook URL. Webhook URL should look like: https://discord.com/api/webhooks/xxx/xxx...', 'dev-debug-tools' ), '<a href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks" target="_blank">Discord</a>' ),
+                        'type'      => 'text',
+                        'pattern'   => '^https://discord\.com/api/webhooks/\d+/\w+$',
+                        'default'   => '',
+                        'condition' => [
+                            'field' => 'security_checks_discord_enable',
+                            'value' => true,
+                        ],
+                    ],
+                    'security_checks_score_drop' => [
+                        'title'   => __( 'Alert When the Score Drops By', 'dev-debug-tools' ),
+                        'desc'    => __( 'Also alert when the score drops by at least this many points since the last run. Enter 0 to alert only on new failures.', 'dev-debug-tools' ),
+                        'type'    => 'number',
+                        'default' => 10,
+                    ],
+                ],
+            ],
+        ];
+
+        $checks = SecurityChecks::checks();
+
+        foreach ( SecurityChecks::categories() as $category => $category_data ) {
+            $choices = [];
+            foreach ( $checks as $key => $check ) {
+                if ( $check[ 'category' ] === $category ) {
+                    $choices[ $key ] = $check[ 'label' ];
+                }
+            }
+
+            if ( empty( $choices ) ) {
+                continue;
+            }
+
+            $options[ $category ] = [
+                'label'  => $category_data[ 'label' ],
+                'desc'   => $category_data[ 'desc' ],
+                'fields' => [
+                    'security_checks_' . $category => [
+                        'title'   => __( 'Enabled Checks', 'dev-debug-tools' ),
+                        'desc'    => __( 'Turn off checks that do not apply to this site.', 'dev-debug-tools' ),
+                        'type'    => 'checkboxes',
+                        'choices' => $choices,
+                        'default' => array_keys( $choices ),
+                    ],
+                ],
+            ];
+        }
+
+        return $options;
+    } // End security_checks_options()
+
+
+    /**
      * Get the logging settings options.
      *
      * Returns an array of logging settings options for the plugin.
@@ -791,8 +902,8 @@ class Settings {
                         'default'   => true,
                     ],
                     'force_updates_check' => [
-                        'title'     => __( 'Add Force Updates Check Button', 'dev-debug-tools' ),
-                        'desc'      => __( 'Adds a button on the Updates page to force check for updates.', 'dev-debug-tools' ),
+                        'title'     => __( 'Add Check and Update Buttons', 'dev-debug-tools' ),
+                        'desc'      => __( 'Adds buttons on the Updates page to check for and immediately update all plugins or themes.', 'dev-debug-tools' ),
                         'type'      => 'checkbox',
                         'default'   => true,
                     ],
@@ -1064,6 +1175,7 @@ class Settings {
         }
 
         if ( $import_data = get_transient( 'ddtt_settings_imported_successfully' ) ) {
+            /* translators: %s: number of settings imported. */
             Helpers::render_notice( sprintf( __( '%1$s settings imported successfully.', 'dev-debug-tools' ), esc_attr( $import_data[ 'count' ] ) ), 'success' );
         }
     } // End render_header_notices()
@@ -1324,9 +1436,8 @@ class Settings {
      * @param array  $args The arguments for the field.
      */
     public static function render_field_checkboxes( $key, $args ) {
-        $value = get_option( $key, [] );
-        $value = self::sanitize_checkboxes( $value );
-        $defaults = $args[ 'default' ] ?? [];
+        $saved = get_option( $key, '__notset' );
+        $value = $saved === '__notset' ? (array) ( $args[ 'default' ] ?? [] ) : self::sanitize_checkboxes( $saved );
 
         echo '<div class="ddtt-toggle-group">';
 
@@ -1335,7 +1446,7 @@ class Settings {
                     $choice_key = $choice_label;
                 }
 
-                $is_checked = ( ! empty( $value ) && in_array( $choice_key, $value ) ) || ( empty( $value ) && is_array( $defaults ) && in_array( $choice_key, $defaults ) );
+                $is_checked = in_array( $choice_key, $value );
 
                 printf(
                     '<div class="ddtt-toggle-wrapper">
@@ -1603,7 +1714,7 @@ class Settings {
         printf(
             '<button id="%1$s" class="ddtt-button"%2$s%3$s>%4$s</button> %5$s',
             esc_attr( $key ),
-            $onclick,
+            $onclick, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped with esc_attr() above.
             esc_attr( $disabled ),
             esc_html( $args[ 'label' ] ),
             wp_kses_post( isset( $args[ 'html' ] ) ? $args[ 'html' ] : '' )

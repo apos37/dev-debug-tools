@@ -53,7 +53,7 @@ class Signups {
     public static function get_signups() : array {
         global $wpdb;
 
-        $results = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}signups", ARRAY_A );
+        $results = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}signups", ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Reads the multisite signups table, which has no WordPress API.
 
         return $results ?: [];
     } // End get_signups()
@@ -102,14 +102,14 @@ class Signups {
         $table     = "{$wpdb->prefix}signups";
 
         // Verify that the signup exists before deletion
-        $signup = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE signup_id = %d", $signup_id ), ARRAY_A );
+        $signup = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE signup_id = %d", $signup_id ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is $wpdb->prefix plus a fixed string; value is prepared.
 
         if ( ! $signup ) {
             wp_send_json_error( [ 'message' => __( 'Signup not found.', 'dev-debug-tools' ) ] );
         }
 
         // Perform deletion
-        $deleted = $wpdb->delete( $table, [ 'signup_id' => $signup_id ], [ '%d' ] );
+        $deleted = $wpdb->delete( $table, [ 'signup_id' => $signup_id ], [ '%d' ] ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Deletes from the multisite signups table, which has no WordPress API.
 
         if ( $deleted === false ) {
             wp_send_json_error( [ 'message' => __( 'Database error while deleting signup.', 'dev-debug-tools' ) ] );

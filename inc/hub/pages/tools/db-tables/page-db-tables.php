@@ -2,6 +2,7 @@
 namespace Apos37\DevDebugTools;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template included inside AdminMenu::render_page(); variables are local to that method.
 
 global $wpdb;
 
@@ -27,8 +28,8 @@ $selected_table_name = is_array( $selected_table ) && isset( $selected_table[ 't
 $selected_table_search = is_array( $selected_table ) && isset( $selected_table[ 'search' ] ) ? sanitize_text_field( $selected_table[ 'search' ] ) : '';
 $selected_table_per_page = is_array( $selected_table ) && isset( $selected_table[ 'per_page' ] ) ? absint( $selected_table[ 'per_page' ] ) : DbTables::RECORDS_PER_PAGE_DEFAULT;
 $selected_table_total_records = 0;
-if ( $selected_table_name ) {
-    $selected_table_total_records = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$selected_table_name}`" );
+if ( $selected_table_name && in_array( $selected_table_name, $tables, true ) ) {
+    $selected_table_total_records = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `" . esc_sql( $selected_table_name ) . "`" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Table name validated against SHOW TABLES and escaped; identifiers cannot use placeholders on WP 6.0.
 }
 ?>
 

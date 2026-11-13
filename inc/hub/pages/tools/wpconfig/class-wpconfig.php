@@ -160,17 +160,6 @@ class WpConfig {
                 ],
                 'desc'  => __( 'Controls the concatenation and minification of JavaScript files and stylesheets used by your website. When set to true, WordPress combines multiple JavaScript and stylesheet files into a single file. This process reduces the number of HTTP requests made to the server when a user visits your website, resulting in faster load times. Disabling this can be helpful if there are jQuery/JS Issues, but again should used temporarily until you figure out the real problem.', 'dev-debug-tools' )
             ],
-            'unfiltered_uploads' => [
-                'label' => __( 'Allow Uploads of All File Types', 'dev-debug-tools' ),
-                'lines' => [
-                    [
-                        'prefix'   => 'define',
-                        'variable' => 'ALLOW_UNFILTERED_UPLOADS', // Cannot suppress warning
-                        'value'    => TRUE
-                    ]
-                ],
-                'desc'  => __( 'Allows you to bypass certain security filters applied to uploaded files. By default, WordPress applies strict filtering to uploaded files to prevent potential security risks, such as executing malicious code or scripts. Some plugins or custom functionality may require uploading files with specific extensions or formats that would otherwise be blocked by default filters. Enabling this allows developers to handle such cases. Just be caustious! Allowing unfiltered HTML or JavaScript uploads can lead to cross-site scripting (XSS) attacks. Malicious code embedded in uploaded files could compromise user sessions and site security.', 'dev-debug-tools' )
-            ],
             'force_ssl_login' => [
                 'label' => __( 'Ensure Login Credentials are Encrypted when Transmitting to Server', 'dev-debug-tools' ),
                 'lines' => [

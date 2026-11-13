@@ -79,9 +79,6 @@ class AdminArea {
             add_action( 'wp_ajax_ddtt_force_check_single_plugin', [ $this, 'ajax_force_check_single_plugin' ] );
             add_action( 'wp_ajax_ddtt_force_check_single_theme', [ $this, 'ajax_force_check_single_theme' ] );
             add_action( 'wp_ajax_ddtt_commit_update_results', [ $this, 'ajax_commit_update_results' ] );
-            add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'protect_plugin_update_transient' ] );
-            add_filter( 'pre_set_site_transient_update_themes', [ $this, 'protect_theme_update_transient' ] );
-            add_action( 'upgrader_process_complete', [ $this, 'clear_protected_update_transients' ], 10, 2 );
         }
 
         // Enqueue admin area assets
@@ -557,107 +554,186 @@ class AdminArea {
 
 
     /**
-     * AJAX: Commit update results to prevent transient from being overwritten.
+     * AJAX: Inject found updates into the update transient and return what is needed to start the native bulk update.
      */
     public function ajax_commit_update_results() {
         $nonce = isset( $_POST[ 'nonce' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'nonce' ] ) ) : '';
-        if ( ! wp_verify_nonce( $nonce, 'force_update_check' ) || ! current_user_can( 'update_plugins' ) ) {
+        $type  = isset( $_POST[ 'type' ] ) ? sanitize_key( wp_unslash( $_POST[ 'type' ] ) ) : '';
+
+        if ( ! wp_verify_nonce( $nonce, 'force_update_check' ) || ! in_array( $type, [ 'plugins', 'themes' ], true ) || ! current_user_can( 'update_' . $type ) ) {
             wp_send_json_error();
         }
 
-        $plugin_updates = isset( $_POST[ 'plugin_updates' ] ) ? json_decode( stripslashes( $_POST[ 'plugin_updates' ] ), true ) : [];
-        $theme_updates  = isset( $_POST[ 'theme_updates' ] ) ? json_decode( stripslashes( $_POST[ 'theme_updates' ] ), true ) : [];
+        $updates = isset( $_POST[ 'updates' ] ) ? json_decode( wp_unslash( $_POST[ 'updates' ] ), true ) : []; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Decoded JSON; every field is sanitized before use.
 
-        if ( ! empty( $plugin_updates ) ) {
-            $transient = get_site_transient( 'update_plugins' );
-
-            if ( ! is_object( $transient ) ) {
-                $transient = new \stdClass();
-            }
-
-            if ( ! isset( $transient->response ) ) {
-                $transient->response = [];
-            }
-
-            if ( ! isset( $transient->checked ) ) {
-                $transient->checked = [];
-            }
-
-            $transient->last_checked = time();
-
-            foreach ( $plugin_updates as $update ) {
-                $plugin = $update[ 'plugin' ];
-                $slug   = $update[ 'slug' ];
-
-                $transient->checked[ $plugin ]  = $update[ 'local_version' ];
-                $transient->response[ $plugin ] = (object) [
-                    'id'          => 'w.org/plugins/' . $slug,
-                    'slug'        => $slug,
-                    'plugin'      => $plugin,
-                    'new_version' => $update[ 'new_version' ],
-                    'url'         => 'https://wordpress.org/plugins/' . $slug . '/',
-                    'package'     => $update[ 'download_link' ],
-                    'tested'      => $update[ 'tested' ] ?? '',
-                    'icons'       => [
-                        '1x' => 'https://ps.w.org/' . $slug . '/assets/icon-128x128.png',
-                        '2x' => 'https://ps.w.org/' . $slug . '/assets/icon-256x256.png',
-                    ],
-                ];
-            }
-
-            foreach ( $plugin_updates as $update ) {
-                unset( $transient->no_update[ $update[ 'plugin' ] ] );
-            }
-
-            set_site_transient( 'update_plugins', $transient );
-            wp_clear_scheduled_hook( 'wp_update_plugins' );
-            set_site_transient( 'ddtt_protected_plugin_updates', $transient->response, 12 * HOUR_IN_SECONDS );
+        if ( empty( $updates ) || ! is_array( $updates ) ) {
+            wp_send_json_error();
         }
 
-        if ( ! empty( $theme_updates ) ) {
-            $transient = get_site_transient( 'update_themes' );
+        $items = $type === 'plugins' ? $this->commit_plugin_updates( $updates ) : $this->commit_theme_updates( $updates );
 
-            if ( ! is_object( $transient ) ) {
-                $transient = new \stdClass();
-            }
-
-            if ( ! isset( $transient->response ) ) {
-                $transient->response = [];
-            }
-
-            if ( ! isset( $transient->checked ) ) {
-                $transient->checked = [];
-            }
-
-            $transient->last_checked = time();
-
-            foreach ( $theme_updates as $update ) {
-                $stylesheet = $update[ 'theme' ];
-
-                $transient->checked[ $stylesheet ]  = $update[ 'local_version' ];
-                $transient->response[ $stylesheet ] = [
-                    'theme'       => $stylesheet,
-                    'new_version' => $update[ 'new_version' ],
-                    'url'         => 'https://wordpress.org/themes/' . $stylesheet . '/',
-                    'package'     => $update[ 'download_link' ],
-                    'tested'      => $update[ 'tested' ] ?? '',
-                    'icons'       => [
-                        '1x' => 'https://ts.w.org/' . $stylesheet . '/screenshot.png?ver=' . $update[ 'new_version' ],
-                    ],
-                ];
-            }
-
-            foreach ( $theme_updates as $update ) {
-                unset( $transient->no_update[ $update[ 'theme' ] ] );
-            }
-
-            set_site_transient( 'update_themes', $transient );
-            wp_clear_scheduled_hook( 'wp_update_themes' );
-            set_site_transient( 'ddtt_protected_theme_updates', $transient->response, 12 * HOUR_IN_SECONDS );
+        if ( empty( $items ) ) {
+            wp_send_json_error();
         }
 
-        wp_send_json_success();
+        wp_send_json_success( [
+            'url'   => self_admin_url( 'update-core.php?action=do-' . ( $type === 'plugins' ? 'plugin' : 'theme' ) . '-upgrade' ),
+            'nonce' => wp_create_nonce( 'upgrade-core' ),
+            'items' => $items,
+        ] );
     } // End ajax_commit_update_results()
+
+
+    /**
+     * Inject plugin updates into the update_plugins transient.
+     *
+     * @param array $updates Updates found by the check.
+     * @return array Plugin files to update, with this plugin last.
+     */
+    private function commit_plugin_updates( array $updates ) : array {
+        if ( ! function_exists( 'get_plugins' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+
+        $installed = get_plugins();
+        $transient = get_site_transient( 'update_plugins' );
+
+        if ( ! is_object( $transient ) ) {
+            $transient = new \stdClass();
+        }
+
+        if ( ! isset( $transient->response ) || ! is_array( $transient->response ) ) {
+            $transient->response = [];
+        }
+
+        $transient->checked = [];
+        foreach ( $installed as $file => $data ) {
+            $transient->checked[ $file ] = $data[ 'Version' ];
+        }
+
+        $transient->last_checked = time();
+
+        $files = [];
+        foreach ( $updates as $update ) {
+            $clean = $this->sanitize_update( $update, 'plugin' );
+            $slug  = isset( $update[ 'slug' ] ) ? sanitize_title( $update[ 'slug' ] ) : '';
+
+            if ( empty( $clean ) || ! $slug || ! isset( $installed[ $clean[ 'id' ] ] ) ) {
+                continue;
+            }
+
+            $transient->response[ $clean[ 'id' ] ] = (object) [
+                'id'          => 'w.org/plugins/' . $slug,
+                'slug'        => $slug,
+                'plugin'      => $clean[ 'id' ],
+                'new_version' => $clean[ 'version' ],
+                'url'         => 'https://wordpress.org/plugins/' . $slug . '/',
+                'package'     => $clean[ 'package' ],
+                'tested'      => $clean[ 'tested' ],
+            ];
+
+            unset( $transient->no_update[ $clean[ 'id' ] ] );
+            $files[] = $clean[ 'id' ];
+        }
+
+        if ( empty( $files ) ) {
+            return [];
+        }
+
+        set_site_transient( 'update_plugins', $transient );
+
+        $self = plugin_basename( Bootstrap::path( 'dev-debug-tools.php' ) );
+        usort( $files, function( $a, $b ) use ( $self ) {
+            return ( $a === $self ) <=> ( $b === $self );
+        } );
+
+        return $files;
+    } // End commit_plugin_updates()
+
+
+    /**
+     * Inject theme updates into the update_themes transient.
+     *
+     * @param array $updates Updates found by the check.
+     * @return array Theme stylesheets to update.
+     */
+    private function commit_theme_updates( array $updates ) : array {
+        $installed = wp_get_themes();
+        $transient = get_site_transient( 'update_themes' );
+
+        if ( ! is_object( $transient ) ) {
+            $transient = new \stdClass();
+        }
+
+        if ( ! isset( $transient->response ) || ! is_array( $transient->response ) ) {
+            $transient->response = [];
+        }
+
+        $transient->checked = [];
+        foreach ( $installed as $stylesheet => $theme ) {
+            $transient->checked[ $stylesheet ] = $theme->get( 'Version' );
+        }
+
+        $transient->last_checked = time();
+
+        $stylesheets = [];
+        foreach ( $updates as $update ) {
+            $clean = $this->sanitize_update( $update, 'theme' );
+
+            if ( empty( $clean ) || ! isset( $installed[ $clean[ 'id' ] ] ) ) {
+                continue;
+            }
+
+            $transient->response[ $clean[ 'id' ] ] = [
+                'theme'       => $clean[ 'id' ],
+                'new_version' => $clean[ 'version' ],
+                'url'         => 'https://wordpress.org/themes/' . $clean[ 'id' ] . '/',
+                'package'     => $clean[ 'package' ],
+                'tested'      => $clean[ 'tested' ],
+            ];
+
+            unset( $transient->no_update[ $clean[ 'id' ] ] );
+            $stylesheets[] = $clean[ 'id' ];
+        }
+
+        if ( empty( $stylesheets ) ) {
+            return [];
+        }
+
+        set_site_transient( 'update_themes', $transient );
+
+        return $stylesheets;
+    } // End commit_theme_updates()
+
+
+    /**
+     * Sanitize one update entry sent from the browser.
+     *
+     * @param array  $update The update data.
+     * @param string $key    The key that holds the plugin file or theme stylesheet.
+     * @return array Clean values, or an empty array if the entry is not valid.
+     */
+    private function sanitize_update( $update, string $key ) : array {
+        if ( ! is_array( $update ) ) {
+            return [];
+        }
+
+        $id      = isset( $update[ $key ] ) ? sanitize_text_field( $update[ $key ] ) : '';
+        $version = isset( $update[ 'new_version' ] ) ? sanitize_text_field( $update[ 'new_version' ] ) : '';
+        $package = isset( $update[ 'download_link' ] ) ? esc_url_raw( $update[ 'download_link' ] ) : '';
+        $tested  = isset( $update[ 'tested' ] ) ? sanitize_text_field( $update[ 'tested' ] ) : '';
+
+        if ( ! $id || ! $version || strpos( $package, 'https://downloads.wordpress.org/' ) !== 0 ) {
+            return [];
+        }
+
+        return [
+            'id'      => $id,
+            'version' => $version,
+            'package' => $package,
+            'tested'  => $tested,
+        ];
+    } // End sanitize_update()
 
 
     /**
@@ -835,7 +911,7 @@ class AdminArea {
         /**
          * Updates Page (single site or multisite)
          */
-        if ( in_array( $hook, [ 'update-core.php', 'update-core-network.php' ], true ) && ! isset( $_GET[ 'action' ] ) ) {
+        if ( in_array( $hook, [ 'update-core.php', 'update-core-network.php' ], true ) && ! isset( $_GET[ 'action' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only checks whether an action is present to decide if the button script loads on update-core.php; no data is processed.
             wp_enqueue_script(
                 'ddtt-updates-page',
                 Bootstrap::url( 'inc/admin-area/updates.js' ),
@@ -882,13 +958,18 @@ class AdminArea {
                 'nonce'     => wp_create_nonce( 'force_update_check' ),
                 'plugins'   => $plugin_list,
                 'themes'    => $theme_list,
-                'btn_label' => __( 'Force Update Check', 'dev-debug-tools' ),
                 'test_mode' => $is_test_mode,
                 'i18n'      => [
-                    'checking'       => __( 'Checking', 'dev-debug-tools' ),
-                    'plugin_updates' => __( 'plugin update(s) found', 'dev-debug-tools' ),
-                    'theme_updates'  => __( 'theme update(s) found', 'dev-debug-tools' ),
-                    'all_up_to_date' => __( 'Everything is up to date.', 'dev-debug-tools' ),
+                    'btn_plugins'        => __( 'Check and Update All Plugins', 'dev-debug-tools' ),
+                    'btn_themes'         => __( 'Check and Update All Themes', 'dev-debug-tools' ),
+                    /* translators: 1: number of plugins checked so far, 2: total number of plugins. */
+                    'checking_plugins'   => __( 'Checking plugins... %1$d of %2$d', 'dev-debug-tools' ),
+                    /* translators: 1: number of themes checked so far, 2: total number of themes. */
+                    'checking_themes'    => __( 'Checking themes... %1$d of %2$d', 'dev-debug-tools' ),
+                    'plugins_up_to_date' => __( 'All plugins are up to date.', 'dev-debug-tools' ),
+                    'themes_up_to_date'  => __( 'All themes are up to date.', 'dev-debug-tools' ),
+                    'updating'           => __( 'Updates found. Starting update...', 'dev-debug-tools' ),
+                    'error'              => __( 'Something went wrong. Please try again.', 'dev-debug-tools' ),
                 ],
             ] );
         }

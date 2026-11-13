@@ -1242,9 +1242,10 @@ class Logs {
             echo '<p>';
             echo esc_html__( 'The log file is too large to display.', 'dev-debug-tools' ) . ' ';
             printf(
-                esc_html__( 'File size: %s MB. Maximum allowed: %s MB. You can change the maximum log size in the settings.', 'dev-debug-tools' ),
-                $file_size_mb,
-                $max_file_size_mb
+                /* translators: 1: log file size in MB, 2: maximum allowed log file size in MB. */
+                esc_html__( 'File size: %1$s MB. Maximum allowed: %2$s MB. You can change the maximum log size in the settings.', 'dev-debug-tools' ),
+                esc_html( $file_size_mb ),
+                esc_html( $max_file_size_mb )
             );
             echo '</p>';
             return;
